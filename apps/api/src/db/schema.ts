@@ -31,15 +31,15 @@ export const creatorStatusEnum = pgEnum("creator_status", [
   "suspended", // 관리자에 의해 정지됨 (보안, 정책 위반 등)
 ]);
 
-// 포스팅 상태 (FR-107, FR-108, FR-113, FR-125, API-R110, API-R111, API-R132, API-R133)
-export const postStatusEnum = pgEnum("post_status", [
+// 스토리 상태 (FR-107, FR-108, FR-113, FR-125, API-R110, API-R111, API-R132, API-R133)
+export const storiestatusEnum = pgEnum("post_status", [
   "draft", // 임시 저장
   "published", // 발행됨 (사용자에게 공개)
   "hidden", // 관리자에 의해 숨김
   "deleted", // (소프트 삭제) 삭제됨
 ]);
 
-// 포스팅 반응 유형 (FR-114, FR-115, API-R119)
+// 스토리 반응 유형 (FR-114, FR-115, API-R119)
 export const reactionTypeEnum = pgEnum("reaction_type", [
   "like",
   "heart",
@@ -306,18 +306,18 @@ export const creatorCategories = pgTable(
   ]
 );
 
-// 포스팅 테이블 (FR-107, FR-108, FR-113, FR-114, FR-117, FR-118, FR-125, API-R110, API-R111, API-R112, API-R113, API-R114, API-R116, API-R117, API-R132, API-R133)
-export const posts = pgTable(
-  "posts",
+// 스토리 테이블 (FR-107, FR-108, FR-113, FR-114, FR-117, FR-118, FR-125, API-R110, API-R111, API-R112, API-R113, API-R114, API-R116, API-R117, API-R132, API-R133)
+export const stories = pgTable(
+  "stories",
   {
     id: serial("id").primaryKey(),
     authorId: serial("author_id").notNull(), // 작성자 (creators.id 참조)
     title: varchar("title", { length: 255 }).notNull(),
     content: jsonb("content").notNull(),
-    status: postStatusEnum("status").notNull().default("draft"), // 'draft', 'published', 'hidden', 'deleted'
+    status: storiestatusEnum("status").notNull().default("draft"), // 'draft', 'published', 'hidden', 'deleted'
 
-    regionId: integer("region_id"), // 포스팅 관련 지역 (regions.id 참조)
-    categoryId: integer("category_id"), // 포스팅 관련 카테고리 (categories.id 참조)
+    regionId: integer("region_id"), // 스토리 관련 지역 (regions.id 참조)
+    categoryId: integer("category_id"), // 스토리 관련 카테고리 (categories.id 참조)
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -343,19 +343,19 @@ export const posts = pgTable(
       columns: [table.categoryId],
       foreignColumns: [categories.id],
     }).onDelete("set null"), // <-- Table level FK defined in array
-    index("posts_status_idx").on(table.status),
-    index("posts_created_at_idx").on(table.createdAt),
-    index("posts_published_at_idx").on(table.publishedAt),
-    index("posts_author_status_idx").on(table.authorId, table.status),
+    index("stories_status_idx").on(table.status),
+    index("stories_created_at_idx").on(table.createdAt),
+    index("stories_published_at_idx").on(table.publishedAt),
+    index("stories_author_status_idx").on(table.authorId, table.status),
   ]
 );
 
-// 포스팅 이미지 테이블 (포스팅과 1:N 관계)
+// 스토리 이미지 테이블 (스토리과 1:N 관계)
 export const postImages = pgTable(
   "post_images",
   {
     id: serial("id").primaryKey(),
-    postId: uuid("post_id").notNull(), // posts.id 참조
+    postId: uuid("post_id").notNull(), // stories.id 참조
     imageUrl: varchar("image_url", { length: 255 }).notNull(),
     order: integer("order").notNull().default(0),
   },
@@ -363,19 +363,19 @@ export const postImages = pgTable(
     // <-- New API Syntax
     foreignKey({
       columns: [table.postId],
-      foreignColumns: [posts.id],
+      foreignColumns: [stories.id],
     }).onDelete("cascade"), // <-- Table level FK defined in array
     index("post_images_post_id_order_idx").on(table.postId, table.order),
   ]
 );
 
-// 포스팅 반응 (이모지) 테이블 (FR-114, FR-115, API-R119)
-// 유저(users.id)가 특정 포스팅(posts.id)에 특정 타입으로 반응
+// 스토리 반응 (이모지) 테이블 (FR-114, FR-115, API-R119)
+// 유저(users.id)가 특정 스토리(stories.id)에 특정 타입으로 반응
 export const reactions = pgTable(
   "reactions",
   {
     id: serial("id").primaryKey(),
-    postId: serial("post_id").notNull(), // posts.id 참조
+    postId: serial("post_id").notNull(), // stories.id 참조
     userId: uuid("user_id").notNull(), // users.id 참조
     reactionType: reactionTypeEnum("reaction_type").notNull(), // 'like', 'heart' 등
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -386,7 +386,7 @@ export const reactions = pgTable(
     // <-- New API Syntax
     foreignKey({
       columns: [table.postId],
-      foreignColumns: [posts.id],
+      foreignColumns: [stories.id],
     }).onDelete("cascade"), // <-- Table level FK defined in array
     foreignKey({
       columns: [table.userId],
@@ -438,7 +438,7 @@ export const curationSpots = pgTable("curation_spots", {
 });
 
 // 큐레이션 아이템 테이블 (FR-112, FR-126, API-R135, API-R136, API-R137, API-R138)
-// 큐레이션 아이템으로 포함되는 크리에이터(creators.id) 또는 포스팅(posts.id)
+// 큐레이션 아이템으로 포함되는 크리에이터(creators.id) 또는 스토리(stories.id)
 export const curationItems = pgTable(
   "curation_items",
   {
@@ -446,7 +446,7 @@ export const curationItems = pgTable(
     spotId: integer("spot_id").notNull(), // curation_spots.id 참조
     itemType: curationItemTypeEnum("item_type").notNull(), // 'creator' 또는 'post'
     creatorId: serial("creator_id"), // creators.id 참조 (itemType이 'creator'일 경우)
-    postId: serial("post_id"), // posts.id 참조 (itemType이 'post'일 경우)
+    postId: serial("post_id"), // stories.id 참조 (itemType이 'post'일 경우)
     position: integer("position").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -464,7 +464,7 @@ export const curationItems = pgTable(
     }).onDelete("cascade"), // <-- Table level FK defined in array
     foreignKey({
       columns: [table.postId],
-      foreignColumns: [posts.id],
+      foreignColumns: [stories.id],
     }).onDelete("cascade"), // <-- Table level FK defined in array
     unique("curation_items_spot_id_creator_id_unique").on(
       table.spotId,
@@ -537,8 +537,8 @@ export const creatorsRelations = relations(creators, ({ one, many }) => ({
     fields: [creators.userId],
     references: [users.id],
   }),
-  // 크리에이터와 포스팅은 1:N 관계
-  posts: many(posts),
+  // 크리에이터와 스토리은 1:N 관계
+  stories: many(stories),
   // 크리에이터와 카테고리는 N:M 관계 (creatorCategories 조인 테이블 통해)
   creatorCategories: many(creatorCategories),
   // 크리에이터와 팔로우 관계 (팔로우 받는 크리에이터)는 1:N 관계
@@ -555,15 +555,15 @@ export const regionsRelations = relations(regions, ({ one, many }) => ({
   }),
   // 지역과 하위 지역은 1:N 관계 (셀프 참조 역방향)
   children: many(regions),
-  // 지역과 포스팅은 1:N 관계
-  posts: many(posts),
+  // 지역과 스토리은 1:N 관계
+  stories: many(stories),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
   // 카테고리와 크리에이터는 N:M 관계 (creatorCategories 조인 테이블 통해)
   creatorCategories: many(creatorCategories),
-  // 카테고리와 포스팅은 1:N 관계
-  posts: many(posts),
+  // 카테고리와 스토리은 1:N 관계
+  stories: many(stories),
 }));
 
 export const creatorCategoriesRelations = relations(
@@ -580,43 +580,43 @@ export const creatorCategoriesRelations = relations(
   })
 );
 
-export const postsRelations = relations(posts, ({ one, many }) => ({
-  // 포스팅과 작성자(크리에이터)는 N:1 관계
+export const storiesRelations = relations(stories, ({ one, many }) => ({
+  // 스토리과 작성자(크리에이터)는 N:1 관계
   author: one(creators, {
-    fields: [posts.authorId],
+    fields: [stories.authorId],
     references: [creators.id],
   }),
-  // 포스팅과 이미지는 1:N 관계
+  // 스토리과 이미지는 1:N 관계
   images: many(postImages),
-  // 포스팅과 반응은 1:N 관계
+  // 스토리과 반응은 1:N 관계
   reactions: many(reactions),
-  // 포스팅과 지역은 N:1 관계
+  // 스토리과 지역은 N:1 관계
   region: one(regions, {
-    fields: [posts.regionId],
+    fields: [stories.regionId],
     references: [regions.id],
   }),
-  // 포스팅과 카테고리는 N:1 관계
+  // 스토리과 카테고리는 N:1 관계
   category: one(categories, {
-    fields: [posts.categoryId],
+    fields: [stories.categoryId],
     references: [categories.id],
   }),
-  // 포스팅과 큐레이션 아이템은 1:N 관계 (큐레이션 아이템으로 포함된 경우)
+  // 스토리과 큐레이션 아이템은 1:N 관계 (큐레이션 아이템으로 포함된 경우)
   curationItems: many(curationItems),
 }));
 
 export const postImagesRelations = relations(postImages, ({ one }) => ({
-  // 포스팅 이미지는 하나의 포스팅에 속함
-  post: one(posts, {
+  // 스토리 이미지는 하나의 스토리에 속함
+  post: one(stories, {
     fields: [postImages.postId],
-    references: [posts.id],
+    references: [stories.id],
   }),
 }));
 
 export const reactionsRelations = relations(reactions, ({ one }) => ({
-  // 반응은 하나의 포스팅에 속함
-  post: one(posts, {
+  // 반응은 하나의 스토리에 속함
+  post: one(stories, {
     fields: [reactions.postId],
-    references: [posts.id],
+    references: [stories.id],
   }),
   // 반응은 하나의 유저에게 속함 (플랫폼 유저)
   user: one(users, {
@@ -656,9 +656,9 @@ export const curationItemsRelations = relations(curationItems, ({ one }) => ({
     fields: [curationItems.creatorId],
     references: [creators.id],
   }),
-  // 큐레이션 아이템이 포스팅인 경우, 해당 포스팅
-  post: one(posts, {
+  // 큐레이션 아이템이 스토리인 경우, 해당 스토리
+  post: one(stories, {
     fields: [curationItems.postId],
-    references: [posts.id],
+    references: [stories.id],
   }),
 }));
