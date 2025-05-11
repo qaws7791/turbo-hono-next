@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint", // ESLint for code linting
+        "esbenp.prettier-vscode", // Prettier for code formatting
+        "ms-vscode.vscode-typescript-next", // TypeScript support
+        "mikestead.dotenv", // .env file support
+        "streetsidesoftware.code-spell-checker", // Spell checker
+        "usernamehw.errorlens", // Error lens for better visibility of errors
+        "pulkitgangwar.nextjs-snippets", // Next.js snippets
+        "dsznajder.es7-react-js-snippets", // React snippets
+        "davidanson.vscode-markdownlint" // Markdown linting
+    ]
+}
