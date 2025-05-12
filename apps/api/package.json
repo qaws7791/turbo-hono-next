@@ -1,22 +1,29 @@
 {
   "name": "api",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
+    "@hono/node-server": "^1.14.1",
     "@hono/swagger-ui": "^0.5.1",
     "@hono/zod-openapi": "^0.19.6",
+    "dotenv": "^16.5.0",
     "drizzle-orm": "^0.43.1",
     "hono": "^4.7.8",
     "http-status": "^2.1.0",
-    "pg": "^8.15.6"
+    "inversify": "^7.5.1",
+    "pg": "^8.15.6",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.3",
     "@types/pg": "^8.15.1",
     "drizzle-kit": "^0.31.1",
-    "wrangler": "^4.4.0"
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
   }
 }
