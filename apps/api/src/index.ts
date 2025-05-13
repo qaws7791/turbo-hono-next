@@ -1,3 +1,6 @@
+import { DatabaseError } from "@/errors/database-error";
+import { HTTPError } from "@/errors/http-error";
+import { createErrorResponse } from "@/helpers/api-response";
 import { serve } from "@hono/node-server";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -5,6 +8,7 @@ import "dotenv/config";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger } from "hono/logger";
+import status from "http-status";
 import platformRoutes from "./routes/platform";
 import { Context } from "./types/hono.types";
 const ORIGIN: string[] | string = "http://localhost:3000";
@@ -43,6 +47,29 @@ app.doc("/doc", {
     version: "1.0.0",
     description: "API",
   },
+});
+
+app.onError((err, c) => {
+  if (err instanceof HTTPError) {
+    const statusCode = err.getStatusCode();
+    return c.json(
+      createErrorResponse(statusCode, err.getMessage(), err.getDetails()),
+      statusCode,
+    );
+  }
+
+  if (err instanceof DatabaseError) {
+    const statusCode = err.getStatusCode();
+    return c.json(
+      createErrorResponse(statusCode, err.getMessage()),
+      statusCode,
+    );
+  }
+
+  return c.json(
+    createErrorResponse(status.INTERNAL_SERVER_ERROR, "Internal Server Error"),
+    status.INTERNAL_SERVER_ERROR,
+  );
 });
 
 serve(
