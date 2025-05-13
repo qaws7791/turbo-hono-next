@@ -1,6 +1,8 @@
 import { accounts } from "@/db/schema";
 import { AccountSelect, type DbClient } from "@/db/types";
+import { DatabaseError } from "@/errors/database-error";
 import { and, eq } from "drizzle-orm";
+import status from "http-status";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -30,7 +32,10 @@ export class AccountRepository {
       .values(accountData)
       .returning();
     if (!newAccount) {
-      throw new Error("Failed to create account");
+      throw new DatabaseError(
+        "Failed to create account",
+        status.INTERNAL_SERVER_ERROR,
+      );
     }
     return newAccount;
   }

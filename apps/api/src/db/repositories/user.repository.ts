@@ -1,6 +1,8 @@
 import { users } from "@/db/schema";
 import { type DbClient, UserSelect } from "@/db/types";
+import { DatabaseError } from "@/errors/database-error";
 import { eq } from "drizzle-orm";
+import status from "http-status";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -21,7 +23,10 @@ export class UserRepository {
   async createUser(userData: typeof users.$inferInsert): Promise<UserSelect> {
     const [newUser] = await this.db.insert(users).values(userData).returning();
     if (!newUser) {
-      throw new Error("Failed to create user");
+      throw new DatabaseError(
+        "Failed to create user",
+        status.INTERNAL_SERVER_ERROR,
+      );
     }
     return newUser;
   }

@@ -1,5 +1,7 @@
 import { env } from "@/config/env";
+import { HTTPError } from "@/errors/http-error";
 import { z } from "@hono/zod-openapi";
+import status from "http-status";
 import { injectable } from "inversify";
 
 const KakaoTokenResponseSchema = z.object({
@@ -83,8 +85,11 @@ export class KakaoAuthService {
     if (!response.ok) {
       const errorBody = await response.json();
       console.error("Kakao Token Error:", errorBody);
-      throw new Error(
-        `Failed to get tokens from Kakao: ${response.status} - ${JSON.stringify(errorBody)}`,
+      throw new HTTPError(
+        {
+          message: `Failed to get tokens from Kakao: ${response.status} - ${JSON.stringify(errorBody)}`,
+        },
+        status.INTERNAL_SERVER_ERROR,
       );
     }
 
@@ -93,7 +98,12 @@ export class KakaoAuthService {
       return KakaoTokenResponseSchema.parse(data);
     } catch (error) {
       console.error("Kakao Token Response Validation Error:", error);
-      throw new Error("Invalid Kakao token response format.");
+      throw new HTTPError(
+        {
+          message: "Invalid Kakao token response format.",
+        },
+        status.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -110,8 +120,11 @@ export class KakaoAuthService {
     if (!response.ok) {
       const errorBody = await response.json();
       console.error("Kakao User Info Error:", errorBody);
-      throw new Error(
-        `Failed to get user info from Kakao: ${response.status} - ${JSON.stringify(errorBody)}`,
+      throw new HTTPError(
+        {
+          message: `Failed to get user info from Kakao: ${response.status} - ${JSON.stringify(errorBody)}`,
+        },
+        status.INTERNAL_SERVER_ERROR,
       );
     }
 
@@ -120,7 +133,12 @@ export class KakaoAuthService {
       return KakaoUserInfoResponseSchema.parse(data);
     } catch (error) {
       console.error("Kakao User Info Response Validation Error:", error);
-      throw new Error("Invalid Kakao user info response format.");
+      throw new HTTPError(
+        {
+          message: "Invalid Kakao user info response format.",
+        },
+        status.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

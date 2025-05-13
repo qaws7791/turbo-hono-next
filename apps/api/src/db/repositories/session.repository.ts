@@ -1,6 +1,8 @@
 import { sessions } from "@/db/schema";
 import { type DbClient, SessionSelect } from "@/db/types";
+import { DatabaseError } from "@/errors/database-error";
 import { and, eq, gte, lte } from "drizzle-orm";
+import status from "http-status";
 import { inject, injectable } from "inversify";
 
 @injectable()
@@ -27,7 +29,10 @@ export class SessionRepository {
       .values(sessionData)
       .returning();
     if (!newSession) {
-      throw new Error("Failed to create session");
+      throw new DatabaseError(
+        "Failed to create session",
+        status.INTERNAL_SERVER_ERROR,
+      );
     }
     return newSession;
   }
