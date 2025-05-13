@@ -4,7 +4,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface ApiResponse<T = any> {
+export interface APIResponse<T = any> {
   /** HTTP 상태 코드 */
   status: number;
   /** 성공 여부 */
@@ -35,7 +35,7 @@ export interface ApiResponse<T = any> {
   metadata?: string[];
 }
 
-export interface ApiErrorResponse extends Omit<ApiResponse, "data"> {
+export interface APIErrorResponse extends Omit<APIResponse, "data"> {
   success: false;
   error: {
     code: string;
@@ -44,7 +44,7 @@ export interface ApiErrorResponse extends Omit<ApiResponse, "data"> {
   };
 }
 
-export interface ApiSuccessResponse<T> extends Omit<ApiResponse<T>, "error"> {
+export interface APIResourceResponse<T> extends Omit<APIResponse<T>, "error"> {
   success: true;
   data: T;
 }
