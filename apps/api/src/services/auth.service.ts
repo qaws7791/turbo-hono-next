@@ -1,11 +1,15 @@
 import { env } from "@/config/env";
 import { AccountRepository } from "@/db/repositories/account.repository";
+import { EmailVerificationTokenRepository } from "@/db/repositories/email-verification-token.repository";
 import { SessionRepository } from "@/db/repositories/session.repository";
 import { UserRepository } from "@/db/repositories/user.repository";
 import { SessionSelect } from "@/db/types";
-import { KakaoAuthService } from "@/services/kakao-auth.service";
-import crypto from "crypto";
+import { HTTPError } from "@/errors/http-error";
+import kakaoOAuth from "@/lib/oauth/kakao";
+import { hashPassword, verifyPassword } from "@/utils/password";
+import { generateToken } from "@/utils/token";
 import { type CookieOptions } from "hono/utils/cookie"; // Hono 쿠키 타입
+import status from "http-status";
 import { inject, injectable } from "inversify";
 import { users } from "../db/schema"; // Drizzle 스키마 타입 추론용
 
@@ -21,8 +25,8 @@ export class AuthService {
     private readonly accountRepository: AccountRepository,
     @inject("sessionRepository")
     private readonly sessionRepository: SessionRepository,
-    @inject("kakaoAuthService")
-    private readonly kakaoAuthService: KakaoAuthService,
+    @inject("emailVerificationTokenRepository")
+    private readonly emailVerificationTokenRepository: EmailVerificationTokenRepository,
   ) {}
 
   /**
@@ -32,18 +36,15 @@ export class AuthService {
    * @param userAgent 요청 User Agent
    * @returns 생성된 세션 토큰
    */
-  async handleKakaoCallback(
+  async loginWithKakao(
     authorizationCode: string,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<string> {
-    console.log("kakaoAuthService", this.kakaoAuthService);
-    const kakaoTokens =
-      await this.kakaoAuthService.getTokensFromKakao(authorizationCode);
+    const kakaoTokens = await kakaoOAuth.getTokensFromKakao(authorizationCode);
     const accessToken = kakaoTokens.access_token;
-    const kakaoUserInfo =
-      await this.kakaoAuthService.getUserInfoFromKakao(accessToken);
-
+    const kakaoUserInfo = await kakaoOAuth.getUserInfoFromKakao(accessToken);
+    console.log(kakaoUserInfo);
     const providerId = "kakao";
     const providerAccountId = kakaoUserInfo.id.toString();
     const kakaoEmail = kakaoUserInfo.kakao_account?.email;
@@ -96,19 +97,109 @@ export class AuthService {
       }
     }
 
-    const sessionToken = this.generateSessionToken();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + SESSION_EXPIRY_DAYS);
-
-    await this.sessionRepository.createSession({
-      userId: userId,
-      token: sessionToken,
-      expiresAt: expiresAt,
-      ipAddress: ipAddress,
-      userAgent: userAgent,
+    const sessionToken = await this.generateUserSession({
+      userId,
+      ipAddress,
+      userAgent,
     });
 
     return sessionToken;
+  }
+
+  async loginWithEmail(
+    email: string,
+    password: string,
+  ): Promise<{ sessionToken: string }> {
+    const user = await this.userRepository.findUserByEmail(email);
+    if (!user) {
+      throw new HTTPError(
+        {
+          message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+        },
+        status.UNAUTHORIZED,
+      );
+    }
+
+    const account = await this.accountRepository.findAccountByUserId(user.id);
+    if (!account || !account.password) {
+      throw new HTTPError(
+        {
+          message: "잘못된 계정 정보입니다.",
+        },
+        status.UNAUTHORIZED,
+      );
+    }
+
+    const isValidPassword = await verifyPassword(password, account.password);
+    if (!isValidPassword) {
+      throw new HTTPError(
+        {
+          message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+        },
+        status.UNAUTHORIZED,
+      );
+    }
+
+    if (!user.emailVerified) {
+      throw new HTTPError(
+        {
+          message: "이메일 인증이 필요합니다.",
+        },
+        status.UNAUTHORIZED,
+      );
+    }
+
+    const sessionToken = await this.generateUserSession({
+      userId: user.id,
+    });
+
+    return { sessionToken };
+  }
+
+  async registerWithEmail(
+    email: string,
+    password: string,
+    name: string,
+  ): Promise<{ userId: number; verificationToken: string }> {
+    const existingUser = await this.userRepository.findUserByEmail(email);
+    if (existingUser) {
+      throw new HTTPError(
+        {
+          message: "이미 등록된 이메일입니다.",
+        },
+        status.CONFLICT,
+      );
+    }
+
+    const user = await this.userRepository.createUser({
+      email,
+      name,
+      role: "user",
+      status: "active",
+    });
+
+    const passwordHash = await hashPassword(password);
+    await this.accountRepository.createAccount({
+      userId: user.id,
+      providerId: "email",
+      providerAccountId: email,
+      password: passwordHash,
+    });
+
+    const verificationToken = generateToken();
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    await this.emailVerificationTokenRepository.createToken({
+      userId: user.id,
+      token: verificationToken,
+      expiresAt,
+    });
+
+    return {
+      userId: user.id,
+      verificationToken,
+    };
   }
 
   /**
@@ -166,10 +257,6 @@ export class AuthService {
     }
   }
 
-  private generateSessionToken(): string {
-    return crypto.randomBytes(32).toString("hex");
-  }
-
   getSessionCookieOptions(): CookieOptions {
     const expires = new Date();
     expires.setDate(expires.getDate() + SESSION_EXPIRY_DAYS);
@@ -186,5 +273,59 @@ export class AuthService {
 
   async getSession(token: string): Promise<SessionSelect | undefined> {
     return this.sessionRepository.findSessionByToken(token);
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const verificationToken =
+      await this.emailVerificationTokenRepository.findValidTokenByToken(token);
+
+    if (!verificationToken) {
+      throw new HTTPError(
+        {
+          message: "유효하지 않거나 만료된 인증 토큰입니다.",
+        },
+        status.BAD_REQUEST,
+      );
+    }
+    try {
+      await this.userRepository.updateEmailVerified(
+        verificationToken.userId,
+        true,
+      );
+      await this.emailVerificationTokenRepository.deleteTokenByUserId(
+        verificationToken.userId,
+      );
+    } catch (error) {
+      console.error("Failed to verify email:", error);
+      throw new HTTPError(
+        {
+          message: "이메일 인증 처리 중 오류가 발생했습니다.",
+        },
+        status.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  private async generateUserSession({
+    userId,
+    ipAddress,
+    userAgent,
+  }: {
+    userId: number;
+    ipAddress?: string | undefined;
+    userAgent?: string | undefined;
+  }) {
+    const sessionToken = generateToken(32);
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + SESSION_EXPIRY_DAYS);
+
+    await this.sessionRepository.createSession({
+      userId: userId,
+      token: sessionToken,
+      expiresAt: expiresAt,
+      ipAddress: ipAddress,
+      userAgent: userAgent,
+    });
+    return sessionToken;
   }
 }

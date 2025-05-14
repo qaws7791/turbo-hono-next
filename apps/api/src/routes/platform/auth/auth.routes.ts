@@ -3,7 +3,7 @@ import status from "http-status";
 
 const TAG = ["auth"];
 
-export const kakaoLogin = createRoute({
+export const loginWithKakao = createRoute({
   summary: "카카오 로그인",
   method: "get",
   path: "/kakao/login",
@@ -100,6 +100,78 @@ export const session = createRoute({
     },
     [status.UNAUTHORIZED]: {
       description: "세션 조회 실패",
+    },
+  },
+});
+
+export const emailLogin = createRoute({
+  summary: "이메일 로그인",
+  method: "post",
+  path: "/email/login",
+  tags: TAG,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            email: z.string(),
+            password: z.string(),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    [status.CREATED]: {
+      description: "이메일 로그인 성공",
+    },
+  },
+});
+
+export const emailRegister = createRoute({
+  summary: "이메일 회원가입",
+  method: "post",
+  path: "/email/register",
+  tags: TAG,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            email: z.string(),
+            password: z.string(),
+            name: z.string(),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    [status.CREATED]: {
+      description: "이메일 회원가입 성공",
+    },
+  },
+});
+
+export const emailVerify = createRoute({
+  summary: "이메일 인증",
+  method: "post",
+  path: "/email/verify",
+  tags: TAG,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: z.object({
+            token: z.string(),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    [status.NO_CONTENT]: {
+      description: "이메일 인증 성공",
     },
   },
 });
