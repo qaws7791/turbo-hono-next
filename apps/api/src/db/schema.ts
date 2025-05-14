@@ -61,7 +61,7 @@ export const users = pgTable(
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     name: varchar("name", { length: 255 }).notNull(), // 소셜 로그인에서 제공되는 이름
     email: varchar("email", { length: 255 }).unique(), // 소셜 로그인에서 제공되는 이메일 (unique, notNull은 Provider 설정에 따라 유연하게)
-    emailVerified: timestamp("email_verified", { withTimezone: true }), // 이메일 인증 시간 (소셜 로그인은 보통 인증됨)
+    emailVerified: timestamp("email_verified", { withTimezone: true }), // 기본값 제거
     profileImageUrl: varchar("profile_image_url", { length: 255 }), // 소셜 로그인에서 제공되는 프로필 이미지
     role: userRoleEnum("role").notNull().default("user"), // 'user' 또는 'creator'
     status: varchar("status", { length: 50 }).notNull().default("active"), // 'active', 'inactive', 'suspended' 등
@@ -438,6 +438,28 @@ export const curationItems = pgTable(
   ],
 );
 
+// 이메일 인증 토큰 테이블
+export const emailVerificationTokens = pgTable(
+  "email_verification_tokens",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("user_id").notNull(), // users.id 참조
+    token: varchar("token", { length: 255 }).notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+    }).onDelete("cascade"),
+    index("email_verification_tokens_user_id_idx").on(table.userId),
+    index("email_verification_tokens_expires_at_idx").on(table.expiresAt),
+  ],
+);
+
 // --- Relations Definitions ---
 // Drizzle ORM 쿼리 시 관계를 쉽게 탐색하기 위한 정의
 // Relations 정의 문법은 변경 없음
@@ -456,6 +478,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.id],
     references: [creators.userId],
   }),
+  emailVerificationTokens: many(emailVerificationTokens), // 추가
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -609,3 +632,13 @@ export const curationItemsRelations = relations(curationItems, ({ one }) => ({
     references: [stories.id],
   }),
 }));
+
+export const emailVerificationTokensRelations = relations(
+  emailVerificationTokens,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [emailVerificationTokens.userId],
+      references: [users.id],
+    }),
+  }),
+);

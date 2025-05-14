@@ -30,4 +30,25 @@ export class UserRepository {
     }
     return newUser;
   }
+
+  async updateEmailVerified(userId: number, verified: boolean): Promise<void> {
+    await this.db
+      .update(users)
+      .set({
+        emailVerified: verified ? new Date() : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async updateUserEmail(userId: number, email: string): Promise<void> {
+    await this.db
+      .update(users)
+      .set({
+        email,
+        emailVerified: null, // 이메일이 변경되면 인증 상태 초기화
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
 }

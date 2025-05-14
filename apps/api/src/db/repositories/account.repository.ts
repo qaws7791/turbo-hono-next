@@ -24,6 +24,14 @@ export class AccountRepository {
     });
   }
 
+  async findAccountByUserId(
+    userId: number,
+  ): Promise<AccountSelect | undefined> {
+    return this.db.query.accounts.findFirst({
+      where: eq(accounts.userId, userId),
+    });
+  }
+
   async createAccount(
     accountData: typeof accounts.$inferInsert,
   ): Promise<AccountSelect> {
@@ -38,5 +46,22 @@ export class AccountRepository {
       );
     }
     return newAccount;
+  }
+
+  async updateAccountPassword(
+    userId: number,
+    passwordHash: string,
+  ): Promise<void> {
+    await this.db
+      .update(accounts)
+      .set({
+        password: passwordHash,
+        updatedAt: new Date(),
+      })
+      .where(eq(accounts.userId, userId));
+  }
+
+  async deleteAccount(userId: number): Promise<void> {
+    await this.db.delete(accounts).where(eq(accounts.userId, userId));
   }
 }

@@ -9,6 +9,7 @@ import {
   creatorStatusEnum,
   curationItems,
   curationSpots,
+  emailVerificationTokens,
   follows,
   reactions,
   regions,
@@ -65,3 +66,8 @@ export type CurationSpotSelect = typeof curationSpots.$inferSelect;
 
 export type CurationItemInsert = typeof curationItems.$inferInsert;
 export type CurationItemSelect = typeof curationItems.$inferSelect;
+
+export type EmailVerificationTokenInsert =
+  typeof emailVerificationTokens.$inferInsert;
+export type EmailVerificationTokenSelect =
+  typeof emailVerificationTokens.$inferSelect;
