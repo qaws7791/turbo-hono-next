@@ -1,6 +1,7 @@
 import { DatabaseError } from "@/errors/database-error";
 import { HTTPError } from "@/errors/http-error";
 import { createErrorResponse } from "@/helpers/api-response";
+import sessionMiddleware from "@/middlewares/session.middleware";
 import { serve } from "@hono/node-server";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -31,6 +32,8 @@ app.use(
   }),
 );
 
+app.use(sessionMiddleware);
+
 app.get("/ui", swaggerUI({ url: "/doc" }));
 app.get("/", (c) => {
   return c.json({
@@ -50,6 +53,7 @@ app.doc("/doc", {
 });
 
 app.onError((err, c) => {
+  console.error(`${err.name}: ${err.message}`);
   if (err instanceof HTTPError) {
     const statusCode = err.getStatusCode();
     return c.json(

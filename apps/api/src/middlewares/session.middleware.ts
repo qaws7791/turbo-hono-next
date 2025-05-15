@@ -11,7 +11,7 @@ const sessionMiddleware = createMiddleware<Context>(async (c, next) => {
   const sessionToken = getCookie(c, env.SESSION_COOKIE_NAME || "session");
   if (!sessionToken) {
     c.set("user", null);
-    return next();
+    return await next();
   }
 
   try {
@@ -19,7 +19,7 @@ const sessionMiddleware = createMiddleware<Context>(async (c, next) => {
 
     if (!user) {
       deleteCookie(c, env.SESSION_COOKIE_NAME || "session");
-      return next();
+      return await next();
     }
 
     // 세션 갱신 후 쿠키 만료일도 업데이트
@@ -33,9 +33,9 @@ const sessionMiddleware = createMiddleware<Context>(async (c, next) => {
 
     c.set("user", user);
 
-    next();
+    await next();
   } catch {
-    return next();
+    return await next();
   }
 });
 
