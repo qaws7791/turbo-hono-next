@@ -1,23 +1,35 @@
 import { roleHierarchy } from "@/constants/users.constants";
 import { type UserRole } from "@/db/types";
+import { HTTPError } from "@/errors/http-error";
 import { Context } from "@/types/hono.types";
 import { createMiddleware } from "hono/factory";
+import status from "http-status";
 
 export const roleMiddleware = (requiredRole: UserRole) => {
   return createMiddleware<Context>(async (c, next) => {
     const user = c.get("user");
     if (!user) {
-      return c.json({ error: "Unauthorized" }, 401);
+      throw new HTTPError(
+        {
+          message: "Unauthorized",
+        },
+        status.UNAUTHORIZED,
+      );
     }
 
     const hasRequiredRole =
       roleHierarchy[user.role] >= roleHierarchy[requiredRole];
 
     if (!hasRequiredRole) {
-      return c.json({ error: "Unauthorized" }, 401);
+      throw new HTTPError(
+        {
+          message: "Unauthorized",
+        },
+        status.UNAUTHORIZED,
+      );
     }
 
-    next();
+    await next();
   });
 };
 
