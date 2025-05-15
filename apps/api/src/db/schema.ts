@@ -1,5 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
+  bigint,
+  boolean,
   foreignKey,
   index,
   integer,
@@ -460,6 +462,38 @@ export const emailVerificationTokens = pgTable(
   ],
 );
 
+// 객체 테이블
+export const objects = pgTable(
+  "objects",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    userId: integer("user_id").notNull(), // users.id 참조
+    bucket: text("bucket").notNull(),
+    key: text("key").notNull().unique(),
+    contentType: text("content_type"),
+    size: bigint({
+      mode: "number",
+    }),
+    isUploaded: boolean("is_uploaded").notNull().default(false),
+    customMetadata: jsonb("custom_metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId],
+      foreignColumns: [users.id],
+    }).onDelete("cascade"),
+    index("objects_user_id_idx").on(table.userId),
+    index("objects_bucket_key_idx").on(table.bucket, table.key),
+    index("objects_is_uploaded_idx").on(table.isUploaded),
+  ],
+);
+
 // --- Relations Definitions ---
 // Drizzle ORM 쿼리 시 관계를 쉽게 탐색하기 위한 정의
 // Relations 정의 문법은 변경 없음
@@ -479,6 +513,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [creators.userId],
   }),
   emailVerificationTokens: many(emailVerificationTokens), // 추가
+  objects: many(objects),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -642,3 +677,10 @@ export const emailVerificationTokensRelations = relations(
     }),
   }),
 );
+
+export const objectsRelations = relations(objects, ({ one }) => ({
+  user: one(users, {
+    fields: [objects.userId],
+    references: [users.id],
+  }),
+}));

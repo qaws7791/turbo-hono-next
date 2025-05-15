@@ -11,6 +11,7 @@ import {
   curationSpots,
   emailVerificationTokens,
   follows,
+  objects,
   reactions,
   regions,
   sessions,
@@ -71,3 +72,6 @@ export type EmailVerificationTokenInsert =
   typeof emailVerificationTokens.$inferInsert;
 export type EmailVerificationTokenSelect =
   typeof emailVerificationTokens.$inferSelect;
+
+export type ObjectInsert = typeof objects.$inferInsert;
+export type ObjectSelect = typeof objects.$inferSelect;
