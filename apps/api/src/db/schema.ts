@@ -33,7 +33,6 @@ export const creatorStatusEnum = pgEnum("creator_status", [
 
 // 스토리 상태
 export const storiesStatusEnum = pgEnum("story_status", [
-  "draft", // 임시 저장
   "published", // 발행됨 (사용자에게 공개)
   "hidden", // 관리자에 의해 숨김
   "deleted", // (소프트 삭제) 삭제됨
@@ -294,7 +293,8 @@ export const stories = pgTable(
     authorId: integer("author_id").notNull(), // 작성자 (creators.id 참조)
     title: varchar("title", { length: 255 }).notNull(),
     content: jsonb("content").notNull(),
-    status: storiesStatusEnum("status").notNull().default("draft"), // 'draft', 'published', 'hidden', 'deleted'
+    contentText: text("content_text").notNull(),
+    status: storiesStatusEnum("status").notNull().default("published"), // 'draft', 'published', 'hidden', 'deleted'
 
     regionId: integer("region_id"), // 스토리 관련 지역 (regions.id 참조)
     categoryId: integer("category_id"), // 스토리 관련 카테고리 (categories.id 참조)

@@ -29,6 +29,13 @@
       "when": 1747313712191,
       "tag": "0003_free_gamma_corps",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1747559087259,
+      "tag": "0004_hot_otto_octavius",
+      "breakpoints": true
     }
   ]
 }
