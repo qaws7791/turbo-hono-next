@@ -1,8 +1,10 @@
 import { StoryRepository } from "@/db/repositories/story.repository";
 import { storiesStatusEnum } from "@/db/schema";
 import { StoryInsert } from "@/db/types";
+import { HTTPError } from "@/errors/http-error";
+import { validateEditorJSONContent } from "@repo/tiptap-config";
+import status from "http-status";
 import { inject, injectable } from "inversify";
-
 @injectable()
 export class StoryService {
   constructor(
@@ -10,10 +12,26 @@ export class StoryService {
   ) {}
 
   async createStory(data: StoryInsert) {
+    if (!this.validateStoryContent(data.content)) {
+      throw new HTTPError(
+        {
+          message: "Invalid story content",
+        },
+        status.BAD_REQUEST,
+      );
+    }
     return this.storyRepository.createStory(data);
   }
 
   async updateStory(id: number, data: Partial<StoryInsert>) {
+    if (!this.validateStoryContent(data.content)) {
+      throw new HTTPError(
+        {
+          message: "Invalid story content",
+        },
+        status.BAD_REQUEST,
+      );
+    }
     return this.storyRepository.updateStory(id, data);
   }
 
@@ -53,5 +71,13 @@ export class StoryService {
 
   async getStoryDetail(id: number) {
     return this.storyRepository.getStoryDetail(id);
+  }
+  private validateStoryContent(content: unknown) {
+    try {
+      const data = JSON.parse(content as string);
+      return validateEditorJSONContent(data);
+    } catch {
+      return false;
+    }
   }
 }
