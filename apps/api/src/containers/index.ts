@@ -1,19 +1,22 @@
-import { DI_SYMBOLS } from "@/containers/symbols";
-import { initializeDatabase } from "@/db";
-import { AccountRepository } from "@/db/repositories/account.repository";
-import { EmailVerificationTokenRepository } from "@/db/repositories/email-verification-token.repository";
-import { ObjectRepository } from "@/db/repositories/object.repository";
-import { ReactionRepository } from "@/db/repositories/reaction.repository";
-import { SessionRepository } from "@/db/repositories/session.repository";
-import { StoryRepository } from "@/db/repositories/story.repository";
-import { UserRepository } from "@/db/repositories/user.repository";
-import { type DbClient } from "@/db/types";
-import { AuthService } from "@/services/auth.service";
-import { ObjectService } from "@/services/object.service";
-import { R2Service } from "@/services/r2.service";
-import { ReactionService } from "@/services/reaction.service";
-import { StoryService } from "@/services/story.service";
-import { UserService } from "@/services/user.service";
+import { AuthService } from "@/application/platform/auth.service";
+import { ObjectService } from "@/application/platform/object.service";
+import { ReactionService } from "@/application/platform/reaction.service";
+import { StoryService } from "@/application/platform/story.service";
+import { UserService } from "@/application/platform/user.service";
+import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { PasswordService } from "@/infrastructure/auth/password.service";
+import { initializeDatabase } from "@/infrastructure/database";
+import { AccountRepository } from "@/infrastructure/database/repositories/account.repository";
+import { EmailVerificationTokenRepository } from "@/infrastructure/database/repositories/email-verification-token.repository";
+import { ObjectRepository } from "@/infrastructure/database/repositories/object.repository";
+import { ReactionRepository } from "@/infrastructure/database/repositories/reaction.repository";
+import { SessionRepository } from "@/infrastructure/database/repositories/session.repository";
+import { StoryRepository } from "@/infrastructure/database/repositories/story.repository";
+import { UserRepository } from "@/infrastructure/database/repositories/user.repository";
+import { type DbClient } from "@/infrastructure/database/types";
+import { ResendService } from "@/infrastructure/email/resend.service";
+import { KakaoOAuthService } from "@/infrastructure/oauth/kakao-oauth.service";
+import { R2Service } from "@/infrastructure/storage/r2.service";
 import { Container } from "inversify";
 
 export const container = new Container();
@@ -50,3 +53,8 @@ container.bind<R2Service>(DI_SYMBOLS.r2Service).to(R2Service);
 container.bind<StoryService>(DI_SYMBOLS.storyService).to(StoryService);
 container.bind<ReactionService>(DI_SYMBOLS.reactionService).to(ReactionService);
 container.bind<UserService>(DI_SYMBOLS.userService).to(UserService);
+container.bind<ResendService>(DI_SYMBOLS.resendService).to(ResendService);
+container.bind<PasswordService>(DI_SYMBOLS.passwordService).to(PasswordService);
+container
+  .bind<KakaoOAuthService>(DI_SYMBOLS.kakaoOAuthService)
+  .to(KakaoOAuthService);

@@ -1,7 +1,9 @@
-import { DatabaseError } from "@/errors/database-error";
-import { HTTPError } from "@/errors/http-error";
-import { createErrorResponse } from "@/helpers/api-response";
-import sessionMiddleware from "@/middlewares/session.middleware";
+import { createErrorResponse } from "@/api/helpers/api-response";
+import sessionMiddleware from "@/api/middlewares/session.middleware";
+import platformRoutes from "@/api/routes/platform";
+import { DatabaseError } from "@/common/errors/database-error";
+import { HTTPError } from "@/common/errors/http-error";
+import { Context } from "@/common/types/hono.types";
 import { serve } from "@hono/node-server";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
@@ -10,8 +12,6 @@ import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger } from "hono/logger";
 import status from "http-status";
-import platformRoutes from "./routes/platform";
-import { Context } from "./types/hono.types";
 const ORIGIN: string[] | string = "http://localhost:3000";
 
 const app = new OpenAPIHono<Context>();
