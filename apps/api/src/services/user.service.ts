@@ -1,14 +1,14 @@
+import { DI_SYMBOLS } from "@/containers/symbols";
 import { UserRepository } from "@/db/repositories/user.repository";
 import { users } from "@/db/schema";
 import { DatabaseError } from "@/errors/database-error";
-import { eq } from "drizzle-orm";
 import status from "http-status";
 import { inject, injectable } from "inversify";
 
 @injectable()
 export class UserService {
   constructor(
-    @inject("userRepository")
+    @inject(DI_SYMBOLS.userRepository)
     private readonly userRepository: UserRepository,
   ) {}
 

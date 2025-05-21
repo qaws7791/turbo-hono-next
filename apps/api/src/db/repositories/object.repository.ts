@@ -1,5 +1,6 @@
 import { and, eq } from "drizzle-orm";
 
+import { DI_SYMBOLS } from "@/containers/symbols";
 import {
   type DbClient,
   type ObjectInsert,
@@ -13,7 +14,7 @@ import { objects } from "../schema";
 @injectable()
 export class ObjectRepository {
   constructor(
-    @inject("db")
+    @inject(DI_SYMBOLS.db)
     private db: DbClient,
   ) {}
 

@@ -1,3 +1,4 @@
+import { DI_SYMBOLS } from "@/containers/symbols";
 import {
   type CreatorInsert,
   type CreatorSelect,
@@ -12,7 +13,7 @@ import { creatorCategories, creators } from "../schema";
 @injectable()
 export class CreatorRepository {
   constructor(
-    @inject("db")
+    @inject(DI_SYMBOLS.db)
     private db: DbClient,
   ) {}
 

@@ -1,3 +1,4 @@
+import { DI_SYMBOLS } from "@/containers/symbols";
 import { reactions } from "@/db/schema";
 import { type DbClient, ReactionInsert, ReactionSelect } from "@/db/types";
 import { DatabaseError } from "@/errors/database-error";
@@ -8,7 +9,7 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class ReactionRepository {
   constructor(
-    @inject("db")
+    @inject(DI_SYMBOLS.db)
     private db: DbClient,
   ) {}
 

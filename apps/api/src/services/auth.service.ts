@@ -1,4 +1,5 @@
 import { env } from "@/config/env";
+import { DI_SYMBOLS } from "@/containers/symbols";
 import { AccountRepository } from "@/db/repositories/account.repository";
 import { EmailVerificationTokenRepository } from "@/db/repositories/email-verification-token.repository";
 import { SessionRepository } from "@/db/repositories/session.repository";
@@ -19,13 +20,13 @@ const SESSION_RENEWAL_THRESHOLD_DAYS = 15; // 15일 이하 남았을 때 갱신
 @injectable()
 export class AuthService {
   constructor(
-    @inject("userRepository")
+    @inject(DI_SYMBOLS.userRepository)
     private readonly userRepository: UserRepository,
-    @inject("accountRepository")
+    @inject(DI_SYMBOLS.accountRepository)
     private readonly accountRepository: AccountRepository,
-    @inject("sessionRepository")
+    @inject(DI_SYMBOLS.sessionRepository)
     private readonly sessionRepository: SessionRepository,
-    @inject("emailVerificationTokenRepository")
+    @inject(DI_SYMBOLS.emailVerificationTokenRepository)
     private readonly emailVerificationTokenRepository: EmailVerificationTokenRepository,
   ) {}
 

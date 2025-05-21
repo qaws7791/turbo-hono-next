@@ -1,3 +1,4 @@
+import { DI_SYMBOLS } from "@/containers/symbols";
 import { ObjectRepository } from "@/db/repositories/object.repository";
 import { DatabaseError } from "@/errors/database-error";
 import status from "http-status";
@@ -20,9 +21,9 @@ export interface UploadCompleteDto {
 @injectable()
 export class ObjectService {
   constructor(
-    @inject("objectRepository")
+    @inject(DI_SYMBOLS.objectRepository)
     private objectRepository: ObjectRepository,
-    @inject("r2Service")
+    @inject(DI_SYMBOLS.r2Service)
     private r2Service: R2Service,
   ) {}
 

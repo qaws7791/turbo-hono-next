@@ -1,3 +1,4 @@
+import { DI_SYMBOLS } from "@/containers/symbols";
 import { sessions } from "@/db/schema";
 import { type DbClient, SessionSelect } from "@/db/types";
 import { DatabaseError } from "@/errors/database-error";
@@ -8,7 +9,7 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class SessionRepository {
   constructor(
-    @inject("db")
+    @inject(DI_SYMBOLS.db)
     private db: DbClient,
   ) {}
 
