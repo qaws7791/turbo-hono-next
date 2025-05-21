@@ -205,22 +205,24 @@ export const creators = pgTable(
   "creators",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    userId: integer("user_id").notNull().unique(), // 이 크리에이터 프로필에 연결된 users 테이블의 유저 ID
-
+    userId: integer("user_id").notNull().unique(),
     brandName: varchar("brand_name", { length: 255 }).notNull().unique(),
     introduction: text("introduction"),
-    backgroundImageUrl: varchar("background_image_url", { length: 255 }),
-    location: varchar("location", { length: 255 }), // 지역 정보
-    contactInfo: varchar("contact_info", { length: 255 }), // 연락처 등
-
+    // 사업자 정보 추가
+    businessNumber: varchar("business_number", { length: 20 }), // 사업자등록번호
+    businessName: varchar("business_name", { length: 255 }), // 상호
+    ownerName: varchar("owner_name", { length: 100 }), // 대표자명
+    // 활동 지역 정규화
+    regionId: integer("region_id"), // regions.id 참조 (외래키)
+    // 기존 location 필드는 삭제 또는 regionId로 대체
+    // location: varchar("location", { length: 255 }),
+    contactInfo: varchar("contact_info", { length: 255 }),
     applicationStatus: creatorStatusEnum("application_status")
       .notNull()
-      .default("pending"), // 가입 신청 상태
+      .default("pending"),
     approvedAt: timestamp("approved_at", { withTimezone: true }),
     rejectedAt: timestamp("rejected_at", { withTimezone: true }),
     rejectionReason: text("rejection_reason"),
-
-    // 크리에이터 프로필 정보 자체의 생성/수정 시간
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -229,16 +231,19 @@ export const creators = pgTable(
       .defaultNow(),
   },
   (table) => [
-    // <-- New API Syntax
     foreignKey({
       columns: [table.userId],
       foreignColumns: [users.id],
-    }).onDelete("cascade"), // <-- Table level FK defined in array
-    // userIdUnique: unique('creators_user_id_unique').on(table.userId), // <-- Moved unique to array
-    index("creators_user_id_idx").on(table.userId), // userId에 인덱스 추가
+    }).onDelete("cascade"),
+    // 활동 지역 외래키 추가
+    foreignKey({
+      columns: [table.regionId],
+      foreignColumns: [regions.id],
+    }).onDelete("set null"),
+    index("creators_user_id_idx").on(table.userId),
     index("creators_brand_name_idx").on(table.brandName),
     index("creators_application_status_idx").on(table.applicationStatus),
-    index("creators_location_idx").on(table.location),
+    index("creators_region_id_idx").on(table.regionId),
   ],
 );
 
