@@ -37,9 +37,6 @@ export class UserService {
     if (data.profileImageUrl !== undefined)
       updateData.profileImageUrl = data.profileImageUrl;
     if (Object.keys(updateData).length === 0) return;
-    await this.userRepository["db"]
-      .update(users)
-      .set({ ...updateData, updatedAt: new Date() })
-      .where(eq(users.id, userId));
+    await this.userRepository.updateUserProfile(userId, updateData);
   }
 }

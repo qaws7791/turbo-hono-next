@@ -51,4 +51,14 @@ export class UserRepository {
       })
       .where(eq(users.id, userId));
   }
+
+  async updateUserProfile(
+    userId: number,
+    profile: Partial<UserSelect>,
+  ): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ ...profile, updatedAt: new Date() })
+      .where(eq(users.id, userId));
+  }
 }
