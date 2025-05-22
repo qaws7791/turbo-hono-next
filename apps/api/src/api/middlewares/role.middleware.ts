@@ -1,6 +1,6 @@
-import { roleHierarchy } from "@/common/constants/users.constants";
 import { HTTPError } from "@/common/errors/http-error";
 import { Context } from "@/common/types/hono.types";
+import { roleHierarchy } from "@/domain/user/user.constants";
 import { type UserRole } from "@/infrastructure/database/types";
 import { createMiddleware } from "hono/factory";
 import status from "http-status";
