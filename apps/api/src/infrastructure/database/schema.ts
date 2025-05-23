@@ -297,6 +297,7 @@ export const stories = pgTable(
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     authorId: integer("author_id").notNull(), // 작성자 (creators.id 참조)
     title: varchar("title", { length: 255 }).notNull(),
+    coverImageUrl: varchar("cover_image_url", { length: 255 }),
     content: jsonb("content").notNull(),
     contentText: text("content_text").notNull(),
     status: storiesStatusEnum("status").notNull().default("published"), // 'draft', 'published', 'hidden', 'deleted'
