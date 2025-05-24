@@ -1,10 +1,9 @@
-import { initializeDatabase } from "@/db";
+import { initializeDatabase } from "@/infrastructure/database";
 import {
   accounts,
   adminSessions,
   adminUsers,
   categories,
-  creatorCategories,
   creators,
   creatorStatusEnum,
   curationItems,
@@ -13,8 +12,9 @@ import {
   follows,
   objects,
   reactions,
-  regions,
   sessions,
+  sido,
+  sigungu,
   stories,
   userRoleEnum,
   users,
@@ -44,14 +44,14 @@ export type AdminSessionSelect = typeof adminSessions.$inferSelect;
 export type CreatorInsert = typeof creators.$inferInsert;
 export type CreatorSelect = typeof creators.$inferSelect;
 
-export type RegionInsert = typeof regions.$inferInsert;
-export type RegionSelect = typeof regions.$inferSelect;
+export type SidoInsert = typeof sido.$inferInsert;
+export type SidoSelect = typeof sido.$inferSelect;
+
+export type SigunguInsert = typeof sigungu.$inferInsert;
+export type SigunguSelect = typeof sigungu.$inferSelect;
 
 export type CategoryInsert = typeof categories.$inferInsert;
 export type CategorySelect = typeof categories.$inferSelect;
-
-export type CreatorCategoryInsert = typeof creatorCategories.$inferInsert;
-export type CreatorCategorySelect = typeof creatorCategories.$inferSelect;
 
 export type StoryInsert = typeof stories.$inferInsert;
 export type StorySelect = typeof stories.$inferSelect;

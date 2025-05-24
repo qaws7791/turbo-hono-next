@@ -8,7 +8,6 @@ import {
   jsonb,
   pgEnum,
   pgTable,
-  primaryKey,
   text,
   timestamp,
   unique,
@@ -213,7 +212,10 @@ export const creators = pgTable(
     businessName: varchar("business_name", { length: 255 }), // 상호
     ownerName: varchar("owner_name", { length: 100 }), // 대표자명
     // 활동 지역 정규화
-    regionId: integer("region_id"), // regions.id 참조 (외래키)
+    sidoId: integer("sido_id"), // 시도 (ex: 서울특별시)
+    sigunguId: integer("sigungu_id"), // 시군구 (ex: 강남구)
+    // 크리에이터의 카테고리 (1:1 관계)
+    categoryId: integer("category_id"), // categories.id 참조
     // 기존 location 필드는 삭제 또는 regionId로 대체
     // location: varchar("location", { length: 255 }),
     contactInfo: varchar("contact_info", { length: 255 }),
@@ -237,28 +239,52 @@ export const creators = pgTable(
     }).onDelete("cascade"),
     // 활동 지역 외래키 추가
     foreignKey({
-      columns: [table.regionId],
-      foreignColumns: [regions.id],
+      columns: [table.sidoId],
+      foreignColumns: [sido.id],
+    }).onDelete("set null"),
+    foreignKey({
+      columns: [table.sigunguId],
+      foreignColumns: [sigungu.id],
+    }).onDelete("set null"),
+    // 카테고리 외래키 추가
+    foreignKey({
+      columns: [table.categoryId],
+      foreignColumns: [categories.id],
     }).onDelete("set null"),
     index("creators_user_id_idx").on(table.userId),
     index("creators_brand_name_idx").on(table.brandName),
     index("creators_application_status_idx").on(table.applicationStatus),
-    index("creators_region_id_idx").on(table.regionId),
+    index("creators_sido_id_idx").on(table.sidoId),
+    index("creators_sigungu_id_idx").on(table.sigunguId),
+    index("creators_category_id_idx").on(table.categoryId),
   ],
 );
 
-// 지역 테이블
-export const regions = pgTable(
-  "regions",
+// 시도 테이블
+export const sido = pgTable(
+  "sido",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
-    name: varchar("name", { length: 100 }).notNull().unique(),
-    slug: varchar("slug", { length: 100 }).notNull().unique(),
-    parentId: integer("parent_id"),
+    name: varchar("name", { length: 100 }).notNull().unique(), // 서울특별시, 경기도 등
+  },
+  (table) => [index("sido_name_idx").on(table.name)],
+);
+
+export const sigungu = pgTable(
+  "sigungu",
+  {
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+    sidoId: integer("sido_id").notNull(), // 부모 시도 참조
+    name: varchar("name", { length: 100 }).notNull(), // 강남구, 수원시 등
   },
   (table) => [
-    // <-- New API Syntax
-    foreignKey({ columns: [table.parentId], foreignColumns: [table.id] }), // <-- Table level FK defined in array
+    foreignKey({
+      columns: [table.sidoId],
+      foreignColumns: [sido.id],
+    }).onDelete("cascade"),
+    index("sigungu_sido_id_idx").on(table.sidoId),
+    index("sigungu_name_idx").on(table.name),
+    unique("sigungu_sido_id_name_unique").on(table.sidoId, table.name),
   ],
 );
 
@@ -268,27 +294,6 @@ export const categories = pgTable("categories", {
   name: varchar("name", { length: 100 }).notNull().unique(),
   slug: varchar("slug", { length: 100 }).notNull().unique(),
 });
-
-// 크리에이터-카테고리 연결 테이블 (다대다 관계)
-export const creatorCategories = pgTable(
-  "creator_categories",
-  {
-    creatorId: integer("creator_id").notNull(), // creators.id 참조
-    categoryId: integer("category_id").notNull(), // categories.id 참조
-  },
-  (table) => [
-    // <-- New API Syntax
-    primaryKey({ columns: [table.creatorId, table.categoryId] }), // <-- Table level PK defined in array
-    foreignKey({
-      columns: [table.creatorId],
-      foreignColumns: [creators.id],
-    }).onDelete("cascade"), // <-- Table level FK defined in array
-    foreignKey({
-      columns: [table.categoryId],
-      foreignColumns: [categories.id],
-    }).onDelete("cascade"), // <-- Table level FK defined in array
-  ],
-);
 
 // 스토리 테이블
 export const stories = pgTable(
@@ -301,8 +306,6 @@ export const stories = pgTable(
     content: jsonb("content").notNull(),
     contentText: text("content_text").notNull(),
     status: storiesStatusEnum("status").notNull().default("published"), // 'draft', 'published', 'hidden', 'deleted'
-
-    regionId: integer("region_id"), // 스토리 관련 지역 (regions.id 참조)
     categoryId: integer("category_id"), // 스토리 관련 카테고리 (categories.id 참조)
 
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -321,10 +324,6 @@ export const stories = pgTable(
       columns: [table.authorId],
       foreignColumns: [creators.id],
     }).onDelete("cascade"), // <-- Table level FK defined in array
-    foreignKey({
-      columns: [table.regionId],
-      foreignColumns: [regions.id],
-    }).onDelete("set null"), // <-- Table level FK defined in array
     foreignKey({
       columns: [table.categoryId],
       foreignColumns: [categories.id],
@@ -560,46 +559,50 @@ export const creatorsRelations = relations(creators, ({ one, many }) => ({
   }),
   // 크리에이터와 스토리은 1:N 관계
   stories: many(stories),
-  // 크리에이터와 카테고리는 N:M 관계 (creatorCategories 조인 테이블 통해)
-  creatorCategories: many(creatorCategories),
+  // 크리에이터와 카테고리는 1:1 관계
+  category: one(categories, {
+    fields: [creators.categoryId],
+    references: [categories.id],
+  }),
   // 크리에이터와 팔로우 관계 (팔로우 받는 크리에이터)는 1:N 관계
   followers: many(follows, { relationName: "following" }),
   // 크리에이터와 큐레이션 아이템은 1:N 관계 (큐레이션 아이템으로 포함된 경우)
   curationItems: many(curationItems),
+  sido: one(sido, {
+    fields: [creators.sidoId],
+    references: [sido.id],
+    relationName: "sidoCreators",
+  }),
+  sigungu: one(sigungu, {
+    fields: [creators.sigunguId],
+    references: [sigungu.id],
+    relationName: "sigunguCreators",
+  }),
 }));
 
-export const regionsRelations = relations(regions, ({ one, many }) => ({
-  // 지역과 상위 지역은 1:1 관계 (셀프 참조)
-  parent: one(regions, {
-    fields: [regions.parentId],
-    references: [regions.id],
+export const sidoRelations = relations(sido, ({ many }) => ({
+  // 시도는 여러 시군구를 가짐
+  sigungu: many(sigungu),
+  // 시도와 크리에이터는 1:N 관계
+  creators: many(creators, { relationName: "sidoCreators" }),
+}));
+
+export const sigunguRelations = relations(sigungu, ({ one, many }) => ({
+  // 시군구는 하나의 시도에 속함
+  sido: one(sido, {
+    fields: [sigungu.sidoId],
+    references: [sido.id],
   }),
-  // 지역과 하위 지역은 1:N 관계 (셀프 참조 역방향)
-  children: many(regions),
-  // 지역과 스토리은 1:N 관계
-  stories: many(stories),
+  // 시군구와 크리에이터는 1:N 관계
+  creators: many(creators, { relationName: "sigunguCreators" }),
 }));
 
 export const categoriesRelations = relations(categories, ({ many }) => ({
-  // 카테고리와 크리에이터는 N:M 관계 (creatorCategories 조인 테이블 통해)
-  creatorCategories: many(creatorCategories),
-  // 카테고리와 스토리은 1:N 관계
+  // 카테고리와 크리에이터는 1:N 관계 (하나의 카테고리는 여러 크리에이터가 가질 수 있음)
+  creators: many(creators),
+  // 카테고리와 스토리는 1:N 관계
   stories: many(stories),
 }));
-
-export const creatorCategoriesRelations = relations(
-  creatorCategories,
-  ({ one }) => ({
-    creator: one(creators, {
-      fields: [creatorCategories.creatorId],
-      references: [creators.id],
-    }),
-    category: one(categories, {
-      fields: [creatorCategories.categoryId],
-      references: [categories.id],
-    }),
-  }),
-);
 
 export const storiesRelations = relations(stories, ({ one, many }) => ({
   // 스토리과 작성자(크리에이터)는 N:1 관계
@@ -609,11 +612,6 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   }),
   // 스토리과 반응은 1:N 관계
   reactions: many(reactions),
-  // 스토리과 지역은 N:1 관계
-  region: one(regions, {
-    fields: [stories.regionId],
-    references: [regions.id],
-  }),
   // 스토리과 카테고리는 N:1 관계
   category: one(categories, {
     fields: [stories.categoryId],
