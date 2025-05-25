@@ -1,5 +1,10 @@
 import { isUser } from "@/api/middlewares/role.middleware";
-import { createRoute, z } from "@hono/zod-openapi";
+import { ErrorResponseDto } from "@/application/dtos/common.dto";
+import {
+  MyUserResponseDto,
+  UpdateUserProfileBodyDto,
+} from "@/application/dtos/platform/user.dto";
+import { createRoute } from "@hono/zod-openapi";
 import status from "http-status";
 
 const TAG = ["Users"];
@@ -18,17 +23,7 @@ export const getMyInfo = createRoute({
       description: "내 정보 조회 성공",
       content: {
         "application/json": {
-          schema: z.object({
-            id: z.number(),
-            name: z.string(),
-            email: z.string(),
-            emailVerified: z.string().datetime().nullable(),
-            profileImageUrl: z.string().nullable(),
-            role: z.enum(["user", "creator"]),
-            status: z.enum(["active", "inactive", "suspended"]),
-            createdAt: z.string().datetime(),
-            updatedAt: z.string().datetime(),
-          }),
+          schema: MyUserResponseDto,
         },
       },
     },
@@ -36,9 +31,7 @@ export const getMyInfo = createRoute({
       description: "로그인이 필요합니다.",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: ErrorResponseDto,
         },
       },
     },
@@ -58,10 +51,7 @@ export const updateMyInfo = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            name: z.string().optional(),
-            profileImageUrl: z.string().optional(),
-          }),
+          schema: UpdateUserProfileBodyDto,
         },
       },
     },
@@ -69,6 +59,19 @@ export const updateMyInfo = createRoute({
   responses: {
     [status.NO_CONTENT]: {
       description: "내 정보 수정 성공",
+    },
+  },
+});
+
+export const deleteMyAccount = createRoute({
+  summary: "내 계정 삭제",
+  method: "delete",
+  path: "/me",
+  tags: TAG,
+  middleware: [isUser],
+  responses: {
+    [status.NO_CONTENT]: {
+      description: "내 계정 삭제 성공",
     },
   },
 });

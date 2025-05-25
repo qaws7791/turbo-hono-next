@@ -1,18 +1,14 @@
+import { isCreator } from "@/api/middlewares/role.middleware";
 import { createRoute, z } from "@hono/zod-openapi";
 import status from "http-status";
 
 const TAG = ["stories"];
 
 // --- Story Schemas ---
-const storyBaseSchema = z.object({
+export const storyBaseSchema = z.object({
   title: z.string().max(255),
-  content: z.any(), // 실제로는 JSON 구조, 프론트와 협의 필요
-  regionId: z.number().optional(),
-  categoryId: z.number().optional(),
-});
-
-const storyCreateSchema = storyBaseSchema.extend({
-  authorId: z.number(), // 실제 서비스에서는 인증된 유저에서 추출
+  content: z.string(), // 실제로는 JSON 구조, 프론트와 협의 필요
+  coverImageUrl: z.string().url(),
 });
 
 const storyUpdateSchema = storyBaseSchema.partial();
@@ -32,10 +28,19 @@ export const createStory = createRoute({
   method: "post",
   path: "/",
   tags: TAG,
+  middleware: [isCreator],
   request: {
     body: {
       content: {
-        "application/json": { schema: storyCreateSchema },
+        "application/json": {
+          schema: storyBaseSchema,
+          example: {
+            title: "나의 첫 스토리",
+            content:
+              '{"type":"doc","content":[{"type":"paragraph","attrs":{"textAlign":null},"content":[{"type":"text","text":"내용입니다."}]}]}',
+            coverImageUrl: "https://example.com/cover.jpg",
+          },
+        },
       },
     },
   },

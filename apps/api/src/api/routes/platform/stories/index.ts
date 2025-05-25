@@ -1,8 +1,13 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
 import { ReactionService } from "@/application/platform/reaction.service";
 import { StoryService } from "@/application/platform/story.service";
+import { HTTPError } from "@/common/errors/http-error";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import {
+  extractTextFromJSONContent,
+  validateEditorJSONContent,
+} from "@repo/tiptap-config";
 import * as routes from "./stories.routes";
 
 const platformStories = createOpenAPI();
@@ -13,12 +18,39 @@ const reactionService = container.get<ReactionService>(
 );
 
 platformStories.openapi(routes.createStory, async (c) => {
+  const user = c.get("user");
+  if (!user) {
+    throw new HTTPError(
+      {
+        message: "사용자 정보가 없습니다.",
+      },
+      401,
+    );
+  }
   const json = await c.req.valid("json");
   // content가 필수이므로 undefined일 경우 빈 객체로 대체
+
+  const tiptapJSONContent = JSON.parse(json.content);
+  if (
+    !tiptapJSONContent ||
+    typeof tiptapJSONContent !== "object" ||
+    validateEditorJSONContent(tiptapJSONContent) !== true
+  ) {
+    throw new HTTPError(
+      {
+        message: "잘못된 콘텐츠 형식입니다.",
+      },
+      400,
+    );
+  }
+
+  const contentText = extractTextFromJSONContent(tiptapJSONContent);
   const result = await storyService.createStory({
-    ...json,
-    content: json.content ?? {},
-    contentText: "",
+    title: json.title,
+    content: json.content || {},
+    contentText,
+    coverImageUrl: json.coverImageUrl,
+    authorId: user.id,
   });
   return c.json({ id: result.id }, 201);
 });

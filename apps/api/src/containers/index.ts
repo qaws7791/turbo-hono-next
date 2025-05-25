@@ -1,16 +1,21 @@
 import { AuthService } from "@/application/platform/auth.service";
+import { CreatorService } from "@/application/platform/creator.service";
 import { ObjectService } from "@/application/platform/object.service";
 import { ReactionService } from "@/application/platform/reaction.service";
+import { RegionService } from "@/application/platform/region.service";
 import { StoryService } from "@/application/platform/story.service";
 import { UserService } from "@/application/platform/user.service";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { PasswordService } from "@/infrastructure/auth/password.service";
 import { initializeDatabase } from "@/infrastructure/database";
 import { AccountRepository } from "@/infrastructure/database/repositories/account.repository";
+import { CreatorRepository } from "@/infrastructure/database/repositories/creator.repository";
 import { EmailVerificationTokenRepository } from "@/infrastructure/database/repositories/email-verification-token.repository";
 import { ObjectRepository } from "@/infrastructure/database/repositories/object.repository";
 import { ReactionRepository } from "@/infrastructure/database/repositories/reaction.repository";
 import { SessionRepository } from "@/infrastructure/database/repositories/session.repository";
+import { SidoRepository } from "@/infrastructure/database/repositories/sido.repository";
+import { SigunguRepository } from "@/infrastructure/database/repositories/sigungu.repository";
 import { StoryRepository } from "@/infrastructure/database/repositories/story.repository";
 import { UserRepository } from "@/infrastructure/database/repositories/user.repository";
 import { type DbClient } from "@/infrastructure/database/types";
@@ -45,7 +50,13 @@ container.bind<StoryRepository>(DI_SYMBOLS.storyRepository).to(StoryRepository);
 container
   .bind<ReactionRepository>(DI_SYMBOLS.reactionRepository)
   .to(ReactionRepository);
-
+container
+  .bind<CreatorRepository>(DI_SYMBOLS.creatorRepository)
+  .to(CreatorRepository);
+container.bind<SidoRepository>(DI_SYMBOLS.sidoRepository).to(SidoRepository);
+container
+  .bind<SigunguRepository>(DI_SYMBOLS.sigunguRepository)
+  .to(SigunguRepository);
 // Services
 container.bind<AuthService>(DI_SYMBOLS.authService).to(AuthService);
 container.bind<ObjectService>(DI_SYMBOLS.objectService).to(ObjectService);
@@ -58,3 +69,8 @@ container.bind<PasswordService>(DI_SYMBOLS.passwordService).to(PasswordService);
 container
   .bind<KakaoOAuthService>(DI_SYMBOLS.kakaoOAuthService)
   .to(KakaoOAuthService);
+container
+  .bind<CreatorService>(DI_SYMBOLS.creatorService)
+  .to(CreatorService)
+  .inSingletonScope();
+container.bind<RegionService>(DI_SYMBOLS.regionService).to(RegionService);

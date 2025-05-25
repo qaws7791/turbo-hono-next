@@ -8,6 +8,9 @@ export const DI_SYMBOLS = {
   objectRepository: Symbol("objectRepository"),
   storyRepository: Symbol("storyRepository"),
   reactionRepository: Symbol("reactionRepository"),
+  creatorRepository: Symbol("creatorRepository"),
+  sidoRepository: Symbol("sidoRepository"),
+  sigunguRepository: Symbol("sigunguRepository"),
   // Services
   authService: Symbol("authService"),
   objectService: Symbol("objectService"),
@@ -18,4 +21,6 @@ export const DI_SYMBOLS = {
   resendService: Symbol("resendService"),
   passwordService: Symbol("passwordService"),
   kakaoOAuthService: Symbol("kakaoOAuthService"),
+  creatorService: Symbol("creatorService"),
+  regionService: Symbol("regionService"),
 };
