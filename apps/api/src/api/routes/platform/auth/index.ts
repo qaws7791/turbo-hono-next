@@ -22,8 +22,8 @@ platformAuth.openapi(routes.loginWithKakao, (c) => {
   return c.redirect(redirectUrl);
 });
 
-platformAuth.openapi(routes.socialLogin, async (c) => {
-  const { provider, token } = await c.req.valid("json");
+platformAuth.openapi(routes.kakaoSocialLogin, async (c) => {
+  const { token } = await c.req.valid("json");
 
   const sessionToken = await authService.loginWithKakao(token, "", "");
 

@@ -1,4 +1,12 @@
-import { createRoute, z } from "@hono/zod-openapi";
+import { ErrorResponseDto } from "@/application/dtos/common.dto";
+import {
+  EmailLoginBodyDto,
+  EmailRegisterBodyDto,
+  EmailVerifyBodyDto,
+  SessionResponseDto,
+  SocialLoginBodyDto,
+} from "@/application/dtos/platform/auth.dto";
+import { createRoute } from "@hono/zod-openapi";
 import status from "http-status";
 
 const TAG = ["auth"];
@@ -6,7 +14,7 @@ const TAG = ["auth"];
 export const loginWithKakao = createRoute({
   summary: "카카오 로그인",
   method: "get",
-  path: "/kakao/login",
+  path: "/kakao",
   tags: TAG,
   responses: {
     [status.FOUND]: {
@@ -24,19 +32,16 @@ export const loginWithKakao = createRoute({
   },
 });
 
-export const socialLogin = createRoute({
-  summary: "소셜 로그인",
+export const kakaoSocialLogin = createRoute({
+  summary: "카카오 소셜 로그인",
   method: "post",
-  path: "/social/login",
+  path: "/kakao/login",
   tags: TAG,
   request: {
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            provider: z.enum(["google", "kakao"]),
-            token: z.string(),
-          }),
+          schema: SocialLoginBodyDto,
         },
       },
     },
@@ -59,9 +64,7 @@ export const socialLogin = createRoute({
       description: "회원가입 실패",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: ErrorResponseDto,
         },
       },
     },
@@ -90,11 +93,7 @@ export const session = createRoute({
       description: "세션 조회 성공",
       content: {
         "application/json": {
-          schema: z.object({
-            userId: z.number(),
-            ipAddress: z.string(),
-            userAgent: z.string(),
-          }),
+          schema: SessionResponseDto,
         },
       },
     },
@@ -113,10 +112,7 @@ export const emailLogin = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            email: z.string(),
-            password: z.string(),
-          }),
+          schema: EmailLoginBodyDto,
         },
       },
     },
@@ -137,11 +133,7 @@ export const emailRegister = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            email: z.string(),
-            password: z.string(),
-            name: z.string(),
-          }),
+          schema: EmailRegisterBodyDto,
         },
       },
     },
@@ -162,9 +154,7 @@ export const emailVerify = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: z.object({
-            token: z.string(),
-          }),
+          schema: EmailVerifyBodyDto,
         },
       },
     },
