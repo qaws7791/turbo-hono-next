@@ -206,19 +206,19 @@ export const creators = pgTable(
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     userId: integer("user_id").notNull().unique(),
     brandName: varchar("brand_name", { length: 255 }).notNull().unique(),
-    introduction: text("introduction"),
+    introduction: text("introduction").notNull().default(""), // 크리에이터 소개 (기본값 빈 문자열)
     // 사업자 정보 추가
-    businessNumber: varchar("business_number", { length: 20 }), // 사업자등록번호
-    businessName: varchar("business_name", { length: 255 }), // 상호
-    ownerName: varchar("owner_name", { length: 100 }), // 대표자명
+    businessNumber: varchar("business_number", { length: 20 }).notNull(), // 사업자등록번호
+    businessName: varchar("business_name", { length: 255 }).notNull(), // 상호
+    ownerName: varchar("owner_name", { length: 100 }).notNull(), // 대표자명
     // 활동 지역 정규화
-    sidoId: integer("sido_id"), // 시도 (ex: 서울특별시)
-    sigunguId: integer("sigungu_id"), // 시군구 (ex: 강남구)
+    sidoId: integer("sido_id").notNull(), // 시도 (ex: 서울특별시)
+    sigunguId: integer("sigungu_id").notNull(), // 시군구 (ex: 강남구)
     // 크리에이터의 카테고리 (1:1 관계)
-    categoryId: integer("category_id"), // categories.id 참조
+    categoryId: integer("category_id").notNull(), // categories.id 참조
     // 기존 location 필드는 삭제 또는 regionId로 대체
     // location: varchar("location", { length: 255 }),
-    contactInfo: varchar("contact_info", { length: 255 }),
+    contactInfo: varchar("contact_info", { length: 255 }).notNull(),
     applicationStatus: creatorStatusEnum("application_status")
       .notNull()
       .default("pending"),
@@ -306,7 +306,6 @@ export const stories = pgTable(
     content: jsonb("content").notNull(),
     contentText: text("content_text").notNull(),
     status: storiesStatusEnum("status").notNull().default("published"), // 'draft', 'published', 'hidden', 'deleted'
-    categoryId: integer("category_id"), // 스토리 관련 카테고리 (categories.id 참조)
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -324,10 +323,6 @@ export const stories = pgTable(
       columns: [table.authorId],
       foreignColumns: [creators.id],
     }).onDelete("cascade"), // <-- Table level FK defined in array
-    foreignKey({
-      columns: [table.categoryId],
-      foreignColumns: [categories.id],
-    }).onDelete("set null"), // <-- Table level FK defined in array
     index("stories_status_idx").on(table.status),
     index("stories_created_at_idx").on(table.createdAt),
     index("stories_published_at_idx").on(table.publishedAt),
@@ -612,11 +607,6 @@ export const storiesRelations = relations(stories, ({ one, many }) => ({
   }),
   // 스토리과 반응은 1:N 관계
   reactions: many(reactions),
-  // 스토리과 카테고리는 N:1 관계
-  category: one(categories, {
-    fields: [stories.categoryId],
-    references: [categories.id],
-  }),
   // 스토리과 큐레이션 아이템은 1:N 관계 (큐레이션 아이템으로 포함된 경우)
   curationItems: many(curationItems),
 }));
