@@ -12,6 +12,7 @@ import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger } from "hono/logger";
 import status from "http-status";
+import { ZodError } from "zod";
 const ORIGIN: string[] | string = "http://localhost:3000";
 
 const app = new OpenAPIHono<Context>();
@@ -67,6 +68,14 @@ app.onError((err, c) => {
     return c.json(
       createErrorResponse(statusCode, err.getMessage()),
       statusCode,
+    );
+  }
+
+  if (err instanceof ZodError) {
+    const message = err.errors.map((e) => e.message);
+    return c.json(
+      createErrorResponse(status.BAD_REQUEST, "Validation Error", message),
+      status.BAD_REQUEST,
     );
   }
 
