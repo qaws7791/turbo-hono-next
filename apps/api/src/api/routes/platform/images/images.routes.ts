@@ -1,3 +1,4 @@
+import { isUser } from "@/api/middlewares/role.middleware";
 import { createRoute, z } from "@hono/zod-openapi";
 import status from "http-status";
 
@@ -19,6 +20,7 @@ export const createUploadRequest = createRoute({
   method: "post",
   path: "/upload/request",
   tags: TAG,
+  middleware: [isUser] as const,
   request: {
     body: {
       content: {
@@ -47,6 +49,7 @@ export const completeUpload = createRoute({
   method: "post",
   path: "/upload/complete",
   tags: TAG,
+  middleware: [isUser] as const,
   request: {
     body: {
       content: {

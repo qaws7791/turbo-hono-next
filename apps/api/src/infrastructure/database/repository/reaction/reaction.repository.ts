@@ -1,0 +1,271 @@
+import { and, asc, count, desc, eq } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { inject, injectable } from 'inversify';
+import { Reaction } from '../../../../domain/entity/reaction.entity';
+import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
+import { ReactionType } from '../../../domain/reaction.types';
+import { reactions } from '../../schema';
+import { Filter, SortOptions } from '../repository.types';
+import { IReactionRepository } from './reaction.repository.interface';
+
+/**
+ * 리액션 리포지토리 구현
+ * Drizzle ORM을 사용하여 리액션 데이터에 접근합니다.
+ */
+@injectable()
+export class ReactionRepository implements IReactionRepository {
+  constructor(
+    @inject('Database')
+    private db: PostgresJsDatabase
+  ) {}
+
+  /**
+   * ID로 리액션 조회
+   */
+  async findById(id: number): Promise<Reaction | null> {
+    const result = await this.db.select().from(reactions).where(eq(reactions.id, id)).limit(1);
+    
+    if (result.length === 0) {
+      return null;
+    }
+    
+    return this.mapToEntity(result[0]);
+  }
+
+  /**
+   * 사용자 ID로 리액션 목록 조회
+   */
+  async findByUserId(userId: number): Promise<Reaction[]> {
+    const result = await this.db.select().from(reactions).where(eq(reactions.userId, userId));
+    return result.map(this.mapToEntity);
+  }
+
+  /**
+   * 스토리 ID로 리액션 목록 조회
+   */
+  async findByStoryId(storyId: number): Promise<Reaction[]> {
+    const result = await this.db.select().from(reactions).where(eq(reactions.storyId, storyId));
+    return result.map(this.mapToEntity);
+  }
+
+  /**
+   * 사용자 ID와 스토리 ID로 리액션 조회
+   */
+  async findByUserIdAndStoryId(userId: number, storyId: number): Promise<Reaction | null> {
+    const result = await this.db.select().from(reactions)
+      .where(and(
+        eq(reactions.userId, userId),
+        eq(reactions.storyId, storyId)
+      ))
+      .limit(1);
+    
+    if (result.length === 0) {
+      return null;
+    }
+    
+    return this.mapToEntity(result[0]);
+  }
+
+  /**
+   * 스토리 ID와 리액션 타입으로 리액션 수 조회
+   */
+  async countByStoryIdAndType(storyId: number, type: ReactionType): Promise<number> {
+    const result = await this.db.select({ count: count() }).from(reactions)
+      .where(and(
+        eq(reactions.storyId, storyId),
+        eq(reactions.type, type)
+      ));
+    
+    return result[0].count;
+  }
+
+  /**
+   * 스토리 ID로 리액션 수 조회
+   */
+  async countByStoryId(storyId: number): Promise<number> {
+    const result = await this.db.select({ count: count() }).from(reactions)
+      .where(eq(reactions.storyId, storyId));
+    
+    return result[0].count;
+  }
+
+  /**
+   * 모든 리액션 조회
+   */
+  async findAll(filter?: Filter<Reaction>, sort?: SortOptions<Reaction>[]): Promise<Reaction[]> {
+    let query = this.db.select().from(reactions);
+    
+    // 필터 적용
+    if (filter) {
+      if (filter.id !== undefined) {
+        query = query.where(eq(reactions.id, filter.id));
+      }
+      if (filter.userId !== undefined) {
+        query = query.where(eq(reactions.userId, filter.userId));
+      }
+      if (filter.storyId !== undefined) {
+        query = query.where(eq(reactions.storyId, filter.storyId));
+      }
+      if (filter.type !== undefined) {
+        query = query.where(eq(reactions.type, filter.type));
+      }
+    }
+    
+    // 정렬 적용
+    if (sort && sort.length > 0) {
+      for (const sortOption of sort) {
+        switch (sortOption.field) {
+          case 'id':
+            query = sortOption.order === 'desc' 
+              ? query.orderBy(desc(reactions.id)) 
+              : query.orderBy(asc(reactions.id));
+            break;
+          case 'createdAt':
+            query = sortOption.order === 'desc' 
+              ? query.orderBy(desc(reactions.createdAt)) 
+              : query.orderBy(asc(reactions.createdAt));
+            break;
+        }
+      }
+    } else {
+      // 기본 정렬: 생성일 내림차순 (최신순)
+      query = query.orderBy(desc(reactions.createdAt));
+    }
+    
+    const result = await query;
+    return result.map(this.mapToEntity);
+  }
+
+  /**
+   * 페이지네이션을 적용하여 리액션 조회
+   */
+  async findWithPagination(
+    options: PaginationOptions,
+    filter?: Filter<Reaction>,
+    sort?: SortOptions<Reaction>[]
+  ): Promise<PaginationResult<Reaction>> {
+    const { limit, cursor } = options;
+    let query = this.db.select().from(reactions);
+    
+    // 필터 적용
+    if (filter) {
+      if (filter.id !== undefined) {
+        query = query.where(eq(reactions.id, filter.id));
+      }
+      if (filter.userId !== undefined) {
+        query = query.where(eq(reactions.userId, filter.userId));
+      }
+      if (filter.storyId !== undefined) {
+        query = query.where(eq(reactions.storyId, filter.storyId));
+      }
+      if (filter.type !== undefined) {
+        query = query.where(eq(reactions.type, filter.type));
+      }
+    }
+    
+    // 커서 기반 페이지네이션
+    if (cursor) {
+      query = query.where(reactions.id > Number(cursor));
+    }
+    
+    // 정렬 적용
+    if (sort && sort.length > 0) {
+      for (const sortOption of sort) {
+        switch (sortOption.field) {
+          case 'id':
+            query = sortOption.order === 'desc' 
+              ? query.orderBy(desc(reactions.id)) 
+              : query.orderBy(asc(reactions.id));
+            break;
+          case 'createdAt':
+            query = sortOption.order === 'desc' 
+              ? query.orderBy(desc(reactions.createdAt)) 
+              : query.orderBy(asc(reactions.createdAt));
+            break;
+        }
+      }
+    } else {
+      // 기본 정렬: 생성일 내림차순 (최신순)
+      query = query.orderBy(desc(reactions.createdAt));
+    }
+    
+    // 제한 적용
+    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
+    
+    const result = await query;
+    
+    // 결과 변환
+    const items = result.slice(0, limit).map(this.mapToEntity);
+    const hasMore = result.length > limit;
+    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    
+    return {
+      items,
+      hasMore,
+      nextCursor,
+    };
+  }
+
+  /**
+   * 리액션 생성
+   */
+  async create(entity: Reaction): Promise<Reaction> {
+    const result = await this.db.insert(reactions).values({
+      userId: entity.userId,
+      storyId: entity.storyId,
+      type: entity.type,
+      createdAt: entity.createdAt,
+    }).returning();
+    
+    return this.mapToEntity(result[0]);
+  }
+
+  /**
+   * 리액션 업데이트
+   */
+  async update(entity: Reaction): Promise<Reaction> {
+    const result = await this.db.update(reactions)
+      .set({
+        type: entity.type,
+      })
+      .where(eq(reactions.id, entity.id))
+      .returning();
+    
+    return this.mapToEntity(result[0]);
+  }
+
+  /**
+   * ID로 리액션 삭제
+   */
+  async deleteById(id: number): Promise<boolean> {
+    const result = await this.db.delete(reactions).where(eq(reactions.id, id)).returning();
+    return result.length > 0;
+  }
+
+  /**
+   * 사용자 ID와 스토리 ID로 리액션 삭제
+   */
+  async deleteByUserIdAndStoryId(userId: number, storyId: number): Promise<boolean> {
+    const result = await this.db.delete(reactions)
+      .where(and(
+        eq(reactions.userId, userId),
+        eq(reactions.storyId, storyId)
+      ))
+      .returning();
+    
+    return result.length > 0;
+  }
+
+  /**
+   * DB 모델을 도메인 엔티티로 변환
+   */
+  private mapToEntity(model: typeof reactions.$inferSelect): Reaction {
+    return new Reaction(
+      model.id,
+      model.userId,
+      model.storyId,
+      model.type as ReactionType,
+      model.createdAt
+    );
+  }
+}

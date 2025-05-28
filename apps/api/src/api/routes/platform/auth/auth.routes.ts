@@ -1,4 +1,4 @@
-import { ErrorResponseDto } from "@/application/dtos/common.dto";
+import { isUser } from "@/api/middlewares/role.middleware";
 import {
   EmailLoginBodyDto,
   EmailRegisterBodyDto,
@@ -6,6 +6,7 @@ import {
   SessionResponseDto,
   SocialLoginBodyDto,
 } from "@/application/dtos/platform/auth.dto";
+import { createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
 import { createRoute } from "@hono/zod-openapi";
 import status from "http-status";
 
@@ -64,7 +65,7 @@ export const kakaoSocialLogin = createRoute({
       description: "회원가입 실패",
       content: {
         "application/json": {
-          schema: ErrorResponseDto,
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -88,17 +89,23 @@ export const session = createRoute({
   method: "get",
   path: "/session",
   tags: TAG,
+  middleware: [isUser] as const,
   responses: {
     [status.OK]: {
       description: "세션 조회 성공",
       content: {
         "application/json": {
-          schema: SessionResponseDto,
+          schema: createResponseDto(SessionResponseDto),
         },
       },
     },
     [status.UNAUTHORIZED]: {
       description: "세션 조회 실패",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
     },
   },
 });
@@ -121,6 +128,14 @@ export const emailLogin = createRoute({
     [status.CREATED]: {
       description: "이메일 로그인 성공",
     },
+    [status.BAD_REQUEST]: {
+      description: "이메일 로그인 실패",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
+    },
   },
 });
 
@@ -142,6 +157,22 @@ export const emailRegister = createRoute({
     [status.CREATED]: {
       description: "이메일 회원가입 성공",
     },
+    [status.BAD_REQUEST]: {
+      description: "이메일 회원가입 실패",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
+    },
+    [status.CONFLICT]: {
+      description: "이메일 회원가입 실패",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
+    },
   },
 });
 
@@ -162,6 +193,14 @@ export const emailVerify = createRoute({
   responses: {
     [status.NO_CONTENT]: {
       description: "이메일 인증 성공",
+    },
+    [status.BAD_REQUEST]: {
+      description: "이메일 인증 실패",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
     },
   },
 });

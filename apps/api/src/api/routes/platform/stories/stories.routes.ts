@@ -1,26 +1,17 @@
-import { isCreator } from "@/api/middlewares/role.middleware";
+import { isCreator, isUser } from "@/api/middlewares/role.middleware";
+import { EntityIdParamDto, ErrorResponseDto, PaginationQueryDto } from "@/application/dtos/common.dto";
+import { ReactionCreateOrUpdateBodySchema } from "@/application/dtos/platform/reaction.dto";
+import {
+  StoryCreateSchema,
+  StoryDetailResponseSchema,
+  StorySummaryResponseSchema,
+  StoryUpdateSchema
+} from "@/application/dtos/platform/story.dto";
+import { createCursorPaginationResponseDto, createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
 import { createRoute, z } from "@hono/zod-openapi";
 import status from "http-status";
 
 const TAG = ["stories"];
-
-// --- Story Schemas ---
-export const storyBaseSchema = z.object({
-  title: z.string().max(255),
-  content: z.string(), // 실제로는 JSON 구조, 프론트와 협의 필요
-  coverImageUrl: z.string().url(),
-});
-
-const storyUpdateSchema = storyBaseSchema.partial();
-
-const storyIdParam = z.object({ id: z.number() });
-
-// --- Reaction Schemas ---
-const reactionBaseSchema = z.object({
-  storyId: z.number(),
-  userId: z.number(), // 실제 서비스에서는 인증된 유저에서 추출
-  reactionType: z.enum(["like", "heart", "clap", "fire", "idea"]),
-});
 
 // --- Story Routes ---
 export const createStory = createRoute({
@@ -28,12 +19,12 @@ export const createStory = createRoute({
   method: "post",
   path: "/",
   tags: TAG,
-  middleware: [isCreator],
+  middleware: [isCreator] as const,
   request: {
     body: {
       content: {
         "application/json": {
-          schema: storyBaseSchema,
+          schema: StoryCreateSchema,
           example: {
             title: "나의 첫 스토리",
             content:
@@ -51,6 +42,12 @@ export const createStory = createRoute({
         "application/json": { schema: z.object({ id: z.number() }) },
       },
     },
+    [status.BAD_REQUEST]: {
+      description: "스토리 생성 실패",
+      content: {
+        "application/json": { schema: ErrorResponseDto },
+      },
+    },
   },
 });
 
@@ -59,11 +56,12 @@ export const updateStory = createRoute({
   method: "put",
   path: "/{id}",
   tags: TAG,
+  middleware: [isCreator] as const,
   request: {
-    params: storyIdParam,
+    params: EntityIdParamDto,
     body: {
       content: {
-        "application/json": { schema: storyUpdateSchema },
+        "application/json": { schema: StoryUpdateSchema },
       },
     },
   },
@@ -77,9 +75,10 @@ export const deleteStory = createRoute({
   method: "delete",
   path: "/{id}",
   tags: TAG,
-  request: { params: storyIdParam },
+  middleware: [isCreator] as const,
+  request: { params: EntityIdParamDto },
   responses: {
-    [status.OK]: { description: "스토리 삭제 성공" },
+    [status.NO_CONTENT]: { description: "스토리 삭제 성공" },
   },
 });
 
@@ -88,21 +87,24 @@ export const getStory = createRoute({
   method: "get",
   path: "/{id}",
   tags: TAG,
-  request: { params: storyIdParam },
+  request: { params: EntityIdParamDto },
   responses: {
     [status.OK]: {
       description: "스토리 조회 성공",
       content: {
         "application/json": {
-          schema: storyBaseSchema.extend({
-            id: z.number(),
-            authorId: z.number(),
-            contentText: z.string(),
-          }),
+          schema: createResponseDto(StoryDetailResponseSchema),
         },
       },
     },
-    [status.NOT_FOUND]: { description: "스토리 없음" },
+    [status.NOT_FOUND]: {
+      description: "스토리 없음",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
+        },
+      },
+    },
   },
 });
 
@@ -112,58 +114,14 @@ export const listStories = createRoute({
   path: "/",
   tags: TAG,
   request: {
-    query: z.object({
-      status: z.string().optional(),
-      authorId: z.number().optional(),
-      limit: z.number().optional(),
-      offset: z.number().optional(),
-    }),
+    query: PaginationQueryDto,
   },
   responses: {
     [status.OK]: {
       description: "스토리 목록 조회 성공",
       content: {
         "application/json": {
-          schema: z.array(
-            storyBaseSchema.extend({
-              id: z.number(),
-              authorId: z.number(),
-              contentText: z.string(),
-            }),
-          ),
-        },
-      },
-    },
-  },
-});
-
-export const searchStories = createRoute({
-  summary: "스토리 검색",
-  method: "get",
-  path: "/search",
-  tags: TAG,
-  request: {
-    query: z.object({
-      keyword: z.string().optional(),
-      regionId: z.number().optional(),
-      categoryId: z.number().optional(),
-      status: z.string().optional(),
-      limit: z.number().optional(),
-      offset: z.number().optional(),
-    }),
-  },
-  responses: {
-    [status.OK]: {
-      description: "스토리 검색 성공",
-      content: {
-        "application/json": {
-          schema: z.array(
-            storyBaseSchema.extend({
-              id: z.number(),
-              authorId: z.number(),
-              contentText: z.string(),
-            }),
-          ),
+          schema:createCursorPaginationResponseDto(z.array(StorySummaryResponseSchema))
         },
       },
     },
@@ -171,55 +129,24 @@ export const searchStories = createRoute({
 });
 
 // --- Reaction Routes ---
-export const addReaction = createRoute({
-  summary: "스토리 반응 추가",
-  method: "post",
+export const updateReaction = createRoute({
+  summary: "스토리 반응 추가 또는 수정",
+  method: "put",
   path: "/{id}/reaction",
   tags: TAG,
+  middleware: [isUser] as const,
   request: {
-    params: storyIdParam,
+    params: EntityIdParamDto,
     body: {
       content: {
         "application/json": {
-          schema: reactionBaseSchema.pick({ reactionType: true, userId: true }),
+          schema: ReactionCreateOrUpdateBodySchema,
         },
       },
     },
   },
   responses: {
-    [status.CREATED]: { description: "반응 추가 성공" },
-    [status.BAD_REQUEST]: { description: "반응 추가 실패" },
-  },
-});
-
-export const removeReaction = createRoute({
-  summary: "스토리 반응 삭제",
-  method: "delete",
-  path: "/{id}/reaction",
-  tags: TAG,
-  request: {
-    params: storyIdParam,
-    query: z.object({ userId: z.number() }),
-  },
-  responses: {
-    [status.OK]: { description: "반응 삭제 성공" },
-  },
-});
-
-export const getReactions = createRoute({
-  summary: "스토리 반응 목록 조회",
-  method: "get",
-  path: "/{id}/reactions",
-  tags: TAG,
-  request: { params: storyIdParam },
-  responses: {
-    [status.OK]: {
-      description: "반응 목록 조회 성공",
-      content: {
-        "application/json": {
-          schema: z.array(reactionBaseSchema.extend({ id: z.number() })),
-        },
-      },
-    },
+    [status.CREATED]: { description: "반응 추가 또는 수정 성공" },
+    [status.BAD_REQUEST]: { description: "반응 추가 또는 수정 실패", content: { "application/json": { schema: createErrorResponseDto() } } },
   },
 });

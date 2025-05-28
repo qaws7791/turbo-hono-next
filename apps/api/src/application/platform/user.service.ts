@@ -1,4 +1,5 @@
 import { DatabaseError } from "@/common/errors/database-error";
+import { HTTPError } from "@/common/errors/http-error";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { UserRepository } from "@/infrastructure/database/repositories/user.repository";
 import { users } from "@/infrastructure/database/schema";
@@ -18,7 +19,16 @@ export class UserService {
   async getMyInfo(
     userId: number,
   ): Promise<typeof users.$inferSelect | undefined> {
-    return this.userRepository.findUserById(userId);
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new HTTPError(
+        {
+          message: "존재하지 않는 사용자입니다.",
+        },
+        status.NOT_FOUND,
+      );
+    }
+    return user;
   }
 
   /**

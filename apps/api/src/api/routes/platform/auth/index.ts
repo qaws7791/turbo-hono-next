@@ -1,6 +1,7 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
 import { AuthService } from "@/application/platform/auth.service";
 import { env } from "@/common/config/env";
+import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { ResendService } from "@/infrastructure/email/resend.service";
@@ -50,21 +51,26 @@ platformAuth.openapi(routes.logout, async (c) => {
 platformAuth.openapi(routes.session, async (c) => {
   const sessionToken = getCookie(c, env.SESSION_COOKIE_NAME || "session");
   if (!sessionToken) {
-    console.log("No session token");
-    return c.newResponse(null, status.UNAUTHORIZED);
+    console.error("No session token");
+    const response = APIResponse.error({
+      "code": "code",
+      "message": "message"
+    }, status.UNAUTHORIZED)
+    return c.json(response, status.UNAUTHORIZED)
   }
 
   const session = await authService.getSession(sessionToken);
   if (!session) {
-    console.log("No session");
-    return c.newResponse(null, status.UNAUTHORIZED);
+    console.error("No session");
+    const response = APIResponse.error({
+      "code": "code",
+      "message": "message"
+    }, status.UNAUTHORIZED)
+    return c.json(response, status.UNAUTHORIZED)
   }
 
-  return c.json({
-    userId: session.userId,
-    ipAddress: session.ipAddress,
-    userAgent: session.userAgent,
-  });
+  const response = APIResponse.success(session)
+  return c.json(response, status.OK)
 });
 
 platformAuth.openapi(routes.emailLogin, async (c) => {

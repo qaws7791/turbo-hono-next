@@ -20,6 +20,12 @@ import {
 // 사용자 역할 (플랫폼 유저 역할만 여기 정의. admin은 별도 테이블)
 export const userRoleEnum = pgEnum("user_role", ["user", "creator"]);
 
+export const userStatusEnum = pgEnum("user_status", [
+  "active", // 활성화 상태
+  "inactive", // 비활성화 상태 (일시적)
+  "suspended", // 정지 상태 (보안, 정책 위반 등)
+]);
+
 // 크리에이터 계정 상태
 export const creatorStatusEnum = pgEnum("creator_status", [
   "pending", // 가입 신청 후 관리자 승인 대기
@@ -64,7 +70,7 @@ export const users = pgTable(
     emailVerified: timestamp("email_verified", { withTimezone: true }), // 기본값 제거
     profileImageUrl: varchar("profile_image_url", { length: 255 }), // 소셜 로그인에서 제공되는 프로필 이미지
     role: userRoleEnum("role").notNull().default("user"), // 'user' 또는 'creator'
-    status: varchar("status", { length: 50 }).notNull().default("active"), // 'active', 'inactive', 'suspended' 등
+    status: userStatusEnum("status").notNull().default("active"), // 'active', 'inactive', 'suspended' 등
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

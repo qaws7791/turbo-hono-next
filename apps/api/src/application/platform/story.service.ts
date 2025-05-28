@@ -1,4 +1,6 @@
 import { HTTPError } from "@/common/errors/http-error";
+import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { CreatorRepository } from "@/infrastructure/database/repositories/creator.repository";
 import { StoryRepository } from "@/infrastructure/database/repositories/story.repository";
 import { storiesStatusEnum } from "@/infrastructure/database/schema";
 import { StoryInsert } from "@/infrastructure/database/types";
@@ -8,7 +10,10 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class StoryService {
   constructor(
-    @inject(StoryRepository) private storyRepository: StoryRepository,
+    @inject(DI_SYMBOLS.storyRepository)
+    private storyRepository: StoryRepository,
+    @inject(DI_SYMBOLS.creatorRepository)
+    private creatorRepository: CreatorRepository, // Assuming creatorRepository is similar to storyRepository
   ) {}
 
   async createStory(data: StoryInsert) {
@@ -20,7 +25,21 @@ export class StoryService {
         status.BAD_REQUEST,
       );
     }
-    return this.storyRepository.createStory(data);
+
+    const creator = await this.creatorRepository.findByUserId(data.authorId);
+    if (!creator) {
+      throw new HTTPError(
+        {
+          message: "Creator not found",
+        },
+        status.NOT_FOUND,
+      );
+    }
+    return this.storyRepository.createStory({
+      ...data,
+      contentText: data.contentText || "", // Ensure contentText is provided
+      authorId: creator.id, // Use creator's ID instead of user ID
+    });
   }
 
   async updateStory(id: number, data: Partial<StoryInsert>) {

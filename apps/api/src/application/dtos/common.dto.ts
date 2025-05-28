@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
 export const PaginationQueryDto = z.object({
-  page: z.coerce.number().int().min(1).optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(50).optional().default(10),
 });
 
@@ -26,17 +26,4 @@ export const SuccessResponseDto = z.object({
   status: z.number(),
   success: z.boolean(),
   data: z.any(),
-  pagination: z
-    .object({
-      currentPage: z.number().optional(),
-      itemCount: z.number(),
-      itemsPerPage: z.number(),
-      totalItems: z.number().optional(),
-      totalPages: z.number().optional(),
-      hasNextPage: z.boolean().optional(),
-      hasPrevPage: z.boolean().optional(),
-      nextCursor: z.string().nullable().optional(),
-      prevCursor: z.string().nullable().optional(),
-    })
-    .optional(),
 });

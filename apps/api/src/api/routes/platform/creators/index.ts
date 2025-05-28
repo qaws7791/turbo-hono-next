@@ -1,8 +1,10 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
 import { CreatorService } from "@/application/platform/creator.service";
 import { HTTPError } from "@/common/errors/http-error";
+import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import status from "http-status";
 import * as routes from "./creators.routes";
 
 const creatorService = container.get<CreatorService>(DI_SYMBOLS.creatorService);
@@ -60,5 +62,42 @@ platformCreators.openapi(routes.getMyCreatorProfile, async (c) => {
 
   return c.json(profile, 200);
 });
+
+platformCreators.openapi(routes.updateMyCreatorProfile, async (c) => {
+  const user = c.get("user");
+
+  const body = c.req.valid("json");
+
+  await creatorService.updateMyCreatorProfile(user.id, body);
+
+  return c.newResponse(null, status.NO_CONTENT);
+})
+
+
+platformCreators.openapi(routes.getCreator, async (c) => {
+  const { id } = c.req.valid("param");
+
+  const profile = await creatorService.getCreatorProfile(id);
+
+  return c.json(APIResponse.success(profile), status.OK);
+})
+
+platformCreators.openapi(routes.followCreator, async (c) => {
+  const user = c.get("user");
+
+  const { id:creatorId } = c.req.valid("param");
+
+  await creatorService.followCreator(user.id, creatorId);
+  return c.json({ message: "크리에이터를 팔로우했습니다." }, 200);
+})
+
+platformCreators.openapi(routes.unfollowCreator, async (c) => {
+  const user = c.get("user");
+
+  const { id:creatorId } = c.req.valid("param");
+
+  await creatorService.unfollowCreator(user.id, creatorId);
+  return c.json({ message: "크리에이터를 언팔로우했습니다." }, 200);
+})
 
 export default platformCreators;

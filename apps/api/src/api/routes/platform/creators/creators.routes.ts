@@ -1,9 +1,13 @@
-import { isUser } from "@/api/middlewares/role.middleware";
+import { isCreator, isUser } from "@/api/middlewares/role.middleware";
+import { CursorPaginationQueryDto, EntityIdParamDto } from "@/application/dtos/common.dto";
 import {
   applyCreatorSchema,
+  creatorProfileSchema,
+  publicCreatorProfileSchema,
   updateMyCreatorProfileSchema,
-} from "@/api/routes/platform/creators/creators.schemas";
-import { storyBaseSchema } from "@/api/routes/platform/stories/stories.routes";
+} from "@/application/dtos/platform/creator.schemas";
+import { StorySummaryResponseSchema } from "@/application/dtos/platform/story.dto";
+import { createCursorPaginationResponseDto, createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
 import { createRoute, z } from "@hono/zod-openapi";
 import status from "http-status";
 
@@ -25,23 +29,14 @@ export const applyCreator = createRoute({
     },
   },
   responses: {
-    [status.CREATED]: {
+    [status.NO_CONTENT]: {
       description: "크리에이터 신청 성공",
-      content: {
-        "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
     },
     [status.BAD_REQUEST]: {
       description: "크리에이터 신청 실패",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -49,9 +44,7 @@ export const applyCreator = createRoute({
       description: "인증되지 않은 사용자",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -63,29 +56,13 @@ export const getMyCreatorProfile = createRoute({
   method: "get",
   path: "/me",
   tags: TAG,
+  middleware: [isUser] as const,
   responses: {
     [status.OK]: {
       description: "내 크리에이터 프로필 조회 성공",
       content: {
         "application/json": {
-          schema: z.object({
-            id: z.number(),
-            brandName: z.string(),
-            introduction: z.string(),
-            businessNumber: z.string(),
-            businessName: z.string(),
-            ownerName: z.string(),
-            sidoId: z.number(),
-            sigunguId: z.number(),
-            categoryId: z.number(),
-            contactInfo: z.string(),
-            applicationStatus: z.string(),
-            approvedAt: z.string().datetime().nullable(),
-            rejectedAt: z.string().datetime().nullable(),
-            rejectionReason: z.string().nullable(),
-            createdAt: z.string().datetime(),
-            updatedAt: z.string().datetime(),
-          }),
+          schema: createResponseDto(creatorProfileSchema)
         },
       },
     },
@@ -93,9 +70,7 @@ export const getMyCreatorProfile = createRoute({
       description: "인증되지 않은 사용자",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -103,9 +78,7 @@ export const getMyCreatorProfile = createRoute({
       description: "크리에이터 프로필이 없습니다.",
       content: {
         "application/json": {
-          schema: z.object({
-            message: z.string(),
-          }),
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -117,6 +90,7 @@ export const updateMyCreatorProfile = createRoute({
   method: "patch",
   path: "/me",
   tags: TAG,
+  middleware: [isCreator] as const,
   request: {
     body: {
       content: {
@@ -136,28 +110,25 @@ export const updateMyCreatorProfile = createRoute({
 export const getCreator = createRoute({
   summary: "크리에이터 조회",
   method: "get",
-  path: "/:id",
+  path: "/{id}",
   tags: TAG,
   request: {
-    params: z.object({
-      id: z.number(),
-    }),
+    params: EntityIdParamDto,
   },
   responses: {
     [status.OK]: {
       description: "크리에이터 조회 성공",
       content: {
         "application/json": {
-          schema: z.object({
-            id: z.number(),
-            brandName: z.string(),
-            introduction: z.string(),
-            businessNumber: z.string(),
-            businessName: z.string(),
-            ownerName: z.string(),
-            regionId: z.number(),
-            contactInfo: z.string(),
-          }),
+          schema: createResponseDto(publicCreatorProfileSchema),
+        },
+      },
+    },
+    [status.NOT_FOUND]: {
+      description: "크리에이터 프로필이 없습니다.",
+      content: {
+        "application/json": {
+          schema: createErrorResponseDto(),
         },
       },
     },
@@ -167,26 +138,18 @@ export const getCreator = createRoute({
 export const getCreatorStories = createRoute({
   summary: "크리에이터 스토리 조회",
   method: "get",
-  path: "/:id/stories",
+  path: "/{id}/stories",
   tags: TAG,
   request: {
-    params: z.object({
-      id: z.number(),
-    }),
-    query: z.object({
-      limit: z.number().optional(),
-      cursor: z.string().optional(),
-    }),
+    params:EntityIdParamDto,
+    query: CursorPaginationQueryDto,
   },
   responses: {
     [status.OK]: {
       description: "크리에이터 스토리 조회 성공",
       content: {
         "application/json": {
-          schema: z.object({
-            stories: z.array(storyBaseSchema),
-            nextCursor: z.string().nullable(),
-          }),
+          schema: createCursorPaginationResponseDto(z.array(StorySummaryResponseSchema)),
         },
       },
     },
@@ -196,12 +159,11 @@ export const getCreatorStories = createRoute({
 export const followCreator = createRoute({
   summary: "크리에이터 팔로우",
   method: "post",
-  path: "/:id/follow",
+  path: "/{id}/follow",
   tags: TAG,
+  middleware: [isUser] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number(),
-    }),
+    params: EntityIdParamDto,
   },
   responses: {
     [status.NO_CONTENT]: {
@@ -213,12 +175,11 @@ export const followCreator = createRoute({
 export const unfollowCreator = createRoute({
   summary: "크리에이터 언팔로우",
   method: "delete",
-  path: "/:id/follow",
+  path: "/{id}/follow",
   tags: TAG,
+  middleware: [isUser] as const,
   request: {
-    params: z.object({
-      id: z.coerce.number(),
-    }),
+    params: EntityIdParamDto,
   },
   responses: {
     [status.NO_CONTENT]: {

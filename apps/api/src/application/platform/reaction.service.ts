@@ -1,3 +1,4 @@
+import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { ReactionRepository } from "@/infrastructure/database/repositories/reaction.repository";
 import { ReactionInsert } from "@/infrastructure/database/types";
 import { inject, injectable } from "inversify";
@@ -5,7 +6,8 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class ReactionService {
   constructor(
-    @inject(ReactionRepository) private reactionRepository: ReactionRepository,
+    @inject(DI_SYMBOLS.reactionRepository)
+    private reactionRepository: ReactionRepository,
   ) {}
 
   async addReaction(data: ReactionInsert) {

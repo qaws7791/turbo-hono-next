@@ -6,7 +6,7 @@ import { RegionService } from "@/application/platform/region.service";
 import { StoryService } from "@/application/platform/story.service";
 import { UserService } from "@/application/platform/user.service";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
-import { PasswordService } from "@/infrastructure/auth/password.service";
+import { Argon2PasswordService, PasswordService } from "@/infrastructure/auth/argon2password.service";
 import { initializeDatabase } from "@/infrastructure/database";
 import { AccountRepository } from "@/infrastructure/database/repositories/account.repository";
 import { CreatorRepository } from "@/infrastructure/database/repositories/creator.repository";
@@ -65,7 +65,7 @@ container.bind<StoryService>(DI_SYMBOLS.storyService).to(StoryService);
 container.bind<ReactionService>(DI_SYMBOLS.reactionService).to(ReactionService);
 container.bind<UserService>(DI_SYMBOLS.userService).to(UserService);
 container.bind<ResendService>(DI_SYMBOLS.resendService).to(ResendService);
-container.bind<PasswordService>(DI_SYMBOLS.passwordService).to(PasswordService);
+container.bind<PasswordService>(DI_SYMBOLS.passwordService).to(Argon2PasswordService);
 container
   .bind<KakaoOAuthService>(DI_SYMBOLS.kakaoOAuthService)
   .to(KakaoOAuthService);

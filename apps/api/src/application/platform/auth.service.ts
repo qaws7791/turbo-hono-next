@@ -2,7 +2,7 @@ import { env } from "@/common/config/env";
 import { HTTPError } from "@/common/errors/http-error";
 import { generateToken } from "@/common/utils/token";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
-import { PasswordService } from "@/infrastructure/auth/password.service";
+import { PasswordService } from "@/infrastructure/auth/argon2password.service";
 import { AccountRepository } from "@/infrastructure/database/repositories/account.repository";
 import { EmailVerificationTokenRepository } from "@/infrastructure/database/repositories/email-verification-token.repository";
 import { SessionRepository } from "@/infrastructure/database/repositories/session.repository";
@@ -123,7 +123,7 @@ export class AuthService {
         {
           message: "이메일 또는 비밀번호가 올바르지 않습니다.",
         },
-        status.UNAUTHORIZED,
+        status.BAD_REQUEST,
       );
     }
 
@@ -133,7 +133,7 @@ export class AuthService {
         {
           message: "잘못된 계정 정보입니다.",
         },
-        status.UNAUTHORIZED,
+        status.BAD_REQUEST,
       );
     }
 
@@ -146,7 +146,7 @@ export class AuthService {
         {
           message: "이메일 또는 비밀번호가 올바르지 않습니다.",
         },
-        status.UNAUTHORIZED,
+        status.BAD_REQUEST,
       );
     }
 
@@ -155,7 +155,7 @@ export class AuthService {
         {
           message: "이메일 인증이 필요합니다.",
         },
-        status.UNAUTHORIZED,
+        status.BAD_REQUEST,
       );
     }
 

@@ -1,5 +1,7 @@
-import { createResponseDto } from "@/common/utils/dto";
-import { createRoute, z } from "@hono/zod-openapi";
+import { EntityIdParamDto } from "@/application/dtos/common.dto";
+import { SidoListResponseDto, SigunguListResponseDto } from "@/application/dtos/platform/sido.dto";
+import { createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
+import { createRoute } from "@hono/zod-openapi";
 import status from "http-status";
 
 const TAG = ["sido"];
@@ -14,14 +16,7 @@ export const getSidoList = createRoute({
       description: "시도 목록 조회 성공",
       content: {
         "application/json": {
-          schema: createResponseDto(
-            z
-              .object({
-                id: z.number(),
-                name: z.string(),
-              })
-              .array(),
-          ),
+          schema: createResponseDto(SidoListResponseDto),
         },
       },
     },
@@ -31,27 +26,25 @@ export const getSidoList = createRoute({
 export const getSigunguList = createRoute({
   summary: "시군구 목록 조회",
   method: "get",
-  path: "/{sidoId}/sigungu",
+  path: "/{id}/sigungu",
   tags: TAG,
   request: {
-    params: z.object({
-      sidoId: z.coerce.number().positive("시도 ID는 양수여야 합니다."),
-    }),
+    params: EntityIdParamDto,
   },
   responses: {
     [status.OK]: {
       description: "시군구 목록 조회 성공",
       content: {
         "application/json": {
-          schema: createResponseDto(
-            z
-              .object({
-                id: z.number(),
-                name: z.string(),
-                sidoId: z.number(),
-              })
-              .array(),
-          ),
+          schema: createResponseDto(SigunguListResponseDto),
+        },
+      },
+    },
+    [status.BAD_REQUEST]: {
+      description: "시도 ID가 유효하지 않습니다.",
+      content: {
+        "application/json": {
+          schema:createErrorResponseDto(),
         },
       },
     },

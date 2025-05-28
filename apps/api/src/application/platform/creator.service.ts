@@ -61,4 +61,12 @@ export class CreatorService {
     }
     return profile;
   }
+
+  async followCreator(userId: number, creatorId: number) {
+    
+  }
+
+  async unfollowCreator(userId: number, creatorId: number) {
+    
+  }
 }

@@ -1,6 +1,7 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
 import { RegionService } from "@/application/platform/region.service";
 import { HTTPError } from "@/common/errors/http-error";
+import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import * as routes from "./sido.routes";
@@ -11,23 +12,11 @@ const platformSido = createOpenAPI();
 
 platformSido.openapi(routes.getSidoList, async (c) => {
   const sidoList = await regionService.getAllSido();
-  return c.json({
-    status: 200,
-    success: true,
-    data: sidoList,
-    pagination: {
-      itemCount: sidoList.length,
-      itemsPerPage: sidoList.length,
-      totalItems: sidoList.length,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false,
-    },
-  });
+  return c.json(APIResponse.success(sidoList));
 });
 
 platformSido.openapi(routes.getSigunguList, async (c) => {
-  const sidoId = c.req.param("sidoId");
+  const sidoId = c.req.param("id");
   if (!sidoId || isNaN(Number(sidoId)) || Number(sidoId) <= 0) {
     throw new HTTPError(
       {
@@ -37,19 +26,7 @@ platformSido.openapi(routes.getSigunguList, async (c) => {
     );
   }
   const sigunguList = await regionService.getSigunguBySidoId(Number(sidoId));
-  return c.json({
-    status: 200,
-    success: true,
-    data: sigunguList,
-    pagination: {
-      itemCount: sigunguList.length,
-      itemsPerPage: sigunguList.length,
-      totalItems: sigunguList.length,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPrevPage: false,
-    },
-  });
+  return c.json(APIResponse.success(sigunguList));
 });
 
 export default platformSido;
