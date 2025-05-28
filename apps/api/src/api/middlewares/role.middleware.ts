@@ -1,12 +1,12 @@
 import { HTTPError } from "@/common/errors/http-error";
-import { Context } from "@/common/types/hono.types";
+import { AuthContext } from "@/common/types/hono.types";
 import { roleHierarchy } from "@/domain/user/user.constants";
 import { type UserRole } from "@/infrastructure/database/types";
 import { createMiddleware } from "hono/factory";
 import status from "http-status";
 
 export const roleMiddleware = (requiredRole: UserRole) => {
-  return createMiddleware<Context>(async (c, next) => {
+  return createMiddleware<AuthContext>(async (c, next) => {
     const user = c.get("user");
     if (!user) {
       throw new HTTPError(
