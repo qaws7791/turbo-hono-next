@@ -400,6 +400,13 @@ export const curationSpots = pgTable("curation_spots", {
   name: varchar("name", { length: 255 }).notNull(),
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   description: text("description"),
+  coverImageUrl: varchar("cover_image_url", { length: 255 }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 // 큐레이션 아이템 테이블
@@ -469,8 +476,8 @@ export const emailVerificationTokens = pgTable(
 );
 
 // 객체 테이블
-export const objects = pgTable(
-  "objects",
+export const files = pgTable(
+  "files",
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     userId: integer("user_id").notNull(), // users.id 참조
@@ -494,9 +501,9 @@ export const objects = pgTable(
       columns: [table.userId],
       foreignColumns: [users.id],
     }).onDelete("cascade"),
-    index("objects_user_id_idx").on(table.userId),
-    index("objects_bucket_key_idx").on(table.bucket, table.key),
-    index("objects_is_uploaded_idx").on(table.isUploaded),
+    index("files_user_id_idx").on(table.userId),
+    index("files_bucket_key_idx").on(table.bucket, table.key),
+    index("files_is_uploaded_idx").on(table.isUploaded),
   ],
 );
 
@@ -519,7 +526,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [creators.userId],
   }),
   emailVerificationTokens: many(emailVerificationTokens), // 추가
-  objects: many(objects),
+  files: many(files),
 }));
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -678,9 +685,9 @@ export const emailVerificationTokensRelations = relations(
   }),
 );
 
-export const objectsRelations = relations(objects, ({ one }) => ({
+export const filesRelations = relations(files, ({ one }) => ({
   user: one(users, {
-    fields: [objects.userId],
+    fields: [files.userId],
     references: [users.id],
   }),
 }));

@@ -7,7 +7,6 @@ export class Category {
     private readonly _id: number,
     private _name: string,
     private _slug: string,
-    private _description: string | null,
   ) {}
 
   // Getters
@@ -21,10 +20,6 @@ export class Category {
 
   get slug(): string {
     return this._slug;
-  }
-
-  get description(): string | null {
-    return this._description;
   }
 
   // Setters with validation
@@ -49,15 +44,10 @@ export class Category {
     this._slug = slug;
   }
 
-  updateDescription(description: string | null): void {
-    this._description = description;
-  }
-
   // 팩토리 메서드
   static create(
     name: string,
     slug: string,
-    description: string | null = null,
   ): Category {
     if (!name || name.trim().length === 0) {
       throw new Error('카테고리 이름은 비어있을 수 없습니다.');
@@ -77,7 +67,6 @@ export class Category {
       0, // ID는 저장 시 할당
       name,
       slug,
-      description,
     );
   }
 }

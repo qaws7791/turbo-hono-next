@@ -10,6 +10,9 @@ export class CurationSpot {
     private _name: string,
     private _slug: string,
     private _description: string | null,
+    private _coverImageUrl: string | null,
+    private _createdAt: Date,
+    private _updatedAt: Date,
   ) {}
 
   // Getters
@@ -27,6 +30,18 @@ export class CurationSpot {
 
   get description(): string | null {
     return this._description;
+  }
+
+  get coverImageUrl(): string | null {
+    return this._coverImageUrl;
+  }
+
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+
+  get updatedAt(): Date {
+    return this._updatedAt;
   }
 
   // Setters with validation
@@ -55,11 +70,18 @@ export class CurationSpot {
     this._description = description;
   }
 
+  updateCoverImageUrl(coverImageUrl: string | null): void {
+    this._coverImageUrl = coverImageUrl;
+  }
+
   // 팩토리 메서드
   static create(
     name: string,
     slug: string,
     description: string | null = null,
+    coverImageUrl: string | null = null,
+    createdAt: Date,
+    updatedAt: Date,
   ): CurationSpot {
     if (!name || name.trim().length === 0) {
       throw new Error('큐레이션 스팟 이름은 비어있을 수 없습니다.');
@@ -80,6 +102,9 @@ export class CurationSpot {
       name,
       slug,
       description,
+      coverImageUrl,
+      createdAt,
+      updatedAt,
     );
   }
 }
@@ -99,11 +124,11 @@ export class CurationItem {
     private readonly _createdAt: Date,
   ) {
     // 아이템 타입에 따라 필수 ID 검증
-    if (itemType === CurationItemType.CREATOR && creatorId === null) {
+    if (this._itemType === CurationItemType.CREATOR && this._creatorId === null) {
       throw new Error('크리에이터 타입 큐레이션 아이템은 creatorId가 필요합니다.');
     }
     
-    if (itemType === CurationItemType.STORY && storyId === null) {
+    if (this._itemType === CurationItemType.STORY && this._storyId === null) {
       throw new Error('스토리 타입 큐레이션 아이템은 storyId가 필요합니다.');
     }
   }
