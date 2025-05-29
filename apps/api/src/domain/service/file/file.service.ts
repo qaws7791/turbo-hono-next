@@ -1,9 +1,9 @@
+import { env } from '@/common/config/env';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { inject, injectable } from 'inversify';
-import { IFileRepository } from '../../../infrastructure/database/repository/file/file.repository.interface';
-import { IStorageService } from '../../../infrastructure/storage/storage.service.interface';
+import type { IFileRepository } from '../../../infrastructure/database/repository/file/file.repository.interface';
+import type { IR2Service } from '../../../infrastructure/storage/r2.service.interface';
 import { FileObject } from '../../entity/file.entity';
-import { SERVICE_TYPES } from '../service.types';
 import { IFileService } from './file.service.interface';
 
 /**
@@ -11,12 +11,15 @@ import { IFileService } from './file.service.interface';
  */
 @injectable()
 export class FileService implements IFileService {
+
+  private readonly BUCKET_NAME = env.R2_BUCKET_NAME;
+
   constructor(
     @inject(DI_SYMBOLS.FileRepository)
     private fileRepository: IFileRepository,
     
-    @inject(SERVICE_TYPES.StorageService)
-    private storageService: IStorageService
+    @inject(DI_SYMBOLS.R2Service)
+    private storageService: IR2Service
   ) {}
 
   /**
@@ -49,14 +52,13 @@ export class FileService implements IFileService {
     const createdFile = await this.fileRepository.create(fileObject);
     
     // 업로드 URL 생성
-    const uploadUrl = await this.storageService.getPresignedUploadUrl(
-      bucket,
+    const uploadUrl = await this.storageService.createPresignedUrl(
+      this.BUCKET_NAME,
       key,
       contentType,
-      size
     );
     
-    return { fileObject: createdFile, uploadUrl };
+    return { fileObject: createdFile, uploadUrl: uploadUrl.presignedUrl };
   }
 
   /**
@@ -73,7 +75,7 @@ export class FileService implements IFileService {
     
     // 파일 존재 확인
     const exists = await this.storageService.checkFileExists(
-      fileObject.bucket,
+      this.BUCKET_NAME,
       fileObject.key
     );
     
@@ -124,7 +126,7 @@ export class FileService implements IFileService {
     const fileObject = await this.getUserFileById(fileId, userId);
     
     // 스토리지에서 파일 삭제
-    await this.storageService.deleteFile(fileObject.bucket, fileObject.key);
+    await this.storageService.deleteFile(this.BUCKET_NAME, fileObject.key);
     
     // DB에서 파일 정보 삭제
     await this.fileRepository.deleteById(fileId);

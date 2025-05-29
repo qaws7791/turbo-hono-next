@@ -1,7 +1,9 @@
+import { HTTPError } from '@/common/errors/http-error';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { Argon2PasswordService } from '@/infrastructure/auth/argon2password.service';
 import { ResendService } from '@/infrastructure/email/resend.service';
 import { KakaoOAuthService } from '@/infrastructure/oauth/kakao-oauth.service';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import crypto from 'node:crypto';
 import type { IAccountRepository } from '../../../infrastructure/database/repository/account/account.repository.interface';
@@ -123,7 +125,12 @@ export class AuthService implements IAuthService {
     // 이메일 중복 확인
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error('이미 사용 중인 이메일입니다.');
+      throw new HTTPError(
+        {
+          message: '이미 사용 중인 이메일입니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 사용자 생성
@@ -150,7 +157,12 @@ export class AuthService implements IAuthService {
     // 이메일로 사용자 찾기
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new HTTPError(
+        {
+          message: '이메일 또는 비밀번호가 올바르지 않습니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 계정 찾기
@@ -159,18 +171,33 @@ export class AuthService implements IAuthService {
       email
     );
     if (!account || !account.password) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new HTTPError(
+        {
+          message: '이메일 또는 비밀번호가 올바르지 않습니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 비밀번호 검증
     const isPasswordValid = await this.passwordService.verifyPassword(password, account.password);
     if (!isPasswordValid) {
-      throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+      throw new HTTPError(
+        {
+          message: '이메일 또는 비밀번호가 올바르지 않습니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 계정 상태 확인
     if (user.status !== UserStatus.ACTIVE) {
-      throw new Error('비활성화된 계정입니다.');
+      throw new HTTPError(
+        {
+          message: '비활성화된 계정입니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 세션 생성
@@ -188,11 +215,21 @@ export class AuthService implements IAuthService {
     // 사용자 확인
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('사용자를 찾을 수 없습니다.');
+      throw new HTTPError(
+        {
+          message: '사용자를 찾을 수 없습니다.',
+        },
+        status.NOT_FOUND,
+      );
     }
 
     if (!user.email) {
-      throw new Error('사용자에게 이메일이 설정되어 있지 않습니다.');
+      throw new HTTPError(
+        {
+          message: '사용자에게 이메일이 설정되어 있지 않습니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 기존 토큰 삭제
@@ -213,18 +250,33 @@ export class AuthService implements IAuthService {
     // 토큰 찾기
     const verificationToken = await this.emailVerificationTokenRepository.findByToken(token);
     if (!verificationToken) {
-      throw new Error('유효하지 않은 토큰입니다.');
+      throw new HTTPError(
+        {
+          message: '유효하지 않은 토큰입니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 토큰 만료 확인
     if (verificationToken.isExpired()) {
-      throw new Error('만료된 토큰입니다.');
+      throw new HTTPError(
+        {
+          message: '만료된 토큰입니다.',
+        },
+        status.BAD_REQUEST,
+      );
     }
 
     // 사용자 찾기
     const user = await this.userRepository.findById(verificationToken.userId);
     if (!user) {
-      throw new Error('사용자를 찾을 수 없습니다.');
+      throw new HTTPError(
+        {
+          message: '사용자를 찾을 수 없습니다.',
+        },
+        status.NOT_FOUND,
+      );
     }
 
     // 이메일 인증 처리

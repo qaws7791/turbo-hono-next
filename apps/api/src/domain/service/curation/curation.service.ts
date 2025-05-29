@@ -1,4 +1,6 @@
+import { HTTPError } from '@/common/errors/http-error';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import type { ICreatorRepository } from '../../../infrastructure/database/repository/creator/creator.repository.interface';
 import type { ICurationItemRepository } from '../../../infrastructure/database/repository/curation/curation-item.repository.interface';
@@ -40,7 +42,9 @@ export class CurationService implements ICurationService {
   async getCurationSpotById(spotId: number): Promise<CurationSpot> {
     const spot = await this.curationSpotRepository.findById(spotId);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     return spot;
   }
@@ -51,7 +55,9 @@ export class CurationService implements ICurationService {
   async getCurationSpotBySlug(slug: string): Promise<CurationSpot> {
     const spot = await this.curationSpotRepository.findBySlug(slug);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.', 
+      }, status.NOT_FOUND);
     }
     return spot;
   }
@@ -63,7 +69,9 @@ export class CurationService implements ICurationService {
     // 스팟 존재 확인
     const spot = await this.curationSpotRepository.findById(spotId);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     
     return this.curationItemRepository.findBySpotId(spotId);
@@ -72,20 +80,26 @@ export class CurationService implements ICurationService {
   /**
    * 큐레이션 스팟 생성 (관리자용)
    */
-  async createCurationSpot(name: string, slug: string, description?: string): Promise<CurationSpot> {
+  async createCurationSpot(name: string, slug: string, description?: string, coverImageUrl?: string): Promise<CurationSpot> {
     // 이름 중복 확인
     const existingByName = await this.curationSpotRepository.findByName(name);
     if (existingByName) {
-      throw new Error('이미 존재하는 큐레이션 스팟 이름입니다.');
+      throw new HTTPError({
+        message: '이미 존재하는 큐레이션 스팟 이름입니다.',
+      }, status.BAD_REQUEST);
     }
 
     // 슬러그 중복 확인
     const existingBySlug = await this.curationSpotRepository.findBySlug(slug);
     if (existingBySlug) {
-      throw new Error('이미 존재하는 큐레이션 스팟 슬러그입니다.');
+      throw new HTTPError({
+        message: '이미 존재하는 큐레이션 스팟 슬러그입니다.',
+      }, status.BAD_REQUEST);
     }
+    
+    const currentTime = new Date();
 
-    const spot = CurationSpot.create(name, slug, description || null);
+    const spot = CurationSpot.create(name, slug, description || null, coverImageUrl || null, currentTime, currentTime);
     return this.curationSpotRepository.create(spot);
   }
 
@@ -98,11 +112,14 @@ export class CurationService implements ICurationService {
       name?: string;
       slug?: string;
       description?: string | null;
+      coverImageUrl?: string | null;
     }
   ): Promise<CurationSpot> {
     const spot = await this.curationSpotRepository.findById(spotId);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
 
     // 이름 업데이트
@@ -110,7 +127,9 @@ export class CurationService implements ICurationService {
       // 이름 중복 확인
       const existingByName = await this.curationSpotRepository.findByName(data.name);
       if (existingByName && existingByName.id !== spotId) {
-        throw new Error('이미 존재하는 큐레이션 스팟 이름입니다.');
+        throw new HTTPError({
+          message: '이미 존재하는 큐레이션 스팟 이름입니다.',
+        }, status.BAD_REQUEST);
       }
       spot.updateName(data.name);
     }
@@ -120,7 +139,9 @@ export class CurationService implements ICurationService {
       // 슬러그 중복 확인
       const existingBySlug = await this.curationSpotRepository.findBySlug(data.slug);
       if (existingBySlug && existingBySlug.id !== spotId) {
-        throw new Error('이미 존재하는 큐레이션 스팟 슬러그입니다.');
+        throw new HTTPError({
+          message: '이미 존재하는 큐레이션 스팟 슬러그입니다.',
+        }, status.BAD_REQUEST);
       }
       spot.updateSlug(data.slug);
     }
@@ -128,6 +149,11 @@ export class CurationService implements ICurationService {
     // 설명 업데이트
     if (data.description !== undefined) {
       spot.updateDescription(data.description);
+    }
+
+    // 커버 이미지 업데이트
+    if (data.coverImageUrl !== undefined) {
+      spot.updateCoverImageUrl(data.coverImageUrl);
     }
 
     // 저장
@@ -141,7 +167,9 @@ export class CurationService implements ICurationService {
   async deleteCurationSpot(spotId: number): Promise<void> {
     const spot = await this.curationSpotRepository.findById(spotId);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
 
     // 스팟에 포함된 아이템 모두 삭제
@@ -158,72 +186,103 @@ export class CurationService implements ICurationService {
     spotId: number,
     itemType: CurationItemType,
     itemId: number,
-    position: number = 0
   ): Promise<CurationItem> {
     // 스팟 존재 확인
     const spot = await this.curationSpotRepository.findById(spotId);
     if (!spot) {
-      throw new Error('큐레이션 스팟을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 스팟을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
 
     // 아이템 타입에 따라 존재 확인
     if (itemType === CurationItemType.CREATOR) {
       const creator = await this.creatorRepository.findById(itemId);
       if (!creator) {
-        throw new Error('크리에이터를 찾을 수 없습니다.');
+        throw new HTTPError({
+          message: '크리에이터를 찾을 수 없습니다.',
+        }, status.NOT_FOUND);
       }
       
       // 활성화된 크리에이터만 추가 가능
       if (!creator.isActive()) {
-        throw new Error('활성화된 크리에이터만 큐레이션에 추가할 수 있습니다.');
+        throw new HTTPError({
+          message: '활성화된 크리에이터만 추가 가능합니다.',
+        }, status.BAD_REQUEST);
       }
       
       // 중복 확인
       const existingItem = await this.curationItemRepository.findBySpotIdAndCreatorId(spotId, itemId);
       if (existingItem) {
-        throw new Error('이미 해당 스팟에 추가된 크리에이터입니다.');
+        throw new HTTPError({
+          message: '이미 추가된 크리에이터입니다.',
+        }, status.BAD_REQUEST);
       }
       
       // 아이템 생성
-      const item = CurationItem.createForCreator(spotId, itemId, position);
+      const existingItems = await this.curationItemRepository.findBySpotId(spotId);
+      const maxPosition = existingItems.reduce((max, item) => Math.max(max, item.position), existingItems.length);
+      const newPosition = maxPosition + 1;
+      const item = CurationItem.createForCreator(spotId, itemId, newPosition);
       return this.curationItemRepository.create(item);
     } else if (itemType === CurationItemType.STORY) {
       const story = await this.storyRepository.findById(itemId);
       if (!story) {
-        throw new Error('스토리를 찾을 수 없습니다.');
+        throw new HTTPError({
+          message: '스토리를 찾을 수 없습니다.',
+        }, status.NOT_FOUND);
       }
       
       // 공개된 스토리만 추가 가능
       if (!story.isVisible()) {
-        throw new Error('공개된 스토리만 큐레이션에 추가할 수 있습니다.');
+        throw new HTTPError({
+          message: '공개된 스토리만 추가 가능합니다.',
+        }, status.BAD_REQUEST);
       }
       
       // 중복 확인
       const existingItem = await this.curationItemRepository.findBySpotIdAndStoryId(spotId, itemId);
       if (existingItem) {
-        throw new Error('이미 해당 스팟에 추가된 스토리입니다.');
+        throw new HTTPError({
+          message: '이미 추가된 스토리입니다.',
+        }, status.BAD_REQUEST);
       }
       
       // 아이템 생성
-      const item = CurationItem.createForStory(spotId, itemId, position);
+      const existingItems = await this.curationItemRepository.findBySpotId(spotId);
+      const maxPosition = existingItems.reduce((max, item) => Math.max(max, item.position), existingItems.length);
+      const newPosition = maxPosition + 1;
+      const item = CurationItem.createForStory(spotId, itemId, newPosition);
       return this.curationItemRepository.create(item);
     } else {
-      throw new Error('지원하지 않는 아이템 유형입니다.');
+      throw new HTTPError({
+        message: '지원하지 않는 아이템 타입입니다.',
+      }, status.BAD_REQUEST);
     }
   }
 
   /**
-   * 큐레이션 아이템 위치 변경 (관리자용)
+   * 큐레이션 전체 아이템 위치 변경 (관리자용)
    */
-  async updateCurationItemPosition(itemId: number, position: number): Promise<CurationItem> {
-    const item = await this.curationItemRepository.findById(itemId);
-    if (!item) {
-      throw new Error('큐레이션 아이템을 찾을 수 없습니다.');
+  async updateBulkCurationItemPosition(spotId: number, itemOrders: { itemId: number; position: number }[]): Promise<CurationItem[]> {
+    const items = await this.curationItemRepository.findBySpotId(spotId);
+    if (!items || items.length !== itemOrders.length) {
+      throw new HTTPError({
+        message: '큐레이션 아이템을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
 
-    item.updatePosition(position);
-    await this.curationItemRepository.update(item);
-    return item;
+    items.forEach(item => {
+      const newOrder = itemOrders.find(order => order.itemId === item.id);
+      if (!newOrder) {
+        throw new HTTPError({
+          message: '큐레이션 아이템을 찾을 수 없습니다.',
+        }, status.NOT_FOUND);
+      }
+      item.updatePosition(newOrder.position);
+    });
+    const newItems = await this.curationItemRepository.updateMany(items);
+    return newItems;
   }
 
   /**
@@ -232,7 +291,9 @@ export class CurationService implements ICurationService {
   async deleteCurationItem(itemId: number): Promise<void> {
     const item = await this.curationItemRepository.findById(itemId);
     if (!item) {
-      throw new Error('큐레이션 아이템을 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '큐레이션 아이템을 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
 
     await this.curationItemRepository.deleteById(itemId);

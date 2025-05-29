@@ -1,4 +1,6 @@
+import { HTTPError } from '@/common/errors/http-error';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import type { ISidoRepository } from '../../../infrastructure/database/repository/location/sido.repository.interface';
 import type { ISigunguRepository } from '../../../infrastructure/database/repository/location/sigungu.repository.interface';
@@ -31,7 +33,9 @@ export class LocationService implements ILocationService {
   async getSidoById(sidoId: number): Promise<Sido> {
     const sido = await this.sidoRepository.findById(sidoId);
     if (!sido) {
-      throw new Error('시도를 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '시도를 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     return sido;
   }
@@ -43,7 +47,9 @@ export class LocationService implements ILocationService {
     // 시도 존재 확인
     const sido = await this.sidoRepository.findById(sidoId);
     if (!sido) {
-      throw new Error('시도를 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '시도를 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     
     return this.sigunguRepository.findBySidoId(sidoId);
@@ -55,7 +61,9 @@ export class LocationService implements ILocationService {
   async getSigunguById(sigunguId: number): Promise<Sigungu> {
     const sigungu = await this.sigunguRepository.findById(sigunguId);
     if (!sigungu) {
-      throw new Error('시군구를 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '시군구를 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     return sigungu;
   }
@@ -67,7 +75,9 @@ export class LocationService implements ILocationService {
     // 이름 중복 확인
     const existingSido = await this.sidoRepository.findByName(name);
     if (existingSido) {
-      throw new Error('이미 존재하는 시도 이름입니다.');
+      throw new HTTPError({
+        message: '이미 존재하는 시도입니다.',
+      }, status.BAD_REQUEST);
     }
     
     const sido = Sido.create(name);
@@ -81,13 +91,17 @@ export class LocationService implements ILocationService {
     // 시도 존재 확인
     const sido = await this.sidoRepository.findById(sidoId);
     if (!sido) {
-      throw new Error('시도를 찾을 수 없습니다.');
+      throw new HTTPError({
+        message: '시도를 찾을 수 없습니다.',
+      }, status.NOT_FOUND);
     }
     
     // 이름 중복 확인 (같은 시도 내에서)
-    const existingSigungu = await this.sigunguRepository.findBySidoIdAndName(sidoId, name);
+    const existingSigungu = await this.sigunguRepository.findByNameInSido(sidoId, name);
     if (existingSigungu) {
-      throw new Error('이미 존재하는 시군구 이름입니다.');
+      throw new HTTPError({
+        message: '이미 존재하는 시군구입니다.',
+      }, status.BAD_REQUEST);
     }
     
     const sigungu = Sigungu.create(sidoId, name);

@@ -29,10 +29,9 @@ export interface ICategoryService {
    * 카테고리 생성 (관리자용)
    * @param name 카테고리 이름
    * @param slug 카테고리 슬러그
-   * @param description 카테고리 설명 (선택)
    * @returns 생성된 카테고리 정보
    */
-  createCategory(name: string, slug: string, description?: string): Promise<Category>;
+  createCategory(name: string, slug: string): Promise<Category>;
 
   /**
    * 카테고리 수정 (관리자용)
@@ -45,7 +44,6 @@ export interface ICategoryService {
     data: {
       name?: string;
       slug?: string;
-      description?: string | null;
     }
   ): Promise<Category>;
 

@@ -68,23 +68,21 @@ export interface ICurationService {
    * @param spotId 큐레이션 스팟 ID
    * @param itemType 아이템 유형
    * @param itemId 아이템 ID (크리에이터 또는 스토리 ID)
-   * @param position 위치 (선택)
    * @returns 생성된 큐레이션 아이템 정보
    */
   addCurationItem(
     spotId: number,
     itemType: CurationItemType,
     itemId: number,
-    position?: number
   ): Promise<CurationItem>;
 
   /**
-   * 큐레이션 아이템 위치 변경 (관리자용)
-   * @param itemId 큐레이션 아이템 ID
-   * @param position 새 위치
+   * 큐레이션 전체 아이템 위치 변경 (관리자용)
+   * @param spotId 큐레이션 스팟 ID
+   * @param itemOrders 아이템 ID와 위치의 배열
    * @returns 수정된 큐레이션 아이템 정보
    */
-  updateCurationItemPosition(itemId: number, position: number): Promise<CurationItem>;
+  updateBulkCurationItemPosition(spotId: number, itemOrders: { itemId: number; position: number }[]): Promise<CurationItem[]>;
 
   /**
    * 큐레이션 아이템 삭제 (관리자용)
