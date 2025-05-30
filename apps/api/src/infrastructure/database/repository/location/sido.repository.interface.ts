@@ -1,4 +1,4 @@
-import { Sido } from '../../../domain/sido.entity';
+import { Sido } from '../../../../domain/entity/location.entity';
 import { IBaseRepository } from '../base.repository.interface';
 
 /**
@@ -13,10 +13,4 @@ export interface ISidoRepository extends IBaseRepository<Sido> {
    */
   findByName(name: string): Promise<Sido | null>;
 
-  /**
-   * 코드로 시도 조회
-   * @param code 시도 코드
-   * @returns 시도 또는 null
-   */
-  findByCode(code: string): Promise<Sido | null>;
 }

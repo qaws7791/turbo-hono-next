@@ -1,5 +1,7 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Creator } from '../../../../domain/entity/creator.entity';
 import { CreatorStatus } from '../../../../domain/entity/creator.types';
@@ -23,39 +25,39 @@ export class CreatorRepository implements ICreatorRepository {
    * ID로 크리에이터 조회
    */
   async findById(id: number): Promise<Creator | null> {
-    const result = await this.db.select().from(creators).where(eq(creators.id, id)).limit(1);
+    const [result] = await this.db.select().from(creators).where(eq(creators.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 사용자 ID로 크리에이터 조회
    */
   async findByUserId(userId: number): Promise<Creator | null> {
-    const result = await this.db.select().from(creators).where(eq(creators.userId, userId)).limit(1);
+    const [result] = await this.db.select().from(creators).where(eq(creators.userId, userId)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 브랜드명으로 크리에이터 조회
    */
   async findByBrandName(brandName: string): Promise<Creator | null> {
-    const result = await this.db.select().from(creators).where(eq(creators.brandName, brandName)).limit(1);
+    const [result] = await this.db.select().from(creators).where(eq(creators.brandName, brandName)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -94,27 +96,29 @@ export class CreatorRepository implements ICreatorRepository {
    * 모든 크리에이터 조회
    */
   async findAll(filter?: Filter<Creator>, sort?: SortOptions<Creator>[]): Promise<Creator[]> {
-    let query = this.db.select().from(creators);
+    const query = this.db.select().from(creators);
+    const filterSQLs:SQL[] = [];
+    const orderSQLs:SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(creators.id, filter.id));
+        filterSQLs.push(eq(creators.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(creators.userId, filter.userId));
+        filterSQLs.push(eq(creators.userId, filter.userId));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(creators.applicationStatus, filter.status));
+        filterSQLs.push(eq(creators.applicationStatus, filter.status));
       }
-      if (filter.categoryId !== undefined) {
-        query = query.where(eq(creators.categoryId, filter.categoryId));
+      if (filter.categoryId !== undefined && filter.categoryId !== null) {
+        filterSQLs.push(eq(creators.categoryId, filter.categoryId));
       }
-      if (filter.sidoId !== undefined) {
-        query = query.where(eq(creators.sidoId, filter.sidoId));
+      if (filter.sidoId !== undefined && filter.sidoId !== null) {
+        filterSQLs.push(eq(creators.sidoId, filter.sidoId));
       }
-      if (filter.sigunguId !== undefined) {
-        query = query.where(eq(creators.sigunguId, filter.sigunguId));
+      if (filter.sigunguId !== undefined && filter.sigunguId !== null) {
+        filterSQLs.push(eq(creators.sigunguId, filter.sigunguId));
       }
     }
     
@@ -123,28 +127,28 @@ export class CreatorRepository implements ICreatorRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.id)) 
-              : query.orderBy(asc(creators.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.id) 
+              : asc(creators.id));
             break;
           case 'brandName':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.brandName)) 
-              : query.orderBy(asc(creators.brandName));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.brandName) 
+              : asc(creators.brandName));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.createdAt)) 
-              : query.orderBy(asc(creators.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.createdAt) 
+              : asc(creators.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(creators.id));
+      orderSQLs.push(asc(creators.id));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -156,34 +160,32 @@ export class CreatorRepository implements ICreatorRepository {
     filter?: Filter<Creator>,
     sort?: SortOptions<Creator>[]
   ): Promise<PaginationResult<Creator>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(creators);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(creators).limit(limit).offset((page - 1) * limit);
+    const filterSQLs:SQL[] = [];
+    const orderSQLs:SQL[] = [];
+    
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(creators.id, filter.id));
+        filterSQLs.push(eq(creators.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(creators.userId, filter.userId));
+        filterSQLs.push(eq(creators.userId, filter.userId));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(creators.applicationStatus, filter.status));
+        filterSQLs.push(eq(creators.applicationStatus, filter.status));
       }
-      if (filter.categoryId !== undefined) {
-        query = query.where(eq(creators.categoryId, filter.categoryId));
+      if (filter.categoryId !== undefined && filter.categoryId !== null) {
+        filterSQLs.push(eq(creators.categoryId, filter.categoryId));
       }
-      if (filter.sidoId !== undefined) {
-        query = query.where(eq(creators.sidoId, filter.sidoId));
+      if (filter.sidoId !== undefined && filter.sidoId !== null) {
+        filterSQLs.push(eq(creators.sidoId, filter.sidoId));
       }
-      if (filter.sigunguId !== undefined) {
-        query = query.where(eq(creators.sigunguId, filter.sigunguId));
+      if (filter.sigunguId !== undefined && filter.sigunguId !== null) {
+        filterSQLs.push(eq(creators.sigunguId, filter.sigunguId));
       }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(creators.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -191,41 +193,48 @@ export class CreatorRepository implements ICreatorRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.id)) 
-              : query.orderBy(asc(creators.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.id) 
+              : asc(creators.id));
             break;
           case 'brandName':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.brandName)) 
-              : query.orderBy(asc(creators.brandName));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.brandName) 
+              : asc(creators.brandName));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(creators.createdAt)) 
-              : query.orderBy(asc(creators.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(creators.createdAt) 
+              : asc(creators.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(creators.id));
+      orderSQLs.push(asc(creators.id));
     }
-    
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
     
     const result = await query;
     
     // 결과 변환
     const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    const [countResult] = await this.db.select({ totalCount: count() }).from(creators).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+    
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
     
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -233,36 +242,46 @@ export class CreatorRepository implements ICreatorRepository {
    * 크리에이터 생성
    */
   async create(entity: Creator): Promise<Creator> {
-    const result = await this.db.insert(creators).values({
+    // 스키마에 정의된 필드만 사용하여 insert 수행
+
+    const data: typeof creators.$inferInsert = {
       userId: entity.userId,
       brandName: entity.brandName,
-      bio: entity.bio,
-      profileImageUrl: entity.profileImageUrl,
-      coverImageUrl: entity.coverImageUrl,
+      introduction: entity.introduction || '',
+      businessNumber: entity.businessNumber,
+      businessName: entity.businessName,
+      ownerName: entity.ownerName,
       sidoId: entity.sidoId,
       sigunguId: entity.sigunguId,
       categoryId: entity.categoryId,
+      contactInfo: entity.contactInfo,
       applicationStatus: entity.status,
       approvedAt: entity.approvedAt,
       rejectedAt: entity.rejectedAt,
       rejectionReason: entity.rejectionReason,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-    }).returning();
+    };
+    const [result] = await this.db.insert(creators).values(data).returning();
+
+    if (!result) {
+      throw new DatabaseError("크리에이터 생성에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 크리에이터 업데이트
    */
   async update(entity: Creator): Promise<Creator> {
-    const result = await this.db.update(creators)
+    const [result] = await this.db.update(creators)
       .set({
         brandName: entity.brandName,
-        bio: entity.bio,
-        profileImageUrl: entity.profileImageUrl,
-        coverImageUrl: entity.coverImageUrl,
+        introduction: entity.introduction,
+        businessNumber: entity.businessNumber,
+        businessName: entity.businessName,
+        ownerName: entity.ownerName,
         sidoId: entity.sidoId,
         sigunguId: entity.sigunguId,
         categoryId: entity.categoryId,
@@ -275,7 +294,11 @@ export class CreatorRepository implements ICreatorRepository {
       .where(eq(creators.id, entity.id))
       .returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("크리에이터 업데이트에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
@@ -294,9 +317,11 @@ export class CreatorRepository implements ICreatorRepository {
       model.id,
       model.userId,
       model.brandName,
-      model.bio,
-      model.profileImageUrl,
-      model.coverImageUrl,
+      model.introduction,
+      model.businessNumber,
+      model.businessName,
+      model.ownerName,
+      model.contactInfo,
       model.sidoId,
       model.sigunguId,
       model.categoryId,

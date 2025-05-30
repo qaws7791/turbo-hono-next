@@ -6,13 +6,26 @@
 // 공통 타입
 export interface PaginationOptions {
   limit: number;
-  offset?: number;
-  cursor?: string | number;
+  page?: number;
 }
+
+export interface PaginationCursorOptions {
+  limit: number;
+  cursor?: string;
+}
+
 
 export interface PaginationResult<T> {
   items: T[];
-  nextCursor?: string | number;
-  hasMore: boolean;
-  totalCount?: number;
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  itemsPerPage: number;
+  nextPage: number | null;
+  prevPage: number | null;
+}
+
+export interface PaginationCursorResult<T> {
+  items: T[];
+  nextCursor?: string | number | null;
 }

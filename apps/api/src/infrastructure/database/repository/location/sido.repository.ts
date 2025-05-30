@@ -1,9 +1,11 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
+import { Sido } from '../../../../domain/entity/location.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
-import { Sido } from '../../../domain/sido.entity';
-import { sidos } from '../../schema';
+import { sido } from '../../schema';
 import { Filter, SortOptions } from '../repository.types';
 import { ISidoRepository } from './sido.repository.interface';
 
@@ -17,92 +19,76 @@ export class SidoRepository implements ISidoRepository {
     @inject('Database')
     private db: PostgresJsDatabase
   ) {}
+  findByCode(code: string): Promise<Sido | null> {
+    throw new Error('Method not implemented.');
+  }
 
   /**
    * ID로 시도 조회
    */
   async findById(id: number): Promise<Sido | null> {
-    const result = await this.db.select().from(sidos).where(eq(sidos.id, id)).limit(1);
+    const [result] = await this.db.select().from(sido).where(eq(sido.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 이름으로 시도 조회
    */
   async findByName(name: string): Promise<Sido | null> {
-    const result = await this.db.select().from(sidos).where(eq(sidos.name, name)).limit(1);
+    const [result] = await this.db.select().from(sido).where(eq(sido.name, name)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
-  }
-
-  /**
-   * 코드로 시도 조회
-   */
-  async findByCode(code: string): Promise<Sido | null> {
-    const result = await this.db.select().from(sidos).where(eq(sidos.code, code)).limit(1);
-    
-    if (result.length === 0) {
-      return null;
-    }
-    
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 모든 시도 조회
    */
   async findAll(filter?: Filter<Sido>, sort?: SortOptions<Sido>[]): Promise<Sido[]> {
-    let query = this.db.select().from(sidos);
+    const query = this.db.select().from(sido);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sidos.id, filter.id));
+        filterSQLs.push(eq(sido.id, filter.id));
       }
       if (filter.name !== undefined) {
-        query = query.where(eq(sidos.name, filter.name));
+        filterSQLs.push(eq(sido.name, filter.name));
       }
-      if (filter.code !== undefined) {
-        query = query.where(eq(sidos.code, filter.code));
       }
-    }
     
     // 정렬 적용
     if (sort && sort.length > 0) {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.id)) 
-              : query.orderBy(asc(sidos.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sido.id) 
+              : asc(sido.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.name)) 
-              : query.orderBy(asc(sidos.name));
-            break;
-          case 'code':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.code)) 
-              : query.orderBy(asc(sidos.code));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sido.name) 
+              : asc(sido.name));
             break;
         }
       }
     } else {
       // 기본 정렬: 이름 오름차순
-      query = query.orderBy(asc(sidos.name));
+      orderSQLs.push(asc(sido.name));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -114,25 +100,20 @@ export class SidoRepository implements ISidoRepository {
     filter?: Filter<Sido>,
     sort?: SortOptions<Sido>[]
   ): Promise<PaginationResult<Sido>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(sidos);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(sido).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sidos.id, filter.id));
+        filterSQLs.push(eq(sido.id, filter.id));
       }
       if (filter.name !== undefined) {
-        query = query.where(eq(sidos.name, filter.name));
+        filterSQLs.push(eq(sido.name, filter.name));
       }
-      if (filter.code !== undefined) {
-        query = query.where(eq(sidos.code, filter.code));
-      }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(sidos.id > Number(cursor));
+
     }
     
     // 정렬 적용
@@ -140,41 +121,44 @@ export class SidoRepository implements ISidoRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.id)) 
-              : query.orderBy(asc(sidos.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sido.id) 
+              : asc(sido.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.name)) 
-              : query.orderBy(asc(sidos.name));
-            break;
-          case 'code':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sidos.code)) 
-              : query.orderBy(asc(sidos.code));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sido.name) 
+              : asc(sido.name));
             break;
         }
       }
     } else {
       // 기본 정렬: 이름 오름차순
-      query = query.orderBy(asc(sidos.name));
+      orderSQLs.push(asc(sido.name));
     }
     
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(sido).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                        
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                            
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -182,50 +166,50 @@ export class SidoRepository implements ISidoRepository {
    * 시도 생성
    */
   async create(entity: Sido): Promise<Sido> {
-    const result = await this.db.insert(sidos).values({
+    const [result] = await this.db.insert(sido).values({
       name: entity.name,
-      code: entity.code,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError('시도 생성 실패', status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 시도 업데이트
    */
   async update(entity: Sido): Promise<Sido> {
-    const result = await this.db.update(sidos)
+    const [result] = await this.db.update(sido)
       .set({
         name: entity.name,
-        code: entity.code,
-        updatedAt: entity.updatedAt,
       })
-      .where(eq(sidos.id, entity.id))
+      .where(eq(sido.id, entity.id))
       .returning();
+
+    if (!result) {
+      throw new DatabaseError('시도 업데이트 실패', status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * ID로 시도 삭제
    */
   async deleteById(id: number): Promise<boolean> {
-    const result = await this.db.delete(sidos).where(eq(sidos.id, id)).returning();
+    const result = await this.db.delete(sido).where(eq(sido.id, id)).returning();
     return result.length > 0;
   }
 
   /**
    * DB 모델을 도메인 엔티티로 변환
    */
-  private mapToEntity(model: typeof sidos.$inferSelect): Sido {
+  private mapToEntity(model: typeof sido.$inferSelect): Sido {
     return new Sido(
       model.id,
       model.name,
-      model.code,
-      model.createdAt,
-      model.updatedAt
     );
   }
 }

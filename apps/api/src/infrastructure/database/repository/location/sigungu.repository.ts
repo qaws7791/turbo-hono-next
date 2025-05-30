@@ -1,9 +1,11 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
+import { Sigungu } from '../../../../domain/entity/location.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
-import { Sigungu } from '../../../domain/sigungu.entity';
-import { sigungus } from '../../schema';
+import { sigungu } from '../../schema';
 import { Filter, SortOptions } from '../repository.types';
 import { ISigunguRepository } from './sigungu.repository.interface';
 
@@ -17,51 +19,41 @@ export class SigunguRepository implements ISigunguRepository {
     @inject('Database')
     private db: PostgresJsDatabase
   ) {}
+  findByNameInSido(sidoId: number, name: string): Promise<Sigungu | null> {
+    throw new Error('Method not implemented.');
+  }
 
   /**
    * ID로 시군구 조회
    */
   async findById(id: number): Promise<Sigungu | null> {
-    const result = await this.db.select().from(sigungus).where(eq(sigungus.id, id)).limit(1);
+    const [result] = await this.db.select().from(sigungu).where(eq(sigungu.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 이름으로 시군구 조회
    */
   async findByName(name: string): Promise<Sigungu | null> {
-    const result = await this.db.select().from(sigungus).where(eq(sigungus.name, name)).limit(1);
+    const [result] = await this.db.select().from(sigungu).where(eq(sigungu.name, name)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
-  }
-
-  /**
-   * 코드로 시군구 조회
-   */
-  async findByCode(code: string): Promise<Sigungu | null> {
-    const result = await this.db.select().from(sigungus).where(eq(sigungus.code, code)).limit(1);
-    
-    if (result.length === 0) {
-      return null;
-    }
-    
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 시도 ID로 시군구 목록 조회
    */
   async findBySidoId(sidoId: number): Promise<Sigungu[]> {
-    const result = await this.db.select().from(sigungus).where(eq(sigungus.sidoId, sidoId));
+    const result = await this.db.select().from(sigungu).where(eq(sigungu.sidoId, sidoId));
     return result.map(this.mapToEntity);
   }
 
@@ -69,21 +61,20 @@ export class SigunguRepository implements ISigunguRepository {
    * 모든 시군구 조회
    */
   async findAll(filter?: Filter<Sigungu>, sort?: SortOptions<Sigungu>[]): Promise<Sigungu[]> {
-    let query = this.db.select().from(sigungus);
+    const query = this.db.select().from(sigungu);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sigungus.id, filter.id));
+        filterSQLs.push(eq(sigungu.id, filter.id));
       }
       if (filter.name !== undefined) {
-        query = query.where(eq(sigungus.name, filter.name));
-      }
-      if (filter.code !== undefined) {
-        query = query.where(eq(sigungus.code, filter.code));
+        filterSQLs.push(eq(sigungu.name, filter.name));
       }
       if (filter.sidoId !== undefined) {
-        query = query.where(eq(sigungus.sidoId, filter.sidoId));
+        filterSQLs.push(eq(sigungu.sidoId, filter.sidoId));
       }
     }
     
@@ -92,28 +83,28 @@ export class SigunguRepository implements ISigunguRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.id)) 
-              : query.orderBy(asc(sigungus.id));
+           orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.id) 
+              : asc(sigungu.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.name)) 
-              : query.orderBy(asc(sigungus.name));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.name) 
+              : asc(sigungu.name));
             break;
-          case 'code':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.code)) 
-              : query.orderBy(asc(sigungus.code));
+          case 'sidoId':
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.sidoId) 
+              : asc(sigungu.sidoId));
             break;
         }
       }
     } else {
       // 기본 정렬: 이름 오름차순
-      query = query.orderBy(asc(sigungus.name));
+      orderSQLs.push(asc(sigungu.name));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -125,70 +116,72 @@ export class SigunguRepository implements ISigunguRepository {
     filter?: Filter<Sigungu>,
     sort?: SortOptions<Sigungu>[]
   ): Promise<PaginationResult<Sigungu>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(sigungus);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(sigungu).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sigungus.id, filter.id));
+        filterSQLs.push(eq(sigungu.id, filter.id));
       }
       if (filter.name !== undefined) {
-        query = query.where(eq(sigungus.name, filter.name));
-      }
-      if (filter.code !== undefined) {
-        query = query.where(eq(sigungus.code, filter.code));
+        filterSQLs.push(eq(sigungu.name, filter.name));
       }
       if (filter.sidoId !== undefined) {
-        query = query.where(eq(sigungus.sidoId, filter.sidoId));
+        filterSQLs.push(eq(sigungu.sidoId, filter.sidoId));
       }
     }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(sigungus.id > Number(cursor));
-    }
-    
+
     // 정렬 적용
     if (sort && sort.length > 0) {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.id)) 
-              : query.orderBy(asc(sigungus.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.id) 
+              : asc(sigungu.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.name)) 
-              : query.orderBy(asc(sigungus.name));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.name) 
+              : asc(sigungu.name));
             break;
-          case 'code':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sigungus.code)) 
-              : query.orderBy(asc(sigungus.code));
+          case 'sidoId':
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sigungu.sidoId) 
+              : asc(sigungu.sidoId));
             break;
         }
       }
     } else {
       // 기본 정렬: 이름 오름차순
-      query = query.orderBy(asc(sigungus.name));
+      orderSQLs.push(asc(sigungu.name));
     }
-    
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
+
     const result = await query;
     
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(sigungu).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                            
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                                
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -196,53 +189,53 @@ export class SigunguRepository implements ISigunguRepository {
    * 시군구 생성
    */
   async create(entity: Sigungu): Promise<Sigungu> {
-    const result = await this.db.insert(sigungus).values({
+    const [result] = await this.db.insert(sigungu).values({
       name: entity.name,
-      code: entity.code,
       sidoId: entity.sidoId,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError("시군구 생성에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 시군구 업데이트
    */
   async update(entity: Sigungu): Promise<Sigungu> {
-    const result = await this.db.update(sigungus)
+    const [result] = await this.db.update(sigungu)
       .set({
         name: entity.name,
-        code: entity.code,
         sidoId: entity.sidoId,
-        updatedAt: entity.updatedAt,
       })
-      .where(eq(sigungus.id, entity.id))
+      .where(eq(sigungu.id, entity.id))
       .returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("시군구 업데이트에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
    * ID로 시군구 삭제
    */
   async deleteById(id: number): Promise<boolean> {
-    const result = await this.db.delete(sigungus).where(eq(sigungus.id, id)).returning();
+    const result = await this.db.delete(sigungu).where(eq(sigungu.id, id)).returning();
     return result.length > 0;
   }
 
   /**
    * DB 모델을 도메인 엔티티로 변환
    */
-  private mapToEntity(model: typeof sigungus.$inferSelect): Sigungu {
+  private mapToEntity(model: typeof sigungu.$inferSelect): Sigungu {
     return new Sigungu(
       model.id,
+      model.sidoId, 
       model.name,
-      model.code,
-      model.sidoId,
-      model.createdAt,
-      model.updatedAt
     );
   }
 }

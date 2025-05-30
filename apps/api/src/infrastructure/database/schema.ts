@@ -483,10 +483,10 @@ export const files = pgTable(
     userId: integer("user_id").notNull(), // users.id 참조
     bucket: text("bucket").notNull(),
     key: text("key").notNull().unique(),
-    contentType: text("content_type"),
+    contentType: text("content_type").notNull(),
     size: bigint({
       mode: "number",
-    }),
+    }).notNull(),
     isUploaded: boolean("is_uploaded").notNull().default(false),
     customMetadata: jsonb("custom_metadata"),
     createdAt: timestamp("created_at", { withTimezone: true })

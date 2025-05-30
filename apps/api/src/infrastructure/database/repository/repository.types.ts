@@ -15,3 +15,29 @@ export interface SortOptions<T> {
   field: keyof T;
   order: SortOrder;
 }
+
+// 페이지네이션 타입
+export interface PaginationOptions {
+  limit: number;
+  page?: number;
+}
+
+export interface PaginationCursorOptions {
+  limit: number;
+  cursor?: string;
+}
+
+export interface PaginationResult<T> {
+  items: T[];
+  totalPages: number;
+  totalItems: number;
+  currentPage: number;
+  itemsPerPage: number;
+  nextPage: number | null;
+  prevPage: number | null;
+}
+export interface PaginationCursorResult<T> {
+  items: T[];
+  nextCursor: string | null;
+}
+  

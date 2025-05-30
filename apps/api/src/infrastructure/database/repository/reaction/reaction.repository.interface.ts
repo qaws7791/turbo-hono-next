@@ -1,5 +1,5 @@
 import { Reaction } from '../../../../domain/entity/reaction.entity';
-import { ReactionType } from '../../../domain/reaction.types';
+import { ReactionType } from '../../../../domain/entity/story.types';
 import { IBaseRepository } from '../base.repository.interface';
 
 /**

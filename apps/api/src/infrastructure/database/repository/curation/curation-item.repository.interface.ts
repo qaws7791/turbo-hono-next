@@ -1,4 +1,4 @@
-import { CurationItem } from '../../../domain/curation-item.entity';
+import { CurationItem } from '../../../../domain/entity/curation.entity';
 import { IBaseRepository } from '../base.repository.interface';
 
 /**
@@ -49,4 +49,11 @@ export interface ICurationItemRepository extends IBaseRepository<CurationItem> {
    * @returns 삭제 성공 여부
    */
   deleteBySpotId(spotId: number): Promise<boolean>;
+
+  /**
+   * 큐레이션 아이템 전체 업데이트
+   * @param items 업데이트할 큐레이션 아이템 배열
+   * @returns 업데이트된 큐레이션 아이템 배열
+   */
+  updateMany(items: CurationItem[]): Promise<CurationItem[]>;
 }

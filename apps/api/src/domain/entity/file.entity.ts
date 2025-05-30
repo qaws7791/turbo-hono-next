@@ -8,7 +8,6 @@ export class FileObject {
     private readonly _userId: number,
     private readonly _bucket: string,
     private readonly _key: string,
-    private _filename: string,
     private _contentType: string,
     private _size: number,
     private _isUploaded: boolean,
@@ -33,10 +32,6 @@ export class FileObject {
     return this._key;
   }
 
-  get filename(): string {
-    return this._filename;
-  }
-
   get contentType(): string {
     return this._contentType;
   }
@@ -55,15 +50,6 @@ export class FileObject {
 
   get updatedAt(): Date {
     return this._updatedAt;
-  }
-
-  // Setters with validation
-  updateFilename(filename: string): void {
-    if (!filename || filename.trim().length === 0) {
-      throw new Error('파일 이름은 비어있을 수 없습니다.');
-    }
-    this._filename = filename;
-    this._updatedAt = new Date();
   }
 
   updateContentType(contentType: string): void {
@@ -101,7 +87,6 @@ export class FileObject {
     userId: number,
     bucket: string,
     key: string,
-    filename: string,
     contentType: string,
     size: number = 0,
   ): FileObject {
@@ -112,7 +97,6 @@ export class FileObject {
       userId,
       bucket,
       key,
-      filename,
       contentType,
       size,
       false, // 생성 시 기본적으로 업로드 전 상태

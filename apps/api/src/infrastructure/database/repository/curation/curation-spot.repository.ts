@@ -1,8 +1,10 @@
-import { asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
+import { CurationSpot } from '../../../../domain/entity/curation.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
-import { CurationSpot } from '../../../domain/curation-spot.entity';
 import { curationSpots } from '../../schema';
 import { Filter, SortOptions } from '../repository.types';
 import { ICurationSpotRepository } from './curation-spot.repository.interface';
@@ -17,65 +19,54 @@ export class CurationSpotRepository implements ICurationSpotRepository {
     @inject('Database')
     private db: PostgresJsDatabase
   ) {}
+  async findByName(name: string): Promise<CurationSpot | null> {
+    const [result] = await this.db.select().from(curationSpots).where(eq(curationSpots.name, name)).limit(1);
+    
+    if (!result) {
+      return null;
+    }
+    
+    return this.mapToEntity(result);
+  }
+  async findBySlug(slug: string): Promise<CurationSpot | null> {
+    const [result] = await this.db.select().from(curationSpots).where(eq(curationSpots.slug, slug)).limit(1);
+    
+    if (!result) {
+      return null;
+    }
+    
+    return this.mapToEntity(result);
+  }
 
   /**
    * ID로 큐레이션 스팟 조회
    */
   async findById(id: number): Promise<CurationSpot | null> {
-    const result = await this.db.select().from(curationSpots).where(eq(curationSpots.id, id)).limit(1);
+    const [result] = await this.db.select().from(curationSpots).where(eq(curationSpots.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
-  }
-
-  /**
-   * 제목으로 큐레이션 스팟 조회
-   */
-  async findByTitle(title: string): Promise<CurationSpot | null> {
-    const result = await this.db.select().from(curationSpots).where(eq(curationSpots.title, title)).limit(1);
-    
-    if (result.length === 0) {
-      return null;
-    }
-    
-    return this.mapToEntity(result[0]);
-  }
-
-  /**
-   * 활성화된 큐레이션 스팟 목록 조회
-   */
-  async findActive(): Promise<CurationSpot[]> {
-    const result = await this.db.select().from(curationSpots).where(eq(curationSpots.isActive, true));
-    return result.map(this.mapToEntity);
-  }
-
-  /**
-   * 비활성화된 큐레이션 스팟 목록 조회
-   */
-  async findInactive(): Promise<CurationSpot[]> {
-    const result = await this.db.select().from(curationSpots).where(eq(curationSpots.isActive, false));
-    return result.map(this.mapToEntity);
+    return this.mapToEntity(result);
   }
 
   /**
    * 모든 큐레이션 스팟 조회
    */
   async findAll(filter?: Filter<CurationSpot>, sort?: SortOptions<CurationSpot>[]): Promise<CurationSpot[]> {
-    let query = this.db.select().from(curationSpots);
+    const query = this.db.select().from(curationSpots);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
+    
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(curationSpots.id, filter.id));
+        filterSQLs.push(eq(curationSpots.id, filter.id));
       }
-      if (filter.title !== undefined) {
-        query = query.where(eq(curationSpots.title, filter.title));
-      }
-      if (filter.isActive !== undefined) {
-        query = query.where(eq(curationSpots.isActive, filter.isActive));
+      if (filter.name !== undefined) {
+        filterSQLs.push(eq(curationSpots.name, filter.name));
       }
     }
     
@@ -84,33 +75,28 @@ export class CurationSpotRepository implements ICurationSpotRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.id)) 
-              : query.orderBy(asc(curationSpots.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.id) 
+              : asc(curationSpots.id));
             break;
-          case 'title':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.title)) 
-              : query.orderBy(asc(curationSpots.title));
-            break;
-          case 'order':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.order)) 
-              : query.orderBy(asc(curationSpots.order));
+          case 'name':
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.name) 
+              : asc(curationSpots.name));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.createdAt)) 
-              : query.orderBy(asc(curationSpots.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.createdAt) 
+              : asc(curationSpots.createdAt));
             break;
         }
       }
     } else {
-      // 기본 정렬: 순서 오름차순
-      query = query.orderBy(asc(curationSpots.order));
+      // 기본 정렬: ID 오름차순
+      orderSQLs.push(asc(curationSpots.id));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -122,25 +108,19 @@ export class CurationSpotRepository implements ICurationSpotRepository {
     filter?: Filter<CurationSpot>,
     sort?: SortOptions<CurationSpot>[]
   ): Promise<PaginationResult<CurationSpot>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(curationSpots);
+    const { limit, page = 1} = options;
+    const query = this.db.select().from(curationSpots).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(curationSpots.id, filter.id));
+        filterSQLs.push(eq(curationSpots.id, filter.id));
       }
-      if (filter.title !== undefined) {
-        query = query.where(eq(curationSpots.title, filter.title));
+      if (filter.name !== undefined) {
+        filterSQLs.push(eq(curationSpots.name, filter.name));
       }
-      if (filter.isActive !== undefined) {
-        query = query.where(eq(curationSpots.isActive, filter.isActive));
-      }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(curationSpots.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -148,46 +128,48 @@ export class CurationSpotRepository implements ICurationSpotRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.id)) 
-              : query.orderBy(asc(curationSpots.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.id) 
+              : asc(curationSpots.id));
             break;
-          case 'title':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.title)) 
-              : query.orderBy(asc(curationSpots.title));
-            break;
-          case 'order':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.order)) 
-              : query.orderBy(asc(curationSpots.order));
+          case 'name':
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.name) 
+              : asc(curationSpots.name));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(curationSpots.createdAt)) 
-              : query.orderBy(asc(curationSpots.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(curationSpots.createdAt) 
+              : asc(curationSpots.createdAt));
             break;
         }
       }
     } else {
-      // 기본 정렬: 순서 오름차순
-      query = query.orderBy(asc(curationSpots.order));
+      // 기본 정렬: ID 오름차순
+      orderSQLs.push(asc(curationSpots.id));
     }
     
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
+
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(curationSpots).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
     
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+        
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -195,36 +177,42 @@ export class CurationSpotRepository implements ICurationSpotRepository {
    * 큐레이션 스팟 생성
    */
   async create(entity: CurationSpot): Promise<CurationSpot> {
-    const result = await this.db.insert(curationSpots).values({
-      title: entity.title,
+    const [result] = await this.db.insert(curationSpots).values({
+      name: entity.name,
+      slug: entity.slug,
       description: entity.description,
-      thumbnailUrl: entity.thumbnailUrl,
-      isActive: entity.isActive,
-      order: entity.order,
+      coverImageUrl: entity.coverImageUrl,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     }).returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("큐레이션 스팟 생성에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
    * 큐레이션 스팟 업데이트
    */
   async update(entity: CurationSpot): Promise<CurationSpot> {
-    const result = await this.db.update(curationSpots)
+    const [result] = await this.db.update(curationSpots)
       .set({
-        title: entity.title,
+        name: entity.name,
+        slug: entity.slug,
         description: entity.description,
-        thumbnailUrl: entity.thumbnailUrl,
-        isActive: entity.isActive,
-        order: entity.order,
+        coverImageUrl: entity.coverImageUrl,
         updatedAt: entity.updatedAt,
       })
       .where(eq(curationSpots.id, entity.id))
-      .returning();
-    
-    return this.mapToEntity(result[0]);
+        .returning();
+        
+    if (!result) {
+      throw new DatabaseError("큐레이션 스팟 업데이트에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
+      
+    return this.mapToEntity(result);
   }
 
   /**
@@ -241,11 +229,10 @@ export class CurationSpotRepository implements ICurationSpotRepository {
   private mapToEntity(model: typeof curationSpots.$inferSelect): CurationSpot {
     return new CurationSpot(
       model.id,
-      model.title,
+      model.name,
+      model.slug,
       model.description,
-      model.thumbnailUrl,
-      model.isActive,
-      model.order,
+      model.coverImageUrl,
       model.createdAt,
       model.updatedAt
     );

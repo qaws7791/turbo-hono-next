@@ -1,5 +1,7 @@
-import { and, asc, count, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Follow } from '../../../../domain/entity/follow.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
@@ -22,20 +24,20 @@ export class FollowRepository implements IFollowRepository {
    * ID로 팔로우 조회
    */
   async findById(id: number): Promise<Follow | null> {
-    const result = await this.db.select().from(follows).where(eq(follows.id, id)).limit(1);
+    const [result] = await this.db.select().from(follows).where(eq(follows.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 사용자 ID로 팔로우 목록 조회 (사용자가 팔로우한 크리에이터 목록)
    */
   async findByUserId(userId: number): Promise<Follow[]> {
-    const result = await this.db.select().from(follows).where(eq(follows.userId, userId));
+    const result = await this.db.select().from(follows).where(eq(follows.followerId, userId));
     return result.map(this.mapToEntity);
   }
 
@@ -43,7 +45,7 @@ export class FollowRepository implements IFollowRepository {
    * 크리에이터 ID로 팔로우 목록 조회 (크리에이터를 팔로우한 사용자 목록)
    */
   async findByCreatorId(creatorId: number): Promise<Follow[]> {
-    const result = await this.db.select().from(follows).where(eq(follows.creatorId, creatorId));
+    const result = await this.db.select().from(follows).where(eq(follows.followingId, creatorId));
     return result.map(this.mapToEntity);
   }
 
@@ -51,56 +53,66 @@ export class FollowRepository implements IFollowRepository {
    * 사용자 ID와 크리에이터 ID로 팔로우 조회
    */
   async findByUserIdAndCreatorId(userId: number, creatorId: number): Promise<Follow | null> {
-    const result = await this.db.select().from(follows)
+    const [result] = await this.db.select().from(follows)
       .where(and(
-        eq(follows.userId, userId),
-        eq(follows.creatorId, creatorId)
+        eq(follows.followerId, userId),
+        eq(follows.followingId, creatorId)
       ))
       .limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 크리에이터 ID로 팔로워 수 조회
    */
   async countByCreatorId(creatorId: number): Promise<number> {
-    const result = await this.db.select({ count: count() }).from(follows)
-      .where(eq(follows.creatorId, creatorId));
+    const [result] = await this.db.select({ count: count() }).from(follows)
+      .where(eq(follows.followingId, creatorId));
     
-    return result[0].count;
+    if (!result) {
+      return 0;
+    }
+    
+    return result.count;
   }
 
   /**
    * 사용자 ID로 팔로잉 수 조회
    */
   async countByUserId(userId: number): Promise<number> {
-    const result = await this.db.select({ count: count() }).from(follows)
-      .where(eq(follows.userId, userId));
+    const [result] = await this.db.select({ count: count() }).from(follows)
+      .where(eq(follows.followerId, userId));
     
-    return result[0].count;
+    if (!result) {
+      return 0;
+    }
+    
+    return result.count;
   }
 
   /**
    * 모든 팔로우 조회
    */
   async findAll(filter?: Filter<Follow>, sort?: SortOptions<Follow>[]): Promise<Follow[]> {
-    let query = this.db.select().from(follows);
+    const query = this.db.select().from(follows);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(follows.id, filter.id));
+        filterSQLs.push(eq(follows.id, filter.id));
       }
-      if (filter.userId !== undefined) {
-        query = query.where(eq(follows.userId, filter.userId));
+      if (filter.followerId !== undefined) {
+        filterSQLs.push(eq(follows.followerId, filter.followerId));
       }
-      if (filter.creatorId !== undefined) {
-        query = query.where(eq(follows.creatorId, filter.creatorId));
+      if (filter.followingId !== undefined) {
+        filterSQLs.push(eq(follows.followingId, filter.followingId));
       }
     }
     
@@ -109,23 +121,23 @@ export class FollowRepository implements IFollowRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(follows.id)) 
-              : query.orderBy(asc(follows.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(follows.id) 
+              : asc(follows.id));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(follows.createdAt)) 
-              : query.orderBy(asc(follows.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(follows.createdAt) 
+              : asc(follows.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(follows.createdAt));
+      orderSQLs.push(desc(follows.createdAt));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -137,62 +149,66 @@ export class FollowRepository implements IFollowRepository {
     filter?: Filter<Follow>,
     sort?: SortOptions<Follow>[]
   ): Promise<PaginationResult<Follow>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(follows);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(follows).limit(limit).offset((page - 1) * limit);
+    const filterSQLs:SQL[] = [];
+    const orderSQLs:SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(follows.id, filter.id));
+        filterSQLs.push(eq(follows.id, filter.id));
       }
-      if (filter.userId !== undefined) {
-        query = query.where(eq(follows.userId, filter.userId));
+      if (filter.followerId !== undefined) {
+        filterSQLs.push(eq(follows.followerId, filter.followerId));
       }
-      if (filter.creatorId !== undefined) {
-        query = query.where(eq(follows.creatorId, filter.creatorId));
+      if (filter.followingId !== undefined) {
+        filterSQLs.push(eq(follows.followingId, filter.followingId));
       }
     }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(follows.id > Number(cursor));
-    }
-    
+
     // 정렬 적용
     if (sort && sort.length > 0) {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(follows.id)) 
-              : query.orderBy(asc(follows.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(follows.id) 
+              : asc(follows.id));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(follows.createdAt)) 
-              : query.orderBy(asc(follows.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(follows.createdAt) 
+              : asc(follows.createdAt));
             break;
         }
       }
     } else {
-      // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(follows.createdAt));
+      // 기본 정렬: ID 오름차순
+      orderSQLs.push(asc(follows.id));
     }
     
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
-    const result = await query;
-    
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
+
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(follows).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                    
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                        
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -200,13 +216,17 @@ export class FollowRepository implements IFollowRepository {
    * 팔로우 생성
    */
   async create(entity: Follow): Promise<Follow> {
-    const result = await this.db.insert(follows).values({
-      userId: entity.userId,
-      creatorId: entity.creatorId,
+    const [result] = await this.db.insert(follows).values({
+      followerId: entity.followerId,
+      followingId: entity.followingId,
       createdAt: entity.createdAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError('팔로우 생성 실패', status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -231,8 +251,8 @@ export class FollowRepository implements IFollowRepository {
   async deleteByUserIdAndCreatorId(userId: number, creatorId: number): Promise<boolean> {
     const result = await this.db.delete(follows)
       .where(and(
-        eq(follows.userId, userId),
-        eq(follows.creatorId, creatorId)
+        eq(follows.followerId, userId),
+        eq(follows.followingId, creatorId)
       ))
       .returning();
     
@@ -245,8 +265,8 @@ export class FollowRepository implements IFollowRepository {
   private mapToEntity(model: typeof follows.$inferSelect): Follow {
     return new Follow(
       model.id,
-      model.userId,
-      model.creatorId,
+      model.followerId,
+      model.followingId,
       model.createdAt
     );
   }

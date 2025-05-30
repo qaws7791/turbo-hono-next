@@ -1,4 +1,4 @@
-import { CurationSpot } from '../../../domain/curation-spot.entity';
+import { CurationSpot } from '../../../../domain/entity/curation.entity';
 import { IBaseRepository } from '../base.repository.interface';
 
 /**
@@ -7,21 +7,17 @@ import { IBaseRepository } from '../base.repository.interface';
  */
 export interface ICurationSpotRepository extends IBaseRepository<CurationSpot> {
   /**
-   * 제목으로 큐레이션 스팟 조회
-   * @param title 큐레이션 스팟 제목
+   * 이름으로 큐레이션 스팟 조회
+   * @param name 큐레이션 스팟 이름
    * @returns 큐레이션 스팟 또는 null
    */
-  findByTitle(title: string): Promise<CurationSpot | null>;
+  findByName(name: string): Promise<CurationSpot | null>;
 
   /**
-   * 활성화된 큐레이션 스팟 목록 조회
-   * @returns 활성화된 큐레이션 스팟 배열
+   * 슬러그로 큐레이션 스팟 조회
+   * @param slug 큐레이션 스팟 슬러그
+   * @returns 큐레이션 스팟 또는 null
    */
-  findActive(): Promise<CurationSpot[]>;
+  findBySlug(slug: string): Promise<CurationSpot | null>;
 
-  /**
-   * 비활성화된 큐레이션 스팟 목록 조회
-   * @returns 비활성화된 큐레이션 스팟 배열
-   */
-  findInactive(): Promise<CurationSpot[]>;
 }

@@ -179,7 +179,7 @@ export class StoryService implements IStoryService {
    */
   async listStories(options: PaginationOptions): Promise<PaginationResult<Story>> {
     // 공개된 스토리만 조회
-    return this.storyRepository.findAll(options, { status: StoryStatus.PUBLISHED });
+    return this.storyRepository.findWithPagination(options, { status: StoryStatus.PUBLISHED });
   }
 
   /**
@@ -208,7 +208,7 @@ export class StoryService implements IStoryService {
     }
 
     // 기존 반응 확인
-    const existingReaction = await this.reactionRepository.findByUserAndStory(userId, storyId);
+    const existingReaction = await this.reactionRepository.findByUserIdAndStoryId(userId, storyId);
 
     if (existingReaction) {
       // 기존 반응 업데이트
@@ -226,14 +226,14 @@ export class StoryService implements IStoryService {
    * 스토리 반응 조회
    */
   async getReaction(userId: number, storyId: number): Promise<Reaction | null> {
-    return this.reactionRepository.findByUserAndStory(userId, storyId);
+    return this.reactionRepository.findByUserIdAndStoryId(userId, storyId);
   }
 
   /**
    * 스토리 반응 삭제
    */
   async deleteReaction(userId: number, storyId: number): Promise<void> {
-    const reaction = await this.reactionRepository.findByUserAndStory(userId, storyId);
+    const reaction = await this.reactionRepository.findByUserIdAndStoryId(userId, storyId);
     if (reaction) {
       await this.reactionRepository.deleteById(reaction.id);
     }

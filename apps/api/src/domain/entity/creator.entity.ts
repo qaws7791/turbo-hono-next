@@ -9,12 +9,14 @@ export class Creator {
     private readonly _id: number,
     private readonly _userId: number,
     private _brandName: string,
-    private _bio: string | null,
-    private _profileImageUrl: string | null,
-    private _coverImageUrl: string | null,
-    private _sidoId: number | null,
-    private _sigunguId: number | null,
-    private _categoryId: number | null,
+    private _introduction: string,
+    private _businessNumber: string,
+    private _businessName: string,
+    private _ownerName: string,
+    private _contactInfo: string,
+    private _sidoId: number,
+    private _sigunguId: number,
+    private _categoryId: number,
     private _status: CreatorStatus,
     private _approvedAt: Date | null,
     private _rejectedAt: Date | null,
@@ -36,27 +38,15 @@ export class Creator {
     return this._brandName;
   }
 
-  get bio(): string | null {
-    return this._bio;
-  }
-
-  get profileImageUrl(): string | null {
-    return this._profileImageUrl;
-  }
-
-  get coverImageUrl(): string | null {
-    return this._coverImageUrl;
-  }
-
-  get sidoId(): number | null {
+  get sidoId(): number {
     return this._sidoId;
   }
 
-  get sigunguId(): number | null {
+  get sigunguId(): number {
     return this._sigunguId;
   }
 
-  get categoryId(): number | null {
+  get categoryId(): number {
     return this._categoryId;
   }
 
@@ -84,6 +74,26 @@ export class Creator {
     return this._updatedAt;
   }
 
+  get introduction(): string {
+    return this._introduction;
+  }
+
+  get businessNumber(): string {
+    return this._businessNumber;
+  }
+
+  get businessName(): string {
+    return this._businessName;
+  }
+
+  get ownerName(): string {
+    return this._ownerName;
+  }
+
+  get contactInfo(): string {
+    return this._contactInfo;
+  }
+
   // Setters with validation
   updateBrandName(brandName: string): void {
     if (!brandName || brandName.trim().length === 0) {
@@ -93,33 +103,37 @@ export class Creator {
     this._updatedAt = new Date();
   }
 
-  updateBio(bio: string | null): void {
-    this._bio = bio;
+  updateIntroduction(introduction: string): void {
+    this._introduction = introduction;
     this._updatedAt = new Date();
   }
 
-  updateProfileImage(url: string | null): void {
-    this._profileImageUrl = url;
+  updateBusinessNumber(businessNumber: string): void {
+    this._businessNumber = businessNumber;
     this._updatedAt = new Date();
   }
 
-  updateCoverImage(url: string | null): void {
-    this._coverImageUrl = url;
+  updateBusinessName(businessName: string): void {
+    this._businessName = businessName;
     this._updatedAt = new Date();
   }
 
-  updateLocation(sidoId: number | null, sigunguId: number | null): void {
-    // 시군구가 있으면 시도도 있어야 함
-    if (sigunguId !== null && sidoId === null) {
-      throw new Error('시군구를 설정하려면 시도도 설정해야 합니다.');
-    }
-    
+  updateOwnerName(ownerName: string): void {
+    this._ownerName = ownerName;
+    this._updatedAt = new Date();
+  }
+
+  updateContactInfo(contactInfo: string): void {
+    this._contactInfo = contactInfo;
+    this._updatedAt = new Date();
+  }
+  updateLocation(sidoId: number, sigunguId: number): void {
     this._sidoId = sidoId;
     this._sigunguId = sigunguId;
     this._updatedAt = new Date();
   }
 
-  updateCategory(categoryId: number | null): void {
+  updateCategory(categoryId: number): void {
     this._categoryId = categoryId;
     this._updatedAt = new Date();
   }
@@ -196,12 +210,14 @@ export class Creator {
   static apply(
     userId: number,
     brandName: string,
-    bio: string | null = null,
-    profileImageUrl: string | null = null,
-    coverImageUrl: string | null = null,
-    sidoId: number | null = null,
-    sigunguId: number | null = null,
-    categoryId: number | null = null,
+    introduction: string,
+    businessNumber: string,
+    businessName: string,
+    ownerName: string,
+    contactInfo: string,
+    sidoId: number,
+    sigunguId: number,
+    categoryId: number,
   ): Creator {
     const now = new Date();
     
@@ -209,9 +225,11 @@ export class Creator {
       0, // ID는 저장 시 할당
       userId,
       brandName,
-      bio,
-      profileImageUrl,
-      coverImageUrl,
+      introduction,
+      businessNumber,
+      businessName,
+      ownerName,
+      contactInfo,
       sidoId,
       sigunguId,
       categoryId,

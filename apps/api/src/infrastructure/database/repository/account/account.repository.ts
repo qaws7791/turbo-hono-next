@@ -1,5 +1,7 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Account } from '../../../../domain/entity/account.entity';
 import { SocialProvider } from '../../../../domain/entity/user.types';
@@ -23,13 +25,13 @@ export class AccountRepository implements IAccountRepository {
    * ID로 계정 조회
    */
   async findById(id: number): Promise<Account | null> {
-    const result = await this.db.select().from(accounts).where(eq(accounts.id, id)).limit(1);
+    const [result] = await this.db.select().from(accounts).where(eq(accounts.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -47,66 +49,67 @@ export class AccountRepository implements IAccountRepository {
     providerId: SocialProvider,
     providerAccountId: string
   ): Promise<Account | null> {
-    const result = await this.db.select().from(accounts).where(
+    const [result] = await this.db.select().from(accounts).where(
       and(
         eq(accounts.providerId, providerId),
         eq(accounts.providerAccountId, providerAccountId)
       )
     ).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 모든 계정 조회
    */
   async findAll(filter?: Filter<Account>, sort?: SortOptions<Account>[]): Promise<Account[]> {
-    let query = this.db.select().from(accounts);
-    
-    // 필터 적용
+    const query = this.db.select().from(accounts);
+    const filterSQLs:SQL[] = [];
+    const orders:SQL[] = [];
+
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(accounts.id, filter.id));
+        filterSQLs.push(eq(accounts.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(accounts.userId, filter.userId));
+        filterSQLs.push(eq(accounts.userId, filter.userId));
       }
       if (filter.providerId !== undefined) {
-        query = query.where(eq(accounts.providerId, filter.providerId));
+        filterSQLs.push(eq(accounts.providerId, filter.providerId));
       }
     }
-    
+
     // 정렬 적용
     if (sort && sort.length > 0) {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.id)) 
-              : query.orderBy(asc(accounts.id));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.id) 
+              : asc(accounts.id));
             break;
           case 'userId':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.userId)) 
-              : query.orderBy(asc(accounts.userId));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.userId) 
+              : asc(accounts.userId));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.createdAt)) 
-              : query.orderBy(asc(accounts.createdAt));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.createdAt) 
+              : asc(accounts.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(accounts.id));
+      orders.push(asc(accounts.id));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orders);
     return result.map(this.mapToEntity);
   }
 
@@ -118,25 +121,22 @@ export class AccountRepository implements IAccountRepository {
     filter?: Filter<Account>,
     sort?: SortOptions<Account>[]
   ): Promise<PaginationResult<Account>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(accounts);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(accounts).limit(limit).offset((page - 1) * limit);
+    const filterSQLs:SQL[] = [];
+    const orders:SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(accounts.id, filter.id));
+        filterSQLs.push(eq(accounts.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(accounts.userId, filter.userId));
+        filterSQLs.push(eq(accounts.userId, filter.userId));
       }
       if (filter.providerId !== undefined) {
-        query = query.where(eq(accounts.providerId, filter.providerId));
+        filterSQLs.push(eq(accounts.providerId, filter.providerId));
       }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(accounts.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -144,41 +144,47 @@ export class AccountRepository implements IAccountRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.id)) 
-              : query.orderBy(asc(accounts.id));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.id) 
+              : asc(accounts.id));
             break;
           case 'userId':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.userId)) 
-              : query.orderBy(asc(accounts.userId));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.userId) 
+              : asc(accounts.userId));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(accounts.createdAt)) 
-              : query.orderBy(asc(accounts.createdAt));
+            orders.push(sortOption.order === 'desc' 
+              ? desc(accounts.createdAt) 
+              : asc(accounts.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(accounts.id));
+      orders.push(asc(accounts.id));
     }
     
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orders);
+    const [countResult] = await  this.db.select({ totalCount: count() }).from(accounts).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
     
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    const items = result.map(this.mapToEntity);
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
     
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage,
+      prevPage,
     };
   }
 
@@ -186,7 +192,7 @@ export class AccountRepository implements IAccountRepository {
    * 계정 생성
    */
   async create(entity: Account): Promise<Account> {
-    const result = await this.db.insert(accounts).values({
+    const [result] = await this.db.insert(accounts).values({
       userId: entity.userId,
       providerId: entity.providerId,
       providerAccountId: entity.providerAccountId,
@@ -194,15 +200,19 @@ export class AccountRepository implements IAccountRepository {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError("계정 생성에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 계정 업데이트
    */
   async update(entity: Account): Promise<Account> {
-    const result = await this.db.update(accounts)
+    const [result] = await this.db.update(accounts)
       .set({
         password: entity.password,
         updatedAt: entity.updatedAt,
@@ -210,7 +220,11 @@ export class AccountRepository implements IAccountRepository {
       .where(eq(accounts.id, entity.id))
       .returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("계정 업데이트에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
