@@ -1,5 +1,7 @@
-import { asc, desc, eq, lt } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, lt, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Session } from '../../../../domain/entity/session.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
@@ -22,26 +24,26 @@ export class SessionRepository implements ISessionRepository {
    * ID로 세션 조회
    */
   async findById(id: number): Promise<Session | null> {
-    const result = await this.db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
+    const [result] = await this.db.select().from(sessions).where(eq(sessions.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 토큰으로 세션 조회
    */
   async findByToken(token: string): Promise<Session | null> {
-    const result = await this.db.select().from(sessions).where(eq(sessions.token, token)).limit(1);
+    const [result] = await this.db.select().from(sessions).where(eq(sessions.token, token)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -56,15 +58,17 @@ export class SessionRepository implements ISessionRepository {
    * 모든 세션 조회
    */
   async findAll(filter?: Filter<Session>, sort?: SortOptions<Session>[]): Promise<Session[]> {
-    let query = this.db.select().from(sessions);
+    const query = this.db.select().from(sessions);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sessions.id, filter.id));
+        filterSQLs.push(eq(sessions.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(sessions.userId, filter.userId));
+        filterSQLs.push(eq(sessions.userId, filter.userId));
       }
     }
     
@@ -73,33 +77,33 @@ export class SessionRepository implements ISessionRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.id)) 
-              : query.orderBy(asc(sessions.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.id) 
+              : asc(sessions.id));
             break;
           case 'userId':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.userId)) 
-              : query.orderBy(asc(sessions.userId));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.userId) 
+              : asc(sessions.userId));
             break;
           case 'expiresAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.expiresAt)) 
-              : query.orderBy(asc(sessions.expiresAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.expiresAt) 
+              : asc(sessions.expiresAt));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.createdAt)) 
-              : query.orderBy(asc(sessions.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.createdAt) 
+              : asc(sessions.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(sessions.id));
+     orderSQLs.push(asc(sessions.id));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -111,22 +115,19 @@ export class SessionRepository implements ISessionRepository {
     filter?: Filter<Session>,
     sort?: SortOptions<Session>[]
   ): Promise<PaginationResult<Session>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(sessions);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(sessions).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(sessions.id, filter.id));
+        filterSQLs.push(eq(sessions.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(sessions.userId, filter.userId));
+        filterSQLs.push(eq(sessions.userId, filter.userId));
       }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(sessions.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -134,46 +135,54 @@ export class SessionRepository implements ISessionRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.id)) 
-              : query.orderBy(asc(sessions.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.id) 
+              : asc(sessions.id));
             break;
           case 'userId':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.userId)) 
-              : query.orderBy(asc(sessions.userId));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.userId) 
+              : asc(sessions.userId));
             break;
           case 'expiresAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.expiresAt)) 
-              : query.orderBy(asc(sessions.expiresAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.expiresAt) 
+              : asc(sessions.expiresAt));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(sessions.createdAt)) 
-              : query.orderBy(asc(sessions.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(sessions.createdAt) 
+              : asc(sessions.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(sessions.id));
+      orderSQLs.push(asc(sessions.id));
     }
-    
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
+
     const result = await query;
     
     // 결과 변환
     const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const [countResult] = await this.db.select({ totalCount: count() }).from(sessions).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                                    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                                        
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
     };
   }
 
@@ -181,30 +190,38 @@ export class SessionRepository implements ISessionRepository {
    * 세션 생성
    */
   async create(entity: Session): Promise<Session> {
-    const result = await this.db.insert(sessions).values({
+    const [result] = await this.db.insert(sessions).values({
       userId: entity.userId,
       token: entity.token,
       expiresAt: entity.expiresAt,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError("세션 생성에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 세션 업데이트
    */
   async update(entity: Session): Promise<Session> {
-    const result = await this.db.update(sessions)
+    const [result] = await this.db.update(sessions)
       .set({
         expiresAt: entity.expiresAt,
         updatedAt: entity.updatedAt,
       })
       .where(eq(sessions.id, entity.id))
       .returning();
+
+    if (!result) {
+      throw new DatabaseError("세션 업데이트에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**

@@ -66,7 +66,7 @@ export const users = pgTable(
   {
     id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     name: varchar("name", { length: 255 }).notNull(), // 소셜 로그인에서 제공되는 이름
-    email: varchar("email", { length: 255 }).unique(), // 소셜 로그인에서 제공되는 이메일 (unique, notNull은 Provider 설정에 따라 유연하게)
+    email: varchar("email", { length: 255 }).unique().notNull(), // 소셜 로그인에서 제공되는 이메일 (unique, notNull은 Provider 설정에 따라 유연하게)
     emailVerified: timestamp("email_verified", { withTimezone: true }), // 기본값 제거
     profileImageUrl: varchar("profile_image_url", { length: 255 }), // 소셜 로그인에서 제공되는 프로필 이미지
     role: userRoleEnum("role").notNull().default("user"), // 'user' 또는 'creator'

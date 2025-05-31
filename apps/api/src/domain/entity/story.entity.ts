@@ -10,11 +10,13 @@ export class Story {
     private readonly _authorId: number, // 크리에이터 ID
     private _title: string,
     private _content: string,
+    private _contentText: string,
     private _coverImageUrl: string | null,
-    private _categoryId: number | null,
     private _status: StoryStatus,
     private readonly _createdAt: Date,
     private _updatedAt: Date,
+    private _publishedAt: Date | null,
+    private _deletedAt: Date | null,
   ) {}
 
   // Getters
@@ -34,12 +36,12 @@ export class Story {
     return this._content;
   }
 
-  get coverImageUrl(): string | null {
-    return this._coverImageUrl;
+  get contentText(): string {
+    return this._contentText;
   }
 
-  get categoryId(): number | null {
-    return this._categoryId;
+  get coverImageUrl(): string | null {
+    return this._coverImageUrl;
   }
 
   get status(): StoryStatus {
@@ -52,6 +54,14 @@ export class Story {
 
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  get publishedAt(): Date | null {
+    return this._publishedAt;
+  }
+
+  get deletedAt(): Date | null {
+    return this._deletedAt;
   }
 
   // Setters with validation
@@ -76,10 +86,7 @@ export class Story {
     this._updatedAt = new Date();
   }
 
-  updateCategory(categoryId: number | null): void {
-    this._categoryId = categoryId;
-    this._updatedAt = new Date();
-  }
+
 
   // 상태 변경 메서드
   publish(): void {
@@ -119,8 +126,8 @@ export class Story {
     authorId: number,
     title: string,
     content: string,
+    contentText: string,
     coverImageUrl: string | null = null,
-    categoryId: number | null = null,
   ): Story {
     if (!title || title.trim().length === 0) {
       throw new Error('제목은 비어있을 수 없습니다.');
@@ -133,15 +140,17 @@ export class Story {
     const now = new Date();
     
     return new Story(
-      0, // ID는 저장 시 할당
+      0,
       authorId,
       title,
       content,
+      contentText,
       coverImageUrl,
-      categoryId,
-      StoryStatus.PUBLISHED, // 생성 시 기본 상태는 발행됨
+      StoryStatus.PUBLISHED,
       now,
       now,
+      null,
+      null,
     );
   }
 }

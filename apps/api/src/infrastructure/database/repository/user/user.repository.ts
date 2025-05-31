@@ -1,5 +1,7 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { User } from '../../../../domain/entity/user.entity';
 import { UserRole, UserStatus } from '../../../../domain/entity/user.types';
@@ -23,26 +25,26 @@ export class UserRepository implements IUserRepository {
    * ID로 사용자 조회
    */
   async findById(id: number): Promise<User | null> {
-    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+    const [result] = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 이메일로 사용자 조회
    */
   async findByEmail(email: string): Promise<User | null> {
-    const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
+    const [result] = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -78,21 +80,23 @@ export class UserRepository implements IUserRepository {
    * 모든 사용자 조회
    */
   async findAll(filter?: Filter<User>, sort?: SortOptions<User>[]): Promise<User[]> {
-    let query = this.db.select().from(users);
+    const query = this.db.select().from(users);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(users.id, filter.id));
+        filterSQLs.push(eq(users.id, filter.id));
       }
       if (filter.email !== undefined) {
-        query = query.where(eq(users.email, filter.email));
+        filterSQLs.push(eq(users.email, filter.email));
       }
       if (filter.role !== undefined) {
-        query = query.where(eq(users.role, filter.role));
+        filterSQLs.push(eq(users.role, filter.role));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(users.status, filter.status));
+        filterSQLs.push(eq(users.status, filter.status));
       }
     }
     
@@ -101,28 +105,28 @@ export class UserRepository implements IUserRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.id)) 
-              : query.orderBy(asc(users.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.id) 
+              : asc(users.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.name)) 
-              : query.orderBy(asc(users.name));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.name) 
+              : asc(users.name));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.createdAt)) 
-              : query.orderBy(asc(users.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.createdAt) 
+              : asc(users.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(users.id));
+      orderSQLs.push(asc(users.id));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -134,28 +138,25 @@ export class UserRepository implements IUserRepository {
     filter?: Filter<User>,
     sort?: SortOptions<User>[]
   ): Promise<PaginationResult<User>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(users);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(users).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(users.id, filter.id));
+        filterSQLs.push(eq(users.id, filter.id));
       }
       if (filter.email !== undefined) {
-        query = query.where(eq(users.email, filter.email));
+        filterSQLs.push(eq(users.email, filter.email));
       }
       if (filter.role !== undefined) {
-        query = query.where(eq(users.role, filter.role));
+        filterSQLs.push(eq(users.role, filter.role));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(users.status, filter.status));
+        filterSQLs.push(eq(users.status, filter.status));
       }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(users.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -163,41 +164,49 @@ export class UserRepository implements IUserRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.id)) 
-              : query.orderBy(asc(users.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.id) 
+              : asc(users.id));
             break;
           case 'name':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.name)) 
-              : query.orderBy(asc(users.name));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.name) 
+              : asc(users.name));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(users.createdAt)) 
-              : query.orderBy(asc(users.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(users.createdAt) 
+              : asc(users.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: ID 오름차순
-      query = query.orderBy(asc(users.id));
+      orderSQLs.push(asc(users.id));
     }
-    
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
     
     const result = await query;
     
     // 결과 변환
     const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const [countResult] = await this.db.select({ totalCount: count() }).from(users).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                                
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                                    
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
     };
   }
 
@@ -205,7 +214,7 @@ export class UserRepository implements IUserRepository {
    * 사용자 생성
    */
   async create(entity: User): Promise<User> {
-    const result = await this.db.insert(users).values({
+    const [result] = await this.db.insert(users).values({
       name: entity.name,
       email: entity.email,
       emailVerified: entity.emailVerified,
@@ -215,15 +224,19 @@ export class UserRepository implements IUserRepository {
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError('사용자 생성에 실패했습니다.', status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 사용자 업데이트
    */
   async update(entity: User): Promise<User> {
-    const result = await this.db.update(users)
+    const [result] = await this.db.update(users)
       .set({
         name: entity.name,
         email: entity.email,
@@ -235,8 +248,12 @@ export class UserRepository implements IUserRepository {
       })
       .where(eq(users.id, entity.id))
       .returning();
+
+    if (!result) {
+      throw new DatabaseError('사용자 업데이트에 실패했습니다.', status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**

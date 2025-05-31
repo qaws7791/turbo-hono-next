@@ -23,13 +23,6 @@ export interface IStoryRepository extends IBaseRepository<Story> {
   findByStatus(status: StoryStatus, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>>;
 
   /**
-   * 카테고리 ID로 스토리 목록 조회
-   * @param categoryId 카테고리 ID
-   * @returns 스토리 배열
-   */
-  findByCategoryId(categoryId: number, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>>;
-
-  /**
    * 크리에이터 ID와 상태로 스토리 목록 조회
    * @param creatorId 크리에이터 ID
    * @param status 스토리 상태

@@ -1,5 +1,7 @@
-import { and, asc, desc, eq, ilike } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { and, asc, count, desc, eq, ilike, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Story } from '../../../../domain/entity/story.entity';
 import { StoryStatus } from '../../../../domain/entity/story.types';
@@ -23,88 +25,184 @@ export class StoryRepository implements IStoryRepository {
    * ID로 스토리 조회
    */
   async findById(id: number): Promise<Story | null> {
-    const result = await this.db.select().from(stories).where(eq(stories.id, id)).limit(1);
+    const [result] = await this.db.select().from(stories).where(eq(stories.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 크리에이터 ID로 스토리 목록 조회
    */
-  async findByCreatorId(creatorId: number): Promise<Story[]> {
-    const result = await this.db.select().from(stories).where(eq(stories.creatorId, creatorId));
-    return result.map(this.mapToEntity);
+  async findByCreatorId(creatorId: number, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>> {
+    const { limit, page = 1 } = paginationOptions;
+    const result = await this.db.select().from(stories).where(eq(stories.authorId, creatorId)).limit(limit).offset((page - 1) * limit);
+
+
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(eq(stories.authorId, creatorId));
+    const totalCount = countResult?.totalCount || 0;
+                                    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                                        
+    return {
+      items,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
+    };
   }
 
   /**
    * 상태로 스토리 목록 조회
    */
-  async findByStatus(status: StoryStatus): Promise<Story[]> {
-    const result = await this.db.select().from(stories).where(eq(stories.status, status));
-    return result.map(this.mapToEntity);
-  }
-
-  /**
-   * 카테고리 ID로 스토리 목록 조회
-   */
-  async findByCategoryId(categoryId: number): Promise<Story[]> {
-    const result = await this.db.select().from(stories).where(eq(stories.categoryId, categoryId));
-    return result.map(this.mapToEntity);
+  async findByStatus(status: StoryStatus, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>> {
+    const { limit, page = 1 } = paginationOptions;
+    const result = await this.db.select().from(stories).where(eq(stories.status, status)).limit(limit).offset((page - 1) * limit);
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(eq(stories.status, status));
+    const totalCount = countResult?.totalCount || 0;
+    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    
+    return {
+      items,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
+    };
   }
 
   /**
    * 크리에이터 ID와 상태로 스토리 목록 조회
    */
-  async findByCreatorIdAndStatus(creatorId: number, status: StoryStatus): Promise<Story[]> {
+  async findByCreatorIdAndStatus({ creatorId, status }: { creatorId: number; status: StoryStatus }, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>> {
+    const { limit, page = 1 } = paginationOptions;
     const result = await this.db.select().from(stories)
       .where(and(
-        eq(stories.creatorId, creatorId),
+        eq(stories.authorId, creatorId),
         eq(stories.status, status)
       ));
-    return result.map(this.mapToEntity);
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(and(
+      eq(stories.authorId, creatorId),
+      eq(stories.status, status)
+    ));
+    const totalCount = countResult?.totalCount || 0;
+    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    
+    return {
+      items,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
+    };
   }
 
   /**
    * 제목 검색으로 스토리 목록 조회
    */
-  async searchByTitle(title: string): Promise<Story[]> {
+  async searchByTitle(title: string, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>> {
+    const { limit, page = 1 } = paginationOptions;
     const result = await this.db.select().from(stories)
       .where(ilike(stories.title, `%${title}%`));
-    return result.map(this.mapToEntity);
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(ilike(stories.title, `%${title}%`));
+    const totalCount = countResult?.totalCount || 0;
+    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    
+    return {
+      items,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
+    };
   }
 
   /**
    * 내용 검색으로 스토리 목록 조회
    */
-  async searchByContent(content: string): Promise<Story[]> {
+  async searchByContent(content: string, paginationOptions: PaginationOptions): Promise<PaginationResult<Story>> {
+    const { limit, page = 1 } = paginationOptions;
     const result = await this.db.select().from(stories)
-      .where(ilike(stories.content, `%${content}%`));
-    return result.map(this.mapToEntity);
+      .where(ilike(stories.contentText, `%${content}%`));
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(ilike(stories.contentText, `%${content}%`));
+    const totalCount = countResult?.totalCount || 0;
+    
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+    
+    return {
+      items,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
+    };
   }
 
   /**
    * 모든 스토리 조회
    */
   async findAll(filter?: Filter<Story>, sort?: SortOptions<Story>[]): Promise<Story[]> {
-    let query = this.db.select().from(stories);
+    const query = this.db.select().from(stories);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(stories.id, filter.id));
+        filterSQLs.push(eq(stories.id, filter.id));
       }
-      if (filter.creatorId !== undefined) {
-        query = query.where(eq(stories.creatorId, filter.creatorId));
+      if (filter.authorId !== undefined) {
+        filterSQLs.push(eq(stories.authorId, filter.authorId));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(stories.status, filter.status));
-      }
-      if (filter.categoryId !== undefined) {
-        query = query.where(eq(stories.categoryId, filter.categoryId));
+        filterSQLs.push(eq(stories.status, filter.status));
       }
     }
     
@@ -113,28 +211,28 @@ export class StoryRepository implements IStoryRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.id)) 
-              : query.orderBy(asc(stories.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.id) 
+              : asc(stories.id));
             break;
           case 'title':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.title)) 
-              : query.orderBy(asc(stories.title));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.title) 
+              : asc(stories.title));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.createdAt)) 
-              : query.orderBy(asc(stories.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.createdAt) 
+              : asc(stories.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(stories.createdAt));
+      orderSQLs.push(desc(stories.createdAt));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -146,28 +244,22 @@ export class StoryRepository implements IStoryRepository {
     filter?: Filter<Story>,
     sort?: SortOptions<Story>[]
   ): Promise<PaginationResult<Story>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(stories);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(stories).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(stories.id, filter.id));
+        filterSQLs.push(eq(stories.id, filter.id));
       }
-      if (filter.creatorId !== undefined) {
-        query = query.where(eq(stories.creatorId, filter.creatorId));
+      if (filter.authorId !== undefined) {
+        filterSQLs.push(eq(stories.authorId, filter.authorId));
       }
       if (filter.status !== undefined) {
-        query = query.where(eq(stories.status, filter.status));
+        filterSQLs.push(eq(stories.status, filter.status));
       }
-      if (filter.categoryId !== undefined) {
-        query = query.where(eq(stories.categoryId, filter.categoryId));
-      }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(stories.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -175,41 +267,47 @@ export class StoryRepository implements IStoryRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.id)) 
-              : query.orderBy(asc(stories.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.id) 
+              : asc(stories.id));
             break;
           case 'title':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.title)) 
-              : query.orderBy(asc(stories.title));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.title) 
+              : asc(stories.title));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(stories.createdAt)) 
-              : query.orderBy(asc(stories.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(stories.createdAt) 
+              : asc(stories.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(stories.createdAt));
+      orderSQLs.push(desc(stories.createdAt));
     }
     
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
-    
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
+    const items = result.map(this.mapToEntity);
+    const [countResult] = await this.db.select({ totalCount: count() }).from(stories).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
     
     // 결과 변환
-    const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
     
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
     };
   }
 
@@ -217,39 +315,49 @@ export class StoryRepository implements IStoryRepository {
    * 스토리 생성
    */
   async create(entity: Story): Promise<Story> {
-    const result = await this.db.insert(stories).values({
-      creatorId: entity.creatorId,
+    const [result] = await this.db.insert(stories).values({
+      authorId: entity.authorId,
       title: entity.title,
+      coverImageUrl: entity.coverImageUrl,
       content: entity.content,
-      thumbnailUrl: entity.thumbnailUrl,
-      categoryId: entity.categoryId,
+      contentText: entity.contentText,
       status: entity.status,
       createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
       publishedAt: entity.publishedAt,
+      updatedAt: entity.updatedAt,
+      deletedAt: entity.deletedAt,
     }).returning();
+
+    if (!result) {
+      throw new DatabaseError("스토리 생성에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 스토리 업데이트
    */
   async update(entity: Story): Promise<Story> {
-    const result = await this.db.update(stories)
+    const [result] = await this.db.update(stories)
       .set({
         title: entity.title,
         content: entity.content,
-        thumbnailUrl: entity.thumbnailUrl,
-        categoryId: entity.categoryId,
+        coverImageUrl: entity.coverImageUrl,
+        contentText: entity.contentText,
         status: entity.status,
         updatedAt: entity.updatedAt,
         publishedAt: entity.publishedAt,
+        deletedAt: entity.deletedAt,
       })
       .where(eq(stories.id, entity.id))
       .returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("스토리 업데이트에 실패했습니다.",status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
@@ -266,15 +374,16 @@ export class StoryRepository implements IStoryRepository {
   private mapToEntity(model: typeof stories.$inferSelect): Story {
     return new Story(
       model.id,
-      model.creatorId,
+      model.authorId,
       model.title,
-      model.content,
-      model.thumbnailUrl,
-      model.categoryId,
+      model.content as string,
+      model.contentText,
+      model.coverImageUrl,
       model.status as StoryStatus,
       model.createdAt,
       model.updatedAt,
-      model.publishedAt
+      model.publishedAt,
+      model.deletedAt,
     );
   }
 }

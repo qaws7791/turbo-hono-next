@@ -25,3 +25,5 @@ export enum SocialProvider {
   KAKAO = 'kakao',
   EMAIL = 'email',
 }
+
+export const EmailProvider = "email"

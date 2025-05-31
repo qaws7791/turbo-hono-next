@@ -8,7 +8,7 @@ export class User {
   constructor(
     private readonly _id: number,
     private _name: string,
-    private _email: string | null,
+    private _email: string,
     private _emailVerified: Date | null,
     private _profileImageUrl: string | null,
     private _role: UserRole,
@@ -26,7 +26,7 @@ export class User {
     return this._name;
   }
 
-  get email(): string | null {
+  get email(): string {
     return this._email;
   }
 
@@ -63,13 +63,14 @@ export class User {
     this._updatedAt = new Date();
   }
 
-  updateEmail(email: string | null): void {
-    if (email !== null) {
-      // 간단한 이메일 유효성 검사
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        throw new Error('유효하지 않은 이메일 형식입니다.');
-      }
+  updateEmail(email: string): void {
+    if (!email || email.trim().length === 0) {
+      throw new Error('이메일은 비어있을 수 없습니다.');
+    }
+    // 간단한 이메일 유효성 검사
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error('유효하지 않은 이메일 형식입니다.');
     }
     this._email = email;
     this._emailVerified = null; // 이메일 변경 시 인증 상태 초기화
@@ -118,7 +119,7 @@ export class User {
   // 팩토리 메서드
   static create(
     name: string,
-    email: string | null,
+    email: string,
     profileImageUrl: string | null = null,
   ): User {
     const now = new Date();

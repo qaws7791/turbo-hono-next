@@ -10,6 +10,8 @@ export class Session {
     private readonly _expiresAt: Date,
     private readonly _createdAt: Date,
     private _updatedAt: Date,
+    private _ipAddress: string | null,
+    private _userAgent: string | null,
   ) {}
 
   // Getters
@@ -37,6 +39,14 @@ export class Session {
     return this._updatedAt;
   }
 
+  get ipAddress(): string | null {
+    return this._ipAddress;
+  }
+
+  get userAgent(): string | null {
+    return this._userAgent;
+  }
+
   // 도메인 로직
   isExpired(): boolean {
     return new Date() > this._expiresAt;
@@ -47,7 +57,7 @@ export class Session {
   }
 
   // 팩토리 메서드
-  static create(userId: number, token: string, expiresInDays = 30): Session {
+  static create(userId: number, token: string, expiresInDays = 30, ipAddress: string | null, userAgent: string | null): Session {
     const now = new Date();
     const expiresAt = new Date(now);
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
@@ -59,6 +69,8 @@ export class Session {
       expiresAt,
       now,
       now,
+      ipAddress,
+      userAgent,
     );
   }
 }

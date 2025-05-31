@@ -1,9 +1,11 @@
-import { and, asc, count, desc, eq } from 'drizzle-orm';
+import { DatabaseError } from '@/common/errors/database-error';
+import { ReactionType } from '@/domain/entity/story.types';
+import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import { Reaction } from '../../../../domain/entity/reaction.entity';
 import { PaginationOptions, PaginationResult } from '../../../../domain/service/service.types';
-import { ReactionType } from '../../../domain/reaction.types';
 import { reactions } from '../../schema';
 import { Filter, SortOptions } from '../repository.types';
 import { IReactionRepository } from './reaction.repository.interface';
@@ -23,13 +25,13 @@ export class ReactionRepository implements IReactionRepository {
    * ID로 리액션 조회
    */
   async findById(id: number): Promise<Reaction | null> {
-    const result = await this.db.select().from(reactions).where(eq(reactions.id, id)).limit(1);
+    const [result] = await this.db.select().from(reactions).where(eq(reactions.id, id)).limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
@@ -52,62 +54,64 @@ export class ReactionRepository implements IReactionRepository {
    * 사용자 ID와 스토리 ID로 리액션 조회
    */
   async findByUserIdAndStoryId(userId: number, storyId: number): Promise<Reaction | null> {
-    const result = await this.db.select().from(reactions)
+    const [result] = await this.db.select().from(reactions)
       .where(and(
         eq(reactions.userId, userId),
         eq(reactions.storyId, storyId)
       ))
       .limit(1);
     
-    if (result.length === 0) {
+    if (!result) {
       return null;
     }
     
-    return this.mapToEntity(result[0]);
+    return this.mapToEntity(result);
   }
 
   /**
    * 스토리 ID와 리액션 타입으로 리액션 수 조회
    */
   async countByStoryIdAndType(storyId: number, type: ReactionType): Promise<number> {
-    const result = await this.db.select({ count: count() }).from(reactions)
+    const [result] = await this.db.select({ count: count() }).from(reactions)
       .where(and(
         eq(reactions.storyId, storyId),
-        eq(reactions.type, type)
+        eq(reactions.reactionType, type)
       ));
     
-    return result[0].count;
+    return result?.count || 0;
   }
 
   /**
    * 스토리 ID로 리액션 수 조회
    */
   async countByStoryId(storyId: number): Promise<number> {
-    const result = await this.db.select({ count: count() }).from(reactions)
+    const [result] = await this.db.select({ count: count() }).from(reactions)
       .where(eq(reactions.storyId, storyId));
     
-    return result[0].count;
+    return result?.count || 0;
   }
 
   /**
    * 모든 리액션 조회
    */
   async findAll(filter?: Filter<Reaction>, sort?: SortOptions<Reaction>[]): Promise<Reaction[]> {
-    let query = this.db.select().from(reactions);
+    const query = this.db.select().from(reactions);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(reactions.id, filter.id));
+        filterSQLs.push(eq(reactions.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(reactions.userId, filter.userId));
+        filterSQLs.push(eq(reactions.userId, filter.userId));
       }
       if (filter.storyId !== undefined) {
-        query = query.where(eq(reactions.storyId, filter.storyId));
+        filterSQLs.push(eq(reactions.storyId, filter.storyId));
       }
-      if (filter.type !== undefined) {
-        query = query.where(eq(reactions.type, filter.type));
+      if (filter.reactionType !== undefined) {
+        filterSQLs.push(eq(reactions.reactionType, filter.reactionType));
       }
     }
     
@@ -116,23 +120,23 @@ export class ReactionRepository implements IReactionRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(reactions.id)) 
-              : query.orderBy(asc(reactions.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(reactions.id) 
+              : asc(reactions.id));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(reactions.createdAt)) 
-              : query.orderBy(asc(reactions.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(reactions.createdAt) 
+              : asc(reactions.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(reactions.createdAt));
+      orderSQLs.push(desc(reactions.createdAt));
     }
     
-    const result = await query;
+    const result = await query.where(and(...filterSQLs)).orderBy(...orderSQLs);
     return result.map(this.mapToEntity);
   }
 
@@ -144,28 +148,25 @@ export class ReactionRepository implements IReactionRepository {
     filter?: Filter<Reaction>,
     sort?: SortOptions<Reaction>[]
   ): Promise<PaginationResult<Reaction>> {
-    const { limit, cursor } = options;
-    let query = this.db.select().from(reactions);
+    const { limit, page = 1 } = options;
+    const query = this.db.select().from(reactions).limit(limit).offset((page - 1) * limit);
+    const filterSQLs: SQL[] = [];
+    const orderSQLs: SQL[] = [];
     
     // 필터 적용
     if (filter) {
       if (filter.id !== undefined) {
-        query = query.where(eq(reactions.id, filter.id));
+        filterSQLs.push(eq(reactions.id, filter.id));
       }
       if (filter.userId !== undefined) {
-        query = query.where(eq(reactions.userId, filter.userId));
+        filterSQLs.push(eq(reactions.userId, filter.userId));
       }
       if (filter.storyId !== undefined) {
-        query = query.where(eq(reactions.storyId, filter.storyId));
+        filterSQLs.push(eq(reactions.storyId, filter.storyId));
       }
-      if (filter.type !== undefined) {
-        query = query.where(eq(reactions.type, filter.type));
+      if (filter.reactionType !== undefined) {
+        filterSQLs.push(eq(reactions.reactionType, filter.reactionType));
       }
-    }
-    
-    // 커서 기반 페이지네이션
-    if (cursor) {
-      query = query.where(reactions.id > Number(cursor));
     }
     
     // 정렬 적용
@@ -173,36 +174,44 @@ export class ReactionRepository implements IReactionRepository {
       for (const sortOption of sort) {
         switch (sortOption.field) {
           case 'id':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(reactions.id)) 
-              : query.orderBy(asc(reactions.id));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(reactions.id) 
+              : asc(reactions.id));
             break;
           case 'createdAt':
-            query = sortOption.order === 'desc' 
-              ? query.orderBy(desc(reactions.createdAt)) 
-              : query.orderBy(asc(reactions.createdAt));
+            orderSQLs.push(sortOption.order === 'desc' 
+              ? desc(reactions.createdAt) 
+              : asc(reactions.createdAt));
             break;
         }
       }
     } else {
       // 기본 정렬: 생성일 내림차순 (최신순)
-      query = query.orderBy(desc(reactions.createdAt));
+      orderSQLs.push(desc(reactions.createdAt));
     }
-    
-    // 제한 적용
-    query = query.limit(limit + 1); // 다음 페이지 확인을 위해 limit + 1
     
     const result = await query;
     
     // 결과 변환
     const items = result.slice(0, limit).map(this.mapToEntity);
-    const hasMore = result.length > limit;
-    const nextCursor = hasMore ? items[items.length - 1].id : undefined;
-    
+    const [countResult] = await this.db.select({ totalCount: count() }).from(reactions).where(and(...filterSQLs));
+    const totalCount = countResult?.totalCount || 0;
+                                
+    // 결과 변환
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = page;
+    const itemsPerPage = limit;
+    const nextPage = page < totalPages ? page + 1 : null;
+    const prevPage = page > 1 ? page - 1 : null;
+                                    
     return {
       items,
-      hasMore,
-      nextCursor,
+      totalPages,
+      totalItems: totalCount,
+      currentPage,
+      itemsPerPage,
+      nextPage, 
+      prevPage,
     };
   }
 
@@ -210,28 +219,39 @@ export class ReactionRepository implements IReactionRepository {
    * 리액션 생성
    */
   async create(entity: Reaction): Promise<Reaction> {
-    const result = await this.db.insert(reactions).values({
+    const [result] = await this.db.insert(reactions).values({
       userId: entity.userId,
       storyId: entity.storyId,
-      type: entity.type,
+      reactionType: entity.reactionType,
       createdAt: entity.createdAt,
     }).returning();
-    
-    return this.mapToEntity(result[0]);
+
+    if (!result) {
+      throw new DatabaseError("리액션 생성에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
+      
+    return this.mapToEntity(result);
   }
 
   /**
    * 리액션 업데이트
    */
   async update(entity: Reaction): Promise<Reaction> {
-    const result = await this.db.update(reactions)
+    const [result] = await this.db.update(reactions)
       .set({
-        type: entity.type,
+        userId: entity.userId,
+        storyId: entity.storyId,
+        reactionType: entity.reactionType,
+        createdAt: entity.createdAt,
       })
       .where(eq(reactions.id, entity.id))
       .returning();
     
-    return this.mapToEntity(result[0]);
+    if (!result) {
+      throw new DatabaseError("리액션 업데이트에 실패했습니다.", status.INTERNAL_SERVER_ERROR);
+    }
+    
+    return this.mapToEntity(result);
   }
 
   /**
@@ -262,9 +282,9 @@ export class ReactionRepository implements IReactionRepository {
   private mapToEntity(model: typeof reactions.$inferSelect): Reaction {
     return new Reaction(
       model.id,
-      model.userId,
       model.storyId,
-      model.type as ReactionType,
+      model.userId,
+      model.reactionType as ReactionType,
       model.createdAt
     );
   }

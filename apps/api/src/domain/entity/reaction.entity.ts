@@ -11,7 +11,6 @@ export class Reaction {
     private readonly _userId: number,
     private _reactionType: ReactionType,
     private readonly _createdAt: Date,
-    private _updatedAt: Date,
   ) {}
 
   // Getters
@@ -35,14 +34,10 @@ export class Reaction {
     return this._createdAt;
   }
 
-  get updatedAt(): Date {
-    return this._updatedAt;
-  }
 
   // Setters with validation
   updateReactionType(type: ReactionType): void {
     this._reactionType = type;
-    this._updatedAt = new Date();
   }
 
   // 팩토리 메서드
@@ -58,7 +53,6 @@ export class Reaction {
       storyId,
       userId,
       reactionType,
-      now,
       now,
     );
   }
