@@ -21,6 +21,7 @@ export const DI_SYMBOLS = {
   UserService: Symbol.for('UserService'),
   CreatorService: Symbol.for('CreatorService'),
   StoryService: Symbol.for('StoryService'),
+  StoryQueryService: Symbol.for('StoryQueryService'),
   ReactionService: Symbol.for('ReactionService'),
   FollowService: Symbol.for('FollowService'),
   CategoryService: Symbol.for('CategoryService'),
