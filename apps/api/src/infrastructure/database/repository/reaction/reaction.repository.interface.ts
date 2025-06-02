@@ -51,4 +51,11 @@ export interface IReactionRepository extends IBaseRepository<Reaction> {
    * @returns 삭제 성공 여부
    */
   deleteByUserIdAndStoryId(userId: number, storyId: number): Promise<boolean>;
+
+  /**
+   * 스토리 ID로 리액션 카운트 조회
+   * @param storyId 스토리 ID
+   * @returns 리액션 카운트
+   */
+  countTotalByStoryId(storyId: number): Promise<{ [key in ReactionType]: number }>;
 }

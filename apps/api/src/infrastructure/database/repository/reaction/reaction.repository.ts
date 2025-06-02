@@ -275,6 +275,47 @@ export class ReactionRepository implements IReactionRepository {
     
     return result.length > 0;
   }
+  
+  /**
+   * 스토리 ID로 리액션 타입별 카운트 조회
+   * @param storyId 스토리 ID
+   * @returns 리액션 타입별 카운트 객체
+   */
+  async countTotalByStoryId(storyId: number): Promise<{ [key in ReactionType]: number }> {
+    try {
+      // 모든 리액션 타입에 대한 카운트를 한 번의 쿼리로 가져옴
+      const result = await this.db
+        .select({
+          reactionType: reactions.reactionType,
+          count: count(),
+        })
+        .from(reactions)
+        .where(eq(reactions.storyId, storyId))
+        .groupBy(reactions.reactionType);
+
+      // 결과를 리액션 타입별로 매핑
+      const reactionCounts: { [key in ReactionType]: number } = {
+        like: 0,
+        heart: 0,
+        clap: 0,
+        fire: 0,
+        idea: 0,
+      };
+
+      // 쿼리 결과에서 카운트 값을 매핑
+      result.forEach((item) => {
+        const type = item.reactionType as ReactionType;
+        reactionCounts[type] = Number(item.count) || 0;
+      });
+
+      return reactionCounts;
+    } catch {
+      throw new DatabaseError(
+        `스토리 ID ${storyId}에 대한 리액션 카운트 조회에 실패했습니다.`,
+        status.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
 
   /**
    * DB 모델을 도메인 엔티티로 변환
