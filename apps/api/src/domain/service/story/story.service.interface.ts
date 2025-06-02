@@ -20,7 +20,6 @@ export interface IStoryService {
       title: string;
       content: string;
       coverImageUrl?: string | null;
-      categoryId?: number | null;
     }
   ): Promise<Story>;
 
@@ -38,7 +37,6 @@ export interface IStoryService {
       title?: string;
       content?: string;
       coverImageUrl?: string | null;
-      categoryId?: number | null;
     }
   ): Promise<Story>;
 
@@ -90,4 +88,12 @@ export interface IStoryService {
    * @param storyId 스토리 ID
    */
   deleteReaction(userId: number, storyId: number): Promise<void>;
+
+
+  /**
+   * 스토리 반응 카운트 조회
+   * @param storyId 스토리 ID
+   * @returns 스토리 반응 카운트
+   */
+  getReactionCount(storyId: number): Promise<{ [key in ReactionType]: number }>;
 }

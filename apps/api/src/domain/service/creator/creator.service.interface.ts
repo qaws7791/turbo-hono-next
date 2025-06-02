@@ -18,12 +18,14 @@ export interface ICreatorService {
     userId: number,
     data: {
       brandName: string;
-      bio?: string;
-      profileImageUrl?: string;
-      coverImageUrl?: string;
-      sidoId?: number;
-      sigunguId?: number;
-      categoryId?: number;
+      introduction: string;
+      businessNumber: string;
+      businessName: string;
+      ownerName: string;
+      contactInfo: string;
+      sidoId: number;
+      sigunguId: number;
+      categoryId: number;
     }
   ): Promise<Creator>;
 
@@ -44,12 +46,14 @@ export interface ICreatorService {
     userId: number,
     data: {
       brandName?: string;
-      bio?: string | null;
-      profileImageUrl?: string | null;
-      coverImageUrl?: string | null;
-      sidoId?: number | null;
-      sigunguId?: number | null;
-      categoryId?: number | null;
+      introduction?: string;
+      businessNumber?: string;
+      businessName?: string;
+      ownerName?: string;
+      contactInfo?: string;
+      sidoId?: number;
+      sigunguId?: number;
+      categoryId?: number;
     }
   ): Promise<Creator>;
 

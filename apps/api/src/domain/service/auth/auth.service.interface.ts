@@ -1,3 +1,4 @@
+import { CookieOptions } from 'hono/utils/cookie';
 import { Session } from '../../entity/session.entity';
 import { User } from '../../entity/user.entity';
 import { SocialProvider } from '../../entity/user.types';
@@ -10,18 +11,12 @@ export interface IAuthService {
   /**
    * 소셜 로그인 처리
    * @param provider 소셜 로그인 제공자
-   * @param providerAccountId 제공자 계정 ID
-   * @param profile 소셜 로그인 프로필 정보
+   * @param token 소셜 로그인 토큰
    * @returns 생성된 세션과 사용자 정보
    */
   socialLogin(
     provider: SocialProvider,
-    providerAccountId: string,
-    profile: {
-      name: string;
-      email?: string;
-      profileImageUrl?: string;
-    }
+    token: string,
   ): Promise<{ session: Session; user: User }>;
 
   /**
@@ -75,4 +70,18 @@ export interface IAuthService {
    * @returns 로그아웃 성공 여부
    */
   logout(token: string): Promise<boolean>;
+
+  /**
+   * 세션 쿠키 옵션 가져오기
+   * @returns 세션 쿠키 옵션
+   */
+  getSessionCookieOptions(): CookieOptions;
+
+
+  /**
+   * 세션 정보 가져오기
+   * @param token 세션 토큰
+   * @returns 세션 정보
+   */
+  getSession(token: string): Promise<Session | null>;
 }

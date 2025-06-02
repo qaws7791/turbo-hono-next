@@ -43,7 +43,6 @@ export class FileService implements IFileService {
       userId,
       bucket,
       key,
-      filename,
       contentType,
       size
     );

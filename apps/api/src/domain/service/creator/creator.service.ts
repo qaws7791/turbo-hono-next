@@ -39,12 +39,14 @@ export class CreatorService implements ICreatorService {
     userId: number,
     data: {
       brandName: string;
-      bio?: string;
-      profileImageUrl?: string;
-      coverImageUrl?: string;
-      sidoId?: number;
-      sigunguId?: number;
-      categoryId?: number;
+      introduction: string;
+      businessNumber: string;
+      businessName: string;
+      ownerName: string;
+      contactInfo: string;
+      sidoId: number;
+      sigunguId: number;
+      categoryId: number;
     }
   ): Promise<Creator> {
     // 사용자 확인
@@ -84,12 +86,14 @@ export class CreatorService implements ICreatorService {
     const creator = Creator.apply(
       userId,
       data.brandName,
-      data.bio || null,
-      data.profileImageUrl || null,
-      data.coverImageUrl || null,
-      data.sidoId || null,
-      data.sigunguId || null,
-      data.categoryId || null
+      data.introduction,
+      data.businessNumber,
+      data.businessName,
+      data.ownerName,
+      data.contactInfo,
+      data.sidoId,
+      data.sigunguId,
+      data.categoryId
     );
 
     // 저장
@@ -120,12 +124,14 @@ export class CreatorService implements ICreatorService {
     userId: number,
     data: {
       brandName?: string;
-      bio?: string | null;
-      profileImageUrl?: string | null;
-      coverImageUrl?: string | null;
-      sidoId?: number | null;
-      sigunguId?: number | null;
-      categoryId?: number | null;
+      introduction?: string;
+      businessNumber?: string;
+      businessName?: string;
+      ownerName?: string;
+      contactInfo?: string;
+      sidoId?: number;
+      sigunguId?: number;
+      categoryId?: number;
     }
   ): Promise<Creator> {
     // 크리에이터 조회
@@ -165,18 +171,41 @@ export class CreatorService implements ICreatorService {
     }
 
     // 소개 업데이트
-    if (data.bio !== undefined) {
-      creator.updateBio(data.bio);
+    if (data.introduction !== undefined) {
+      creator.updateIntroduction(data.introduction);
     }
 
-    // 프로필 이미지 업데이트
-    if (data.profileImageUrl !== undefined) {
-      creator.updateProfileImage(data.profileImageUrl);
+    // 사업자번호 업데이트
+    if (data.businessNumber !== undefined) {
+      creator.updateBusinessNumber(data.businessNumber);
     }
 
-    // 커버 이미지 업데이트
-    if (data.coverImageUrl !== undefined) {
-      creator.updateCoverImage(data.coverImageUrl);
+    // 사업자명 업데이트
+    if (data.businessName !== undefined) {
+      creator.updateBusinessName(data.businessName);
+    }
+
+    // 소유자명 업데이트
+    if (data.ownerName !== undefined) {
+      creator.updateOwnerName(data.ownerName);
+    }
+
+    // 연락처 업데이트
+    if (data.contactInfo !== undefined) {
+      creator.updateContactInfo(data.contactInfo);
+    }
+
+    // 위치 업데이트
+    if (data.sidoId !== undefined || data.sigunguId !== undefined) {
+      creator.updateLocation(
+        data.sidoId !== undefined ? data.sidoId : creator.sidoId,
+        data.sigunguId !== undefined ? data.sigunguId : creator.sigunguId
+      );
+    }
+
+    // 카테고리 업데이트
+    if (data.categoryId !== undefined) {
+      creator.updateCategory(data.categoryId);
     }
 
     // 위치 업데이트

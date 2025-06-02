@@ -1,8 +1,10 @@
+import { env } from '@/common/config/env';
 import { HTTPError } from '@/common/errors/http-error';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { Argon2PasswordService } from '@/infrastructure/auth/argon2password.service';
 import { ResendService } from '@/infrastructure/email/resend.service';
 import { KakaoOAuthService } from '@/infrastructure/oauth/kakao-oauth.service';
+import { CookieOptions } from 'hono/utils/cookie';
 import status from 'http-status';
 import { inject, injectable } from 'inversify';
 import crypto from 'node:crypto';
@@ -50,17 +52,40 @@ export class AuthService implements IAuthService {
    */
   async socialLogin(
     provider: SocialProvider,
-    providerAccountId: string,
-    profile: {
-      name: string;
+    token: string,
+  ): Promise<{ session: Session; user: User }> {
+
+    let socialProfile: {
+      id: string;
+      nickname: string;
       email?: string;
       profileImageUrl?: string;
+    } | null = null;
+
+    if (provider === SocialProvider.KAKAO) {
+      const {access_token} = await this.kakaoOAuthService.getTokensFromKakao(token);
+      const kakaoProfile = await this.kakaoOAuthService.getUserInfoFromKakao(access_token);
+      socialProfile = {
+        id: kakaoProfile.id.toString(),
+        nickname: kakaoProfile.properties?.nickname || kakaoProfile.kakao_account?.profile?.nickname || '이름없음',
+        email: kakaoProfile.kakao_account?.email,
+        profileImageUrl: kakaoProfile.properties?.profile_image || kakaoProfile.kakao_account?.profile?.profile_image_url,
+      };
     }
-  ): Promise<{ session: Session; user: User }> {
+
+    if (!socialProfile || !socialProfile.id || !socialProfile.nickname || !socialProfile.email || !socialProfile.profileImageUrl) {
+      throw new HTTPError(
+        {
+          message: '소셜 로그인 정보를 찾을 수 없습니다.',
+        },
+        status.BAD_REQUEST,
+      );
+    }
+
     // 기존 계정 확인
     const existingAccount = await this.accountRepository.findByProviderAndProviderAccountId(
       provider,
-      providerAccountId
+      socialProfile.id
     );
 
     let user: User | null = null;
@@ -74,8 +99,8 @@ export class AuthService implements IAuthService {
     } else {
       // 이메일로 기존 사용자 확인 (이메일이 있는 경우)
       let existingUser: User | null = null;
-      if (profile.email) {
-        existingUser = await this.userRepository.findByEmail(profile.email);
+      if (socialProfile.email) {
+        existingUser = await this.userRepository.findByEmail(socialProfile.email);
       }
 
       if (existingUser) {
@@ -84,15 +109,15 @@ export class AuthService implements IAuthService {
         const newAccount = Account.createSocialAccount(
           user.id,
           provider,
-          providerAccountId
+          socialProfile.id
         );
         await this.accountRepository.create(newAccount);
       } else {
         // 새 사용자 생성
         const newUser = User.create(
-          profile.name,
-          profile.email || null,
-          profile.profileImageUrl || null
+          socialProfile.nickname,
+          socialProfile.email,
+          socialProfile.profileImageUrl
         );
         user = await this.userRepository.create(newUser);
 
@@ -100,15 +125,13 @@ export class AuthService implements IAuthService {
         const newAccount = Account.createSocialAccount(
           user.id,
           provider,
-          providerAccountId
+          socialProfile.id,
         );
         await this.accountRepository.create(newAccount);
       }
     }
 
-    // 세션 생성
-    const token = this.generateToken();
-    const session = Session.create(user.id, token);
+    const session = Session.create(user.id, token, undefined,null, null);
     await this.sessionRepository.create(session);
 
     return { session, user };
@@ -202,7 +225,7 @@ export class AuthService implements IAuthService {
 
     // 세션 생성
     const token = this.generateToken();
-    const session = Session.create(user.id, token);
+    const session = Session.create(user.id, token, undefined, null, null);
     await this.sessionRepository.create(session);
 
     return { session, user };
@@ -341,5 +364,26 @@ export class AuthService implements IAuthService {
    */
   private generateToken(length = 64): string {
     return crypto.randomBytes(length).toString("hex");
+  }
+
+  getSessionCookieOptions(): CookieOptions {
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 30);
+
+    return {
+      httpOnly: true,
+      secure: env.COOKIE_SECURE === "true",
+      sameSite: "Lax",
+      domain: env.COOKIE_DOMAIN,
+      expires: expires,
+      path: "/",
+    };
+  }
+
+  /**
+   * 세션 정보 가져오기
+   */
+  async getSession(token: string): Promise<Session | null> {
+    return this.sessionRepository.findByToken(token);
   }
 }

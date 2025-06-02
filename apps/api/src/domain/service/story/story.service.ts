@@ -1,4 +1,5 @@
 import { DI_SYMBOLS } from '@/containers/di-symbols';
+import { extractTextFromJSONContent } from "@repo/tiptap-config";
 import { inject, injectable } from 'inversify';
 import type { ICreatorRepository } from '../../../infrastructure/database/repository/creator/creator.repository.interface';
 import type { IReactionRepository } from '../../../infrastructure/database/repository/reaction/reaction.repository.interface';
@@ -9,7 +10,6 @@ import { Story } from '../../entity/story.entity';
 import { ReactionType, StoryStatus } from '../../entity/story.types';
 import { PaginationOptions, PaginationResult } from '../service.types';
 import { IStoryService } from './story.service.interface';
-
 /**
  * 스토리 서비스 구현
  */
@@ -38,7 +38,6 @@ export class StoryService implements IStoryService {
       title: string;
       content: string;
       coverImageUrl?: string | null;
-      categoryId?: number | null;
     }
   ): Promise<Story> {
     // 사용자의 크리에이터 정보 조회
@@ -52,13 +51,15 @@ export class StoryService implements IStoryService {
       throw new Error('활성화된 크리에이터만 스토리를 작성할 수 있습니다.');
     }
 
+    const contentText = extractTextFromJSONContent(JSON.parse(data.content));
+
     // 스토리 생성
     const story = Story.create(
       creator.id,
       data.title,
       data.content,
-      data.coverImageUrl || null,
-      data.categoryId || null
+      contentText,
+      data.coverImageUrl ?? null,
     );
 
     // 저장
@@ -76,7 +77,6 @@ export class StoryService implements IStoryService {
       title?: string;
       content?: string;
       coverImageUrl?: string | null;
-      categoryId?: number | null;
     }
   ): Promise<Story> {
     // 스토리 조회
@@ -114,11 +114,6 @@ export class StoryService implements IStoryService {
     // 커버 이미지 업데이트
     if (data.coverImageUrl !== undefined) {
       story.updateCoverImage(data.coverImageUrl);
-    }
-
-    // 카테고리 업데이트
-    if (data.categoryId !== undefined) {
-      story.updateCategory(data.categoryId);
     }
 
     // 저장
@@ -237,5 +232,12 @@ export class StoryService implements IStoryService {
     if (reaction) {
       await this.reactionRepository.deleteById(reaction.id);
     }
+  }
+
+  /**
+   * 스토리 반응 카운트 조회
+   */
+  async getReactionCount(storyId: number): Promise<{ [key in ReactionType]: number }> {
+    return this.reactionRepository.countTotalByStoryId(storyId);
   }
 }
