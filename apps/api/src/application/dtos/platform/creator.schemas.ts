@@ -31,7 +31,7 @@ export const creatorProfileSchema = z.object({
   sigunguId: z.number(),
   categoryId: z.number(),
   contactInfo: z.string(),
-  applicationStatus: z.string(),
+  status: z.string(),
   approvedAt: z.string().datetime().nullable(),
   rejectedAt: z.string().datetime().nullable(),
   rejectionReason: z.string().nullable(),
