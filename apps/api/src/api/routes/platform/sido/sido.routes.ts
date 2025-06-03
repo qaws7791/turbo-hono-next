@@ -1,6 +1,6 @@
 import { EntityIdParamDto } from "@/application/dtos/common.dto";
 import { SidoListResponseDto, SigunguListResponseDto } from "@/application/dtos/platform/sido.dto";
-import { createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
+import { createResponseDto } from "@/common/utils/dto";
 import { createRoute } from "@hono/zod-openapi";
 import status from "http-status";
 
@@ -42,11 +42,6 @@ export const getSigunguList = createRoute({
     },
     [status.BAD_REQUEST]: {
       description: "시도 ID가 유효하지 않습니다.",
-      content: {
-        "application/json": {
-          schema:createErrorResponseDto(),
-        },
-      },
     },
   },
 });

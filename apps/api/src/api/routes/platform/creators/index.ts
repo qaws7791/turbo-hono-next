@@ -1,13 +1,13 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
-import { CreatorService } from "@/application/platform/creator.service";
 import { HTTPError } from "@/common/errors/http-error";
 import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { ICreatorService } from "@/domain/service/creator/creator.service.interface";
 import status from "http-status";
 import * as routes from "./creators.routes";
 
-const creatorService = container.get<CreatorService>(DI_SYMBOLS.creatorService);
+const creatorService = container.get<ICreatorService>(DI_SYMBOLS.CreatorService);
 
 const platformCreators = createOpenAPI();
 
@@ -26,15 +26,17 @@ platformCreators.openapi(routes.applyCreator, async (c) => {
 
   await creatorService.applyCreator(
     user.id,
-    body.brandName,
-    body.introduction,
-    body.businessNumber,
-    body.businessName,
-    body.ownerName,
-    body.sidoId,
-    body.sigunguId,
-    body.contactInfo,
-    body.categoryId,
+    {
+      brandName: body.brandName,
+      introduction: body.introduction,
+      businessNumber: body.businessNumber,
+      businessName: body.businessName,
+      ownerName: body.ownerName,
+      contactInfo: body.contactInfo,
+      sidoId: body.sidoId,
+      sigunguId: body.sigunguId,
+      categoryId: body.categoryId,
+    }
   );
   return c.json({ message: "크리에이터 신청이 완료되었습니다." }, 201);
 });
@@ -60,7 +62,7 @@ platformCreators.openapi(routes.getMyCreatorProfile, async (c) => {
     );
   }
 
-  return c.json(profile, 200);
+  return c.json(APIResponse.success(profile), status.OK);
 });
 
 platformCreators.openapi(routes.updateMyCreatorProfile, async (c) => {
@@ -77,7 +79,7 @@ platformCreators.openapi(routes.updateMyCreatorProfile, async (c) => {
 platformCreators.openapi(routes.getCreator, async (c) => {
   const { id } = c.req.valid("param");
 
-  const profile = await creatorService.getCreatorProfile(id);
+  const profile = await creatorService.getCreatorById(id);
 
   return c.json(APIResponse.success(profile), status.OK);
 })

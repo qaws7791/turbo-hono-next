@@ -7,7 +7,7 @@ import {
   StorySummaryResponseSchema,
   StoryUpdateSchema
 } from "@/application/dtos/platform/story.dto";
-import { createCursorPaginationResponseDto, createErrorResponseDto, createResponseDto } from "@/common/utils/dto";
+import { createErrorResponseDto, createPaginationResponseDto, createResponseDto } from "@/common/utils/dto";
 import { createRoute, z } from "@hono/zod-openapi";
 import status from "http-status";
 
@@ -121,7 +121,7 @@ export const listStories = createRoute({
       description: "스토리 목록 조회 성공",
       content: {
         "application/json": {
-          schema:createCursorPaginationResponseDto(z.array(StorySummaryResponseSchema))
+          schema:createPaginationResponseDto(z.array(StorySummaryResponseSchema))
         },
       },
     },

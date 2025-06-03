@@ -7,8 +7,7 @@ const TAG = ["images"];
 // 미리 서명된 URL 생성 요청 스키마
 const createUploadRequestSchema = z.object({
   contentType: z.string(),
-  size: z.number().optional(),
-  customMetadata: z.record(z.unknown()).optional(),
+  size: z.number(),
 });
 
 // 업로드 완료 요청 스키마

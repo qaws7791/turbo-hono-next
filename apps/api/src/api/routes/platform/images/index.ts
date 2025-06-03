@@ -1,36 +1,38 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
-import { ObjectService } from "@/application/platform/object.service";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { IFileService } from "@/domain/service/file/file.service.interface";
+import { nanoid } from "nanoid";
 import * as routes from "./images.routes";
 const platformImages = createOpenAPI();
 
-const objectService = container.get<ObjectService>(DI_SYMBOLS.objectService);
+const fileService = container.get<IFileService>(DI_SYMBOLS.FileService);
 platformImages.openapi(routes.createUploadRequest, async (c) => {
-  const userId = c.get("user")?.id!;
+  const userId = c.get("user").id;
 
   const json = c.req.valid("json");
   console.log("json", json);
 
-  const result = await objectService.createUploadRequest({
+  const fileName = nanoid();
+  const result = await fileService.prepareUpload(
     userId,
-    contentType: json.contentType,
-    size: json.size,
-    customMetadata: json.customMetadata,
-  });
+    fileName,
+    json.contentType,
+    json.size
+  );
 
-  return c.json(result);
+  return c.json({
+    id: result.fileObject.id,
+    uploadUrl: result.uploadUrl,
+  });
 });
 
 platformImages.openapi(routes.completeUpload, async (c) => {
-  const userId = c.get("user")?.id!;
+  const userId = c.get("user").id;
 
   const { id } = await c.req.valid("json");
 
-  await objectService.completeUpload({
-    id,
-    userId,
-  });
+  await fileService.completeUpload(id,userId);
 
   return c.json({ message: "Upload completed" });
 });

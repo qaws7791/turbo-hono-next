@@ -1,21 +1,22 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
-import { ReactionService } from "@/application/platform/reaction.service";
-import { StoryService } from "@/application/platform/story.service";
 import { HTTPError } from "@/common/errors/http-error";
+import { APIResponse, Pagination } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
-import {
-  extractTextFromJSONContent,
-  validateEditorJSONContent,
-} from "@repo/tiptap-config";
+import { IStoryQueryService } from "@/domain/service/story/story-query.service.interface";
+import { IStoryService } from "@/domain/service/story/story.service.interface";
+import { IUserService } from "@/domain/service/user/user.service.interface";
+import { validateEditorJSONContent } from "@repo/tiptap-config";
+import status from "http-status";
 import * as routes from "./stories.routes";
 
 const platformStories = createOpenAPI();
 
-const storyService = container.get<StoryService>(DI_SYMBOLS.storyService);
-const reactionService = container.get<ReactionService>(
-  DI_SYMBOLS.reactionService,
+const storyService = container.get<IStoryService>(DI_SYMBOLS.StoryService);
+const storyQueryService = container.get<IStoryQueryService>(
+  DI_SYMBOLS.StoryQueryService,
 );
+const userService = container.get<IUserService>(DI_SYMBOLS.UserService);
 
 platformStories.openapi(routes.createStory, async (c) => {
   const user = c.get("user");
@@ -44,78 +45,48 @@ platformStories.openapi(routes.createStory, async (c) => {
     );
   }
 
-  const contentText = extractTextFromJSONContent(tiptapJSONContent);
-  const result = await storyService.createStory({
+  const result = await storyService.createStory(user.id, {
     title: json.title,
-    content: json.content || {},
-    contentText,
+    content: json.content,
     coverImageUrl: json.coverImageUrl,
-    authorId: user.id,
   });
   return c.json({ id: result.id }, 201);
 });
 
 platformStories.openapi(routes.updateStory, async (c) => {
+  const user = c.get("user");
   const { id } = c.req.valid("param");
   const json = await c.req.valid("json");
-  await storyService.updateStory(id, json);
+  await storyService.updateStory(user.id, id, json);
   return c.json({ message: "스토리 수정 성공" });
 });
 
 platformStories.openapi(routes.deleteStory, async (c) => {
+  const user = c.get("user");
   const { id } = c.req.valid("param");
-  await storyService.deleteStory(id);
+  await storyService.deleteStory(user.id, id);
   return c.json({ message: "스토리 삭제 성공" });
 });
 
 platformStories.openapi(routes.getStory, async (c) => {
   const { id } = c.req.valid("param");
-  const story = await storyService.getStoryById(id);
-  if (!story) return c.json({ message: "스토리 없음" }, 404);
-  return c.json(story);
+  const story = await storyQueryService.getStoryDetailById(id);
+
+  return c.json(APIResponse.success(story), 200);
 });
 
 platformStories.openapi(routes.listStories, async (c) => {
   const query = c.req.valid("query");
-  // status가 string으로 들어오면 union 타입으로 변환
-  const status =
-    query.status && ["published", "hidden", "deleted"].includes(query.status)
-      ? (query.status as "published" | "hidden" | "deleted")
-      : undefined;
-  const stories = await storyService.getAllStories({ ...query, status });
-  return c.json(stories);
-});
-
-platformStories.openapi(routes.searchStories, async (c) => {
-  const query = c.req.valid("query");
-  const status =
-    query.status && ["published", "hidden", "deleted"].includes(query.status)
-      ? (query.status as "published" | "hidden" | "deleted")
-      : undefined;
-  const stories = await storyService.searchStories({ ...query, status });
-  return c.json(stories);
-});
-
-// --- Reaction ---
-platformStories.openapi(routes.addReaction, async (c) => {
-  const { id } = c.req.valid("param");
-  const json = await c.req.valid("json");
-  // 실제 서비스에서는 userId를 인증 유저에서 추출해야 함
-  await reactionService.addReaction({ ...json, storyId: id });
-  return c.json({ message: "반응 추가 성공" }, 201);
-});
-
-platformStories.openapi(routes.removeReaction, async (c) => {
-  const { id } = c.req.valid("param");
-  const { userId } = c.req.valid("query");
-  await reactionService.removeReaction(id, userId);
-  return c.json({ message: "반응 삭제 성공" });
-});
-
-platformStories.openapi(routes.getReactions, async (c) => {
-  const { id } = c.req.valid("param");
-  const reactions = await reactionService.getReactionsByStory(id);
-  return c.json(reactions);
+  const stories = await storyQueryService.listStories(query);
+  const pagination: Pagination = {
+    currentPage: stories.currentPage,
+    itemsPerPage: stories.itemsPerPage,
+    nextPage: stories.nextPage,
+    prevPage: stories.prevPage,
+    totalItems: stories.totalItems,
+    totalPages: stories.totalPages,
+  };
+  return c.json(APIResponse.pagination(stories.items, pagination, status.OK));
 });
 
 export default platformStories;

@@ -1,9 +1,10 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
-import { AuthService } from "@/application/platform/auth.service";
 import { env } from "@/common/config/env";
 import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { SocialProvider } from "@/domain/entity/user.types";
+import { IAuthService } from "@/domain/service/auth/auth.service.interface";
 import { ResendService } from "@/infrastructure/email/resend.service";
 import { KakaoOAuthService } from "@/infrastructure/oauth/kakao-oauth.service";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
@@ -12,10 +13,10 @@ import * as routes from "./auth.routes";
 
 const platformAuth = createOpenAPI();
 
-const authService = container.get<AuthService>(DI_SYMBOLS.authService);
-const resendService = container.get<ResendService>(DI_SYMBOLS.resendService);
+const authService = container.get<IAuthService>(DI_SYMBOLS.AuthService);
+const resendService = container.get<ResendService>(DI_SYMBOLS.ResendService);
 const kakaoOAuthService = container.get<KakaoOAuthService>(
-  DI_SYMBOLS.kakaoOAuthService,
+  DI_SYMBOLS.KakaoOAuthService,
 );
 
 platformAuth.openapi(routes.loginWithKakao, (c) => {
@@ -25,15 +26,17 @@ platformAuth.openapi(routes.loginWithKakao, (c) => {
 
 platformAuth.openapi(routes.kakaoSocialLogin, async (c) => {
   const { token } = await c.req.valid("json");
-
-  const sessionToken = await authService.loginWithKakao(token, "", "");
-
+  const { session } = await authService.socialLogin(
+    SocialProvider.KAKAO,
+    token
+  );
   const cookieOptions = authService.getSessionCookieOptions();
+
   setCookie(
     c,
     env.SESSION_COOKIE_NAME || "session",
-    sessionToken,
-    cookieOptions,
+    session.token,
+    cookieOptions
   );
 
   return c.newResponse(null, status.CREATED);
@@ -69,20 +72,24 @@ platformAuth.openapi(routes.session, async (c) => {
     return c.json(response, status.UNAUTHORIZED)
   }
 
-  const response = APIResponse.success(session)
+  const response = APIResponse.success({
+    userId: session.userId,
+    ipAddress: session.ipAddress,
+    userAgent: session.userAgent,
+  })
   return c.json(response, status.OK)
 });
 
 platformAuth.openapi(routes.emailLogin, async (c) => {
   const { email, password } = await c.req.valid("json");
 
-  const { sessionToken } = await authService.loginWithEmail(email, password);
+  const { session } = await authService.loginWithEmail(email, password);
 
   const cookieOptions = authService.getSessionCookieOptions();
   setCookie(
     c,
     env.SESSION_COOKIE_NAME || "session",
-    sessionToken,
+    session.token,
     cookieOptions,
   );
 
@@ -92,11 +99,13 @@ platformAuth.openapi(routes.emailLogin, async (c) => {
 platformAuth.openapi(routes.emailRegister, async (c) => {
   const { email, password, name } = await c.req.valid("json");
 
-  const { userId, verificationToken } = await authService.registerWithEmail(
+  const user = await authService.registerWithEmail(
     email,
     password,
     name,
   );
+
+  const verificationToken = await authService.createEmailVerificationToken(user.id);
 
   const result = await resendService.sendEmail(
     email,
@@ -106,7 +115,7 @@ platformAuth.openapi(routes.emailRegister, async (c) => {
   );
 
   if (!result) {
-    console.error(`userId:${userId} - 이메일 인증 메일 전송 실패`);
+    console.error(`userId:${user.id} - 이메일 인증 메일 전송 실패`);
     return c.newResponse(null, status.INTERNAL_SERVER_ERROR);
   }
 
