@@ -262,7 +262,9 @@ export class SessionRepository implements ISessionRepository {
       model.token,
       model.expiresAt,
       model.createdAt,
-      model.updatedAt
+      model.updatedAt,
+      model.ipAddress,
+      model.userAgent,
     );
   }
 }
