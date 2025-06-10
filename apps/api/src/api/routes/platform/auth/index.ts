@@ -15,9 +15,7 @@ const platformAuth = createOpenAPI();
 
 const authService = container.get<IAuthService>(DI_SYMBOLS.AuthService);
 const resendService = container.get<ResendService>(DI_SYMBOLS.ResendService);
-const kakaoOAuthService = container.get<KakaoOAuthService>(
-  DI_SYMBOLS.KakaoOAuthService,
-);
+const kakaoOAuthService = container.get<KakaoOAuthService>(DI_SYMBOLS.KakaoOAuthService);
 
 platformAuth.openapi(routes.loginWithKakao, (c) => {
   const redirectUrl = kakaoOAuthService.getKakaoLoginUrl();

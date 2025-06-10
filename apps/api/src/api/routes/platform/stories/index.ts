@@ -12,9 +12,7 @@ import * as routes from "./stories.routes";
 const platformStories = createOpenAPI();
 
 const storyService = container.get<IStoryService>(DI_SYMBOLS.StoryService);
-const storyQueryService = container.get<IStoryQueryService>(
-  DI_SYMBOLS.StoryQueryService,
-);
+const storyQueryService = container.get<IStoryQueryService>(DI_SYMBOLS.StoryQueryService);
 
 platformStories.openapi(routes.createStory, async (c) => {
   const user = c.get("user");
