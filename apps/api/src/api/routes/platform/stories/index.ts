@@ -5,7 +5,6 @@ import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { IStoryQueryService } from "@/domain/service/story/story-query.service.interface";
 import { IStoryService } from "@/domain/service/story/story.service.interface";
-import { IUserService } from "@/domain/service/user/user.service.interface";
 import { validateEditorJSONContent } from "@repo/tiptap-config";
 import status from "http-status";
 import * as routes from "./stories.routes";
@@ -16,7 +15,6 @@ const storyService = container.get<IStoryService>(DI_SYMBOLS.StoryService);
 const storyQueryService = container.get<IStoryQueryService>(
   DI_SYMBOLS.StoryQueryService,
 );
-const userService = container.get<IUserService>(DI_SYMBOLS.UserService);
 
 platformStories.openapi(routes.createStory, async (c) => {
   const user = c.get("user");
