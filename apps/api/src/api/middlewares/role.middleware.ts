@@ -1,6 +1,6 @@
 import { HTTPError } from "@/common/errors/http-error";
 import { AuthContext } from "@/common/types/hono.types";
-import { roleHierarchy } from "@/domain/user/user.constants";
+import { roleHierarchy } from "@/domain/entity/user.entity";
 import { type UserRole } from "@/infrastructure/database/types";
 import { createMiddleware } from "hono/factory";
 import status from "http-status";

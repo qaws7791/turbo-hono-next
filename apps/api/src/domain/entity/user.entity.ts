@@ -136,3 +136,8 @@ export class User {
     );
   }
 }
+
+export const roleHierarchy: Record<UserRole, number> = {
+  user: 1,
+  creator: 2,
+};
