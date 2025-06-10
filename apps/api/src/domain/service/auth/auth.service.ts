@@ -2,7 +2,6 @@ import { env } from '@/common/config/env';
 import { HTTPError } from '@/common/errors/http-error';
 import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { Argon2PasswordService } from '@/infrastructure/auth/argon2password.service';
-import { ResendService } from '@/infrastructure/email/resend.service';
 import { KakaoOAuthService } from '@/infrastructure/oauth/kakao-oauth.service';
 import { CookieOptions } from 'hono/utils/cookie';
 import status from 'http-status';
@@ -42,9 +41,6 @@ export class AuthService implements IAuthService {
 
     @inject(DI_SYMBOLS.KakaoOAuthService)
     private kakaoOAuthService: KakaoOAuthService,
-
-    @inject(DI_SYMBOLS.ResendService)
-    private resendService: ResendService,
   ) {}
 
   /**
