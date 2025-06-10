@@ -1,4 +1,5 @@
 import { DatabaseError } from '@/common/errors/database-error';
+import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { and, asc, count, desc, eq, ilike, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import status from 'http-status';
@@ -17,7 +18,7 @@ import { IStoryRepository } from './story.repository.interface';
 @injectable()
 export class StoryRepository implements IStoryRepository {
   constructor(
-    @inject('Database')
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase
   ) {}
 

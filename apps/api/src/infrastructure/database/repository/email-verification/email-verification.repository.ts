@@ -1,4 +1,5 @@
 import { DatabaseError } from '@/common/errors/database-error';
+import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { and, asc, count, desc, eq, lt, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import status from 'http-status';
@@ -16,7 +17,7 @@ import { IEmailVerificationTokenRepository } from './email-verification.reposito
 @injectable()
 export class EmailVerificationTokenRepository implements IEmailVerificationTokenRepository {
   constructor(
-    @inject('Database')
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase
   ) {}
 

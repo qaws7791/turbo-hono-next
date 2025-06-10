@@ -1,5 +1,5 @@
 export const DI_SYMBOLS = {
-  db: Symbol("db"),
+  DB: Symbol("DB"),
   // Repositories
   UserRepository: Symbol.for('UserRepository'),
   AccountRepository: Symbol.for('AccountRepository'),

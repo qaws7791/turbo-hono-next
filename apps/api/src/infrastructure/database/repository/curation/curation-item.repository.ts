@@ -1,4 +1,5 @@
 import { DatabaseError } from '@/common/errors/database-error';
+import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { CurationItemType } from '@/domain/entity/curation.types';
 import { and, asc, count, desc, eq, inArray, SQL, sql } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -17,7 +18,7 @@ import { ICurationItemRepository } from './curation-item.repository.interface';
 @injectable()
 export class CurationItemRepository implements ICurationItemRepository {
   constructor(
-    @inject('Database')
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase
   ) {}
   /**

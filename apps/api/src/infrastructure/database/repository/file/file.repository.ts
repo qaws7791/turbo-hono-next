@@ -1,4 +1,5 @@
 import { DatabaseError } from "@/common/errors/database-error";
+import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { FileObject } from "@/domain/entity/file.entity";
 import { PaginationOptions, PaginationResult } from "@/domain/service/service.types";
 import { IFileRepository } from "@/infrastructure/database/repository/file/file.repository.interface";
@@ -12,7 +13,7 @@ import { inject, injectable } from "inversify";
 @injectable()
 export class FileRepository implements IFileRepository {
     constructor(
-        @inject('Database')
+        @inject(DI_SYMBOLS.DB)
         private db: PostgresJsDatabase
     ) {}
     async findById(id: number): Promise<FileObject | null> {

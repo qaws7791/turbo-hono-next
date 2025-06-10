@@ -1,4 +1,5 @@
 import { DatabaseError } from '@/common/errors/database-error';
+import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { ReactionType } from '@/domain/entity/story.types';
 import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
@@ -17,7 +18,7 @@ import { IReactionRepository } from './reaction.repository.interface';
 @injectable()
 export class ReactionRepository implements IReactionRepository {
   constructor(
-    @inject('Database')
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase
   ) {}
 

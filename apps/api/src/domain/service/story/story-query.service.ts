@@ -18,7 +18,7 @@ import { IStoryQueryService } from './story-query.service.interface';
 @injectable()
 export class StoryQueryService implements IStoryQueryService {
   constructor(
-    @inject(DI_SYMBOLS.db)
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase,
 
   ) {}

@@ -1,4 +1,5 @@
 import { DatabaseError } from '@/common/errors/database-error';
+import { DI_SYMBOLS } from '@/containers/di-symbols';
 import { and, asc, count, desc, eq, SQL } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import status from 'http-status';
@@ -16,7 +17,7 @@ import { IFollowRepository } from './follow.repository.interface';
 @injectable()
 export class FollowRepository implements IFollowRepository {
   constructor(
-    @inject('Database')
+    @inject(DI_SYMBOLS.DB)
     private db: PostgresJsDatabase
   ) {}
 
