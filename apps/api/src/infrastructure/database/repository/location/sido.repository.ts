@@ -19,9 +19,6 @@ export class SidoRepository implements ISidoRepository {
     @inject('Database')
     private db: PostgresJsDatabase
   ) {}
-  findByCode(code: string): Promise<Sido | null> {
-    throw new Error('Method not implemented.');
-  }
 
   /**
    * ID로 시도 조회
