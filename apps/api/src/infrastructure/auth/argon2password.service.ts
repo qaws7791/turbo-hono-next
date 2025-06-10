@@ -30,7 +30,7 @@ export class Argon2PasswordService implements IPasswordService {
         parallelism: this.PARALLELISM,
         secret: this.SECRET,
       });
-    } catch (error) {
+    } catch {
       return false;
     }
   }
