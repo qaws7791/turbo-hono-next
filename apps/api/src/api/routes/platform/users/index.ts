@@ -1,12 +1,12 @@
 import { createOpenAPI } from "@/api/helpers/openapi";
-import { UserService } from "@/application/platform/user.service";
 import { APIResponse } from "@/common/utils/response";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { IUserService } from "@/domain/service/user/user.service.interface";
 import status from "http-status";
 import * as routes from "./users.routes";
 
-const userService = container.get<UserService>(DI_SYMBOLS.userService);
+const userService = container.get<IUserService>(DI_SYMBOLS.UserService);
 
 const platformUsers = createOpenAPI();
 
