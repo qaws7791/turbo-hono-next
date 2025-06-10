@@ -2,10 +2,16 @@
 import { DI_SYMBOLS } from "@/containers/di-symbols";
 import { AuthService } from "@/domain/service/auth/auth.service";
 import { IAuthService } from "@/domain/service/auth/auth.service.interface";
+import { CategoryService } from "@/domain/service/category/category.service";
+import { ICategoryService } from "@/domain/service/category/category.service.interface";
 import { CreatorService } from "@/domain/service/creator/creator.service";
+import { CurationService } from "@/domain/service/curation/curation.service";
+import { ICurationService } from "@/domain/service/curation/curation.service.interface";
 import { FileService } from "@/domain/service/file/file.service";
 import { IFileService } from "@/domain/service/file/file.service.interface";
 import { LocationService } from "@/domain/service/location/location.service";
+import { StoryQueryService } from "@/domain/service/story/story-query.service";
+import { IStoryQueryService } from "@/domain/service/story/story-query.service.interface";
 import { StoryService } from "@/domain/service/story/story.service";
 import { IStoryService } from "@/domain/service/story/story.service.interface";
 import { UserService } from "@/domain/service/user/user.service";
@@ -14,9 +20,13 @@ import { Argon2PasswordService } from "@/infrastructure/auth/argon2password.serv
 import { IPasswordService } from "@/infrastructure/auth/password.service.interface";
 import { initializeDatabase } from "@/infrastructure/database";
 import { AccountRepository } from "@/infrastructure/database/repository/account/account.repository";
+import { CategoryRepository } from "@/infrastructure/database/repository/category/category.repository";
 import { CreatorRepository } from "@/infrastructure/database/repository/creator/creator.repository";
+import { CurationItemRepository } from "@/infrastructure/database/repository/curation/curation-item.repository";
+import { CurationSpotRepository } from "@/infrastructure/database/repository/curation/curation-spot.repository";
 import { EmailVerificationTokenRepository } from "@/infrastructure/database/repository/email-verification/email-verification.repository";
 import { FileRepository } from "@/infrastructure/database/repository/file/file.repository";
+import { FollowRepository } from "@/infrastructure/database/repository/follow/follow.repository";
 import { SidoRepository } from "@/infrastructure/database/repository/location/sido.repository";
 import { SigunguRepository } from "@/infrastructure/database/repository/location/sigungu.repository";
 import { ReactionRepository } from "@/infrastructure/database/repository/reaction/reaction.repository";
@@ -34,7 +44,7 @@ export const container = new Container();
 const db = initializeDatabase();
 
 // DB
-container.bind<DbClient>(DI_SYMBOLS.db).toDynamicValue(() => db);
+container.bind<DbClient>(DI_SYMBOLS.DB).toDynamicValue(() => db);
 
 // Repositories
 container
@@ -63,6 +73,19 @@ container.bind<SidoRepository>(DI_SYMBOLS.SidoRepository).to(SidoRepository);
 container
   .bind<SigunguRepository>(DI_SYMBOLS.SigunguRepository)
   .to(SigunguRepository);
+container
+  .bind<FollowRepository>(DI_SYMBOLS.FollowRepository)
+  .to(FollowRepository);
+container
+  .bind<CategoryRepository>(DI_SYMBOLS.CategoryRepository)
+  .to(CategoryRepository);
+container
+  .bind<CurationSpotRepository>(DI_SYMBOLS.CurationSpotRepository)
+  .to(CurationSpotRepository);
+container
+  .bind<CurationItemRepository>(DI_SYMBOLS.CurationItemRepository)
+  .to(CurationItemRepository);
+
 // Services
 container.bind<IAuthService>(DI_SYMBOLS.AuthService).to(AuthService);
 container.bind<IFileService>(DI_SYMBOLS.FileService).to(FileService);
@@ -76,6 +99,14 @@ container
   .to(KakaoOAuthService);
 container
   .bind<CreatorService>(DI_SYMBOLS.CreatorService)
-  .to(CreatorService)
-  .inSingletonScope();
+  .to(CreatorService);
 container.bind<LocationService>(DI_SYMBOLS.LocationService).to(LocationService);
+container
+  .bind<IStoryQueryService>(DI_SYMBOLS.StoryQueryService)
+  .to(StoryQueryService);
+container
+  .bind<ICategoryService>(DI_SYMBOLS.CategoryService)
+  .to(CategoryService);
+container
+  .bind<ICurationService>(DI_SYMBOLS.CurationService)
+  .to(CurationService);
