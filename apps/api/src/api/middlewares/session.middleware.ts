@@ -1,12 +1,13 @@
-import { AuthService } from "@/application/platform/auth.service";
+
 import { env } from "@/common/config/env";
 import { Context } from "@/common/types/hono.types";
 import { container } from "@/containers";
 import { DI_SYMBOLS } from "@/containers/di-symbols";
+import { IAuthService } from "@/domain/service/auth/auth.service.interface";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
-const authService = container.get<AuthService>(DI_SYMBOLS.authService);
+const authService = container.get<IAuthService>(DI_SYMBOLS.AuthService);
 
 const sessionMiddleware = createMiddleware<Context>(async (c, next) => {
   const sessionToken = getCookie(c, env.SESSION_COOKIE_NAME || "session");
