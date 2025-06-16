@@ -4,15 +4,16 @@ import platformRoutes from "@/api/routes/platform";
 import { DatabaseError } from "@/common/errors/database-error";
 import { HTTPError } from "@/common/errors/http-error";
 import { Context } from "@/common/types/hono.types";
-import { serve } from "@hono/node-server";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import "dotenv/config";
+import { handle } from "hono/aws-lambda";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
 import { logger } from "hono/logger";
 import status from "http-status";
 import { ZodError } from "zod";
+
 const ORIGIN: string[] | string = "http://localhost:3000";
 
 const app = new OpenAPIHono<Context>();
@@ -85,12 +86,4 @@ app.onError((err, c) => {
   );
 });
 
-serve(
-  {
-    fetch: app.fetch,
-    port: 3000,
-  },
-  (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  },
-);
+export const handler = handle(app);
