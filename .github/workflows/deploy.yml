@@ -31,4 +31,4 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Deploy to AWS
-        run: turbo run deploy --filter=api
+        run: pnpm deploy:api
