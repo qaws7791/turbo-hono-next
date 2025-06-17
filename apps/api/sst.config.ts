@@ -12,12 +12,6 @@ export default $config({
   },
   async run() {
     new sst.aws.Function("Hono", {
-      nodejs: {
-        install: ["argon2"],
-        esbuild: {
-          external: ["argon2"],
-        },
-      },
       url: true,
       handler: "src/index.handler",
       environment: {
