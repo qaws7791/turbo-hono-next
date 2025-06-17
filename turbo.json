@@ -41,7 +41,7 @@
         "R2_PUBLIC_BASE_URL"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**", ".sst/**", "dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
@@ -52,6 +52,10 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "deploy": {
+      "dependsOn": ["build"],
+      "cache": false
     }
   }
 }
