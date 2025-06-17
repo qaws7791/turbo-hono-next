@@ -4,6 +4,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "deploy": "turbo run deploy",
+    "deploy:api": "turbo run deploy --filter=api",
     "lint": "turbo run lint --",
     "lint:fix": "turbo run lint -- --fix",
     "lint-staged": "lint-staged",
