@@ -32,6 +32,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::891377219691:role/lolog-cicd
           aws-region: ap-northeast-2
-
+      - name: Print AWS related environment variables
+        run: env | grep -i aws | sort
       - name: Deploy to AWS
         run: pnpm deploy:api
