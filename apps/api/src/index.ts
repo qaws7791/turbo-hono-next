@@ -86,4 +86,4 @@ app.onError((err, c) => {
   );
 });
 
-export const handler = handle(app);
+export default handle(app);
