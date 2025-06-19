@@ -6,6 +6,7 @@
       "@/*": ["./src/*"]
     },
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "outDir": "./dist"
   }
 }

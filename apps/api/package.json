@@ -2,8 +2,11 @@
   "name": "api",
   "scripts": {
     "db:seed": "tsx ./src/infrastructure/database/seed/index.ts",
+    "vercel:dev": "npm run build && vercel dev",
     "start": "vercel dev",
-    "deploy": "vercel"
+    "deploy": "vercel",
+    "dev": "tsx watch ./src/index.ts",
+    "build": "tsc"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.810.0",

@@ -22,7 +22,8 @@
     "AWS_DEFAULT_REGION",
     "AWS_REGION",
     "AWS_SECRET_ACCESS_KEY",
-    "AWS_SESSION_TOKEN"
+    "AWS_SESSION_TOKEN",
+    "PORT"
   ],
   "tasks": {
     "build": {
@@ -43,7 +44,8 @@
         "R2_ACCESS_KEY_ID",
         "R2_SECRET_ACCESS_KEY",
         "R2_BUCKET_NAME",
-        "R2_PUBLIC_BASE_URL"
+        "R2_PUBLIC_BASE_URL",
+        "PORT"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", ".sst/**", "dist/**"]
@@ -66,7 +68,8 @@
         "AWS_DEFAULT_REGION",
         "AWS_REGION",
         "AWS_SECRET_ACCESS_KEY",
-        "AWS_SESSION_TOKEN"
+        "AWS_SESSION_TOKEN",
+        "PORT"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     }
