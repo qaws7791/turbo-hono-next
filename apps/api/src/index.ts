@@ -4,7 +4,7 @@ import platformRoutes from "@/api/routes/platform";
 import { DatabaseError } from "@/common/errors/database-error";
 import { HTTPError } from "@/common/errors/http-error";
 import { Context } from "@/common/types/hono.types";
-import { serve } from "@hono/node-server";
+import { handle } from "@hono/node-server/vercel";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import "dotenv/config";
@@ -86,14 +86,4 @@ app.onError((err, c) => {
   );
 });
 
-
-const PORT = Number(process.env.PORT) || 3000;
- 
-console.log(`Server is running on port http://localhost:${PORT}`);
-
-serve({
-  fetch: app.fetch,
-  port: PORT,
-});
-
-export default app;
+export default handle(app);
