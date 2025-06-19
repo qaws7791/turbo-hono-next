@@ -9,8 +9,8 @@ import {
   curationItems,
   curationSpots,
   emailVerificationTokens,
+  files,
   follows,
-  objects,
   reactions,
   sessions,
   sido,
@@ -73,5 +73,5 @@ export type EmailVerificationTokenInsert =
 export type EmailVerificationTokenSelect =
   typeof emailVerificationTokens.$inferSelect;
 
-export type ObjectInsert = typeof objects.$inferInsert;
-export type ObjectSelect = typeof objects.$inferSelect;
+export type FileInsert = typeof files.$inferInsert;
+export type FileSelect = typeof files.$inferSelect;
