@@ -7,7 +7,9 @@
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "outDir": "./dist",
-    "verbatimModuleSyntax": true
+    "outDir": "./dist"
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true
   }
 }
