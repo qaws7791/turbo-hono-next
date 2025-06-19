@@ -1,5 +1,6 @@
 {
   "name": "api",
+  "type": "module",
   "scripts": {
     "db:seed": "tsx ./src/infrastructure/database/seed/index.ts",
     "vercel:dev": "npm run build && vercel dev",
