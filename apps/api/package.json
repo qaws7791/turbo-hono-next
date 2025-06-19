@@ -5,7 +5,7 @@
     "vercel:dev": "npm run build && vercel dev",
     "start": "vercel dev",
     "deploy": "vercel",
-    "dev": "tsx watch ./src/index.ts",
+    "dev": "tsx watch /src/index.ts",
     "build": "tsc"
   },
   "dependencies": {
