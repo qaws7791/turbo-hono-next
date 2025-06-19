@@ -82,3 +82,63 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+## Project Setup
+
+### ESLint
+
+- [eslint v9 is used flat config `eslint.config.js`](https://eslint.org/docs/latest/use/configure/configuration-files)
+- `eslintrc.js` file is deprecated. don't use it.
+
+below is an example of using the `nextJsConfig` from the `@repo/eslint-config/next` package in next.js application.
+
+```js
+// eslint.config.js
+import { nextJsConfig } from "@repo/eslint-config/next";
+
+/** @type {import("eslint").Linter.Config} */
+export default nextJsConfig;
+```
+
+## Commit Convention
+
+See @commitlint/config-conventional
+
+### Example
+
+```bash
+git commit -m "feat: add new feature"
+```
+
+### Type-Enum
+
+- `build`
+- `chore`
+- `ci`
+- `docs`
+- `feat`
+- `fix`
+- `perf`
+- `refactor`
+- `revert`
+- `style`
+- `test`
+
+## See best practices, checklists, guides, etc
+
+- [Nodejs Best Practices](https://github.com/goldbergyoni/nodebestpractices)
+- [building production ready React applications](https://github.com/alan2207/bulletproof-react)
+- [frontend checklist](https://github.com/thedaviddias/Front-End-Checklist)
+- [nextjs production checklist](https://nextjs.org/docs/app/guides/production-checklist)
+- [OWASP cheat sheet series](https://cheatsheetseries.owasp.org/)
+- [Toss Frontend Fundamentals](https://github.com/toss/frontend-fundamentals)
+- [React Typescript Cheatsheet](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet)
+- [backend-cheatsheet](https://github.com/cheatsnake/backend-cheats)
+- [awesome-scalability](https://github.com/binhnguyennus/awesome-scalability)
+- [The Copenhagen Book](https://github.com/pilcrowonpaper/copenhagen)
+- [Professional Programming](https://github.com/charlax/professional-programming)
+- [system design](https://github.com/karanpratapsingh/system-design)
+- [explain monorepo by nx](https://monorepo.tools)
+- [angular style guide](https://github.com/johnpapa/angular-styleguide)
+
+TODO: 나중에 필요하면 공통 타입 패키지 추가
