@@ -28,5 +28,9 @@
   "packageManager": "pnpm@10.2.1",
   "engines": {
     "node": ">=18"
+  },
+  "resolutions": {
+    "@types/mime": "3.0.4",
+    "jackspeak": "2.1.1"
   }
 }

@@ -14,7 +14,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
     "next": "^15.3.0",
     "openapi-fetch": "^0.14.0",
     "react": "catalog:",
