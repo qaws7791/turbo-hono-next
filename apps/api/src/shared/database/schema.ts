@@ -57,6 +57,10 @@ export const creatorCategoryEnum = pgEnum("creator_category", [
   "cooking",
   "other",
 ]);
+export const commentableTypeEnum = pgEnum("commentable_type", [
+  "story",
+  "project",
+]);
 
 // ============================================================================
 // CORE USER TABLES
@@ -74,8 +78,12 @@ export const users = pgTable(
     email: varchar("email", { length: 255 }).notNull().unique(),
     username: varchar("username", { length: 50 }).unique().notNull(),
     displayName: varchar("display_name", { length: 100 }).notNull(),
-    profileImage: text("profile_image"),
-    bio: text("bio"),
+    profileImage: text("profile_image")
+      .notNull()
+      .default(
+        "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png",
+      ),
+    bio: text("bio").notNull().default(""),
     role: userRoleEnum("role").notNull().default("user"),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -338,9 +346,8 @@ export const comments = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
 
     // 댓글 대상 (스토리 또는 프로젝트)
-    storyId: integer("story_id").references(() => stories.id, {
-      onDelete: "cascade",
-    }),
+    commentableId: integer("commentable_id").notNull(),
+    commentableType: commentableTypeEnum("commentable_type").notNull(),
 
     content: text("content").notNull(),
 
@@ -353,7 +360,7 @@ export const comments = pgTable(
   },
   (table) => [
     index("comments_user_id_idx").on(table.userId),
-    index("comments_story_id_idx").on(table.storyId),
+    index("comments_commentable_id_idx").on(table.commentableId),
     index("comments_created_at_idx").on(table.createdAt),
   ],
 );
@@ -592,10 +599,6 @@ export const commentsRelations = relations(comments, ({ one }) => ({
   user: one(users, {
     fields: [comments.userId],
     references: [users.id],
-  }),
-  story: one(stories, {
-    fields: [comments.storyId],
-    references: [stories.id],
   }),
 }));
 
