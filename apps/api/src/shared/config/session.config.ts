@@ -5,6 +5,7 @@ const sessionConfigSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   SERVICE_DOMAIN: z.string().min(1),
+  SESSION_COOKIE_DOMAIN: z.string().min(1),
 });
 
 const env = sessionConfigSchema.parse(process.env);
@@ -17,7 +18,7 @@ export const SESSION_CONFIG = {
     sameSite: "lax" as const,
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
     path: "/",
-    domain: env.SERVICE_DOMAIN,
+    domain: env.SESSION_COOKIE_DOMAIN,
   },
   SESSION_DURATION_HOURS: 24 * 7, // 7 days
 } as const;
