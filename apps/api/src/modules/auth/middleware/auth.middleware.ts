@@ -1,6 +1,7 @@
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 import type { Container } from "inversify";
+import { container } from "../../../container/bindings";
 import { TYPES } from "../../../container/types";
 import { SESSION_CONFIG } from "../../../shared/config/session.config";
 import { AuthenticationError, UnauthorizedError } from "../domain/auth.errors";
@@ -21,7 +22,6 @@ export const authMiddleware = createMiddleware(async (c, next) => {
     throw new AuthenticationError("Session cookie is required");
   }
 
-  const container = c.get("container") as Container;
   const authService = container.get<AuthService>(TYPES.AuthService);
 
   const { user, session } = await authService.validateSession(sessionToken);
