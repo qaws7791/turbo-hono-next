@@ -5,6 +5,7 @@ import { TYPES } from "./types";
 // Import interfaces
 import type { AuthRepository } from "../modules/auth/data-access/auth.repository";
 import type { SessionRepository } from "../modules/auth/data-access/session.repository";
+import type { IUserRepository } from "../modules/users/domain/user.types";
 
 // Import implementations
 import { AuthRepositoryImpl } from "../modules/auth/data-access/auth.repository";
@@ -12,6 +13,11 @@ import { SessionRepositoryImpl } from "../modules/auth/data-access/session.repos
 import { AuthService } from "../modules/auth/domain/auth.service";
 import { KakaoService } from "../modules/auth/external/kakao-oauth.service";
 import { MagicLinkService } from "../modules/auth/external/magic-link.service";
+import { UserRepository } from "../modules/users/data-access/user.repository";
+import {
+  IUserService,
+  UserService,
+} from "../modules/users/domain/user.service";
 import { Database, getDatabase } from "../shared/database/connection";
 
 const container = new Container();
@@ -30,6 +36,11 @@ container
   .to(SessionRepositoryImpl)
   .inSingletonScope();
 
+container
+  .bind<IUserRepository>(TYPES.UserRepository)
+  .to(UserRepository)
+  .inSingletonScope();
+
 // Service bindings
 container
   .bind<MagicLinkService>(TYPES.MagicLinkService)
@@ -45,5 +56,6 @@ container
   .bind<AuthService>(TYPES.AuthService)
   .to(AuthService)
   .inSingletonScope();
+container.bind<IUserService>(TYPES.UserService).to(UserService);
 
 export { container };

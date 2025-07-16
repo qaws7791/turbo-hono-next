@@ -1,11 +1,12 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../../container/types";
 import { EMAIL_SERVICE_CONFIG } from "../../../shared/config/email-service.config";
+import { UserEntity } from "../../users/domain/user.entity";
 import type { AuthRepository } from "../data-access/auth.repository";
 import type { SessionRepository } from "../data-access/session.repository";
 import type { KakaoService } from "../external/kakao-oauth.service";
 import type { MagicLinkService } from "../external/magic-link.service";
-import { MagicLinkEntity, SessionEntity, UserEntity } from "./auth.entity";
+import { MagicLinkEntity, SessionEntity } from "./auth.entity";
 import {
   AuthenticationError,
   InvalidTokenError,

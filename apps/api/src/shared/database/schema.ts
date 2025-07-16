@@ -140,7 +140,7 @@ export const creators = pgTable(
     address: text("address"),
     category: creatorCategoryEnum("category").notNull(), // 하나의 카테고리만 선택
     socialLinks: jsonb("social_links").$type<Record<string, string>>(), // { instagram: 'url', website: 'url' }
-    description: text("description"),
+    description: text("description").notNull(),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
