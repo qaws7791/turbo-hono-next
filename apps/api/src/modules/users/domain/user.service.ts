@@ -3,7 +3,7 @@ import { TYPES } from "../../../container/types";
 import { PublicUserProfileDto, UserDto, UserWithStatsDto } from "./user.dto";
 import {
   AlreadyCreatorError,
-  AlreadyFollowingError,
+  InvalidUserActionError,
   InvalidUserDataError,
   UnauthorizedUserActionError,
   UserAlreadyExistsError,
@@ -50,13 +50,13 @@ export class UserService implements IUserService {
   ) {}
   async followUser(userId: number, followerId: number): Promise<void> {
     if (userId === followerId) {
-      throw new AlreadyFollowingError();
+      throw new InvalidUserActionError("Cannot follow yourself");
     }
     await this.userRepository.followUser(userId, followerId);
   }
   unfollowUser(userId: number, followerId: number): Promise<void> {
     if (userId === followerId) {
-      throw new AlreadyFollowingError();
+      throw new InvalidUserActionError("Cannot unfollow yourself");
     }
     return this.userRepository.unfollowUser(userId, followerId);
   }
@@ -160,7 +160,7 @@ export class UserService implements IUserService {
         "other",
       ];
       if (!validCategories.includes(creatorData.category)) {
-        throw new InvalidUserDataError(`"Invalid category ${validCategories}`);
+        throw new InvalidUserDataError(`Invalid category ${validCategories}`);
       }
     }
 

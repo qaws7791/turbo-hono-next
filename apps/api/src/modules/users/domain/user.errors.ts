@@ -41,3 +41,9 @@ export class AlreadyFollowingError extends BaseError {
     super(message, 400, "ALREADY_FOLLOWING");
   }
 }
+
+export class InvalidUserActionError extends BaseError {
+  constructor(message: string = "Invalid user action") {
+    super(message, 400, "INVALID_USER_ACTION");
+  }
+}
