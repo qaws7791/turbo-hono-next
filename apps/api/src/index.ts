@@ -4,6 +4,8 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import "reflect-metadata";
 import authController from "./modules/auth/api/auth.controller";
+import { uploadController } from "./modules/uploads/api/upload.controller";
+import userController from "./modules/users/api/users.controller";
 import { APP_CONFIG } from "./shared/config/app.config";
 import { handleError } from "./shared/errors/error-handler";
 
@@ -31,6 +33,8 @@ app.get("/", (c) => {
 });
 
 app.route("/", authController);
+app.route("/", userController);
+app.route("/", uploadController);
 
 app.get(
   "/ui",

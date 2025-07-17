@@ -9,7 +9,6 @@ import {
   text,
   timestamp,
   uniqueIndex,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 
@@ -469,23 +468,31 @@ export const notifications = pgTable(
   ],
 );
 
-export const files = pgTable(
-  "files",
+/**
+ * 파일 업로드 테이블
+ * - Cloudflare R2 저장소에 업로드된 파일 메타데이터
+ * - 사용자별 파일 관리 및 접근 제어
+ */
+export const uploads = pgTable(
+  "uploads",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
     filename: varchar("filename", { length: 255 }).notNull(),
     mimeType: varchar("mime_type", { length: 100 }).notNull(),
     size: integer("size").notNull(),
-    url: text("url").notNull(),
-    uploadedBy: integer("uploaded_by").references(() => users.id, {
-      onDelete: "cascade",
-    }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    r2Key: varchar("r2_key", { length: 500 }).notNull(),
+    r2Url: text("r2_url").notNull(),
+    uploadedAt: timestamp("uploaded_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
   (table) => [
-    index("files_user_id_idx").on(table.uploadedBy),
-    index("files_created_at_idx").on(table.createdAt),
+    index("uploads_user_id_idx").on(table.userId),
+    index("uploads_created_at_idx").on(table.createdAt),
+    index("uploads_r2_key_idx").on(table.r2Key),
   ],
 );
 
@@ -542,7 +549,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   dailyStats: many(dailyStats),
 
   // 파일
-  files: many(files),
+  uploads: many(uploads),
 
   // 팔로우 관계
   following: many(follows, { relationName: "follower" }),
@@ -637,6 +644,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const dailyStatsRelations = relations(dailyStats, ({ one }) => ({
   user: one(users, {
     fields: [dailyStats.userId],
+    references: [users.id],
+  }),
+}));
+
+export const uploadsRelations = relations(uploads, ({ one }) => ({
+  user: one(users, {
+    fields: [uploads.userId],
     references: [users.id],
   }),
 }));

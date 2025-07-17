@@ -13,6 +13,8 @@ import { SessionRepositoryImpl } from "../modules/auth/data-access/session.repos
 import { AuthService } from "../modules/auth/domain/auth.service";
 import { KakaoService } from "../modules/auth/external/kakao-oauth.service";
 import { MagicLinkService } from "../modules/auth/external/magic-link.service";
+import { UploadService } from "../modules/uploads/domain/upload.service";
+import { R2Service } from "../modules/uploads/external/r2.service";
 import { UserRepository } from "../modules/users/data-access/user.repository";
 import {
   IUserService,
@@ -56,6 +58,17 @@ container
   .bind<AuthService>(TYPES.AuthService)
   .to(AuthService)
   .inSingletonScope();
-container.bind<IUserService>(TYPES.UserService).to(UserService);
+
+container
+  .bind<IUserService>(TYPES.UserService)
+  .to(UserService)
+  .inSingletonScope();
+
+container
+  .bind<UploadService>(TYPES.UploadService)
+  .to(UploadService)
+  .inSingletonScope();
+
+container.bind<R2Service>(TYPES.R2Service).to(R2Service).inSingletonScope();
 
 export { container };

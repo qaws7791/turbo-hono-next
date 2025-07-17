@@ -12,6 +12,8 @@ const TYPES = {
   MagicLinkService: Symbol.for("MagicLinkService"),
   KakaoService: Symbol.for("KakaoService"),
   UserService: Symbol.for("UserService"),
+  UploadService: Symbol.for("UploadService"),
+  R2Service: Symbol.for("R2Service"),
 } as const;
 
 export { TYPES };
