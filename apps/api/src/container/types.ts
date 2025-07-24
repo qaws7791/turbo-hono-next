@@ -6,6 +6,9 @@ const TYPES = {
   AuthRepository: Symbol.for("AuthRepository"),
   SessionRepository: Symbol.for("SessionRepository"),
   UserRepository: Symbol.for("UserRepository"),
+  ProjectRepository: Symbol.for("ProjectRepository"),
+  CategoryRepository: Symbol.for("CategoryRepository"),
+  BookmarkRepository: Symbol.for("BookmarkRepository"),
 
   // Services
   AuthService: Symbol.for("AuthService"),
@@ -14,6 +17,7 @@ const TYPES = {
   UserService: Symbol.for("UserService"),
   UploadService: Symbol.for("UploadService"),
   R2Service: Symbol.for("R2Service"),
+  ProjectService: Symbol.for("ProjectService"),
 } as const;
 
 export { TYPES };

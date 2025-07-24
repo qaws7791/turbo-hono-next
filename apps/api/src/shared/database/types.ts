@@ -15,6 +15,9 @@ export type SessionInsert = typeof schema.sessions.$inferInsert;
 export type MagicLink = typeof schema.magicLinks.$inferSelect;
 export type MagicLinkInsert = typeof schema.magicLinks.$inferInsert;
 
+export type Category = typeof schema.categories.$inferSelect;
+export type CategoryInsert = typeof schema.categories.$inferInsert;
+
 export type Project = typeof schema.projects.$inferSelect;
 export type ProjectInsert = typeof schema.projects.$inferInsert;
 
