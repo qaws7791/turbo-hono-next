@@ -5,7 +5,7 @@ export interface User {
   displayName: string;
   profileImage: string;
   bio: string;
-  role: "user" | "creator";
+  role: "user" | "creator" | "admin";
   createdAt: Date;
   updatedAt: Date;
   creator: CreatorInfo | null;
@@ -19,7 +19,7 @@ export class UserEntity implements User {
     public readonly displayName: string,
     public readonly profileImage: string,
     public readonly bio: string,
-    public readonly role: "user" | "creator",
+    public readonly role: "user" | "creator" | "admin",
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
     public readonly creator: CreatorInfo | null,
@@ -31,7 +31,7 @@ export class UserEntity implements User {
     displayName: string;
     profileImage?: string;
     bio?: string;
-    role?: "user" | "creator";
+    role?: "user" | "creator" | "admin";
   }): Omit<User, "id" | "createdAt" | "updatedAt"> {
     return {
       email: data.email,
@@ -50,9 +50,15 @@ export class UserEntity implements User {
     return this.role === "creator";
   }
 
-  canAccess(requiredRole: "user" | "creator"): boolean {
+  isAdmin(): boolean {
+    return this.role === "admin";
+  }
+
+  canAccess(requiredRole: "user" | "creator" | "admin"): boolean {
     if (requiredRole === "user") return true;
-    return this.role === "creator";
+    if (this.role === "creator" && requiredRole === "creator") return true;
+    if (this.role === "admin" && requiredRole === "admin") return true;
+    return false;
   }
 
   toPublic(): Omit<User, "email"> {

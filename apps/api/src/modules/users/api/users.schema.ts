@@ -7,7 +7,7 @@ export const UserProfileSchema = z.object({
   displayName: z.string(),
   profileImage: z.string().url(),
   bio: z.string(),
-  role: z.enum(["user", "creator"]),
+  role: z.enum(["user", "creator", "admin"]),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   creator: z

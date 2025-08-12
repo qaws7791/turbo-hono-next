@@ -36,7 +36,13 @@ export const authMiddleware = createMiddleware(async (c, next) => {
   await next();
 });
 
-export function requireRole(role: "user" | "creator") {
+const roleHierarchyMap = {
+  user: ["user", "creator", "admin"],
+  creator: ["creator", "admin"],
+  admin: ["admin"],
+};
+
+export function requireRole(role: "user" | "creator" | "admin") {
   return createMiddleware(async (c, next) => {
     const auth = c.get("auth") as AuthContext;
 
@@ -44,8 +50,9 @@ export function requireRole(role: "user" | "creator") {
       throw new AuthenticationError("Authentication required");
     }
 
-    if (role === "creator" && auth.userRole !== "creator") {
-      throw new UnauthorizedError("Creator role required");
+    const requiredRoles = roleHierarchyMap[role];
+    if (!requiredRoles.includes(auth.userRole)) {
+      throw new UnauthorizedError("Insufficient role");
     }
 
     await next();

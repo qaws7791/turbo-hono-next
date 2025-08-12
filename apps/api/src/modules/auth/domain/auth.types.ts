@@ -5,7 +5,7 @@ export interface User {
   displayName: string;
   profileImage: string;
   bio: string;
-  role: "user" | "creator";
+  role: "user" | "creator" | "admin";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,6 +95,6 @@ export interface KakaoUserInfo {
 // Middleware Context
 export interface AuthContext {
   userId: number;
-  userRole: "user" | "creator";
+  userRole: "user" | "creator" | "admin";
   sessionId: string;
 }

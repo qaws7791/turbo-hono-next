@@ -16,7 +16,7 @@ import {
 // ENUMS
 // ============================================================================
 
-export const userRoleEnum = pgEnum("user_role", ["user", "creator"]);
+export const userRoleEnum = pgEnum("user_role", ["user", "creator", "admin"]);
 
 export const magicLinkTypeEnum = pgEnum("magic_link_type", [
   "signup",
