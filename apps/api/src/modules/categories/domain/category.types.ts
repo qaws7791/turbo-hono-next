@@ -15,7 +15,7 @@ export interface ICategoryRepository {
 export interface CreateCategoryParams {
   name: string;
   description?: string | null;
-  slug: string;
+  slug?: string;
 }
 
 export interface UpdateCategoryParams {

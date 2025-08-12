@@ -15,6 +15,11 @@ import { KakaoService } from "../modules/auth/external/kakao-oauth.service";
 import { MagicLinkService } from "../modules/auth/external/magic-link.service";
 import { BookmarkRepository } from "../modules/bookmarks/data-access/bookmark.repository";
 import { CategoryRepository } from "../modules/categories/data-access/category.repository";
+import {
+  ICategoryService,
+  CategoryService,
+} from "../modules/categories/domain/category.service";
+import { CategorySeedService } from "../modules/categories/domain/category.seed.service";
 import { ProjectRepository } from "../modules/projects/data-access/project.repository";
 import {
   IProjectService,
@@ -94,6 +99,16 @@ container
 container
   .bind<IProjectService>(TYPES.ProjectService)
   .to(ProjectService)
+  .inSingletonScope();
+
+container
+  .bind<ICategoryService>(TYPES.CategoryService)
+  .to(CategoryService)
+  .inSingletonScope();
+
+container
+  .bind<CategorySeedService>(TYPES.CategorySeedService)
+  .to(CategorySeedService)
   .inSingletonScope();
 
 container.bind<R2Service>(TYPES.R2Service).to(R2Service).inSingletonScope();

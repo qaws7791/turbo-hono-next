@@ -18,6 +18,8 @@ const TYPES = {
   UploadService: Symbol.for("UploadService"),
   R2Service: Symbol.for("R2Service"),
   ProjectService: Symbol.for("ProjectService"),
+  CategoryService: Symbol.for("CategoryService"),
+  CategorySeedService: Symbol.for("CategorySeedService"),
 } as const;
 
 export { TYPES };
