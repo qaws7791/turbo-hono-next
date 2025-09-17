@@ -1,12 +1,10 @@
-import js from "@eslint/js";
 import pluginNext from "@next/eslint-plugin-next";
-import eslintConfigPrettier from "eslint-config-prettier";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
 import { defineConfig } from "eslint/config";
 import globals from "globals";
-import tseslint from "typescript-eslint";
 import { config as baseConfig } from "./base.js";
+
 /**
  * A custom ESLint configuration for libraries that use Next.js.
  *
@@ -14,15 +12,13 @@ import { config as baseConfig } from "./base.js";
  * */
 export const nextJsConfig = defineConfig([
   ...baseConfig,
-  js.configs.recommended,
-  eslintConfigPrettier,
-  ...tseslint.configs.recommended,
+  pluginReact.configs.flat.recommended,
   {
-    ...pluginReact.configs.flat.recommended,
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
     languageOptions: {
-      ...pluginReact.configs.flat.recommended.languageOptions,
       globals: {
-        ...globals.serviceworker,
+        ...globals.browser,
+        ...globals.node,
       },
     },
   },
@@ -44,6 +40,15 @@ export const nextJsConfig = defineConfig([
       ...pluginReactHooks.configs.recommended.rules,
       // React scope no longer necessary with new JSX transform.
       "react/react-in-jsx-scope": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "no-unused-vars": "off", // TypeScript에서는 @typescript-eslint/no-unused-vars 사용
     },
   },
 ]);

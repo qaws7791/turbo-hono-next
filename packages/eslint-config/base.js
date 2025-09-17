@@ -1,6 +1,5 @@
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
-import onlyWarn from "eslint-plugin-only-warn";
 import simpleImportSortPlugin from "eslint-plugin-simple-import-sort";
 import turboPlugin from "eslint-plugin-turbo";
 import tseslint from "typescript-eslint";
@@ -20,14 +19,13 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
-    },
-  },
-  {
-    plugins: {
-      onlyWarn,
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
     },
   },
   {
     ignores: ["**/dist/", "**/build/", "**/out/", "**/coverage/"],
   },
 ];
+
+export default config;
