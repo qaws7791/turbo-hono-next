@@ -1,0 +1,98 @@
+/* Design System Theme Variables & Tailwind Tokens */
+
+@theme inline {
+  /* Typography */
+  --font-sans:
+    "Pretendard Variable", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Breakpoints */
+  --breakpoint-2xl: 87.5rem;
+
+  /* Color token mappings */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  /* Radius tokens */
+  --radius-*: initial;
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.5rem);
+  --radius-2xl: calc(var(--radius) + 1rem);
+  --radius-3xl: calc(var(--radius) + 1.5rem);
+  --radius-md: calc(var(--radius) - 0.125rem);
+  --radius-sm: calc(var(--radius) - 0.25rem);
+}
+
+@layer base {
+  :root {
+    /* Light theme colors */
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(240 10% 3.9%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(240 10% 3.9%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(240 10% 3.9%);
+    --muted: hsl(240 4.8% 95.9%);
+    --muted-foreground: hsl(240 3.8% 46.1%);
+    --accent: hsl(240 4.8% 95.9%);
+    --accent-foreground: hsl(240 5.9% 10%);
+    --primary: hsl(336 80% 58%);
+    --primary-foreground: hsl(0 0% 93%);
+    --secondary: hsl(341 94% 93%);
+    --secondary-foreground: hsl(332 63% 24%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(240 5.9% 90%);
+    --input: hsl(240 5.9% 90%);
+    --ring: hsl(336 80% 58%);
+
+    /* Design tokens */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Dark theme colors */
+    --background: hsl(240 10% 3.9%);
+    --foreground: hsl(0 0% 98%);
+    --card: hsl(240 10% 3.9%);
+    --card-foreground: hsl(0 0% 98%);
+    --popover: hsl(240 10% 3.9%);
+    --popover-foreground: hsl(0 0% 98%);
+    --muted: hsl(240 3.7% 15.9%);
+    --muted-foreground: hsl(240 5% 64.9%);
+    --accent: hsl(240 3.7% 15.9%);
+    --accent-foreground: hsl(0 0% 98%);
+    --primary: hsl(336 80% 58%);
+    --primary-foreground: hsl(0 0% 93%);
+    --secondary: hsl(331 62% 19%);
+    --secondary-foreground: hsl(330 91% 91%);
+    --destructive: hsl(0 84.2% 60.2%);
+    --destructive-foreground: hsl(0 0% 98%);
+    --border: hsl(240 3.7% 15.9%);
+    --input: hsl(240 3.7% 15.9%);
+    --ring: hsl(336 80% 58%);
+  }
+
+  /* Global theme application */
+  body {
+    @apply bg-white dark:bg-zinc-900;
+    color-scheme: dark light;
+  }
+}

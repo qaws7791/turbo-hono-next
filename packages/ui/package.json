@@ -4,34 +4,66 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./src/index.css": "./src/index.css"
+    "./utils": "./utils.ts",
+    "./components.css": "./dist/components.css",
+    "./theme.css": "./src/theme.css",
+    "./badge": "./src/components/badge.tsx",
+    "./button": "./src/components/button.tsx",
+    "./card": "./src/components/card.tsx",
+    "./checkbox": "./src/components/checkbox.tsx",
+    "./dialog": "./src/components/dialog.tsx",
+    "./form": "./src/components/form.tsx",
+    "./inline-edit": "./src/components/inline-edit.tsx",
+    "./link": "./src/components/link.tsx",
+    "./list-box": "./src/components/list-box.tsx",
+    "./loading-spinner": "./src/components/loading-spinner.tsx",
+    "./number-field": "./src/components/number-field.tsx",
+    "./popover": "./src/components/popover.tsx",
+    "./progress-bar": "./src/components/progress-bar.tsx",
+    "./radio-group": "./src/components/radio-group.tsx",
+    "./search-field": "./src/components/search-field.tsx",
+    "./select": "./src/components/select.tsx",
+    "./sidebar": "./src/components/sidebar.tsx",
+    "./slider": "./src/components/slider.tsx",
+    "./switch": "./src/components/switch.tsx",
+    "./table": "./src/components/table.tsx",
+    "./tabs": "./src/components/tabs.tsx",
+    "./text-field": "./src/components/text-field.tsx",
+    "./toast": "./src/components/toast.tsx",
+    "./tree-view": "./src/components/tree-view.tsx"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "vite build",
-    "dev": "vite build --watch",
-    "check-types": "tsc --noEmit"
+    "build": "tailwindcss -i ./src/components.css -o ./dist/components.css --minify",
+    "dev": "tailwindcss -i ./src/components.css -o ./dist/components.css --watch",
+    "check-types": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
+    "clean": "rimraf dist"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.11",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "^10.4.21",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "rimraf": "^6.0.1",
     "tailwindcss": "^4.1.11",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.0",
-    "typescript": "5.8.3",
-    "vite": "^6.3.5"
+    "tsup": "^8.0.0",
+    "typescript": "5.8.3"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.13",
     "lucide-react": "^0.525.0",
     "postcss": "^8.5.6",
     "react-aria-components": "latest",
