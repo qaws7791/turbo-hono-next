@@ -14,10 +14,14 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@repo/ui": "workspace:*",
+    "@tailwindcss/postcss": "^4.1.11",
     "next": "^15.3.0",
     "openapi-fetch": "^0.14.0",
+    "postcss": "^8.5.6",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.53.2",
