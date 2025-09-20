@@ -141,4 +141,7 @@ git commit -m "feat: add new feature"
 - [explain monorepo by nx](https://monorepo.tools)
 - [angular style guide](https://github.com/johnpapa/angular-styleguide)
 
-TODO: 나중에 필요하면 공통 타입 패키지 추가
+## Tailwind AutoComplete Problem in VSCode
+
+- Check `.vscode/settings.json` > `tailwindCSS.experimental.configFile` for the correct configuration.
+- [Tailwind CSS IntelliSense Docs](https://github.com/tailwindlabs/tailwindcss-intellisense?tab=readme-ov-file#tailwind-css-v4x-css-entrypoints)

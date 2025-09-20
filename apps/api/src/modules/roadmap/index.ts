@@ -1,0 +1,31 @@
+import { OpenAPIHono } from "@hono/zod-openapi";
+import create from "./routes/create";
+import deleteRoadmap from "./routes/delete";
+import createGoal from "./routes/goals/create-goal";
+import deleteGoal from "./routes/goals/delete-goal";
+import reorderGoal from "./routes/goals/reorder-goal";
+import updateGoal from "./routes/goals/update-goal";
+import list from "./routes/list";
+import changeStatus from "./routes/status";
+import createSubGoal from "./routes/sub-goals/create-sub-goal";
+import deleteSubGoal from "./routes/sub-goals/delete-sub-goal";
+import moveSubGoal from "./routes/sub-goals/move-sub-goal";
+import updateSubGoal from "./routes/sub-goals/update-sub-goal";
+import update from "./routes/update";
+
+const roadmapApp = new OpenAPIHono();
+roadmapApp.route("/", create);
+roadmapApp.route("/", deleteRoadmap);
+roadmapApp.route("/", list);
+roadmapApp.route("/", changeStatus);
+roadmapApp.route("/", update);
+roadmapApp.route("/", createGoal);
+roadmapApp.route("/", updateGoal);
+roadmapApp.route("/", deleteGoal);
+roadmapApp.route("/", reorderGoal);
+roadmapApp.route("/", createSubGoal);
+roadmapApp.route("/", updateSubGoal);
+roadmapApp.route("/", deleteSubGoal);
+roadmapApp.route("/", moveSubGoal);
+
+export default roadmapApp;

@@ -14,8 +14,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^1.1.0",
     "@repo/ui": "workspace:*",
     "@tailwindcss/postcss": "^4.1.11",
+    "hono": "^4.9.7",
     "next": "^15.3.0",
     "openapi-fetch": "^0.14.0",
     "postcss": "^8.5.6",
