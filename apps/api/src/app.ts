@@ -1,28 +1,12 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import changePassword from "./modules/auth/routes/change-password";
-import loginWithEmail from "./modules/auth/routes/login-with-email";
-import logout from "./modules/auth/routes/logout";
-import me from "./modules/auth/routes/me";
-import signup from "./modules/auth/routes/signup";
 
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
 import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
 import aiApp from "./modules/ai";
-import create from "./modules/roadmap/routes/create";
-import deleteRoadmap from "./modules/roadmap/routes/delete";
-import createGoal from "./modules/roadmap/routes/goals/create-goal";
-import deleteGoal from "./modules/roadmap/routes/goals/delete-goal";
-import reorderGoal from "./modules/roadmap/routes/goals/reorder-goal";
-import updateGoal from "./modules/roadmap/routes/goals/update-goal";
-import list from "./modules/roadmap/routes/list";
-import changeStatus from "./modules/roadmap/routes/status";
-import createSubGoal from "./modules/roadmap/routes/sub-goals/create-sub-goal";
-import deleteSubGoal from "./modules/roadmap/routes/sub-goals/delete-sub-goal";
-import moveSubGoal from "./modules/roadmap/routes/sub-goals/move-sub-goal";
-import updateSubGoal from "./modules/roadmap/routes/sub-goals/update-sub-goal";
-import update from "./modules/roadmap/routes/update";
+import authApp from "./modules/auth";
+import roadmapApp from "./modules/roadmap";
 
 function createApp() {
   const app = new OpenAPIHono();
@@ -67,26 +51,13 @@ function createApp() {
   return app;
 }
 
+const routes = [authApp, roadmapApp, aiApp] as const;
+
 const app = createApp();
 
-app.route("/", loginWithEmail);
-app.route("/", signup);
-app.route("/", logout);
-app.route("/", me);
-app.route("/", changePassword);
-app.route("/", create);
-app.route("/", deleteRoadmap);
-app.route("/", list);
-app.route("/", changeStatus);
-app.route("/", update);
-app.route("/", createGoal);
-app.route("/", updateGoal);
-app.route("/", deleteGoal);
-app.route("/", reorderGoal);
-app.route("/", createSubGoal);
-app.route("/", updateSubGoal);
-app.route("/", deleteSubGoal);
-app.route("/", moveSubGoal);
-app.route("/", aiApp);
+routes.forEach((route) => {
+  app.route("/", route);
+});
 
+export type AppType = (typeof routes)[number];
 export default app;
