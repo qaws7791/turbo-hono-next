@@ -2,12 +2,12 @@
 
 import {
   Input as AriaInput,
-  InputProps as AriaInputProps,
+  type InputProps as AriaInputProps,
   TextArea as AriaTextArea,
-  TextAreaProps as AriaTextAreaProps,
+  type TextAreaProps as AriaTextAreaProps,
   TextField as AriaTextField,
-  TextFieldProps as AriaTextFieldProps,
-  ValidationResult as AriaValidationResult,
+  type TextFieldProps as AriaTextFieldProps,
+  type ValidationResult as AriaValidationResult,
   composeRenderProps,
   Text,
 } from "react-aria-components";

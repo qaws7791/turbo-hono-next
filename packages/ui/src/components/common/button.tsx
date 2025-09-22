@@ -5,7 +5,7 @@ import {
   type ButtonProps as AriaButtonProps,
   composeRenderProps,
 } from "react-aria-components";
-import { tv, VariantProps } from "tailwind-variants";
+import { tv, type VariantProps } from "tailwind-variants";
 
 import { focusRing } from "../../utils";
 

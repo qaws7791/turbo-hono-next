@@ -2,18 +2,18 @@
 
 import {
   FieldError as AriaFieldError,
-  FieldErrorProps as AriaFieldErrorProps,
+  type FieldErrorProps as AriaFieldErrorProps,
   Group as AriaGroup,
-  GroupProps as AriaGroupProps,
+  type GroupProps as AriaGroupProps,
   Label as AriaLabel,
-  LabelProps as AriaLabelProps,
+  type LabelProps as AriaLabelProps,
   Text as AriaText,
-  TextProps as AriaTextProps,
+  type TextProps as AriaTextProps,
   composeRenderProps,
   Form,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
-import { tv, VariantProps } from "tailwind-variants";
+import { tv, type VariantProps } from "tailwind-variants";
 
 const labelStyles = tv({
   base: [
