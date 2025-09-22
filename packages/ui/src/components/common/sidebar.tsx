@@ -14,7 +14,7 @@ import {
   type LinkProps as AriaLinkProps,
 } from "react-aria-components";
 import { tv, type VariantProps } from "tailwind-variants";
-import { focusVisibleRing } from "../utils";
+import { focusVisibleRing } from "../../utils";
 
 // Variants
 const sidebarVariants = tv({

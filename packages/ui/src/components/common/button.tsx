@@ -7,7 +7,7 @@ import {
 } from "react-aria-components";
 import { tv, VariantProps } from "tailwind-variants";
 
-import { focusRing } from "../utils";
+import { focusRing } from "../../utils";
 
 const buttonStyles = tv({
   extend: focusRing,

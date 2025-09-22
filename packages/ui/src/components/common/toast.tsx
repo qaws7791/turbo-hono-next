@@ -14,7 +14,7 @@ import {
   QueuedToast,
 } from "react-aria-components";
 import { tv, type VariantProps } from "tailwind-variants";
-import { focusRing } from "../utils";
+import { focusRing } from "../../utils";
 import { Button } from "./button";
 
 const toastRegionStyles = tv({
