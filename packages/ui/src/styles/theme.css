@@ -1,5 +1,10 @@
 /* Design System Theme Variables & Tailwind Tokens */
-
+@plugin "tailwindcss-react-aria-components";
+@plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
+@plugin "@iconify/tailwind4" {
+  prefixes: solar;
+}
 @theme inline {
   /* Typography */
   --font-sans:

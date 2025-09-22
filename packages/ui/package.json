@@ -5,8 +5,8 @@
   "type": "module",
   "exports": {
     "./utils": "./utils/index.ts",
-    "./styles/components.css": "./dist/styles/components.css",
-    "./styles/theme.css": "./src/styles/theme.css",
+    "./components.css": "./dist/styles/components.css",
+    "./theme.css": "./src/styles/theme.css",
     "./badge": "./src/components/common/badge.tsx",
     "./button": "./src/components/common/button.tsx",
     "./card": "./src/components/common/card.tsx",
@@ -30,7 +30,8 @@
     "./tabs": "./src/components/common/tabs.tsx",
     "./text-field": "./src/components/common/text-field.tsx",
     "./toast": "./src/components/common/toast.tsx",
-    "./tree-view": "./src/components/common/tree-view.tsx"
+    "./tree-view": "./src/components/common/tree-view.tsx",
+    "./icon": "./src/components/common/icon.tsx"
   },
   "files": [
     "dist"
@@ -47,6 +48,8 @@
     "clean": "rimraf dist"
   },
   "devDependencies": {
+    "@iconify-json/solar": "^1.2.4",
+    "@iconify/tailwind4": "^1.0.6",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
