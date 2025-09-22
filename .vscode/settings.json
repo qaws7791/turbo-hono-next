@@ -13,7 +13,8 @@
   "javascript.preferences.importModuleSpecifier": "non-relative",
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "tailwindCSS.experimental.configFile": {
-    "apps/web/app/globals.css": "apps/web/app/**",
-    "packages/ui/src/components.css": "packages/ui/src/**",
-  }
+    "apps/web/src/styles.css": "apps/web/src/**",
+    "packages/ui/src/styles/components.css": "packages/ui/src/**",
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
