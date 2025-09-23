@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./utils": "./utils/index.ts",
+    "./utils": "./src/utils/index.ts",
     "./components.css": "./dist/styles/components.css",
     "./theme.css": "./src/styles/theme.css",
     "./badge": "./src/components/common/badge.tsx",
