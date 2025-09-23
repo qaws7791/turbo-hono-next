@@ -69,7 +69,11 @@
     "@tailwindcss/cli": "^4.1.13",
     "lucide-react": "^0.525.0",
     "postcss": "^8.5.6",
-    "react-aria-components": "latest",
-    "tailwind-variants": "^1.0.0"
+    "react-aria-components": "^1.12.2",
+    "tailwind-variants": "^3.1.1"
+  },
+  "peerDependencies": {
+    "react-aria-components": "^1.12.2",
+    "tailwind-variants": "^3.1.1"
   }
 }
