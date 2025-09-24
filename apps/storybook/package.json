@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "build": "storybook build"
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build",
+    "serve": "npx http-server storybook-static -p 6007 -o",
+    "clean": "rm -rf storybook-static"
   },
   "dependencies": {
     "@repo/ui": "workspace:*",
