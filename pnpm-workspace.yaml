@@ -1,8 +1,20 @@
 catalog:
+  # React 생태계
   react: ^19.1.0
   react-dom: ^19.1.0
   "@types/react": ^19.1.0
   "@types/react-dom": ^19.1.0
+
+  # 개발 도구
+  typescript: ^5.8.3
+  eslint: ^9.26.0
+  prettier: ^3.5.3
+  vitest: ^3.0.5
+  vite: ^6.3.5
+
+  # 공통 라이브러리
+  zod: ^4.1.9
+  tailwindcss: ^4.0.6
 
 packages:
   - "apps/*"

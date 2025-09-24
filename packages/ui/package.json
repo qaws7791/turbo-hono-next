@@ -58,16 +58,16 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.26.0",
-    "prettier": "^3.0.0",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "rimraf": "^6.0.1",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "catalog:",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.0",
     "tsup": "^8.0.0",
-    "typescript": "5.8.3"
+    "typescript": "catalog:"
   },
   "dependencies": {
     "@tailwindcss/cli": "^4.1.13",

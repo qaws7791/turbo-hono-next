@@ -37,7 +37,7 @@
     "nanoid": "^5.1.5",
     "resend": "^6.1.0",
     "ws": "^8.18.3",
-    "zod": "^4.1.9"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.4",
