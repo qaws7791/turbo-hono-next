@@ -11,6 +11,7 @@ import {
   GenerateRoadmapRequestSchema,
   GenerateRoadmapResponseSchema,
 } from "../schema";
+import { saveRoadmapToDatabase } from "../services/roadmap-service";
 
 const generateRoadmap = new OpenAPIHono<{
   Variables: {
@@ -78,6 +79,15 @@ const generateRoadmap = new OpenAPIHono<{
   async (c) => {
     try {
       const body = c.req.valid("json");
+      const auth = c.get("auth");
+
+      if (!auth?.user?.id) {
+        throw new AIError(
+          401,
+          "ai:authentication_required",
+          "User authentication required",
+        );
+      }
 
       const {
         learningTopic,
@@ -119,10 +129,62 @@ const generateRoadmap = new OpenAPIHono<{
 
       const generatedRoadmap = result.object;
 
-      // Return the generated roadmap
+      // Save the generated roadmap to the database with transaction
+      console.log(
+        "Generated roadmap:",
+        JSON.stringify(generatedRoadmap, null, 2),
+      );
+      const savedRoadmap = await saveRoadmapToDatabase({
+        userId: auth.user.id,
+        generatedRoadmap,
+        personalizedData: {
+          learningTopic,
+          userLevel,
+          targetWeeks,
+          weeklyHours,
+          learningStyle,
+          preferredResources,
+          mainGoal,
+          additionalRequirements,
+        },
+      });
+
+      // Return the saved roadmap data
       return c.json(
         {
-          roadmap: generatedRoadmap,
+          roadmap: {
+            id: savedRoadmap.publicId,
+            title: savedRoadmap.title,
+            description: savedRoadmap.description,
+            status: savedRoadmap.status,
+            learningTopic: savedRoadmap.learningTopic,
+            userLevel: savedRoadmap.userLevel,
+            targetWeeks: savedRoadmap.targetWeeks,
+            weeklyHours: savedRoadmap.weeklyHours,
+            learningStyle: savedRoadmap.learningStyle,
+            preferredResources: savedRoadmap.preferredResources,
+            mainGoal: savedRoadmap.mainGoal,
+            additionalRequirements:
+              savedRoadmap.additionalRequirements || undefined,
+            goals: savedRoadmap.goals.map((goal) => ({
+              id: goal.publicId,
+              title: goal.title,
+              description: goal.description,
+              order: goal.order,
+              isExpanded: goal.isExpanded,
+              subGoals: goal.subGoals.map((subGoal) => ({
+                id: subGoal.publicId,
+                title: subGoal.title,
+                description: subGoal.description,
+                order: subGoal.order,
+                isCompleted: subGoal.isCompleted,
+                dueDate: subGoal.dueDate?.toISOString(),
+                memo: subGoal.memo,
+              })),
+            })),
+            createdAt: savedRoadmap.createdAt.toISOString(),
+            updatedAt: savedRoadmap.updatedAt.toISOString(),
+          },
           message: "로드맵이 성공적으로 생성되었습니다.",
         },
         status.OK,
@@ -171,13 +233,31 @@ const generateRoadmap = new OpenAPIHono<{
         }
       }
 
-      // Handle validation errors
-      if (error instanceof Error && error.message.includes("validation")) {
-        throw new AIError(
-          400,
-          "ai:invalid_request",
-          "Invalid request data provided",
-        );
+      // Handle database errors
+      if (error instanceof Error) {
+        if (error.message.includes("Failed to create")) {
+          throw new AIError(
+            500,
+            "ai:database_error",
+            "Failed to save roadmap to database",
+          );
+        }
+
+        if (error.message.includes("validation")) {
+          throw new AIError(
+            400,
+            "ai:invalid_request",
+            "Invalid request data provided",
+          );
+        }
+
+        if (error.message.includes("transaction")) {
+          throw new AIError(
+            500,
+            "ai:database_transaction_failed",
+            "Database transaction failed while saving roadmap",
+          );
+        }
       }
 
       console.error("AI roadmap generation error:", error);

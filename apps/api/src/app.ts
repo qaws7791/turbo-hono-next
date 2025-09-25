@@ -14,7 +14,11 @@ function createApp() {
   app.use(
     "/*",
     cors({
-      origin: [CONFIG.BASE_URL, "http://localhost:8787", "http://localhost"],
+      origin: [
+        CONFIG.BASE_URL,
+        "http://localhost:8787",
+        "http://localhost:3000",
+      ],
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       credentials: true,

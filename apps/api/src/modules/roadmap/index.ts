@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import create from "./routes/create";
 import deleteRoadmap from "./routes/delete";
+import detail from "./routes/detail";
 import createGoal from "./routes/goals/create-goal";
 import deleteGoal from "./routes/goals/delete-goal";
 import reorderGoal from "./routes/goals/reorder-goal";
@@ -16,6 +17,7 @@ import update from "./routes/update";
 const roadmapApp = new OpenAPIHono();
 roadmapApp.route("/", create);
 roadmapApp.route("/", deleteRoadmap);
+roadmapApp.route("/", detail);
 roadmapApp.route("/", list);
 roadmapApp.route("/", changeStatus);
 roadmapApp.route("/", update);

@@ -8,7 +8,10 @@ export type AIErrorType =
   | "quota_exceeded"
   | "model_unavailable"
   | "parsing_failed"
-  | "internal_error";
+  | "internal_error"
+  | "authentication_required"
+  | "database_error"
+  | "database_transaction_failed";
 
 export type AIErrorCode = `ai:${AIErrorType}`;
 
