@@ -1,164 +1,170 @@
-import createClient from 'openapi-fetch'
-import type { paths } from './schema'
+import createClient from "openapi-fetch";
+import type { paths } from "./schema";
 
 const client = createClient<paths>({
-  baseUrl: 'http://localhost:3001',
-  credentials: 'include',
-})
+  baseUrl: "http://localhost:3001",
+  credentials: "include",
+});
 
 const auth = {
   login: async (email: string, password: string) => {
-    return client.POST('/auth/login', {
+    return client.POST("/auth/login", {
       body: { email, password },
-    })
+    });
   },
 
   signup: async (email: string, password: string, name: string) => {
-    return client.POST('/auth/signup', {
+    return client.POST("/auth/signup", {
       body: { email, password, name },
-    })
+    });
   },
 
   logout: async () => {
-    return client.POST('/auth/logout')
+    return client.POST("/auth/logout");
   },
 
   me: async () => {
-    return client.GET('/auth/me')
+    return client.GET("/auth/me");
   },
 
   changePassword: async (currentPassword: string, newPassword: string) => {
-    return client.PUT('/auth/change-password', {
+    return client.PUT("/auth/change-password", {
       body: { currentPassword, newPassword },
-    })
+    });
   },
-}
+};
 
 const roadmaps = {
   list: async (params?: {
-    cursor?: string
-    limit?: number
-    search?: string
-    status?: 'active' | 'archived'
-    sort?: 'created_at' | 'updated_at' | 'title'
-    order?: 'asc' | 'desc'
+    cursor?: string;
+    limit?: number;
+    search?: string;
+    status?: "active" | "archived";
+    sort?: "created_at" | "updated_at" | "title";
+    order?: "asc" | "desc";
   }) => {
-    return client.GET('/roadmaps', {
+    return client.GET("/roadmaps", {
       params: { query: params },
-    })
+    });
+  },
+
+  detail: async (roadmapId: string) => {
+    return client.GET("/roadmaps/{roadmapId}", {
+      params: { path: { roadmapId } },
+    });
   },
 
   create: async (data: {
-    title: string
-    description?: string
-    learningTopic: string
-    userLevel: 'beginner' | 'basic' | 'intermediate' | 'advanced' | 'expert'
-    targetWeeks: number
-    weeklyHours: number
-    learningStyle: string
-    preferredResources: string
-    mainGoal: string
-    additionalRequirements?: string
+    title: string;
+    description?: string;
+    learningTopic: string;
+    userLevel: "beginner" | "basic" | "intermediate" | "advanced" | "expert";
+    targetWeeks: number;
+    weeklyHours: number;
+    learningStyle: string;
+    preferredResources: string;
+    mainGoal: string;
+    additionalRequirements?: string;
   }) => {
-    return client.POST('/roadmaps', {
+    return client.POST("/roadmaps", {
       body: data,
-    })
+    });
   },
 
   update: async (
     roadmapId: string,
     data: {
-      title?: string
-      description?: string
-      learningTopic?: string
-      userLevel?: 'beginner' | 'basic' | 'intermediate' | 'advanced' | 'expert'
-      targetWeeks?: number
-      weeklyHours?: number
-      learningStyle?: string
-      preferredResources?: string
-      mainGoal?: string
-      additionalRequirements?: string
+      title?: string;
+      description?: string;
+      learningTopic?: string;
+      userLevel?: "beginner" | "basic" | "intermediate" | "advanced" | "expert";
+      targetWeeks?: number;
+      weeklyHours?: number;
+      learningStyle?: string;
+      preferredResources?: string;
+      mainGoal?: string;
+      additionalRequirements?: string;
     },
   ) => {
-    return client.PATCH('/roadmaps/{id}', {
+    return client.PATCH("/roadmaps/{id}", {
       params: { path: { roadmapId } },
       body: data,
-    })
+    });
   },
 
   delete: async (roadmapId: string) => {
-    return client.DELETE('/roadmaps/{id}', {
+    return client.DELETE("/roadmaps/{id}", {
       params: { path: { roadmapId } },
-    })
+    });
   },
 
-  updateStatus: async (roadmapId: string, status: 'active' | 'archived') => {
-    return client.PATCH('/roadmaps/{id}/status', {
+  updateStatus: async (roadmapId: string, status: "active" | "archived") => {
+    return client.PATCH("/roadmaps/{id}/status", {
       params: { path: { roadmapId } },
       body: { status },
-    })
+    });
   },
-}
+};
 
 const goals = {
   create: async (
     roadmapId: string,
     data: {
-      title: string
-      description?: string
-      isExpanded?: boolean
+      title: string;
+      description?: string;
+      isExpanded?: boolean;
     },
   ) => {
-    return client.POST('/roadmaps/{roadmapId}/goals', {
+    return client.POST("/roadmaps/{roadmapId}/goals", {
       params: { path: { roadmapId } },
       body: data,
-    })
+    });
   },
 
   update: async (
     roadmapId: string,
     goalId: string,
     data: {
-      title?: string
-      description?: string
-      isExpanded?: boolean
+      title?: string;
+      description?: string;
+      isExpanded?: boolean;
     },
   ) => {
-    return client.PUT('/roadmaps/{roadmapId}/goals/{goalId}', {
+    return client.PUT("/roadmaps/{roadmapId}/goals/{goalId}", {
       params: { path: { roadmapId, goalId } },
       body: data,
-    })
+    });
   },
 
   delete: async (roadmapId: string, goalId: string) => {
-    return client.DELETE('/roadmaps/{roadmapId}/goals/{goalId}', {
+    return client.DELETE("/roadmaps/{roadmapId}/goals/{goalId}", {
       params: { path: { roadmapId, goalId } },
-    })
+    });
   },
 
   reorder: async (roadmapId: string, goalId: string, newOrder: number) => {
-    return client.PATCH('/roadmaps/{roadmapId}/goals/{goalId}/order', {
+    return client.PATCH("/roadmaps/{roadmapId}/goals/{goalId}/order", {
       params: { path: { roadmapId, goalId } },
       body: { newOrder },
-    })
+    });
   },
-}
+};
 
 const subGoals = {
   create: async (
     roadmapId: string,
     goalId: string,
     data: {
-      title: string
-      description?: string
-      dueDate?: string
-      memo?: string
+      title: string;
+      description?: string;
+      dueDate?: string;
+      memo?: string;
     },
   ) => {
-    return client.POST('/roadmaps/{roadmapId}/goals/{goalId}/sub-goals', {
+    return client.POST("/roadmaps/{roadmapId}/goals/{goalId}/sub-goals", {
       params: { path: { roadmapId, goalId } },
       body: data,
-    })
+    });
   },
 
   update: async (
@@ -166,29 +172,29 @@ const subGoals = {
     goalId: string,
     subGoalId: string,
     data: {
-      title?: string
-      description?: string
-      isCompleted?: boolean
-      dueDate?: string
-      memo?: string
+      title?: string;
+      description?: string;
+      isCompleted?: boolean;
+      dueDate?: string;
+      memo?: string;
     },
   ) => {
     return client.PUT(
-      '/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}',
+      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}",
       {
         params: { path: { roadmapId, goalId, subGoalId } },
         body: data,
       },
-    )
+    );
   },
 
   delete: async (roadmapId: string, goalId: string, subGoalId: string) => {
     return client.DELETE(
-      '/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}',
+      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}",
       {
         params: { path: { roadmapId, goalId, subGoalId } },
       },
-    )
+    );
   },
 
   move: async (
@@ -196,48 +202,48 @@ const subGoals = {
     goalId: string,
     subGoalId: string,
     data: {
-      newGoalId: string
-      newOrder?: number
+      newGoalId: string;
+      newOrder?: number;
     },
   ) => {
     return client.PATCH(
-      '/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move',
+      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move",
       {
         params: { path: { roadmapId, goalId, subGoalId } },
         body: data,
       },
-    )
+    );
   },
-}
+};
 
 const ai = {
   generateRoadmap: async (data: {
-    learningTopic: string
-    userLevel: '초보자' | '기초' | '중급' | '고급' | '전문가'
-    targetWeeks: number
-    weeklyHours: number
+    learningTopic: string;
+    userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
+    targetWeeks: number;
+    weeklyHours: number;
     learningStyle:
-      | '시각적 학습'
-      | '실습 중심'
-      | '문서 읽기'
-      | '동영상 강의'
-      | '대화형 학습'
-      | '프로젝트 기반'
+      | "시각적 학습"
+      | "실습 중심"
+      | "문서 읽기"
+      | "동영상 강의"
+      | "대화형 학습"
+      | "프로젝트 기반";
     preferredResources:
-      | '온라인 강의'
-      | '책/전자책'
-      | '튜토리얼'
-      | '유튜브 영상'
-      | '공식 문서'
-      | '실습 사이트'
-    mainGoal: string
-    additionalRequirements?: string
+      | "온라인 강의"
+      | "책/전자책"
+      | "튜토리얼"
+      | "유튜브 영상"
+      | "공식 문서"
+      | "실습 사이트";
+    mainGoal: string;
+    additionalRequirements?: string | undefined;
   }) => {
-    return client.POST('/ai/roadmaps/generate', {
+    return client.POST("/ai/roadmaps/generate", {
       body: data,
-    })
+    });
   },
-}
+};
 
 export const api = {
   auth,
@@ -245,4 +251,4 @@ export const api = {
   goals,
   subGoals,
   ai,
-} as const
+} as const;

@@ -1,9 +1,9 @@
-import { Link } from '@/components/auth/link'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link } from "@/components/link";
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: HomeComponent,
-})
+});
 
 function HomeComponent() {
   return (
@@ -21,7 +21,11 @@ function HomeComponent() {
         </header>
 
         <div className="flex justify-center">
-          <Link to="/login" variant="primary" size="lg">
+          <Link
+            to="/login"
+            variant="primary"
+            size="lg"
+          >
             시작하기
           </Link>
         </div>
@@ -34,5 +38,5 @@ function HomeComponent() {
         </footer>
       </div>
     </div>
-  )
+  );
 }

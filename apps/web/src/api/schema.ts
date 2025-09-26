@@ -1191,6 +1191,291 @@ export interface paths {
         };
         trace?: never;
     };
+    "/roadmaps/{roadmapId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get detailed roadmap with goals and sub-goals */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Public ID of the roadmap */
+                    roadmapId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Roadmap details retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Public ID of the roadmap
+                             * @example abc123def456
+                             */
+                            id: string;
+                            /**
+                             * @description Roadmap title
+                             * @example Full Stack JavaScript Developer
+                             */
+                            title: string;
+                            /**
+                             * @description Roadmap description
+                             * @example Complete guide to becoming a full stack developer
+                             */
+                            description: string | null;
+                            /**
+                             * @description Current status of the roadmap
+                             * @example active
+                             * @enum {string}
+                             */
+                            status: "active" | "archived";
+                            /**
+                             * @description Main learning topic
+                             * @example JavaScript
+                             */
+                            learningTopic: string;
+                            /**
+                             * @description Target user level
+                             * @example beginner
+                             */
+                            userLevel: string;
+                            /**
+                             * @description Target completion weeks
+                             * @example 12
+                             */
+                            targetWeeks: number;
+                            /**
+                             * @description Weekly study hours
+                             * @example 10
+                             */
+                            weeklyHours: number;
+                            /**
+                             * @description Preferred learning style
+                             * @example 실습 중심
+                             */
+                            learningStyle: string;
+                            /**
+                             * @description Preferred learning resources
+                             * @example 온라인 강의
+                             */
+                            preferredResources: string;
+                            /**
+                             * @description Main learning goal
+                             * @example 웹 개발자 취업
+                             */
+                            mainGoal: string;
+                            /**
+                             * @description Additional requirements
+                             * @example React, Node.js 포함
+                             */
+                            additionalRequirements: string | null;
+                            /**
+                             * @description Creation timestamp
+                             * @example 2024-01-01T00:00:00.000Z
+                             */
+                            createdAt: string;
+                            /**
+                             * @description Last update timestamp
+                             * @example 2024-01-15T10:30:00.000Z
+                             */
+                            updatedAt: string;
+                            /** @description List of goals with their sub-goals */
+                            goals: {
+                                /**
+                                 * @description Public ID of the goal
+                                 * @example 550e8400-e29b-41d4-a716-446655440000
+                                 */
+                                id: string;
+                                /**
+                                 * @description Goal title
+                                 * @example Learn JavaScript Fundamentals
+                                 */
+                                title: string;
+                                /**
+                                 * @description Goal description
+                                 * @example Master variables, functions, loops, and basic DOM manipulation
+                                 */
+                                description: string | null;
+                                /**
+                                 * @description Display order of the goal
+                                 * @example 1
+                                 */
+                                order: number;
+                                /**
+                                 * @description Whether the goal is expanded in UI
+                                 * @example true
+                                 */
+                                isExpanded: boolean;
+                                /**
+                                 * @description Creation timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                createdAt: string;
+                                /**
+                                 * @description Last update timestamp
+                                 * @example 2024-01-15T10:30:00.000Z
+                                 */
+                                updatedAt: string;
+                                /** @description List of sub-goals under this goal */
+                                subGoals: {
+                                    /**
+                                     * @description Public ID of the sub-goal
+                                     * @example 660e8400-e29b-41d4-a716-446655440001
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description Sub-goal title
+                                     * @example Learn variables and data types
+                                     */
+                                    title: string;
+                                    /**
+                                     * @description Sub-goal description
+                                     * @example Understand different data types: string, number, boolean, array, object
+                                     */
+                                    description: string | null;
+                                    /**
+                                     * @description Whether the sub-goal is completed
+                                     * @example false
+                                     */
+                                    isCompleted: boolean;
+                                    /**
+                                     * @description Due date for the sub-goal
+                                     * @example 2024-02-15T00:00:00.000Z
+                                     */
+                                    dueDate: string | null;
+                                    /**
+                                     * @description Personal memo for the sub-goal
+                                     * @example Focus on practice with real examples
+                                     */
+                                    memo: string | null;
+                                    /**
+                                     * @description Display order of the sub-goal
+                                     * @example 1
+                                     */
+                                    order: number;
+                                    /**
+                                     * @description Creation timestamp
+                                     * @example 2024-01-01T00:00:00.000Z
+                                     */
+                                    createdAt: string;
+                                    /**
+                                     * @description Last update timestamp
+                                     * @example 2024-01-15T10:30:00.000Z
+                                     */
+                                    updatedAt: string;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Access denied to this roadmap */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Roadmap not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/roadmaps/{id}/status": {
         parameters: {
             query?: never;
@@ -2948,7 +3233,12 @@ export interface paths {
                         "application/json": {
                             roadmap: {
                                 /**
-                                 * @description 생성된 로드맵 제목
+                                 * @description 로드맵 공개 ID
+                                 * @example abc123def456ghi7
+                                 */
+                                publicId: string;
+                                /**
+                                 * @description 로드맵 제목
                                  * @example JavaScript 풀스택 개발자 로드맵
                                  */
                                 title: string;
@@ -2956,9 +3246,59 @@ export interface paths {
                                  * @description 로드맵 설명
                                  * @example 12주 만에 JavaScript 풀스택 개발자가 되기 위한 체계적인 학습 계획
                                  */
-                                description: string;
+                                description: string | null;
+                                /**
+                                 * @description 로드맵 상태
+                                 * @example active
+                                 */
+                                status: string;
+                                /**
+                                 * @description 학습 주제
+                                 * @example JavaScript 풀스택 개발
+                                 */
+                                learningTopic: string;
+                                /**
+                                 * @description 사용자 수준
+                                 * @example 초보자
+                                 */
+                                userLevel: string;
+                                /**
+                                 * @description 목표 기간 (주)
+                                 * @example 12
+                                 */
+                                targetWeeks: number;
+                                /**
+                                 * @description 주당 학습 시간
+                                 * @example 10
+                                 */
+                                weeklyHours: number;
+                                /**
+                                 * @description 학습 스타일
+                                 * @example 실습 중심
+                                 */
+                                learningStyle: string;
+                                /**
+                                 * @description 선호 자료
+                                 * @example 온라인 강의
+                                 */
+                                preferredResources: string;
+                                /**
+                                 * @description 주요 목표
+                                 * @example 취업을 위한 실무 능력 습득
+                                 */
+                                mainGoal: string;
+                                /**
+                                 * @description 추가 요구사항
+                                 * @example React 중심으로 학습하고 싶습니다
+                                 */
+                                additionalRequirements?: string;
                                 /** @description 상위 목표들 */
                                 goals: {
+                                    /**
+                                     * @description 상위 목표 공개 ID
+                                     * @example x1y2z3a4b5c6d7e8
+                                     */
+                                    publicId: string;
                                     /**
                                      * @description 상위 목표 제목
                                      * @example HTML/CSS 기초
@@ -2968,14 +3308,24 @@ export interface paths {
                                      * @description 상위 목표 설명
                                      * @example 웹 개발의 기본이 되는 HTML과 CSS를 학습합니다
                                      */
-                                    description: string;
+                                    description: string | null;
                                     /**
                                      * @description 상위 목표 순서
                                      * @example 1
                                      */
                                     order: number;
+                                    /**
+                                     * @description 펼침 여부
+                                     * @example true
+                                     */
+                                    isExpanded: boolean;
                                     /** @description 하위 목표들 */
                                     subGoals: {
+                                        /**
+                                         * @description 하위 목표 공개 ID
+                                         * @example a1b2c3d4e5f6g7h8
+                                         */
+                                        publicId: string;
                                         /**
                                          * @description 하위 목표 제목
                                          * @example HTML 기본 태그 학습
@@ -2985,14 +3335,42 @@ export interface paths {
                                          * @description 하위 목표 설명
                                          * @example div, span, p, h1-h6 등 기본 HTML 태그들의 용도와 사용법을 익힙니다
                                          */
-                                        description: string;
+                                        description: string | null;
                                         /**
                                          * @description 하위 목표 순서
                                          * @example 1
                                          */
                                         order: number;
+                                        /**
+                                         * @description 완료 여부
+                                         * @example false
+                                         */
+                                        isCompleted: boolean;
+                                        /**
+                                         * Format: date-time
+                                         * @description 마감일
+                                         * @example 2024-12-31T00:00:00Z
+                                         */
+                                        dueDate?: string | null;
+                                        /**
+                                         * @description 메모
+                                         * @example 추가 학습 자료 참고
+                                         */
+                                        memo?: string | null;
                                     }[];
                                 }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 생성일
+                                 * @example 2024-01-01T00:00:00Z
+                                 */
+                                createdAt: string;
+                                /**
+                                 * Format: date-time
+                                 * @description 수정일
+                                 * @example 2024-01-01T00:00:00Z
+                                 */
+                                updatedAt: string;
                             };
                             /**
                              * @description 생성 완료 메시지
