@@ -7,10 +7,10 @@ import {
 } from "react-aria-components";
 import { tv, type VariantProps } from "tailwind-variants";
 
-import { focusRing } from "../../utils";
+import { focusVisibleRing } from "../../utils";
 
 const buttonStyles = tv({
-  extend: focusRing,
+  extend: focusVisibleRing,
   base: [
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors",
     /* Disabled */
@@ -64,3 +64,4 @@ const Button = ({ className, variant, size, ...props }: ButtonProps) => {
 
 export { Button, buttonStyles };
 export type { ButtonProps, buttonVariantProps };
+
