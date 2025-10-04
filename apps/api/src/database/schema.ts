@@ -140,3 +140,38 @@ export const subGoal = pgTable("sub_goal", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+/* ========== RoadmapDocument: 로드맵 문서 ========== */
+
+export const roadmapDocument = pgTable("roadmap_document", {
+  id: serial("id").primaryKey(),
+  publicId: uuid("public_id").notNull().unique().$defaultFn(() => crypto.randomUUID()),
+
+  // 관계
+  roadmapId: integer("roadmap_id").references(() => roadmap.id, {
+    onDelete: "cascade",
+  }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  // 파일 정보
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileType: text("file_type").notNull(),
+
+  // R2 저장 정보
+  storageKey: text("storage_key").notNull(),
+  storageUrl: text("storage_url").notNull(),
+
+  // 타임스탬프
+  uploadedAt: timestamp("uploaded_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});

@@ -2,6 +2,7 @@ import {
   account,
   goal,
   roadmap,
+  roadmapDocument,
   session,
   subGoal,
   user,
@@ -28,3 +29,6 @@ export type GoalInsert = typeof goal.$inferInsert;
 
 export type SubGoal = typeof subGoal.$inferSelect;
 export type SubGoalInsert = typeof subGoal.$inferInsert;
+
+export type RoadmapDocument = typeof roadmapDocument.$inferSelect;
+export type RoadmapDocumentInsert = typeof roadmapDocument.$inferInsert;
