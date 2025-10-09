@@ -1,7 +1,10 @@
 import { google } from "@ai-sdk/google";
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { generateObject } from "ai";
+import { generateObject, ModelMessage } from "ai";
+import { and, eq } from "drizzle-orm";
 import status from "http-status";
+import { db } from "../../../database/client";
+import { roadmapDocument } from "../../../database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import { generateRoadmapPrompt } from "../prompts/roadmap-prompts";
@@ -98,7 +101,30 @@ const generateRoadmap = new OpenAPIHono<{
         preferredResources,
         mainGoal,
         additionalRequirements,
+        documentId,
       } = body;
+
+      const [document] = documentId
+        ? await db
+            .select()
+            .from(roadmapDocument)
+            .where(
+              and(
+                eq(roadmapDocument.publicId, documentId),
+                eq(roadmapDocument.userId, auth.user.id),
+              ),
+            )
+            .limit(1)
+        : [null];
+
+      if (documentId && !document) {
+        throw new AIError(404, "ai:document_not_found", "Document not found");
+      }
+
+      // fetch pdf from storage
+      const pdfContents: ArrayBuffer | null = document
+        ? await fetch(document.storageUrl).then((res) => res.arrayBuffer())
+        : null;
 
       // Generate structured roadmap using AI
       const prompt = generateRoadmapPrompt({
@@ -110,13 +136,39 @@ const generateRoadmap = new OpenAPIHono<{
         preferredResources,
         mainGoal,
         additionalRequirements,
+        includePdfContents: pdfContents !== null,
       });
+
+      const messages: ModelMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: prompt,
+            },
+          ],
+        },
+      ];
+
+      if (pdfContents) {
+        messages.push({
+          role: "user",
+          content: [
+            {
+              type: "file",
+              data: Buffer.from(pdfContents),
+              mediaType: "application/pdf",
+            },
+          ],
+        });
+      }
 
       const result = await generateObject({
         model: google("gemini-2.5-flash-lite"),
         schema: GeneratedRoadmapSchema,
-        prompt,
         temperature: 0.7,
+        messages: messages,
       });
 
       if (!result.object) {
@@ -148,6 +200,19 @@ const generateRoadmap = new OpenAPIHono<{
           additionalRequirements,
         },
       });
+
+      // Link documents to the roadmap if provided
+      if (documentId) {
+        await db
+          .update(roadmapDocument)
+          .set({ roadmapId: savedRoadmap.id })
+          .where(
+            and(
+              eq(roadmapDocument.publicId, documentId),
+              eq(roadmapDocument.userId, auth.user.id),
+            ),
+          );
+      }
 
       // Return the saved roadmap data
       return c.json(

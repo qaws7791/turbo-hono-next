@@ -23,6 +23,7 @@ export interface RoadmapCreationData {
 }
 
 export interface SavedRoadmap {
+  id: number;
   publicId: string;
   title: string;
   description: string | null;
@@ -168,6 +169,7 @@ export async function saveRoadmapToDatabase(
 
     // 4. Return complete roadmap structure
     return {
+      id: savedRoadmap.id,
       publicId: savedRoadmap.publicId,
       title: savedRoadmap.title,
       description: savedRoadmap.description,

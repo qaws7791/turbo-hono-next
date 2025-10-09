@@ -11,7 +11,8 @@ export type AIErrorType =
   | "internal_error"
   | "authentication_required"
   | "database_error"
-  | "database_transaction_failed";
+  | "database_transaction_failed"
+  | "document_not_found";
 
 export type AIErrorCode = `ai:${AIErrorType}`;
 

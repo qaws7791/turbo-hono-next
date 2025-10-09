@@ -7,6 +7,7 @@ export interface RoadmapPromptData {
   preferredResources: string;
   mainGoal: string;
   additionalRequirements?: string;
+  includePdfContents?: boolean;
 }
 
 export function generateRoadmapPrompt(data: RoadmapPromptData): string {
@@ -19,10 +20,23 @@ export function generateRoadmapPrompt(data: RoadmapPromptData): string {
     preferredResources,
     mainGoal,
     additionalRequirements,
+    includePdfContents,
   } = data;
 
   return `사용자의 개인화된 학습 로드맵을 생성해주세요.
 
+${
+  includePdfContents
+    ? `
+사용자가 제공한 학습 문서 내용을 **최우선적으로 참고**하여 로드맵을 구성하세요:
+- 문서에서 다루는 주제와 순서를 최대한 반영
+- 문서의 목차나 챕터 구조를 활용
+- 문서에 없는 중요한 내용이 있다면 추가 가능
+- 문서의 난이도와 범위를 고려하여 학습 기간 배분
+
+`
+    : ""
+}
 사용자 정보:
 - 학습 주제: ${learningTopic}
 - 현재 수준: ${userLevel}

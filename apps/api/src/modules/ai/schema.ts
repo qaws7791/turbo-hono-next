@@ -52,6 +52,10 @@ export const GenerateRoadmapRequestSchema = z.object({
     description: "추가 요구사항",
     example: "React 중심으로 학습하고 싶습니다",
   }),
+  documentId: z.string().optional().openapi({
+    description: "업로드된 PDF 문서의 Public ID",
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  }),
 });
 
 // Response schemas
