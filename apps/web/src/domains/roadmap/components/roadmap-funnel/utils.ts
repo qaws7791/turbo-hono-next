@@ -22,6 +22,7 @@ export const handleArrayToggle = (array: Array<string>, id: string) => {
 
 export const transformFunnelDataToApiFormat = (funnelData: FunnelData): ApiRoadmapData => {
   return {
+    documentId: funnelData.documentId,
     learningTopic: funnelData.learningTopic,
     userLevel: getCurrentLevelLabel(funnelData.currentLevel) as "초보자" | "기초" | "중급" | "고급" | "전문가",
     targetWeeks: funnelData.targetWeeks,

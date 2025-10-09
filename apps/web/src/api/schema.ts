@@ -1375,6 +1375,44 @@ export interface paths {
                                     updatedAt: string;
                                 }[];
                             }[];
+                            /** @description List of documents associated with the roadmap */
+                            documents: {
+                                /**
+                                 * @description Public ID of the document
+                                 * @example 550e8400-e29b-41d4-a716-446655440000
+                                 */
+                                id: string;
+                                /**
+                                 * @description Original file name
+                                 * @example learning-guide.pdf
+                                 */
+                                fileName: string;
+                                /**
+                                 * @description File size in bytes
+                                 * @example 1048576
+                                 */
+                                fileSize: number;
+                                /**
+                                 * @description MIME type of the file
+                                 * @example application/pdf
+                                 */
+                                fileType: string;
+                                /**
+                                 * @description Associated roadmap ID (null if not yet linked)
+                                 * @example 123
+                                 */
+                                roadmapId: number | null;
+                                /**
+                                 * @description Upload timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                uploadedAt: string;
+                                /**
+                                 * @description Creation timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                createdAt: string;
+                            }[];
                         };
                     };
                 };
@@ -3220,6 +3258,11 @@ export interface paths {
                          * @example React 중심으로 학습하고 싶습니다
                          */
                         additionalRequirements?: string;
+                        /**
+                         * @description 업로드된 PDF 문서의 Public ID
+                         * @example 550e8400-e29b-41d4-a716-446655440000
+                         */
+                        documentId?: string;
                     };
                 };
             };
@@ -3236,7 +3279,7 @@ export interface paths {
                                  * @description 로드맵 공개 ID
                                  * @example abc123def456ghi7
                                  */
-                                publicId: string;
+                                id: string;
                                 /**
                                  * @description 로드맵 제목
                                  * @example JavaScript 풀스택 개발자 로드맵
@@ -3295,10 +3338,10 @@ export interface paths {
                                 /** @description 상위 목표들 */
                                 goals: {
                                     /**
-                                     * @description 상위 목표 공개 ID
+                                     * @description 상위 목표 ID
                                      * @example x1y2z3a4b5c6d7e8
                                      */
-                                    publicId: string;
+                                    id: string;
                                     /**
                                      * @description 상위 목표 제목
                                      * @example HTML/CSS 기초
@@ -3322,10 +3365,10 @@ export interface paths {
                                     /** @description 하위 목표들 */
                                     subGoals: {
                                         /**
-                                         * @description 하위 목표 공개 ID
+                                         * @description 하위 목표 ID
                                          * @example a1b2c3d4e5f6g7h8
                                          */
-                                        publicId: string;
+                                        id: string;
                                         /**
                                          * @description 하위 목표 제목
                                          * @example HTML 기본 태그 학습
@@ -3470,6 +3513,379 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a PDF document
+         * @description Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /**
+                         * Format: binary
+                         * @description PDF file to upload (max 10MB)
+                         */
+                        file: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Document uploaded successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Upload success status
+                             * @example true
+                             */
+                            success: boolean;
+                            /** @description Uploaded document information */
+                            document: {
+                                /**
+                                 * @description Public ID of the document
+                                 * @example 550e8400-e29b-41d4-a716-446655440000
+                                 */
+                                id: string;
+                                /**
+                                 * @description Original file name
+                                 * @example learning-guide.pdf
+                                 */
+                                fileName: string;
+                                /**
+                                 * @description File size in bytes
+                                 * @example 1048576
+                                 */
+                                fileSize: number;
+                                /**
+                                 * @description MIME type of the file
+                                 * @example application/pdf
+                                 */
+                                fileType: string;
+                                /**
+                                 * @description Public URL to access the file
+                                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
+                                 */
+                                storageUrl: string;
+                                /**
+                                 * @description Associated roadmap ID (null if not yet linked)
+                                 * @example 123
+                                 */
+                                roadmapId: number | null;
+                                /**
+                                 * @description Upload timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                uploadedAt: string;
+                                /**
+                                 * @description Creation timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                createdAt: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Bad request - invalid file */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/documents/{publicId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get document details
+         * @description Retrieve detailed information about a specific document
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Document public ID */
+                    publicId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Document retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            document: {
+                                /**
+                                 * @description Public ID of the document
+                                 * @example 550e8400-e29b-41d4-a716-446655440000
+                                 */
+                                id: string;
+                                /**
+                                 * @description Original file name
+                                 * @example learning-guide.pdf
+                                 */
+                                fileName: string;
+                                /**
+                                 * @description File size in bytes
+                                 * @example 1048576
+                                 */
+                                fileSize: number;
+                                /**
+                                 * @description MIME type of the file
+                                 * @example application/pdf
+                                 */
+                                fileType: string;
+                                /**
+                                 * @description Public URL to access the file
+                                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
+                                 */
+                                storageUrl: string;
+                                /**
+                                 * @description Associated roadmap ID (null if not yet linked)
+                                 * @example 123
+                                 */
+                                roadmapId: number | null;
+                                /**
+                                 * @description Upload timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                uploadedAt: string;
+                                /**
+                                 * @description Creation timestamp
+                                 * @example 2024-01-01T00:00:00.000Z
+                                 */
+                                createdAt: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Access denied */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Document not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Request success status
+                             * @example false
+                             */
+                            success: boolean;
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example document:invalid_file_type
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Only PDF files are allowed
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;

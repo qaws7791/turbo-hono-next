@@ -216,8 +216,37 @@ const subGoals = {
   },
 };
 
+const documents = {
+  upload: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return client.POST("/documents/upload", {
+      body: formData as any,
+      bodySerializer: () => formData,
+    });
+  },
+
+  list: async () => {
+    return client.GET("/documents");
+  },
+
+  detail: async (publicId: string) => {
+    return client.GET("/documents/{publicId}", {
+      params: { path: { publicId } },
+    });
+  },
+
+  delete: async (publicId: string) => {
+    return client.DELETE("/documents/{publicId}", {
+      params: { path: { publicId } },
+    });
+  },
+};
+
 const ai = {
   generateRoadmap: async (data: {
+    documentIds?: string[];
     learningTopic: string;
     userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
     targetWeeks: number;
@@ -250,5 +279,6 @@ export const api = {
   roadmaps,
   goals,
   subGoals,
+  documents,
   ai,
 } as const;

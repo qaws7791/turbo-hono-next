@@ -1,4 +1,15 @@
 // Core Domain Types
+export interface Document {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  storageUrl: string;
+  roadmapId: number | null;
+  uploadedAt: string;
+  createdAt: string;
+}
+
 export interface SubGoal {
   id: string;
   title: string;
@@ -45,7 +56,19 @@ export interface Roadmap {
 
 // Funnel Types
 export type FunnelSteps = {
+  DocumentUpload: {
+    documentId?: string;
+    learningTopic?: string;
+    currentLevel?: number;
+    targetWeeks?: number;
+    weeklyHours?: number;
+    learningStyle?: string;
+    preferredResources?: string;
+    mainGoal?: string;
+    additionalRequirements?: string;
+  };
   TopicSelection: {
+    documentId?: string;
     learningTopic?: string;
     currentLevel?: number;
     targetWeeks?: number;
@@ -56,6 +79,7 @@ export type FunnelSteps = {
     additionalRequirements?: string;
   };
   LearningStyle: {
+    documentId?: string;
     learningTopic: string;
     currentLevel: number;
     targetWeeks: number;
@@ -66,6 +90,7 @@ export type FunnelSteps = {
     additionalRequirements?: string;
   };
   ResourceTypes: {
+    documentId?: string;
     learningTopic: string;
     currentLevel: number;
     targetWeeks: number;
@@ -76,6 +101,7 @@ export type FunnelSteps = {
     additionalRequirements?: string;
   };
   Goals: {
+    documentId?: string;
     learningTopic: string;
     currentLevel: number;
     targetWeeks: number;
@@ -90,6 +116,7 @@ export type FunnelSteps = {
 export type StepKeys = keyof FunnelSteps;
 
 export interface FunnelData {
+  documentId?: string;
   learningTopic: string;
   currentLevel: number;
   targetWeeks: number;
@@ -101,6 +128,7 @@ export interface FunnelData {
 }
 
 export interface ApiRoadmapData {
+  documentId?: string;
   learningTopic: string;
   userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
   targetWeeks: number;

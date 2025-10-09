@@ -1,9 +1,9 @@
 import type { paths } from "@/api/schema";
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
-import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
 import { GoalList } from "@/domains/roadmap/components/goal-list";
 import RoadmapInfo from "@/domains/roadmap/components/roadmap-info";
+import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
 import type { Goal } from "@/domains/roadmap/types";
 import { Icon } from "@repo/ui/icon";
 import { useQuery } from "@tanstack/react-query";
@@ -123,6 +123,7 @@ function RouteComponent() {
           status={roadmap.data.data?.status}
           createdAt={roadmap.data.data?.createdAt || ""}
           updatedAt={roadmap.data.data?.updatedAt || ""}
+          documents={roadmap.data.data?.documents}
         />
 
         {/* 메인 콘텐츠 - 좌우 분할 */}

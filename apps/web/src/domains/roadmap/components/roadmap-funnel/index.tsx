@@ -2,6 +2,7 @@
 import { useFunnel } from "@use-funnel/browser";
 import React from "react";
 import { ProgressHeader } from "./progress-header";
+import { DocumentUploadStep } from "./steps/document-upload-step";
 import { GoalsStep } from "./steps/goals-step";
 import { LearningStyleStep } from "./steps/learning-style-step";
 import { ResourceTypesStep } from "./steps/resource-types-step";
@@ -16,8 +17,9 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
   const funnel = useFunnel<FunnelSteps>({
     id: "roadmap-funnel",
     initial: {
-      step: "TopicSelection",
+      step: "DocumentUpload",
       context: {
+        documentId: undefined,
         learningTopic: "",
         currentLevel: 1,
         targetWeeks: 4,
@@ -47,6 +49,19 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
   return (
     <div className="h-full max-w-2xl mx-auto w-full flex flex-col justify-between">
       <funnel.Render
+        DocumentUpload={({ context, history }) => (
+          <>
+            <ProgressHeader currentStep="DocumentUpload" />
+            <DocumentUploadStep
+              documentId={context.documentId}
+              onNext={(data) =>
+                history.push("TopicSelection", {
+                  documentId: data.documentId,
+                })
+              }
+            />
+          </>
+        )}
         TopicSelection={({ context, history }) => (
           <>
             <ProgressHeader currentStep="TopicSelection" />
@@ -57,6 +72,7 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
               weeklyHours={context.weeklyHours}
               onNext={(data) =>
                 history.push("LearningStyle", {
+                  documentId: context.documentId,
                   learningTopic: data.learningTopic,
                   currentLevel: data.currentLevel,
                   targetWeeks: data.targetWeeks,
@@ -74,6 +90,7 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
               onBack={() => history.push("TopicSelection")}
               onNext={(data) =>
                 history.push("ResourceTypes", {
+                  documentId: context.documentId,
                   learningStyle: data.learningStyle,
                 })
               }
@@ -88,6 +105,7 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
               onBack={() => history.push("LearningStyle")}
               onNext={(data) =>
                 history.push("Goals", {
+                  documentId: context.documentId,
                   preferredResources: data.preferredResources,
                 })
               }
@@ -96,6 +114,7 @@ const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
         )}
         Goals={({ context, history }) => {
           const funnelData: FunnelData = {
+            documentId: context.documentId,
             learningTopic: context.learningTopic,
             currentLevel: context.currentLevel,
             targetWeeks: context.targetWeeks,
