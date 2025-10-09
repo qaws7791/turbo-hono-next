@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { DocumentItemSchema } from "../documents/schema";
 
 // Request schemas
 export const RoadmapListQuerySchema = z.object({
@@ -18,10 +19,13 @@ export const RoadmapListQuerySchema = z.object({
     description: "Filter by roadmap status",
     example: "active",
   }),
-  sort: z.enum(["created_at", "updated_at", "title"]).default("created_at").openapi({
-    description: "Sort field",
-    example: "created_at",
-  }),
+  sort: z
+    .enum(["created_at", "updated_at", "title"])
+    .default("created_at")
+    .openapi({
+      description: "Sort field",
+      example: "created_at",
+    }),
   order: z.enum(["asc", "desc"]).default("desc").openapi({
     description: "Sort order",
     example: "desc",
@@ -92,22 +96,24 @@ export const RoadmapListResponseSchema = z.object({
   items: z.array(RoadmapItemSchema).openapi({
     description: "List of roadmaps",
   }),
-  pagination: z.object({
-    hasNext: z.boolean().openapi({
-      description: "Whether there are more items",
-      example: true,
+  pagination: z
+    .object({
+      hasNext: z.boolean().openapi({
+        description: "Whether there are more items",
+        example: true,
+      }),
+      nextCursor: z.string().nullable().openapi({
+        description: "Cursor for the next page",
+        example: "eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==",
+      }),
+      total: z.number().int().openapi({
+        description: "Total number of items (if available)",
+        example: 150,
+      }),
+    })
+    .openapi({
+      description: "Pagination information",
     }),
-    nextCursor: z.string().nullable().openapi({
-      description: "Cursor for the next page",
-      example: "eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==",
-    }),
-    total: z.number().int().openapi({
-      description: "Total number of items (if available)",
-      example: 150,
-    }),
-  }).openapi({
-    description: "Pagination information",
-  }),
 });
 
 // Roadmap creation schemas
@@ -124,10 +130,12 @@ export const RoadmapCreateRequestSchema = z.object({
     description: "Main learning topic",
     example: "JavaScript",
   }),
-  userLevel: z.enum(["beginner", "basic", "intermediate", "advanced", "expert"]).openapi({
-    description: "Target user level",
-    example: "beginner",
-  }),
+  userLevel: z
+    .enum(["beginner", "basic", "intermediate", "advanced", "expert"])
+    .openapi({
+      description: "Target user level",
+      example: "beginner",
+    }),
   targetWeeks: z.number().int().min(1).max(24).openapi({
     description: "Target completion weeks (1-24)",
     example: 12,
@@ -227,10 +235,13 @@ export const RoadmapUpdateRequestSchema = z.object({
     description: "Main learning topic",
     example: "JavaScript",
   }),
-  userLevel: z.enum(["beginner", "basic", "intermediate", "advanced", "expert"]).optional().openapi({
-    description: "Target user level",
-    example: "beginner",
-  }),
+  userLevel: z
+    .enum(["beginner", "basic", "intermediate", "advanced", "expert"])
+    .optional()
+    .openapi({
+      description: "Target user level",
+      example: "beginner",
+    }),
   targetWeeks: z.number().int().min(1).max(24).optional().openapi({
     description: "Target completion weeks (1-24)",
     example: 12,
@@ -453,7 +464,8 @@ export const SubGoalItemSchema = z.object({
   }),
   description: z.string().nullable().openapi({
     description: "Sub-goal description",
-    example: "Understand different data types: string, number, boolean, array, object",
+    example:
+      "Understand different data types: string, number, boolean, array, object",
   }),
   isCompleted: z.boolean().openapi({
     description: "Whether the sub-goal is completed",
@@ -489,7 +501,8 @@ export const SubGoalCreateRequestSchema = z.object({
   }),
   description: z.string().optional().openapi({
     description: "Sub-goal description",
-    example: "Understand different data types: string, number, boolean, array, object",
+    example:
+      "Understand different data types: string, number, boolean, array, object",
   }),
   dueDate: z.string().datetime().optional().openapi({
     description: "Due date for the sub-goal (ISO 8601 format)",
@@ -511,7 +524,8 @@ export const SubGoalUpdateRequestSchema = z.object({
   }),
   description: z.string().optional().openapi({
     description: "Sub-goal description",
-    example: "Understand different data types: string, number, boolean, array, object",
+    example:
+      "Understand different data types: string, number, boolean, array, object",
   }),
   isCompleted: z.boolean().optional().openapi({
     description: "Whether the sub-goal is completed",
@@ -536,7 +550,8 @@ export const SubGoalMoveRequestSchema = z.object({
     example: "550e8400-e29b-41d4-a716-446655440000",
   }),
   newOrder: z.number().int().min(1).optional().openapi({
-    description: "New order position for the sub-goal (1-based). If not provided, will be placed at the end.",
+    description:
+      "New order position for the sub-goal (1-based). If not provided, will be placed at the end.",
     example: 2,
   }),
 });
@@ -692,4 +707,13 @@ export const RoadmapDetailResponseSchema = z.object({
   goals: z.array(GoalWithSubGoalsSchema).openapi({
     description: "List of goals with their sub-goals",
   }),
+  documents: z
+    .array(
+      DocumentItemSchema.omit({
+        storageUrl: true,
+      }),
+    )
+    .openapi({
+      description: "List of documents associated with the roadmap",
+    }),
 });

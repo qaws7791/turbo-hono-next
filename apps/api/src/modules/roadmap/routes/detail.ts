@@ -2,7 +2,12 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { asc, eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { goal, roadmap, subGoal } from "../../../database/schema";
+import {
+  goal,
+  roadmap,
+  roadmapDocument,
+  subGoal,
+} from "../../../database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import {
@@ -98,6 +103,24 @@ const detail = new OpenAPIHono<{
         );
       }
 
+      const documents = await db
+        .select()
+        .from(roadmapDocument)
+        .where(eq(roadmapDocument.roadmapId, roadmapData.id))
+        .then((documents) =>
+          documents.map((document) => ({
+            id: document.publicId,
+            fileName: document.fileName,
+            fileSize: document.fileSize,
+            fileType: document.fileType,
+            storageUrl: document.storageUrl,
+            roadmapId: document.roadmapId,
+            uploadedAt: document.uploadedAt,
+            createdAt: document.createdAt,
+            updatedAt: document.updatedAt,
+          })),
+        );
+
       // Get goals with their sub-goals
       const goalsResult = await db
         .select({
@@ -161,7 +184,9 @@ const detail = new OpenAPIHono<{
       }
 
       // Convert Map to sorted array
-      const goals = Array.from(goalsMap.values()).sort((a, b) => a.order - b.order);
+      const goals = Array.from(goalsMap.values()).sort(
+        (a, b) => a.order - b.order,
+      );
 
       // Format response
       const response = {
@@ -180,6 +205,7 @@ const detail = new OpenAPIHono<{
         createdAt: roadmapData.createdAt.toISOString(),
         updatedAt: roadmapData.updatedAt.toISOString(),
         goals,
+        documents,
       };
 
       return c.json(response, status.OK);
