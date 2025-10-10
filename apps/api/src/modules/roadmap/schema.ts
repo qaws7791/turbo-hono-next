@@ -531,7 +531,7 @@ export const SubGoalUpdateRequestSchema = z.object({
     description: "Whether the sub-goal is completed",
     example: true,
   }),
-  dueDate: z.string().datetime().optional().openapi({
+  dueDate: z.string().datetime().nullable().optional().openapi({
     description: "Due date for the sub-goal (ISO 8601 format)",
     example: "2024-02-15T00:00:00.000Z",
   }),

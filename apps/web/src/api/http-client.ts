@@ -175,7 +175,7 @@ const subGoals = {
       title?: string;
       description?: string;
       isCompleted?: boolean;
-      dueDate?: string;
+      dueDate?: string | null;
       memo?: string;
     },
   ) => {

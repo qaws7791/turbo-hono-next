@@ -1,30 +1,207 @@
 import type { SubGoal } from "@/domains/roadmap/types";
+import { Button } from "@repo/ui/button";
 import { Icon } from "@repo/ui/icon";
+import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
+import * as React from "react";
 
 interface SubGoalItemProps {
   subGoal: SubGoal;
   index: number;
   className?: string;
   onToggleComplete?: (subGoalId: string, isCompleted: boolean) => void;
+  onUpdateDueDate?: (subGoalId: string, dueDate: string | null) => void;
+  isUpdatingDueDate?: boolean;
 }
 
 const formatDueDate = (dueDate?: string | null) => {
-  if (!dueDate) return null;
+  if (!dueDate)
+    return {
+      text: "마감일 설정",
+      isOverdue: false,
+      formattedDate: null,
+    };
   const date = new Date(dueDate);
+  if (Number.isNaN(date.getTime()))
+    return {
+      text: "마감일 설정",
+      isOverdue: false,
+      formattedDate: null,
+    };
   const now = new Date();
   const diffDays = Math.ceil(
     (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
+  const formattedDate = date.toLocaleDateString("ko-KR");
 
   if (diffDays < 0) {
-    return { text: `${Math.abs(diffDays)}일 지남`, isOverdue: true };
+    return {
+      text: `${Math.abs(diffDays)}일 지남`,
+      isOverdue: true,
+      formattedDate,
+    };
   } else if (diffDays === 0) {
-    return { text: "오늘 마감", isToday: true };
+    return {
+      text: "오늘 마감",
+      isToday: true,
+      formattedDate,
+    };
   } else if (diffDays <= 7) {
-    return { text: `${diffDays}일 남음`, isUrgent: true };
+    return {
+      text: `${diffDays}일 남음`,
+      isUrgent: true,
+      formattedDate,
+    };
   } else {
-    return { text: date.toLocaleDateString("ko-KR"), isNormal: true };
+    return {
+      text: formattedDate,
+      isNormal: true,
+      formattedDate,
+    };
   }
+};
+
+const formatDateForInput = (dueDate?: string | null) => {
+  if (!dueDate) return "";
+  const date = new Date(dueDate);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+};
+
+interface SubGoalDueDateMenuProps {
+  dueDate?: string | null;
+  onSave: (value: string | null) => void;
+  isDisabled?: boolean;
+}
+
+const SubGoalDueDateMenu = ({
+  dueDate,
+  onSave,
+  isDisabled = false,
+}: SubGoalDueDateMenuProps) => {
+  const [dateValue, setDateValue] = React.useState<string>(() =>
+    formatDateForInput(dueDate),
+  );
+
+  React.useEffect(() => {
+    setDateValue(formatDateForInput(dueDate));
+  }, [dueDate]);
+
+  const handleSave = (close: () => void) => {
+    if (!dateValue) {
+      onSave(null);
+      close();
+      return;
+    }
+
+    const candidate = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(candidate.getTime())) {
+      onSave(null);
+      close();
+      return;
+    }
+
+    onSave(candidate.toISOString());
+    close();
+  };
+
+  const handleClear = (close: () => void) => {
+    onSave(null);
+    close();
+  };
+
+  const buttonLabel = formatDueDate(dueDate);
+  const hasDueDate = Boolean(dueDate);
+  const isDirty = dateValue !== formatDateForInput(dueDate);
+
+  return (
+    <PopoverTrigger>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 px-2 text-xs font-medium text-muted-foreground data-[hovered]:text-foreground"
+        isDisabled={isDisabled}
+      >
+        <div
+          className={`flex items-center gap-1 ${
+            buttonLabel.isOverdue
+              ? "text-destructive"
+              : buttonLabel.isToday
+                ? "text-orange-600"
+                : buttonLabel.isUrgent
+                  ? "text-yellow-600"
+                  : ""
+          }`}
+        >
+          <Icon
+            name="solar--calendar-outline"
+            type="iconify"
+            className="h-3 w-3"
+          />
+          <span>
+            {buttonLabel.text}
+            {buttonLabel.formattedDate &&
+              buttonLabel.text !== buttonLabel.formattedDate && (
+                <span className="ml-1 text-muted-foreground/80">
+                  ({buttonLabel.formattedDate})
+                </span>
+              )}
+          </span>
+        </div>
+      </Button>
+      <Popover className="w-64">
+        <PopoverDialog>
+          {({ close }) => (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">
+                  마감일
+                </div>
+                <input
+                  type="date"
+                  value={dateValue}
+                  onChange={(event) => setDateValue(event.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              </div>
+              <div className="flex flex-wrap justify-between gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => {
+                    setDateValue(formatDateForInput(dueDate));
+                    close();
+                  }}
+                >
+                  취소
+                </Button>
+                <div className="flex gap-2">
+                  {hasDueDate && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onPress={() => handleClear(close)}
+                      isDisabled={isDisabled}
+                    >
+                      마감일 제거
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    onPress={() => handleSave(close)}
+                    isDisabled={
+                      isDisabled || (!hasDueDate && !dateValue) || !isDirty
+                    }
+                  >
+                    저장
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </PopoverDialog>
+      </Popover>
+    </PopoverTrigger>
+  );
 };
 
 const SubGoalItem = ({
@@ -32,11 +209,18 @@ const SubGoalItem = ({
   index,
   className,
   onToggleComplete,
+  onUpdateDueDate,
+  isUpdatingDueDate = false,
 }: SubGoalItemProps) => {
-  const dueDateInfo = formatDueDate(subGoal.dueDate);
-
   const handleToggleComplete = () => {
     onToggleComplete?.(subGoal.id, !subGoal.isCompleted);
+  };
+
+  const handleDueDateSave = (value: string | null) => {
+    if (!onUpdateDueDate) return;
+    const currentDueDate = subGoal.dueDate ?? null;
+    if (currentDueDate === value) return;
+    onUpdateDueDate(subGoal.id, value);
   };
 
   return (
@@ -74,15 +258,19 @@ const SubGoalItem = ({
           >
             {index}.
           </span>
-          <div
-            className={`text-sm font-medium min-w-0 flex-1 ${
-              subGoal.isCompleted
-                ? "line-through text-muted-foreground"
-                : "text-foreground"
-            }`}
-            style={{ wordBreak: "break-word" }}
-          >
-            {subGoal.title}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <div
+                className={`text-sm font-medium min-w-0 flex-1 ${
+                  subGoal.isCompleted
+                    ? "line-through text-muted-foreground"
+                    : "text-foreground"
+                }`}
+                style={{ wordBreak: "break-word" }}
+              >
+                {subGoal.title}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -99,41 +287,24 @@ const SubGoalItem = ({
           </div>
         )}
 
-        {(dueDateInfo || subGoal.memo) && (
-          <div className="flex items-center gap-3 ml-6 text-xs text-muted-foreground">
-            {dueDateInfo && (
-              <div
-                className={`flex items-center gap-1 ${
-                  dueDateInfo.isOverdue
-                    ? "text-destructive"
-                    : dueDateInfo.isToday
-                      ? "text-orange-600"
-                      : dueDateInfo.isUrgent
-                        ? "text-yellow-600"
-                        : ""
-                }`}
-              >
-                <Icon
-                  name="solar--calendar-outline"
-                  type="iconify"
-                  className="h-3 w-3"
-                />
-                <span>{dueDateInfo.text}</span>
-              </div>
-            )}
+        <div className="flex items-center gap-3 ml-6 text-xs text-muted-foreground">
+          <SubGoalDueDateMenu
+            dueDate={subGoal.dueDate}
+            onSave={handleDueDateSave}
+            isDisabled={isUpdatingDueDate}
+          />
 
-            {subGoal.memo && (
-              <div className="flex items-center gap-1">
-                <Icon
-                  name="solar--file-text-outline"
-                  type="iconify"
-                  className="h-3 w-3"
-                />
-                <span>메모</span>
-              </div>
-            )}
-          </div>
-        )}
+          {subGoal.memo && (
+            <div className="flex items-center gap-1">
+              <Icon
+                name="solar--file-text-outline"
+                type="iconify"
+                className="h-3 w-3"
+              />
+              <span>메모</span>
+            </div>
+          )}
+        </div>
 
         {subGoal.memo && (
           <div className="ml-6 p-2 bg-muted/30 rounded-md text-xs text-muted-foreground border-l-2 border-primary/20">

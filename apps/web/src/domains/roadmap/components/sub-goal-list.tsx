@@ -6,9 +6,16 @@ interface SubGoalListProps {
   goalId: string;
   roadmapId: string;
   onToggleComplete?: (subGoalId: string, isCompleted: boolean) => void;
+  onUpdateDueDate?: (subGoalId: string, dueDate: string | null) => void;
+  updatingDueDateSubGoalIds?: Set<string>;
 }
 
-function SubGoalList({ subGoals, onToggleComplete }: SubGoalListProps) {
+function SubGoalList({
+  subGoals,
+  onToggleComplete,
+  onUpdateDueDate,
+  updatingDueDateSubGoalIds,
+}: SubGoalListProps) {
   if (subGoals.length === 0) {
     return (
       <div className={"text-sm text-muted-foreground"}>
@@ -27,6 +34,8 @@ function SubGoalList({ subGoals, onToggleComplete }: SubGoalListProps) {
           subGoal={subGoal}
           index={index + 1}
           onToggleComplete={onToggleComplete}
+          onUpdateDueDate={onUpdateDueDate}
+          isUpdatingDueDate={Boolean(updatingDueDateSubGoalIds?.has(subGoal.id))}
         />
       ))}
     </div>

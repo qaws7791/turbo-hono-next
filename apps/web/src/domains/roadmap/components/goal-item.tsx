@@ -6,6 +6,7 @@ import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface GoalItemProps {
   goal: Goal;
@@ -119,6 +120,9 @@ function GoalInfo({
 
 function GoalItem({ goal, roadmapId }: GoalItemProps) {
   const queryClient = useQueryClient();
+  const [updatingDueDateSubGoalIds, setUpdatingDueDateSubGoalIds] = useState<Set<string>>(
+    () => new Set<string>(),
+  );
 
   const toggleExpansionMutation = useMutation({
     mutationFn: async (newIsExpanded: boolean) => {
@@ -242,6 +246,96 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
     },
   });
 
+  const updateSubGoalDueDateMutation = useMutation({
+    mutationFn: async ({
+      subGoalId,
+      dueDate,
+    }: {
+      subGoalId: string;
+      dueDate: string | null;
+    }) => {
+      return api.subGoals.update(roadmapId, goal.id, subGoalId, {
+        dueDate,
+      });
+    },
+    onMutate: async ({ subGoalId, dueDate }) => {
+      setUpdatingDueDateSubGoalIds((previous) => {
+        if (previous.has(subGoalId)) return previous;
+        const next = new Set(previous);
+        next.add(subGoalId);
+        return next;
+      });
+
+      await queryClient.cancelQueries({
+        queryKey: ["roadmap", roadmapId],
+      });
+
+      const previousData = queryClient.getQueryData(["roadmap", roadmapId]);
+
+      queryClient.setQueryData(
+        roadmapQueryOptions(roadmapId).queryKey,
+        (old) => {
+          const roadmap = old?.data;
+          if (!roadmap) return old;
+
+          return {
+            ...old,
+            data: {
+              ...roadmap,
+              goals: roadmap.goals.map((g) => {
+                if (g.id === goal.id) {
+                  const updatedSubGoals = g.subGoals.map((sg) =>
+                    sg.id === subGoalId
+                      ? {
+                          ...sg,
+                          dueDate,
+                        }
+                      : sg,
+                  );
+
+                  return {
+                    ...g,
+                    subGoals: updatedSubGoals,
+                  };
+                }
+                return g;
+              }),
+            },
+          };
+        },
+      );
+
+      return { previousData, subGoalId };
+    },
+    onError: (error, _variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(["roadmap", roadmapId], context.previousData);
+      }
+      if (context?.subGoalId) {
+        setUpdatingDueDateSubGoalIds((previous) => {
+          if (!previous.has(context.subGoalId)) return previous;
+          const next = new Set(previous);
+          next.delete(context.subGoalId);
+          return next;
+        });
+      }
+      console.error("Failed to update sub-goal due date:", error);
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables?.subGoalId) {
+        setUpdatingDueDateSubGoalIds((previous) => {
+          if (!previous.has(variables.subGoalId)) return previous;
+          const next = new Set(previous);
+          next.delete(variables.subGoalId);
+          return next;
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: ["roadmap", roadmapId],
+      });
+    },
+  });
+
   const handleToggleExpansion = () => {
     if (toggleExpansionMutation.isPending) return;
     toggleExpansionMutation.mutate(!goal.isExpanded);
@@ -250,6 +344,13 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
   const handleToggleSubGoalComplete = (subGoalId: string, isCompleted: boolean) => {
     if (toggleSubGoalCompleteMutation.isPending) return;
     toggleSubGoalCompleteMutation.mutate({ subGoalId, isCompleted });
+  };
+
+  const handleUpdateSubGoalDueDate = (subGoalId: string, dueDate: string | null) => {
+    if (updatingDueDateSubGoalIds.has(subGoalId)) {
+      return;
+    }
+    updateSubGoalDueDateMutation.mutate({ subGoalId, dueDate });
   };
 
   return (
@@ -268,6 +369,8 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
               goalId={goal.id}
               roadmapId={roadmapId}
               onToggleComplete={handleToggleSubGoalComplete}
+              onUpdateDueDate={handleUpdateSubGoalDueDate}
+              updatingDueDateSubGoalIds={updatingDueDateSubGoalIds}
             />
           </div>
         )}

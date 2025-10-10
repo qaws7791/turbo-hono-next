@@ -8,6 +8,8 @@
     "start": "node ./dist/src/index.js",
     "vercel:dev": "npm run build && vercel dev",
     "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "deploy": "vercel",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
@@ -46,6 +48,7 @@
   "devDependencies": {
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.20.5",
-    "vercel": "^48.0.3"
+    "vercel": "^48.0.3",
+    "vitest": "catalog:"
   }
 }
