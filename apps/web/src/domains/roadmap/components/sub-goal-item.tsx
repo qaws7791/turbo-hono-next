@@ -1,5 +1,15 @@
 import type { SubGoal } from "@/domains/roadmap/types";
+import { parseDate } from "@internationalized/date";
 import { Button } from "@repo/ui/button";
+import {
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  CalendarGridBody,
+  CalendarGridHeader,
+  CalendarHeaderCell,
+  CalendarHeading,
+} from "@repo/ui/calendar";
 import { Icon } from "@repo/ui/icon";
 import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
 import * as React from "react";
@@ -78,43 +88,83 @@ const SubGoalDueDateMenu = ({
   onSave,
   isDisabled = false,
 }: SubGoalDueDateMenuProps) => {
-  const [dateValue, setDateValue] = React.useState<string>(() =>
-    formatDateForInput(dueDate),
+  const initialDateValue = React.useMemo(
+    () => formatDateForInput(dueDate),
+    [dueDate],
   );
+  const [dateValue, setDateValue] = React.useState<string>(initialDateValue);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const hasMountedRef = React.useRef(false);
 
   React.useEffect(() => {
-    setDateValue(formatDateForInput(dueDate));
-  }, [dueDate]);
+    setDateValue(initialDateValue);
+  }, [initialDateValue]);
 
-  const handleSave = (close: () => void) => {
+  const calendarValue = React.useMemo(() => {
+    if (!dateValue) return null;
+    try {
+      return parseDate(dateValue);
+    } catch {
+      return null;
+    }
+  }, [dateValue]);
+
+  const isDirty = dateValue !== initialDateValue;
+
+  const commitChanges = React.useCallback(() => {
+    if (!onSave || !isDirty) return;
+
+    const currentDueDate = dueDate ?? null;
+
     if (!dateValue) {
-      onSave(null);
-      close();
+      if (currentDueDate !== null) {
+        onSave(null);
+      }
       return;
     }
 
     const candidate = new Date(`${dateValue}T00:00:00`);
     if (Number.isNaN(candidate.getTime())) {
-      onSave(null);
-      close();
+      if (currentDueDate !== null) {
+        onSave(null);
+      }
       return;
     }
 
-    onSave(candidate.toISOString());
-    close();
+    const nextValue = candidate.toISOString();
+    if (nextValue !== currentDueDate) {
+      onSave(nextValue);
+    }
+  }, [dateValue, dueDate, isDirty, onSave]);
+
+  React.useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
+    if (!isOpen) {
+      commitChanges();
+    }
+  }, [commitChanges, isOpen]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setIsOpen(nextOpen);
   };
 
   const handleClear = (close: () => void) => {
-    onSave(null);
+    setDateValue("");
     close();
   };
 
   const buttonLabel = formatDueDate(dueDate);
   const hasDueDate = Boolean(dueDate);
-  const isDirty = dateValue !== formatDateForInput(dueDate);
 
   return (
-    <PopoverTrigger>
+    <PopoverTrigger
+      isOpen={isOpen}
+      onOpenChange={handleOpenChange}
+    >
       <Button
         variant="outline"
         size="sm"
@@ -148,53 +198,40 @@ const SubGoalDueDateMenu = ({
           </span>
         </div>
       </Button>
-      <Popover className="w-64">
+      <Popover>
         <PopoverDialog>
           {({ close }) => (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="text-xs font-medium text-muted-foreground">
-                  마감일
-                </div>
-                <input
-                  type="date"
-                  value={dateValue}
-                  onChange={(event) => setDateValue(event.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                />
-              </div>
-              <div className="flex flex-wrap justify-between gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onPress={() => {
-                    setDateValue(formatDateForInput(dueDate));
-                    close();
-                  }}
-                >
-                  취소
-                </Button>
-                <div className="flex gap-2">
-                  {hasDueDate && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onPress={() => handleClear(close)}
-                      isDisabled={isDisabled}
-                    >
-                      마감일 제거
-                    </Button>
-                  )}
+              <Calendar
+                aria-label="due date"
+                value={calendarValue ?? undefined}
+                onChange={(selectedDate) => {
+                  setDateValue(selectedDate.toString());
+                }}
+                isDisabled={isDisabled}
+              >
+                <CalendarHeading />
+                <CalendarGrid>
+                  <CalendarGridHeader>
+                    {(day) => <CalendarHeaderCell>{day}</CalendarHeaderCell>}
+                  </CalendarGridHeader>
+                  <CalendarGridBody>
+                    {(date) => <CalendarCell date={date} />}
+                  </CalendarGridBody>
+                </CalendarGrid>
+              </Calendar>
+
+              <div className="flex gap-2">
+                {hasDueDate && (
                   <Button
+                    variant="outline"
                     size="sm"
-                    onPress={() => handleSave(close)}
-                    isDisabled={
-                      isDisabled || (!hasDueDate && !dateValue) || !isDirty
-                    }
+                    onPress={() => handleClear(close)}
+                    isDisabled={isDisabled}
                   >
-                    저장
+                    마감일 제거
                   </Button>
-                </div>
+                )}
               </div>
             </div>
           )}
