@@ -12,6 +12,8 @@ interface SubGoalListProps {
 
 function SubGoalList({
   subGoals,
+  goalId,
+  roadmapId,
   onToggleComplete,
   onUpdateDueDate,
   updatingDueDateSubGoalIds,
@@ -33,6 +35,8 @@ function SubGoalList({
           key={subGoal.id}
           subGoal={subGoal}
           index={index + 1}
+          goalId={goalId}
+          roadmapId={roadmapId}
           onToggleComplete={onToggleComplete}
           onUpdateDueDate={onUpdateDueDate}
           isUpdatingDueDate={Boolean(updatingDueDateSubGoalIds?.has(subGoal.id))}

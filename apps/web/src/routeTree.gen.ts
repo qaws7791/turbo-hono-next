@@ -14,7 +14,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppCreateIndexRouteImport } from './routes/app/create/index'
-import { Route as AppRoadmapsRoadmapIdRouteImport } from './routes/app/roadmaps/$roadmapId'
+import { Route as AppRoadmapsRoadmapIdIndexRouteImport } from './routes/app/roadmaps/$roadmapId/index'
+import { Route as AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport } from './routes/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -41,26 +42,35 @@ const AppCreateIndexRoute = AppCreateIndexRouteImport.update({
   path: '/create/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppRoadmapsRoadmapIdRoute = AppRoadmapsRoadmapIdRouteImport.update({
-  id: '/roadmaps/$roadmapId',
-  path: '/roadmaps/$roadmapId',
-  getParentRoute: () => AppRouteRoute,
-} as any)
+const AppRoadmapsRoadmapIdIndexRoute =
+  AppRoadmapsRoadmapIdIndexRouteImport.update({
+    id: '/roadmaps/$roadmapId/',
+    path: '/roadmaps/$roadmapId/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute =
+  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport.update({
+    id: '/roadmaps/$roadmapId/sub-goals/$subGoalId',
+    path: '/roadmaps/$roadmapId/sub-goals/$subGoalId',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
   '/app/': typeof AppIndexRoute
   '/login': typeof LoginIndexRoute
-  '/app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/app/create': typeof AppCreateIndexRoute
+  '/app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdIndexRoute
+  '/app/roadmaps/$roadmapId/sub-goals/$subGoalId': typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppIndexRoute
   '/login': typeof LoginIndexRoute
-  '/app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/app/create': typeof AppCreateIndexRoute
+  '/app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdIndexRoute
+  '/app/roadmaps/$roadmapId/sub-goals/$subGoalId': typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,8 +78,9 @@ export interface FileRoutesById {
   '/app': typeof AppRouteRouteWithChildren
   '/app/': typeof AppIndexRoute
   '/login/': typeof LoginIndexRoute
-  '/app/roadmaps/$roadmapId': typeof AppRoadmapsRoadmapIdRoute
   '/app/create/': typeof AppCreateIndexRoute
+  '/app/roadmaps/$roadmapId/': typeof AppRoadmapsRoadmapIdIndexRoute
+  '/app/roadmaps/$roadmapId/sub-goals/$subGoalId': typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -78,18 +89,26 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/'
     | '/login'
-    | '/app/roadmaps/$roadmapId'
     | '/app/create'
+    | '/app/roadmaps/$roadmapId'
+    | '/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/app/roadmaps/$roadmapId' | '/app/create'
+  to:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/app/create'
+    | '/app/roadmaps/$roadmapId'
+    | '/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/app/'
     | '/login/'
-    | '/app/roadmaps/$roadmapId'
     | '/app/create/'
+    | '/app/roadmaps/$roadmapId/'
+    | '/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -135,11 +154,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCreateIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/roadmaps/$roadmapId': {
-      id: '/app/roadmaps/$roadmapId'
+    '/app/roadmaps/$roadmapId/': {
+      id: '/app/roadmaps/$roadmapId/'
       path: '/roadmaps/$roadmapId'
       fullPath: '/app/roadmaps/$roadmapId'
-      preLoaderRoute: typeof AppRoadmapsRoadmapIdRouteImport
+      preLoaderRoute: typeof AppRoadmapsRoadmapIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/roadmaps/$roadmapId/sub-goals/$subGoalId': {
+      id: '/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
+      path: '/roadmaps/$roadmapId/sub-goals/$subGoalId'
+      fullPath: '/app/roadmaps/$roadmapId/sub-goals/$subGoalId'
+      preLoaderRoute: typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
   }
@@ -147,14 +173,17 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
-  AppRoadmapsRoadmapIdRoute: typeof AppRoadmapsRoadmapIdRoute
   AppCreateIndexRoute: typeof AppCreateIndexRoute
+  AppRoadmapsRoadmapIdIndexRoute: typeof AppRoadmapsRoadmapIdIndexRoute
+  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute: typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
-  AppRoadmapsRoadmapIdRoute: AppRoadmapsRoadmapIdRoute,
   AppCreateIndexRoute: AppCreateIndexRoute,
+  AppRoadmapsRoadmapIdIndexRoute: AppRoadmapsRoadmapIdIndexRoute,
+  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute:
+    AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

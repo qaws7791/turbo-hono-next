@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
 import {
+  aiNote,
   goal,
   roadmap,
   roadmapDocument,
@@ -15,6 +16,10 @@ import {
   RoadmapDetailResponseSchema,
   RoadmapParamsSchema,
 } from "../schema";
+import {
+  SUB_GOAL_NOTE_STATUS,
+  type SubGoalNoteStatus,
+} from "../../ai/services/subgoal-note-service";
 
 const detail = new OpenAPIHono<{
   Variables: {
@@ -144,9 +149,15 @@ const detail = new OpenAPIHono<{
           subGoalOrder: subGoal.order,
           subGoalCreatedAt: subGoal.createdAt,
           subGoalUpdatedAt: subGoal.updatedAt,
+          subGoalNoteStatus: aiNote.status,
+          subGoalNoteMarkdown: aiNote.markdown,
+          subGoalNoteRequestedAt: aiNote.requestedAt,
+          subGoalNoteCompletedAt: aiNote.completedAt,
+          subGoalNoteError: aiNote.errorMessage,
         })
         .from(goal)
         .leftJoin(subGoal, eq(goal.id, subGoal.goalId))
+        .leftJoin(aiNote, eq(aiNote.subGoalId, subGoal.id))
         .where(eq(goal.roadmapId, roadmapData.id))
         .orderBy(asc(goal.order), asc(subGoal.order));
 
@@ -169,7 +180,12 @@ const detail = new OpenAPIHono<{
 
         // Add sub-goal if it exists
         if (row.subGoalId) {
-          goalsMap.get(row.goalId).subGoals.push({
+          const parentGoal = goalsMap.get(row.goalId);
+          const noteStatus =
+            (row.subGoalNoteStatus as SubGoalNoteStatus | null) ??
+            SUB_GOAL_NOTE_STATUS.idle;
+
+          parentGoal.subGoals.push({
             id: row.subGoalPublicId!,
             title: row.subGoalTitle!,
             description: row.subGoalDescription,
@@ -179,6 +195,13 @@ const detail = new OpenAPIHono<{
             order: row.subGoalOrder!,
             createdAt: row.subGoalCreatedAt!.toISOString(),
             updatedAt: row.subGoalUpdatedAt!.toISOString(),
+            aiNoteStatus: noteStatus,
+            aiNoteMarkdown: row.subGoalNoteMarkdown,
+            aiNoteRequestedAt:
+              row.subGoalNoteRequestedAt?.toISOString() ?? null,
+            aiNoteCompletedAt:
+              row.subGoalNoteCompletedAt?.toISOString() ?? null,
+            aiNoteError: row.subGoalNoteError,
           });
         }
       }

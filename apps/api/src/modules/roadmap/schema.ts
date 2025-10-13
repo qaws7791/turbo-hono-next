@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { AINoteStatusSchema } from "../ai/schema";
 import { DocumentItemSchema } from "../documents/schema";
 
 // Request schemas
@@ -89,6 +90,23 @@ export const RoadmapItemSchema = z.object({
   updatedAt: z.string().openapi({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
+  }),
+  aiNoteStatus: AINoteStatusSchema,
+  aiNoteMarkdown: z.string().nullable().openapi({
+    description: "AI가 생성한 학습 노트 (마크다운)",
+    example: "# 학습 개요\n- 목표 정리...",
+  }),
+  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성을 요청한 시각",
+    example: "2024-06-01T10:00:00.000Z",
+  }),
+  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성이 완료되거나 실패한 시각",
+    example: "2024-06-01T10:05:12.000Z",
+  }),
+  aiNoteError: z.string().nullable().openapi({
+    description: "AI 노트 생성 실패 시 오류 메시지",
+    example: "Gemini API 호출이 실패했습니다.",
   }),
 });
 
@@ -291,6 +309,23 @@ export const RoadmapStatusChangeResponseSchema = z.object({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
   }),
+  aiNoteStatus: AINoteStatusSchema,
+  aiNoteMarkdown: z.string().nullable().openapi({
+    description: "AI가 생성한 학습 노트 (마크다운)",
+    example: "# 학습 개요\n- 목표 정리...",
+  }),
+  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성을 요청한 시각",
+    example: "2024-06-01T10:00:00.000Z",
+  }),
+  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성이 완료되거나 실패한 시각",
+    example: "2024-06-01T10:05:12.000Z",
+  }),
+  aiNoteError: z.string().nullable().openapi({
+    description: "AI 노트 생성 실패 시 오류 메시지",
+    example: "Gemini API 호출이 실패했습니다.",
+  }),
 });
 
 // Roadmap deletion response
@@ -357,6 +392,23 @@ export const GoalItemSchema = z.object({
   updatedAt: z.string().openapi({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
+  }),
+  aiNoteStatus: AINoteStatusSchema,
+  aiNoteMarkdown: z.string().nullable().openapi({
+    description: "AI가 생성한 학습 노트 (마크다운)",
+    example: "# 학습 개요\n- 목표 정리...",
+  }),
+  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성을 요청한 시각",
+    example: "2024-06-01T10:00:00.000Z",
+  }),
+  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성이 완료되거나 실패한 시각",
+    example: "2024-06-01T10:05:12.000Z",
+  }),
+  aiNoteError: z.string().nullable().openapi({
+    description: "AI 노트 생성 실패 시 오류 메시지",
+    example: "Gemini API 호출이 실패했습니다.",
   }),
 });
 
@@ -491,6 +543,23 @@ export const SubGoalItemSchema = z.object({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
   }),
+  aiNoteStatus: AINoteStatusSchema,
+  aiNoteMarkdown: z.string().nullable().openapi({
+    description: "AI가 생성한 학습 노트 (마크다운)",
+    example: "# 학습 개요\n- 목표 정리...",
+  }),
+  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성을 요청한 시각",
+    example: "2024-06-01T10:00:00.000Z",
+  }),
+  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
+    description: "AI 노트 생성이 완료되거나 실패한 시각",
+    example: "2024-06-01T10:05:12.000Z",
+  }),
+  aiNoteError: z.string().nullable().openapi({
+    description: "AI 노트 생성 실패 시 오류 메시지",
+    example: "Gemini API 호출이 실패했습니다.",
+  }),
 });
 
 // SubGoal creation schemas
@@ -542,6 +611,47 @@ export const SubGoalUpdateRequestSchema = z.object({
 });
 
 export const SubGoalUpdateResponseSchema = SubGoalItemSchema;
+
+// SubGoal detail schema
+export const SubGoalDetailResponseSchema = SubGoalItemSchema.extend({
+  goal: z
+    .object({
+      id: z.string().openapi({
+        description: "Public ID of the parent goal",
+        example: "550e8400-e29b-41d4-a716-446655440000",
+      }),
+      title: z.string().openapi({
+        description: "Title of the parent goal",
+        example: "Master JavaScript fundamentals",
+      }),
+      description: z.string().nullable().openapi({
+        description: "Description of the parent goal",
+        example:
+          "Focus on core JavaScript knowledge before diving into frameworks",
+      }),
+      order: z.number().int().openapi({
+        description: "Display order of the goal",
+        example: 1,
+      }),
+    })
+    .openapi({
+      description: "Parent goal metadata",
+    }),
+  roadmap: z
+    .object({
+      id: z.string().openapi({
+        description: "Public ID of the roadmap",
+        example: "abc123def456",
+      }),
+      title: z.string().openapi({
+        description: "Title of the roadmap",
+        example: "Full-stack Development Roadmap",
+      }),
+    })
+    .openapi({
+      description: "Parent roadmap metadata",
+    }),
+});
 
 // SubGoal move schema
 export const SubGoalMoveRequestSchema = z.object({
@@ -599,10 +709,6 @@ export const RoadmapGoalSubGoalParamsSchema = z.object({
   roadmapId: z.string().min(1).openapi({
     description: "Public ID of the roadmap",
     example: "abc123def456",
-  }),
-  goalId: z.string().min(1).openapi({
-    description: "Public ID of the goal",
-    example: "550e8400-e29b-41d4-a716-446655440000",
   }),
   subGoalId: z.string().min(1).openapi({
     description: "Public ID of the sub-goal",

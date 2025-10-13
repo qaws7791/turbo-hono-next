@@ -14,6 +14,7 @@
     "schema:generate": "openapi-typescript http://localhost:3001/doc --output ./src/api/schema.ts"
   },
   "dependencies": {
+    "@internationalized/date": "^3.10.0",
     "@repo/ui": "workspace:*",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.2.2",
@@ -22,7 +23,13 @@
     "@tanstack/react-router": "^1.130.2",
     "@tanstack/react-router-devtools": "^1.131.5",
     "@tanstack/router-plugin": "^1.121.2",
+    "@tiptap/extension-code-block-lowlight": "^3.6.6",
+    "@tiptap/extension-link": "^3.6.6",
+    "@tiptap/react": "^3.6.6",
+    "@tiptap/starter-kit": "^3.6.6",
     "@use-funnel/browser": "^0.0.15",
+    "lowlight": "^3.3.0",
+    "marked": "^16.4.0",
     "openapi-fetch": "^0.14.0",
     "react": "catalog:",
     "react-dom": "catalog:",

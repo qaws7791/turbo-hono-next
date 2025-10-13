@@ -12,7 +12,11 @@ export type AIErrorType =
   | "authentication_required"
   | "database_error"
   | "database_transaction_failed"
-  | "document_not_found";
+  | "document_not_found"
+  | "roadmap_not_found"
+  | "subgoal_not_found"
+  | "access_denied"
+  | "note_generation_failed";
 
 export type AIErrorCode = `ai:${AIErrorType}`;
 

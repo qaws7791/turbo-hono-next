@@ -1,9 +1,10 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { eq } from "drizzle-orm";
+import status from "http-status";
 import { db } from "../../../../database/client";
-import { goal, roadmap, subGoal } from "../../../../database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
+import { aiNote, goal, roadmap, subGoal } from "../../../../database/schema";
+import { SubGoalUpdate } from "../../../../database/types";
+import { AuthContext, authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 import {
   ErrorResponseSchema,
@@ -11,6 +12,10 @@ import {
   SubGoalUpdateRequestSchema,
   SubGoalUpdateResponseSchema,
 } from "../../schema";
+import {
+  SUB_GOAL_NOTE_STATUS,
+  type SubGoalNoteStatus,
+} from "../../../ai/services/subgoal-note-service";
 
 const updateSubGoal = new OpenAPIHono<{
   Variables: {
@@ -20,7 +25,7 @@ const updateSubGoal = new OpenAPIHono<{
   createRoute({
     tags: ["Roadmap Sub-Goals"],
     method: "put",
-    path: "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}",
+    path: "/roadmaps/{roadmapId}/sub-goals/{subGoalId}",
     summary: "Update a sub-goal",
     middleware: [authMiddleware] as const,
     request: {
@@ -87,7 +92,7 @@ const updateSubGoal = new OpenAPIHono<{
   async (c) => {
     try {
       const auth = c.get("auth");
-      const { roadmapId, goalId, subGoalId } = c.req.valid("param");
+      const { roadmapId, subGoalId } = c.req.valid("param");
       const body = c.req.valid("json");
 
       // Check if roadmap exists and user owns it
@@ -116,32 +121,6 @@ const updateSubGoal = new OpenAPIHono<{
         );
       }
 
-      // Check if goal exists and belongs to this roadmap
-      const [goalResult] = await db
-        .select({
-          id: goal.id,
-          roadmapId: goal.roadmapId,
-        })
-        .from(goal)
-        .where(eq(goal.publicId, goalId))
-        .limit(1);
-
-      if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
-      }
-
-      if (goalResult.roadmapId !== roadmapResult.id) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal does not belong to this roadmap"
-        );
-      }
-
       // Check if sub-goal exists and belongs to this goal
       const [subGoalResult] = await db
         .select({
@@ -160,16 +139,34 @@ const updateSubGoal = new OpenAPIHono<{
         );
       }
 
-      if (subGoalResult.goalId !== goalResult.id) {
+            // Check if goal exists and belongs to this roadmap
+      const [goalResult] = await db
+        .select({
+          id: goal.id,
+          roadmapId: goal.roadmapId,
+        })
+        .from(goal)
+        .where(eq(goal.id, subGoalResult.goalId))
+        .limit(1);
+
+      if (!goalResult) {
         throw new RoadmapError(
           404,
-          "roadmap:sub_goal_not_found",
-          "Sub-goal does not belong to this goal"
+          "roadmap:goal_not_found",
+          "Goal not found"
+        );
+      }
+
+      if (goalResult.roadmapId !== roadmapResult.id) {
+        throw new RoadmapError(
+          404,
+          "roadmap:goal_not_found",
+          "Goal does not belong to this roadmap"
         );
       }
 
       // Prepare update data
-      const updateData: any = {};
+      const updateData: SubGoalUpdate = {};
       if (body.title !== undefined) updateData.title = body.title;
       if (body.description !== undefined) updateData.description = body.description || null;
       if (body.isCompleted !== undefined) updateData.isCompleted = body.isCompleted;
@@ -184,18 +181,18 @@ const updateSubGoal = new OpenAPIHono<{
         .update(subGoal)
         .set(updateData)
         .where(eq(subGoal.id, subGoalResult.id))
-        .returning({
-          id: subGoal.id,
-          publicId: subGoal.publicId,
-          title: subGoal.title,
-          description: subGoal.description,
-          isCompleted: subGoal.isCompleted,
-          dueDate: subGoal.dueDate,
-          memo: subGoal.memo,
-          order: subGoal.order,
-          createdAt: subGoal.createdAt,
-          updatedAt: subGoal.updatedAt,
-        });
+      .returning({
+        id: subGoal.id,
+        publicId: subGoal.publicId,
+        title: subGoal.title,
+        description: subGoal.description,
+        isCompleted: subGoal.isCompleted,
+        dueDate: subGoal.dueDate,
+        memo: subGoal.memo,
+        order: subGoal.order,
+        createdAt: subGoal.createdAt,
+        updatedAt: subGoal.updatedAt,
+      });
 
       if (!result || result.length === 0) {
         throw new RoadmapError(
@@ -207,6 +204,22 @@ const updateSubGoal = new OpenAPIHono<{
 
       const updatedSubGoal = result[0];
 
+      const [noteRow] = await db
+        .select({
+          status: aiNote.status,
+          markdown: aiNote.markdown,
+          requestedAt: aiNote.requestedAt,
+          completedAt: aiNote.completedAt,
+          errorMessage: aiNote.errorMessage,
+        })
+        .from(aiNote)
+        .where(eq(aiNote.subGoalId, subGoalResult.id))
+        .limit(1);
+
+      const noteStatus =
+        (noteRow?.status as SubGoalNoteStatus | null) ??
+        SUB_GOAL_NOTE_STATUS.idle;
+
       // Format response
       return c.json(
         {
@@ -214,11 +227,16 @@ const updateSubGoal = new OpenAPIHono<{
           title: updatedSubGoal.title,
           description: updatedSubGoal.description,
           isCompleted: updatedSubGoal.isCompleted,
-          dueDate: updatedSubGoal.dueDate?.toISOString() || null,
+          dueDate: updatedSubGoal.dueDate?.toISOString() ?? null,
           memo: updatedSubGoal.memo,
           order: updatedSubGoal.order,
           createdAt: updatedSubGoal.createdAt.toISOString(),
           updatedAt: updatedSubGoal.updatedAt.toISOString(),
+          aiNoteStatus: noteStatus,
+          aiNoteMarkdown: noteRow?.markdown ?? null,
+          aiNoteRequestedAt: noteRow?.requestedAt?.toISOString() ?? null,
+          aiNoteCompletedAt: noteRow?.completedAt?.toISOString() ?? null,
+          aiNoteError: noteRow?.errorMessage ?? null,
         },
         status.OK
       );

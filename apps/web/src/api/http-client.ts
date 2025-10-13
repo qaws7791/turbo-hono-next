@@ -167,9 +167,14 @@ const subGoals = {
     });
   },
 
+  detail: async (roadmapId: string, subGoalId: string) => {
+    return client.GET("/roadmaps/{roadmapId}/sub-goals/{subGoalId}", {
+      params: { path: { roadmapId, subGoalId } },
+    });
+  },
+
   update: async (
     roadmapId: string,
-    goalId: string,
     subGoalId: string,
     data: {
       title?: string;
@@ -179,13 +184,10 @@ const subGoals = {
       memo?: string;
     },
   ) => {
-    return client.PUT(
-      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}",
-      {
-        params: { path: { roadmapId, goalId, subGoalId } },
-        body: data,
-      },
-    );
+    return client.PUT("/roadmaps/{roadmapId}/sub-goals/{subGoalId}", {
+      params: { path: { roadmapId, subGoalId } },
+      body: data,
+    });
   },
 
   delete: async (roadmapId: string, goalId: string, subGoalId: string) => {
@@ -227,18 +229,8 @@ const documents = {
     });
   },
 
-  list: async () => {
-    return client.GET("/documents");
-  },
-
   detail: async (publicId: string) => {
     return client.GET("/documents/{publicId}", {
-      params: { path: { publicId } },
-    });
-  },
-
-  delete: async (publicId: string) => {
-    return client.DELETE("/documents/{publicId}", {
       params: { path: { publicId } },
     });
   },
@@ -270,6 +262,26 @@ const ai = {
   }) => {
     return client.POST("/ai/roadmaps/generate", {
       body: data,
+    });
+  },
+
+  generateSubGoalNote: async (
+    roadmapId: string,
+    subGoalId: string,
+    options?: {
+      force?: boolean;
+    },
+  ) => {
+    return client.POST("/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes", {
+      params: {
+        path: { roadmapId, subGoalId },
+        query:
+          options?.force !== undefined
+            ? {
+                force: options.force,
+              }
+            : undefined,
+      },
     });
   },
 };

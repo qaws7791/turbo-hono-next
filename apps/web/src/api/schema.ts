@@ -480,6 +480,35 @@ export interface paths {
                                  * @example 2024-01-15T10:30:00.000Z
                                  */
                                 updatedAt: string;
+                                /**
+                                 * @description 현재 AI 노트 생성 상태
+                                 * @example processing
+                                 * @enum {string}
+                                 */
+                                aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                                /**
+                                 * @description AI가 생성한 학습 노트 (마크다운)
+                                 * @example # 학습 개요
+                                 *     - 목표 정리...
+                                 */
+                                aiNoteMarkdown: string | null;
+                                /**
+                                 * Format: date-time
+                                 * @description AI 노트 생성을 요청한 시각
+                                 * @example 2024-06-01T10:00:00.000Z
+                                 */
+                                aiNoteRequestedAt: string | null;
+                                /**
+                                 * Format: date-time
+                                 * @description AI 노트 생성이 완료되거나 실패한 시각
+                                 * @example 2024-06-01T10:05:12.000Z
+                                 */
+                                aiNoteCompletedAt: string | null;
+                                /**
+                                 * @description AI 노트 생성 실패 시 오류 메시지
+                                 * @example Gemini API 호출이 실패했습니다.
+                                 */
+                                aiNoteError: string | null;
                             }[];
                             /** @description Pagination information */
                             pagination: {
@@ -1074,6 +1103,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -1373,6 +1431,35 @@ export interface paths {
                                      * @example 2024-01-15T10:30:00.000Z
                                      */
                                     updatedAt: string;
+                                    /**
+                                     * @description 현재 AI 노트 생성 상태
+                                     * @example processing
+                                     * @enum {string}
+                                     */
+                                    aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                                    /**
+                                     * @description AI가 생성한 학습 노트 (마크다운)
+                                     * @example # 학습 개요
+                                     *     - 목표 정리...
+                                     */
+                                    aiNoteMarkdown: string | null;
+                                    /**
+                                     * Format: date-time
+                                     * @description AI 노트 생성을 요청한 시각
+                                     * @example 2024-06-01T10:00:00.000Z
+                                     */
+                                    aiNoteRequestedAt: string | null;
+                                    /**
+                                     * Format: date-time
+                                     * @description AI 노트 생성이 완료되거나 실패한 시각
+                                     * @example 2024-06-01T10:05:12.000Z
+                                     */
+                                    aiNoteCompletedAt: string | null;
+                                    /**
+                                     * @description AI 노트 생성 실패 시 오류 메시지
+                                     * @example Gemini API 호출이 실패했습니다.
+                                     */
+                                    aiNoteError: string | null;
                                 }[];
                             }[];
                             /** @description List of documents associated with the roadmap */
@@ -1574,6 +1661,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -1798,6 +1914,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -2004,6 +2149,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -2529,6 +2703,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -2650,14 +2853,238 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}": {
+    "/roadmaps/{roadmapId}/sub-goals/{subGoalId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get detailed information about a sub-goal */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Public ID of the roadmap */
+                    roadmapId: string;
+                    /** @description Public ID of the sub-goal */
+                    subGoalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Sub-goal detail retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description Public ID of the sub-goal
+                             * @example 660e8400-e29b-41d4-a716-446655440001
+                             */
+                            id: string;
+                            /**
+                             * @description Sub-goal title
+                             * @example Learn variables and data types
+                             */
+                            title: string;
+                            /**
+                             * @description Sub-goal description
+                             * @example Understand different data types: string, number, boolean, array, object
+                             */
+                            description: string | null;
+                            /**
+                             * @description Whether the sub-goal is completed
+                             * @example false
+                             */
+                            isCompleted: boolean;
+                            /**
+                             * @description Due date for the sub-goal
+                             * @example 2024-02-15T00:00:00.000Z
+                             */
+                            dueDate: string | null;
+                            /**
+                             * @description Personal memo for the sub-goal
+                             * @example Focus on practice with real examples
+                             */
+                            memo: string | null;
+                            /**
+                             * @description Display order of the sub-goal
+                             * @example 1
+                             */
+                            order: number;
+                            /**
+                             * @description Creation timestamp
+                             * @example 2024-01-01T00:00:00.000Z
+                             */
+                            createdAt: string;
+                            /**
+                             * @description Last update timestamp
+                             * @example 2024-01-15T10:30:00.000Z
+                             */
+                            updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
+                            /** @description Parent goal metadata */
+                            goal: {
+                                /**
+                                 * @description Public ID of the parent goal
+                                 * @example 550e8400-e29b-41d4-a716-446655440000
+                                 */
+                                id: string;
+                                /**
+                                 * @description Title of the parent goal
+                                 * @example Master JavaScript fundamentals
+                                 */
+                                title: string;
+                                /**
+                                 * @description Description of the parent goal
+                                 * @example Focus on core JavaScript knowledge before diving into frameworks
+                                 */
+                                description: string | null;
+                                /**
+                                 * @description Display order of the goal
+                                 * @example 1
+                                 */
+                                order: number;
+                            };
+                            /** @description Parent roadmap metadata */
+                            roadmap: {
+                                /**
+                                 * @description Public ID of the roadmap
+                                 * @example abc123def456
+                                 */
+                                id: string;
+                                /**
+                                 * @description Title of the roadmap
+                                 * @example Full-stack Development Roadmap
+                                 */
+                                title: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Access denied - not roadmap owner */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Roadmap, goal, or sub-goal not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
         /** Update a sub-goal */
         put: {
             parameters: {
@@ -2666,8 +3093,6 @@ export interface paths {
                 path: {
                     /** @description Public ID of the roadmap */
                     roadmapId: string;
-                    /** @description Public ID of the goal */
-                    goalId: string;
                     /** @description Public ID of the sub-goal */
                     subGoalId: string;
                 };
@@ -2696,7 +3121,7 @@ export interface paths {
                          * @description Due date for the sub-goal (ISO 8601 format)
                          * @example 2024-02-15T00:00:00.000Z
                          */
-                        dueDate?: string;
+                        dueDate?: string | null;
                         /**
                          * @description Personal memo for the sub-goal
                          * @example Focus on practice with real examples
@@ -2758,6 +3183,35 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description AI가 생성한 학습 노트 (마크다운)
+                             * @example # 학습 개요
+                             *     - 목표 정리...
+                             */
+                            aiNoteMarkdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성을 요청한 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            aiNoteRequestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description AI 노트 생성이 완료되거나 실패한 시각
+                             * @example 2024-06-01T10:05:12.000Z
+                             */
+                            aiNoteCompletedAt: string | null;
+                            /**
+                             * @description AI 노트 생성 실패 시 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -2874,6 +3328,22 @@ export interface paths {
             };
         };
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
         /** Delete a sub-goal */
         delete: {
             parameters: {
@@ -2882,8 +3352,6 @@ export interface paths {
                 path: {
                     /** @description Public ID of the roadmap */
                     roadmapId: string;
-                    /** @description Public ID of the goal */
-                    goalId: string;
                     /** @description Public ID of the sub-goal */
                     subGoalId: string;
                 };
@@ -3027,8 +3495,6 @@ export interface paths {
                 path: {
                     /** @description Public ID of the roadmap */
                     roadmapId: string;
-                    /** @description Public ID of the goal */
-                    goalId: string;
                     /** @description Public ID of the sub-goal */
                     subGoalId: string;
                 };
@@ -3508,6 +3974,307 @@ export interface paths {
                                  */
                                 message: string;
                             };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate or refresh AI learning note for a sub-goal */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
+                    force?: boolean | null;
+                };
+                header?: never;
+                path: {
+                    /** @description 로드맵 공개 ID */
+                    roadmapId: string;
+                    /** @description 세부 목표 공개 ID */
+                    subGoalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Existing note status returned */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Note generation started */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Access denied */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Target roadmap or sub-goal not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
+                        };
+                    };
+                };
+                /** @description Server error while generating the note */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 현재 AI 노트 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+                             * @example null
+                             */
+                            markdown: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 가장 최근 노트 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 혹은 실패가 기록된 시각
+                             * @example 2024-06-01T10:02:30.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+                             * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+                             */
+                            errorMessage: string | null;
                         };
                     };
                 };

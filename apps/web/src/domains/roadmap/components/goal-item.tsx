@@ -1,6 +1,6 @@
 import { api } from "@/api/http-client";
-import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
 import { SubGoalList } from "@/domains/roadmap/components/sub-goal-list";
+import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
 import type { Goal } from "@/domains/roadmap/types";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
@@ -178,7 +178,7 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
 
   const toggleSubGoalCompleteMutation = useMutation({
     mutationFn: async ({ subGoalId, isCompleted }: { subGoalId: string; isCompleted: boolean }) => {
-      return api.subGoals.update(roadmapId, goal.id, subGoalId, {
+      return api.subGoals.update(roadmapId, subGoalId, {
         isCompleted,
       });
     },
@@ -254,7 +254,7 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
       subGoalId: string;
       dueDate: string | null;
     }) => {
-      return api.subGoals.update(roadmapId, goal.id, subGoalId, {
+      return api.subGoals.update(roadmapId, subGoalId, {
         dueDate,
       });
     },

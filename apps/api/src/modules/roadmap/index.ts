@@ -10,6 +10,7 @@ import list from "./routes/list";
 import changeStatus from "./routes/status";
 import createSubGoal from "./routes/sub-goals/create-sub-goal";
 import deleteSubGoal from "./routes/sub-goals/delete-sub-goal";
+import getSubGoal from "./routes/sub-goals/get-sub-goal";
 import moveSubGoal from "./routes/sub-goals/move-sub-goal";
 import updateSubGoal from "./routes/sub-goals/update-sub-goal";
 import update from "./routes/update";
@@ -29,5 +30,6 @@ roadmapApp.route("/", createSubGoal);
 roadmapApp.route("/", updateSubGoal);
 roadmapApp.route("/", deleteSubGoal);
 roadmapApp.route("/", moveSubGoal);
+roadmapApp.route("/", getSubGoal);
 
 export default roadmapApp;

@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 import { eq, max } from "drizzle-orm";
 import { db } from "../../../../database/client";
 import { goal, roadmap, subGoal } from "../../../../database/schema";
+import { SUB_GOAL_NOTE_STATUS } from "../../../ai/services/subgoal-note-service";
 import { authMiddleware, AuthContext } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 import {
@@ -201,11 +202,16 @@ const createSubGoal = new OpenAPIHono<{
           title: createdSubGoal.title,
           description: createdSubGoal.description,
           isCompleted: createdSubGoal.isCompleted,
-          dueDate: createdSubGoal.dueDate?.toISOString() || null,
+          dueDate: createdSubGoal.dueDate?.toISOString() ?? null,
           memo: createdSubGoal.memo,
           order: createdSubGoal.order,
           createdAt: createdSubGoal.createdAt.toISOString(),
           updatedAt: createdSubGoal.updatedAt.toISOString(),
+          aiNoteStatus: SUB_GOAL_NOTE_STATUS.idle,
+          aiNoteMarkdown: null,
+          aiNoteRequestedAt: null,
+          aiNoteCompletedAt: null,
+          aiNoteError: null,
         },
         status.CREATED
       );

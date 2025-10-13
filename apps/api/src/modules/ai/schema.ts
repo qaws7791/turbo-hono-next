@@ -58,6 +58,57 @@ export const GenerateRoadmapRequestSchema = z.object({
   }),
 });
 
+export const AINoteStatusSchema = z
+  .enum(["idle", "processing", "ready", "failed"])
+  .openapi({
+    description: "현재 AI 노트 생성 상태",
+    example: "processing",
+  });
+
+export const SubGoalNoteContentSchema = z
+  .object({
+    markdown: z
+      .string()
+      .min(80)
+      .openapi({
+        description: "생성된 학습 노트의 마크다운 텍스트",
+        example:
+          "# 학습 개요\n\n- 목표: React Hooks 이해\n- 예상 소요 시간: 3시간\n\n## 1. 개념 정리\n...",
+      }),
+  })
+  .openapi({
+    description: "AI가 생성한 학습 노트 결과",
+  });
+
+export const GenerateSubGoalNoteQuerySchema = z
+  .object({
+    force: z.coerce
+      .boolean()
+      .optional()
+      .openapi({
+        description: "기존 노트가 있더라도 재생성을 강제로 요청합니다",
+        example: false,
+      }),
+  })
+  .openapi({
+    description: "AI 노트 생성 시 사용되는 쿼리 파라미터",
+  });
+
+export const GenerateSubGoalNoteParamsSchema = z
+  .object({
+    roadmapId: z.string().min(1).openapi({
+      description: "로드맵 공개 ID",
+      example: "abc123def456",
+    }),
+    subGoalId: z.string().min(1).openapi({
+      description: "세부 목표 공개 ID",
+      example: "550e8400-e29b-41d4-a716-446655440000",
+    }),
+  })
+  .openapi({
+    description: "AI 노트 생성 대상 세부 목표 식별자",
+  });
+
 // Response schemas
 export const GeneratedSubGoalSchema = z.object({
   title: z.string().openapi({
@@ -107,6 +158,44 @@ export const GeneratedRoadmapSchema = z.object({
     description: "상위 목표들",
   }),
 });
+
+export const GenerateSubGoalNoteResponseSchema = z
+  .object({
+    status: AINoteStatusSchema,
+    markdown: z
+      .string()
+      .nullable()
+      .openapi({
+        description: "생성된 마크다운 노트. 생성 중이거나 실패 시 null",
+        example: null,
+      }),
+    requestedAt: z
+      .string()
+      .datetime()
+      .nullable()
+      .openapi({
+        description: "가장 최근 노트 생성 요청 시각",
+        example: "2024-06-01T10:00:00.000Z",
+      }),
+    completedAt: z
+      .string()
+      .datetime()
+      .nullable()
+      .openapi({
+        description: "생성 완료 혹은 실패가 기록된 시각",
+        example: "2024-06-01T10:02:30.000Z",
+      }),
+    errorMessage: z
+      .string()
+      .nullable()
+      .openapi({
+        description: "실패 시 사용자에게 노출 가능한 오류 메시지",
+        example: "Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.",
+      }),
+  })
+  .openapi({
+    description: "AI 노트 생성 요청에 대한 상태 응답",
+  });
 
 // Database roadmap schemas (for saved data response)
 export const SavedSubGoalSchema = z.object({

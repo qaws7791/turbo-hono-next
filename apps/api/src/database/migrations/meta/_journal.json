@@ -15,6 +15,27 @@
       "when": 1760039388276,
       "tag": "0001_chemical_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760361217189,
+      "tag": "0002_diligent_firefly",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1760364506738,
+      "tag": "0003_sticky_captain_flint",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1760376000000,
+      "tag": "0004_resilient_lemur",
+      "breakpoints": true
     }
   ]
 }

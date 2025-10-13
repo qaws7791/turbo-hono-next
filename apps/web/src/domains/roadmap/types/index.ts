@@ -10,6 +10,8 @@ export interface Document {
   createdAt: string;
 }
 
+export type SubGoalNoteStatus = "idle" | "processing" | "ready" | "failed";
+
 export interface SubGoal {
   id: string;
   title: string;
@@ -20,6 +22,24 @@ export interface SubGoal {
   memo?: string | null;
   createdAt: string;
   updatedAt: string;
+  aiNoteStatus: SubGoalNoteStatus;
+  aiNoteMarkdown: string | null;
+  aiNoteRequestedAt: string | null;
+  aiNoteCompletedAt: string | null;
+  aiNoteError: string | null;
+}
+
+export interface SubGoalDetail extends SubGoal {
+  goal: {
+    id: string;
+    title: string;
+    description: string | null;
+    order: number;
+  };
+  roadmap: {
+    id: string;
+    title: string;
+  };
 }
 
 export interface Goal {
