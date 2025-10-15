@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import type { SolarIconName } from "../../types/solar-icons";
 
-type IconName = `solar--${SolarIconName}`;
+export type IconName = `solar--${SolarIconName}`;
 
 interface IconProps {
   name: IconName;
