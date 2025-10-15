@@ -1407,6 +1407,12 @@ export interface paths {
                                      */
                                     isCompleted: boolean;
                                     /**
+                                     * Format: date-time
+                                     * @description Timestamp when the sub-goal was marked as completed
+                                     * @example 2024-02-15T09:30:00.000Z
+                                     */
+                                    completedAt: string | null;
+                                    /**
                                      * @description Due date for the sub-goal
                                      * @example 2024-02-15T00:00:00.000Z
                                      */
@@ -2679,6 +2685,12 @@ export interface paths {
                              */
                             isCompleted: boolean;
                             /**
+                             * Format: date-time
+                             * @description Timestamp when the sub-goal was marked as completed
+                             * @example 2024-02-15T09:30:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
                              * @description Due date for the sub-goal
                              * @example 2024-02-15T00:00:00.000Z
                              */
@@ -2902,6 +2914,12 @@ export interface paths {
                              * @example false
                              */
                             isCompleted: boolean;
+                            /**
+                             * Format: date-time
+                             * @description Timestamp when the sub-goal was marked as completed
+                             * @example 2024-02-15T09:30:00.000Z
+                             */
+                            completedAt: string | null;
                             /**
                              * @description Due date for the sub-goal
                              * @example 2024-02-15T00:00:00.000Z
@@ -3158,6 +3176,12 @@ export interface paths {
                              * @example false
                              */
                             isCompleted: boolean;
+                            /**
+                             * Format: date-time
+                             * @description Timestamp when the sub-goal was marked as completed
+                             * @example 2024-02-15T09:30:00.000Z
+                             */
+                            completedAt: string | null;
                             /**
                              * @description Due date for the sub-goal
                              * @example 2024-02-15T00:00:00.000Z
@@ -3659,6 +3683,217 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/progress/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get daily goal activity (due & completed) */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description 조회 시작 날짜 (YYYY-MM-DD) */
+                    start?: string;
+                    /** @description 조회 종료 날짜 (YYYY-MM-DD) */
+                    end?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Daily goal activity retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description 조회 범위 (포함) */
+                            range: {
+                                /**
+                                 * @description 응답 데이터의 시작 날짜
+                                 * @example 2024-05-01
+                                 */
+                                start: string;
+                                /**
+                                 * @description 응답 데이터의 종료 날짜
+                                 * @example 2024-05-31
+                                 */
+                                end: string;
+                            };
+                            /** @description 날짜별 활동 목록 */
+                            items: {
+                                /**
+                                 * @description 활동이 기록된 날짜 (YYYY-MM-DD)
+                                 * @example 2024-05-12
+                                 */
+                                date: string;
+                                /** @description 해당 날짜에 마감일이 도래한 세부 목표 */
+                                due: {
+                                    /**
+                                     * @description 로드맵 공개 ID (16자 NanoID)
+                                     * @example abcdEfghijklmnop
+                                     */
+                                    roadmapId: string;
+                                    /**
+                                     * @description 로드맵 제목
+                                     * @example 프론트엔드 전환 로드맵
+                                     */
+                                    roadmapTitle: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description 목표 공개 ID (UUID)
+                                     * @example 30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d
+                                     */
+                                    goalId: string;
+                                    /**
+                                     * @description 목표 제목
+                                     * @example React 기본기 다지기
+                                     */
+                                    goalTitle: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description 세부 목표 공개 ID (UUID)
+                                     * @example f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7
+                                     */
+                                    subGoalId: string;
+                                    /**
+                                     * @description 세부 목표 제목
+                                     * @example Hooks 패턴 정리하기
+                                     */
+                                    subGoalTitle: string;
+                                    /**
+                                     * Format: date-time
+                                     * @description 세부 목표 마감일 (ISO 8601)
+                                     * @example 2024-05-12T00:00:00.000Z
+                                     */
+                                    dueDate: string;
+                                }[];
+                                /** @description 해당 날짜에 완료된 세부 목표 */
+                                completed: {
+                                    /**
+                                     * @description 로드맵 공개 ID (16자 NanoID)
+                                     * @example abcdEfghijklmnop
+                                     */
+                                    roadmapId: string;
+                                    /**
+                                     * @description 로드맵 제목
+                                     * @example 프론트엔드 전환 로드맵
+                                     */
+                                    roadmapTitle: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description 목표 공개 ID (UUID)
+                                     * @example 30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d
+                                     */
+                                    goalId: string;
+                                    /**
+                                     * @description 목표 제목
+                                     * @example React 기본기 다지기
+                                     */
+                                    goalTitle: string;
+                                    /**
+                                     * Format: uuid
+                                     * @description 세부 목표 공개 ID (UUID)
+                                     * @example f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7
+                                     */
+                                    subGoalId: string;
+                                    /**
+                                     * @description 세부 목표 제목
+                                     * @example Hooks 패턴 정리하기
+                                     */
+                                    subGoalTitle: string;
+                                    /**
+                                     * Format: date-time
+                                     * @description 세부 목표 완료 시각 (ISO 8601)
+                                     * @example 2024-05-14T10:23:45.000Z
+                                     */
+                                    completedAt: string;
+                                }[];
+                            }[];
+                        };
+                    };
+                };
+                /** @description Invalid date range or format */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description 에러 코드
+                                 * @example progress:invalid_date_range
+                                 */
+                                code: string;
+                                /**
+                                 * @description 에러 메시지
+                                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description 에러 코드
+                                 * @example progress:invalid_date_range
+                                 */
+                                code: string;
+                                /**
+                                 * @description 에러 메시지
+                                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Internal server error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description 에러 코드
+                                 * @example progress:invalid_date_range
+                                 */
+                                code: string;
+                                /**
+                                 * @description 에러 메시지
+                                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/ai/roadmaps/generate": {

@@ -11,14 +11,9 @@ export default function RoadmapList() {
 
   return (
     <div>
-      {/* 결과 요약 */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>총 {totalRoadmaps}개의 로드맵</span>
-      </div>
-
       {/* 로드맵 목록 */}
       {totalRoadmaps === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center mt-8">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
             <Icon
               type="iconify"
@@ -42,7 +37,7 @@ export default function RoadmapList() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-6 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-6 flex-1">
           {roadmaps.data?.items.map((roadmap) => (
             <RoadmapCard
               key={roadmap.id}

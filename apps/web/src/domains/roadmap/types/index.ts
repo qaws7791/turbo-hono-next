@@ -18,6 +18,7 @@ export interface SubGoal {
   description: string | null;
   order: number;
   isCompleted: boolean;
+  completedAt: string | null;
   dueDate?: string | null;
   memo?: string | null;
   createdAt: string;

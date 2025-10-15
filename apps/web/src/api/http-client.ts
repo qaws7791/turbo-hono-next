@@ -218,6 +218,16 @@ const subGoals = {
   },
 };
 
+const progress = {
+  daily: async (params?: { start?: string; end?: string }) => {
+    return client.GET("/progress/daily", {
+      params: {
+        query: params,
+      },
+    });
+  },
+};
+
 const documents = {
   upload: async (file: File) => {
     const formData = new FormData();
@@ -291,6 +301,7 @@ export const api = {
   roadmaps,
   goals,
   subGoals,
+  progress,
   documents,
   ai,
 } as const;

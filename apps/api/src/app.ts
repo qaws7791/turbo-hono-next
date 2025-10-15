@@ -7,6 +7,7 @@ import { handleError } from "./errors/error-handler";
 import aiApp from "./modules/ai";
 import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
+import progressApp from "./modules/progress";
 import roadmapApp from "./modules/roadmap";
 
 function createApp() {
@@ -56,7 +57,7 @@ function createApp() {
   return app;
 }
 
-const routes = [authApp, roadmapApp, aiApp, documentsApp] as const;
+const routes = [authApp, roadmapApp, progressApp, aiApp, documentsApp] as const;
 
 const app = createApp();
 

@@ -1,8 +1,8 @@
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
+import { CompletionCalendarSection } from "@/domains/progress/components/completion-calendar-section";
 import RoadmapList from "@/domains/roadmap/components/roadmap-list";
 import { Icon } from "@repo/ui/icon";
-import LoadingSpinner from "@repo/ui/loading-spinner";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
@@ -47,9 +47,12 @@ function RouteComponent() {
         </div>
       </div>
 
-      <Suspense fallback={<LoadingSpinner />}>
-        <RoadmapList />
-      </Suspense>
+      <div className="flex flex-row gap-4">
+        <Suspense fallback={null}>
+          <RoadmapList />
+          <CompletionCalendarSection />
+        </Suspense>
+      </div>
     </AppPageLayout>
   );
 }

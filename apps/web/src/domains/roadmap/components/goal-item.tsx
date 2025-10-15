@@ -198,6 +198,10 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
           const roadmap = old?.data;
           if (!roadmap) return old;
 
+          const optimisticCompletedAt = isCompleted
+            ? new Date().toISOString()
+            : null;
+
           return {
             ...old,
             data: {
@@ -205,7 +209,9 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
               goals: roadmap.goals.map((g) => {
                 if (g.id === goal.id) {
                   const updatedSubGoals = g.subGoals.map((sg) =>
-                    sg.id === subGoalId ? { ...sg, isCompleted } : sg
+                    sg.id === subGoalId
+                      ? { ...sg, isCompleted, completedAt: optimisticCompletedAt }
+                      : sg
                   );
 
                   // Recalculate computed properties
