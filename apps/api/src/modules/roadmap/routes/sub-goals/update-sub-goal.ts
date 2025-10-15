@@ -126,6 +126,8 @@ const updateSubGoal = new OpenAPIHono<{
         .select({
           id: subGoal.id,
           goalId: subGoal.goalId,
+          isCompleted: subGoal.isCompleted,
+          completedAt: subGoal.completedAt,
         })
         .from(subGoal)
         .where(eq(subGoal.publicId, subGoalId))
@@ -169,7 +171,18 @@ const updateSubGoal = new OpenAPIHono<{
       const updateData: SubGoalUpdate = {};
       if (body.title !== undefined) updateData.title = body.title;
       if (body.description !== undefined) updateData.description = body.description || null;
-      if (body.isCompleted !== undefined) updateData.isCompleted = body.isCompleted;
+      if (body.isCompleted !== undefined) {
+        const isCompleting = body.isCompleted && !subGoalResult.isCompleted;
+        const isReopening = !body.isCompleted && subGoalResult.isCompleted;
+
+        updateData.isCompleted = body.isCompleted;
+
+        if (isCompleting) {
+          updateData.completedAt = new Date();
+        } else if (isReopening) {
+          updateData.completedAt = null;
+        }
+      }
       if (body.dueDate !== undefined) updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
       if (body.memo !== undefined) updateData.memo = body.memo || null;
 
@@ -187,6 +200,7 @@ const updateSubGoal = new OpenAPIHono<{
         title: subGoal.title,
         description: subGoal.description,
         isCompleted: subGoal.isCompleted,
+        completedAt: subGoal.completedAt,
         dueDate: subGoal.dueDate,
         memo: subGoal.memo,
         order: subGoal.order,
@@ -227,6 +241,7 @@ const updateSubGoal = new OpenAPIHono<{
           title: updatedSubGoal.title,
           description: updatedSubGoal.description,
           isCompleted: updatedSubGoal.isCompleted,
+          completedAt: updatedSubGoal.completedAt?.toISOString() ?? null,
           dueDate: updatedSubGoal.dueDate?.toISOString() ?? null,
           memo: updatedSubGoal.memo,
           order: updatedSubGoal.order,

@@ -132,6 +132,7 @@ export const subGoal = pgTable("sub_goal", {
   title: text("title").notNull(),
   description: text("description"),
   isCompleted: boolean("is_completed").default(false).notNull(),
+  completedAt: timestamp("completed_at"),
   dueDate: timestamp("due_date"),
   memo: text("memo"),
   order: integer("order").notNull(),

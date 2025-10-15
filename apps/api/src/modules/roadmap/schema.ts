@@ -523,6 +523,10 @@ export const SubGoalItemSchema = z.object({
     description: "Whether the sub-goal is completed",
     example: false,
   }),
+  completedAt: z.iso.datetime().nullable().openapi({
+    description: "Timestamp when the sub-goal was marked as completed",
+    example: "2024-02-15T09:30:00.000Z",
+  }),
   dueDate: z.string().nullable().openapi({
     description: "Due date for the sub-goal",
     example: "2024-02-15T00:00:00.000Z",
