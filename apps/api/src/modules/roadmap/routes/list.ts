@@ -1,8 +1,8 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { and, asc, desc, eq, gt, ilike, lt, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { roadmap } from "../../../database/schema";
+import { goal, roadmap, subGoal } from "../../../database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import {
@@ -10,6 +10,7 @@ import {
   RoadmapListQuerySchema,
   RoadmapListResponseSchema,
 } from "../schema";
+import { calculateCompletionPercent } from "../utils/progress";
 
 // Cursor encoding/decoding utilities
 type SortValue = string | Date;
@@ -202,6 +203,36 @@ const list = new OpenAPIHono<{
       const hasNext = results.length > limit;
       const items = hasNext ? results.slice(0, limit) : results;
 
+      // Aggregate goal completion progress for the current page
+      const roadmapIds = items.map((item) => item.id);
+      const progressByRoadmapId = new Map<
+        number,
+        { total: number; completed: number }
+      >();
+
+      if (roadmapIds.length > 0) {
+        const progressRows = await db
+          .select({
+            roadmapId: roadmap.id,
+            totalSubGoals: sql<number>`count(${subGoal.id})`,
+            completedSubGoals: sql<number>`count(case when ${subGoal.isCompleted} then 1 end)`,
+          })
+          .from(roadmap)
+          .leftJoin(goal, eq(goal.roadmapId, roadmap.id))
+          .leftJoin(subGoal, eq(subGoal.goalId, goal.id))
+          .where(inArray(roadmap.id, roadmapIds))
+          .groupBy(roadmap.id);
+
+        for (const row of progressRows) {
+          const totalSubGoals = Number(row.totalSubGoals ?? 0);
+          const completedSubGoals = Number(row.completedSubGoals ?? 0);
+          progressByRoadmapId.set(row.roadmapId, {
+            total: totalSubGoals,
+            completed: completedSubGoals,
+          });
+        }
+      }
+
       // Generate next cursor
       let nextCursor: string | null = null;
       if (hasNext && items.length > 0) {
@@ -242,22 +273,35 @@ const list = new OpenAPIHono<{
       const total = totalResult[0]?.count || 0;
 
       // Format response
-      const formattedItems = items.map((item) => ({
-        id: item.publicId,
-        title: item.title,
-        description: item.description,
-        status: item.status as "active" | "archived",
-        learningTopic: item.learningTopic,
-        userLevel: item.userLevel,
-        targetWeeks: item.targetWeeks,
-        weeklyHours: item.weeklyHours,
-        learningStyle: item.learningStyle,
-        preferredResources: item.preferredResources,
-        mainGoal: item.mainGoal,
-        additionalRequirements: item.additionalRequirements,
-        createdAt: item.createdAt.toISOString(),
-        updatedAt: item.updatedAt.toISOString(),
-      }));
+      const formattedItems = items.map((item) => {
+        const progress = progressByRoadmapId.get(item.id) ?? {
+          total: 0,
+          completed: 0,
+        };
+
+        const goalCompletionPercent = calculateCompletionPercent(
+          progress.total,
+          progress.completed,
+        );
+
+        return {
+          id: item.publicId,
+          title: item.title,
+          description: item.description,
+          status: item.status as "active" | "archived",
+          goalCompletionPercent,
+          learningTopic: item.learningTopic,
+          userLevel: item.userLevel,
+          targetWeeks: item.targetWeeks,
+          weeklyHours: item.weeklyHours,
+          learningStyle: item.learningStyle,
+          preferredResources: item.preferredResources,
+          mainGoal: item.mainGoal,
+          additionalRequirements: item.additionalRequirements,
+          createdAt: item.createdAt.toISOString(),
+          updatedAt: item.updatedAt.toISOString(),
+        };
+      });
 
       return c.json(
         {

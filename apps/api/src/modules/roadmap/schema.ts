@@ -51,6 +51,10 @@ export const RoadmapItemSchema = z.object({
     description: "Current status of the roadmap",
     example: "active",
   }),
+  goalCompletionPercent: z.number().int().min(0).max(100).openapi({
+    description: "Percentage of completed sub-goals (0-100)",
+    example: 75,
+  }),
   learningTopic: z.string().openapi({
     description: "Main learning topic",
     example: "JavaScript",
@@ -111,9 +115,29 @@ export const RoadmapItemSchema = z.object({
 });
 
 export const RoadmapListResponseSchema = z.object({
-  items: z.array(RoadmapItemSchema).openapi({
-    description: "List of roadmaps",
-  }),
+  items: z
+    .array(
+      RoadmapItemSchema.pick({
+        id: true,
+        publicId: true,
+        title: true,
+        description: true,
+        status: true,
+        learningTopic: true,
+        userLevel: true,
+        targetWeeks: true,
+        weeklyHours: true,
+        learningStyle: true,
+        preferredResources: true,
+        mainGoal: true,
+        additionalRequirements: true,
+        createdAt: true,
+        updatedAt: true,
+      }),
+    )
+    .openapi({
+      description: "List of roadmaps",
+    }),
   pagination: z
     .object({
       hasNext: z.boolean().openapi({

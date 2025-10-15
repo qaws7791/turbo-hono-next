@@ -1,4 +1,5 @@
 "use client";
+import { Progress } from "@repo/ui/progress-bar";
 import { focusRing } from "@repo/ui/utils";
 import { Calendar, Tag } from "lucide-react";
 import * as React from "react";
@@ -12,6 +13,7 @@ type RoadmapListItem = {
   title: string;
   description: string | null;
   status: "active" | "archived";
+  goalCompletionPercent: number;
   learningTopic: string;
   userLevel: string;
   targetWeeks: number;
@@ -101,6 +103,7 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({
 }) => {
   const userLevelKey = roadmap.userLevel as keyof UserLevelMapping;
   const slots = roadmapCardVariants({ difficulty: userLevelKey });
+  const completionLabel = `${roadmap.goalCompletionPercent}% 완료`;
 
   return (
     <Link
@@ -137,6 +140,22 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({
             <span className="font-medium">{roadmap.weeklyHours}시간</span>
           </div>
         </div>
+
+        <Progress
+          aria-label="로드맵 완료율"
+          value={roadmap.goalCompletionPercent}
+          minValue={0}
+          maxValue={100}
+          valueLabel={completionLabel}
+          className="mt-3 flex flex-col gap-1"
+        >
+          {({ valueText }) => (
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>진행률</span>
+              <span className="font-medium text-foreground">{valueText}</span>
+            </div>
+          )}
+        </Progress>
       </div>
 
       <div className={slots.footer()}>

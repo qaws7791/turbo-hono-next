@@ -431,6 +431,11 @@ export interface paths {
                                  */
                                 status: "active" | "archived";
                                 /**
+                                 * @description Percentage of completed sub-goals (0-100)
+                                 * @example 75
+                                 */
+                                goalCompletionPercent: number;
+                                /**
                                  * @description Main learning topic
                                  * @example JavaScript
                                  */
@@ -1053,6 +1058,11 @@ export interface paths {
                              * @enum {string}
                              */
                             status: "active" | "archived";
+                            /**
+                             * @description Percentage of completed sub-goals (0-100)
+                             * @example 75
+                             */
+                            goalCompletionPercent: number;
                             /**
                              * @description Main learning topic
                              * @example JavaScript
