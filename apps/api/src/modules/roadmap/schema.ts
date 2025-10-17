@@ -117,22 +117,63 @@ export const RoadmapItemSchema = z.object({
 export const RoadmapListResponseSchema = z.object({
   items: z
     .array(
-      RoadmapItemSchema.pick({
-        id: true,
-        publicId: true,
-        title: true,
-        description: true,
-        status: true,
-        learningTopic: true,
-        userLevel: true,
-        targetWeeks: true,
-        weeklyHours: true,
-        learningStyle: true,
-        preferredResources: true,
-        mainGoal: true,
-        additionalRequirements: true,
-        createdAt: true,
-        updatedAt: true,
+      z.object({
+        id: z.string().openapi({
+          description: "Public ID of the roadmap",
+          example: "abc123def456",
+        }),
+        title: z.string().openapi({
+          description: "Roadmap title",
+          example: "Full Stack JavaScript Developer",
+        }),
+        description: z.string().nullable().openapi({
+          description: "Roadmap description",
+          example: "Complete guide to becoming a full stack developer",
+        }),
+        status: z.enum(["active", "archived"]).openapi({
+          description: "Current status of the roadmap",
+          example: "active",
+        }),
+        learningTopic: z.string().openapi({
+          description: "Main learning topic",
+          example: "JavaScript",
+        }),
+        userLevel: z.string().openapi({
+          description: "Target user level",
+          example: "beginner",
+        }),
+        targetWeeks: z.number().int().openapi({
+          description: "Target completion weeks",
+          example: 12,
+        }),
+        weeklyHours: z.number().int().openapi({
+          description: "Weekly study hours",
+          example: 10,
+        }),
+        learningStyle: z.string().openapi({
+          description: "Preferred learning style",
+          example: "실습 중심",
+        }),
+        preferredResources: z.string().openapi({
+          description: "Preferred learning resources",
+          example: "온라인 강의",
+        }),
+        mainGoal: z.string().openapi({
+          description: "Main learning goal",
+          example: "웹 개발자 취업",
+        }),
+        additionalRequirements: z.string().nullable().openapi({
+          description: "Additional requirements",
+          example: "React, Node.js 포함",
+        }),
+        createdAt: z.string().openapi({
+          description: "Creation timestamp",
+          example: "2024-01-01T00:00:00.000Z",
+        }),
+        updatedAt: z.string().openapi({
+          description: "Last update timestamp",
+          example: "2024-01-15T10:30:00.000Z",
+        }),
       }),
     )
     .openapi({
