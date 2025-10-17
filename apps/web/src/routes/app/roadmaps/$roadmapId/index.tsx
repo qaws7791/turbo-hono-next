@@ -87,7 +87,12 @@ function RouteComponent() {
     );
   }
 
-  const transformedGoals = transformGoals(roadmap.data.data?.goals || []);
+  const roadmapData = roadmap.data.data;
+  const transformedGoals = transformGoals(roadmapData?.goals || []);
+  const roadmapEmoji = roadmapData?.emoji || "📚";
+  const emojiLabel = roadmapData?.title
+    ? `${roadmapData.title} 로드맵 아이콘`
+    : "로드맵 아이콘";
 
   return (
     <AppPageLayout>
@@ -105,25 +110,32 @@ function RouteComponent() {
             />
             뒤로가기
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {roadmap.data.data?.title}
-            </h1>
-            {roadmap.data.data?.description && (
-              <p className="text-muted-foreground mt-1">
-                {roadmap.data.data?.description}
-              </p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <span
+                className="text-3xl leading-none"
+                role="img"
+                aria-label={emojiLabel}
+              >
+                {roadmapEmoji}
+              </span>
+              <h1 className="text-2xl font-bold text-foreground">
+                {roadmapData?.title}
+              </h1>
+            </div>
+            {roadmapData?.description && (
+              <p className="text-muted-foreground">{roadmapData.description}</p>
             )}
           </div>
         </div>
 
         {/* 로드맵 정보 */}
         <RoadmapInfo
-          id={roadmap.data.data?.id}
-          status={roadmap.data.data?.status}
-          createdAt={roadmap.data.data?.createdAt || ""}
-          updatedAt={roadmap.data.data?.updatedAt || ""}
-          documents={roadmap.data.data?.documents}
+          id={roadmapData?.id}
+          status={roadmapData?.status}
+          createdAt={roadmapData?.createdAt || ""}
+          updatedAt={roadmapData?.updatedAt || ""}
+          documents={roadmapData?.documents}
         />
 
         {/* 메인 콘텐츠 - 좌우 분할 */}

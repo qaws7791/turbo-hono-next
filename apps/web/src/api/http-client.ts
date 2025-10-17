@@ -56,6 +56,7 @@ const roadmaps = {
 
   create: async (data: {
     title: string;
+    emoji?: string;
     description?: string;
     learningTopic: string;
     userLevel: "beginner" | "basic" | "intermediate" | "advanced" | "expert";
@@ -75,6 +76,7 @@ const roadmaps = {
     roadmapId: string,
     data: {
       title?: string;
+      emoji?: string;
       description?: string;
       learningTopic?: string;
       userLevel?: "beginner" | "basic" | "intermediate" | "advanced" | "expert";

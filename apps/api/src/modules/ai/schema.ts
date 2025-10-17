@@ -67,14 +67,11 @@ export const AINoteStatusSchema = z
 
 export const SubGoalNoteContentSchema = z
   .object({
-    markdown: z
-      .string()
-      .min(80)
-      .openapi({
-        description: "생성된 학습 노트의 마크다운 텍스트",
-        example:
-          "# 학습 개요\n\n- 목표: React Hooks 이해\n- 예상 소요 시간: 3시간\n\n## 1. 개념 정리\n...",
-      }),
+    markdown: z.string().min(80).openapi({
+      description: "생성된 학습 노트의 마크다운 텍스트",
+      example:
+        "# 학습 개요\n\n- 목표: React Hooks 이해\n- 예상 소요 시간: 3시간\n\n## 1. 개념 정리\n...",
+    }),
   })
   .openapi({
     description: "AI가 생성한 학습 노트 결과",
@@ -82,13 +79,10 @@ export const SubGoalNoteContentSchema = z
 
 export const GenerateSubGoalNoteQuerySchema = z
   .object({
-    force: z.coerce
-      .boolean()
-      .optional()
-      .openapi({
-        description: "기존 노트가 있더라도 재생성을 강제로 요청합니다",
-        example: false,
-      }),
+    force: z.coerce.boolean().optional().openapi({
+      description: "기존 노트가 있더라도 재생성을 강제로 요청합니다",
+      example: false,
+    }),
   })
   .openapi({
     description: "AI 노트 생성 시 사용되는 쿼리 파라미터",
@@ -154,6 +148,10 @@ export const GeneratedRoadmapSchema = z.object({
     example:
       "12주 만에 JavaScript 풀스택 개발자가 되기 위한 체계적인 학습 계획",
   }),
+  emoji: z.string().trim().max(16).optional().openapi({
+    description: "로드맵을 가장 잘 표현하는 단일 이모지.",
+    example: "🚀",
+  }),
   goals: z.array(GeneratedGoalSchema).openapi({
     description: "상위 목표들",
   }),
@@ -162,36 +160,22 @@ export const GeneratedRoadmapSchema = z.object({
 export const GenerateSubGoalNoteResponseSchema = z
   .object({
     status: AINoteStatusSchema,
-    markdown: z
-      .string()
-      .nullable()
-      .openapi({
-        description: "생성된 마크다운 노트. 생성 중이거나 실패 시 null",
-        example: null,
-      }),
-    requestedAt: z
-      .string()
-      .datetime()
-      .nullable()
-      .openapi({
-        description: "가장 최근 노트 생성 요청 시각",
-        example: "2024-06-01T10:00:00.000Z",
-      }),
-    completedAt: z
-      .string()
-      .datetime()
-      .nullable()
-      .openapi({
-        description: "생성 완료 혹은 실패가 기록된 시각",
-        example: "2024-06-01T10:02:30.000Z",
-      }),
-    errorMessage: z
-      .string()
-      .nullable()
-      .openapi({
-        description: "실패 시 사용자에게 노출 가능한 오류 메시지",
-        example: "Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.",
-      }),
+    markdown: z.string().nullable().openapi({
+      description: "생성된 마크다운 노트. 생성 중이거나 실패 시 null",
+      example: null,
+    }),
+    requestedAt: z.string().datetime().nullable().openapi({
+      description: "가장 최근 노트 생성 요청 시각",
+      example: "2024-06-01T10:00:00.000Z",
+    }),
+    completedAt: z.string().datetime().nullable().openapi({
+      description: "생성 완료 혹은 실패가 기록된 시각",
+      example: "2024-06-01T10:02:30.000Z",
+    }),
+    errorMessage: z.string().nullable().openapi({
+      description: "실패 시 사용자에게 노출 가능한 오류 메시지",
+      example: "Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.",
+    }),
   })
   .openapi({
     description: "AI 노트 생성 요청에 대한 상태 응답",
@@ -260,6 +244,10 @@ export const SavedRoadmapSchema = z.object({
   id: z.string().openapi({
     description: "로드맵 공개 ID",
     example: "abc123def456ghi7",
+  }),
+  emoji: z.string().openapi({
+    description: "로드맵을 대표하는 이모지",
+    example: "🚀",
   }),
   title: z.string().openapi({
     description: "로드맵 제목",

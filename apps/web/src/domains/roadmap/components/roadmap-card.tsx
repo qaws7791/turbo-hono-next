@@ -10,6 +10,7 @@ import { tv } from "tailwind-variants";
 
 type RoadmapListItem = {
   id: string;
+  emoji: string;
   title: string;
   description: string | null;
   status: "active" | "archived";
@@ -35,6 +36,8 @@ const roadmapCardVariants = tv({
       "data-[focused]:ring-2 data-[focused]:ring-ring",
     ],
     header: "flex items-start justify-between mb-3",
+    heading: "flex items-center gap-3",
+    emoji: "text-2xl leading-none",
     title:
       "text-lg font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1",
     difficultyBadge: "px-2 py-1 rounded-full text-xs font-medium shrink-0",
@@ -104,6 +107,8 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({
   const userLevelKey = roadmap.userLevel as keyof UserLevelMapping;
   const slots = roadmapCardVariants({ difficulty: userLevelKey });
   const completionLabel = `${roadmap.goalCompletionPercent}% 완료`;
+  const emoji = roadmap.emoji || "📚";
+  const emojiLabel = `${roadmap.title} 로드맵 아이콘`;
 
   return (
     <Link
@@ -114,7 +119,16 @@ const RoadmapCard: React.FC<RoadmapCardProps> = ({
       {...props}
     >
       <div className={slots.header()}>
-        <h3 className={slots.title()}>{roadmap.title}</h3>
+        <div className={slots.heading()}>
+          <span
+            className={slots.emoji()}
+            role="img"
+            aria-label={emojiLabel}
+          >
+            {emoji}
+          </span>
+          <h3 className={slots.title()}>{roadmap.title}</h3>
+        </div>
         <div className={slots.difficultyBadge()}>
           {userLevelMap[userLevelKey] || roadmap.userLevel}
         </div>

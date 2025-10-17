@@ -180,6 +180,7 @@ const list = new OpenAPIHono<{
         .select({
           id: roadmap.id,
           publicId: roadmap.publicId,
+          emoji: roadmap.emoji,
           title: roadmap.title,
           description: roadmap.description,
           status: roadmap.status,
@@ -286,6 +287,7 @@ const list = new OpenAPIHono<{
 
         return {
           id: item.publicId,
+          emoji: item.emoji,
           title: item.title,
           description: item.description,
           status: item.status as "active" | "archived",

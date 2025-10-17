@@ -415,6 +415,11 @@ export interface paths {
                                  */
                                 id: string;
                                 /**
+                                 * @description Emoji that represents the roadmap at a glance
+                                 * @example 🚀
+                                 */
+                                emoji: string;
+                                /**
                                  * @description Roadmap title
                                  * @example Full Stack JavaScript Developer
                                  */
@@ -485,35 +490,6 @@ export interface paths {
                                  * @example 2024-01-15T10:30:00.000Z
                                  */
                                 updatedAt: string;
-                                /**
-                                 * @description 현재 AI 노트 생성 상태
-                                 * @example processing
-                                 * @enum {string}
-                                 */
-                                aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-                                /**
-                                 * @description AI가 생성한 학습 노트 (마크다운)
-                                 * @example # 학습 개요
-                                 *     - 목표 정리...
-                                 */
-                                aiNoteMarkdown: string | null;
-                                /**
-                                 * Format: date-time
-                                 * @description AI 노트 생성을 요청한 시각
-                                 * @example 2024-06-01T10:00:00.000Z
-                                 */
-                                aiNoteRequestedAt: string | null;
-                                /**
-                                 * Format: date-time
-                                 * @description AI 노트 생성이 완료되거나 실패한 시각
-                                 * @example 2024-06-01T10:05:12.000Z
-                                 */
-                                aiNoteCompletedAt: string | null;
-                                /**
-                                 * @description AI 노트 생성 실패 시 오류 메시지
-                                 * @example Gemini API 호출이 실패했습니다.
-                                 */
-                                aiNoteError: string | null;
                             }[];
                             /** @description Pagination information */
                             pagination: {
@@ -622,6 +598,11 @@ export interface paths {
                          */
                         title: string;
                         /**
+                         * @description Emoji that will be used for the roadmap (fallback applied when omitted)
+                         * @example 🧠
+                         */
+                        emoji?: string;
+                        /**
                          * @description Roadmap description
                          * @example Complete guide to becoming a full stack developer
                          */
@@ -634,9 +615,8 @@ export interface paths {
                         /**
                          * @description Target user level
                          * @example beginner
-                         * @enum {string}
                          */
-                        userLevel: "beginner" | "basic" | "intermediate" | "advanced" | "expert";
+                        userLevel: string;
                         /**
                          * @description Target completion weeks (1-24)
                          * @example 12
@@ -666,7 +646,7 @@ export interface paths {
                          * @description Additional requirements
                          * @example React, Node.js 포함
                          */
-                        additionalRequirements?: string;
+                        additionalRequirements: string | null;
                     };
                 };
             };
@@ -683,6 +663,11 @@ export interface paths {
                              * @example abc123def456
                              */
                             id: string;
+                            /**
+                             * @description Emoji assigned to the roadmap
+                             * @example 🧠
+                             */
+                            emoji: string;
                             /**
                              * @description Roadmap title
                              * @example Full Stack JavaScript Developer
@@ -981,6 +966,11 @@ export interface paths {
                          */
                         title?: string;
                         /**
+                         * @description Emoji that represents the roadmap
+                         * @example 🌱
+                         */
+                        emoji?: string;
+                        /**
                          * @description Roadmap description
                          * @example Complete guide to becoming a full stack developer
                          */
@@ -1025,7 +1015,7 @@ export interface paths {
                          * @description Additional requirements
                          * @example React, Node.js 포함
                          */
-                        additionalRequirements?: string;
+                        additionalRequirements: string | null;
                     };
                 };
             };
@@ -1043,6 +1033,11 @@ export interface paths {
                              */
                             id: string;
                             /**
+                             * @description Emoji that represents the roadmap at a glance
+                             * @example 🚀
+                             */
+                            emoji: string;
+                            /**
                              * @description Roadmap title
                              * @example Full Stack JavaScript Developer
                              */
@@ -1058,11 +1053,6 @@ export interface paths {
                              * @enum {string}
                              */
                             status: "active" | "archived";
-                            /**
-                             * @description Percentage of completed sub-goals (0-100)
-                             * @example 75
-                             */
-                            goalCompletionPercent: number;
                             /**
                              * @description Main learning topic
                              * @example JavaScript
@@ -1113,35 +1103,6 @@ export interface paths {
                              * @example 2024-01-15T10:30:00.000Z
                              */
                             updatedAt: string;
-                            /**
-                             * @description 현재 AI 노트 생성 상태
-                             * @example processing
-                             * @enum {string}
-                             */
-                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-                            /**
-                             * @description AI가 생성한 학습 노트 (마크다운)
-                             * @example # 학습 개요
-                             *     - 목표 정리...
-                             */
-                            aiNoteMarkdown: string | null;
-                            /**
-                             * Format: date-time
-                             * @description AI 노트 생성을 요청한 시각
-                             * @example 2024-06-01T10:00:00.000Z
-                             */
-                            aiNoteRequestedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description AI 노트 생성이 완료되거나 실패한 시각
-                             * @example 2024-06-01T10:05:12.000Z
-                             */
-                            aiNoteCompletedAt: string | null;
-                            /**
-                             * @description AI 노트 생성 실패 시 오류 메시지
-                             * @example Gemini API 호출이 실패했습니다.
-                             */
-                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -1291,6 +1252,11 @@ export interface paths {
                              * @example abc123def456
                              */
                             id: string;
+                            /**
+                             * @description Emoji assigned to the roadmap
+                             * @example 🚀
+                             */
+                            emoji: string;
                             /**
                              * @description Roadmap title
                              * @example Full Stack JavaScript Developer
@@ -1672,40 +1638,6 @@ export interface paths {
                              * @enum {string}
                              */
                             status: "active" | "archived";
-                            /**
-                             * @description Last update timestamp
-                             * @example 2024-01-15T10:30:00.000Z
-                             */
-                            updatedAt: string;
-                            /**
-                             * @description 현재 AI 노트 생성 상태
-                             * @example processing
-                             * @enum {string}
-                             */
-                            aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-                            /**
-                             * @description AI가 생성한 학습 노트 (마크다운)
-                             * @example # 학습 개요
-                             *     - 목표 정리...
-                             */
-                            aiNoteMarkdown: string | null;
-                            /**
-                             * Format: date-time
-                             * @description AI 노트 생성을 요청한 시각
-                             * @example 2024-06-01T10:00:00.000Z
-                             */
-                            aiNoteRequestedAt: string | null;
-                            /**
-                             * Format: date-time
-                             * @description AI 노트 생성이 완료되거나 실패한 시각
-                             * @example 2024-06-01T10:05:12.000Z
-                             */
-                            aiNoteCompletedAt: string | null;
-                            /**
-                             * @description AI 노트 생성 실패 시 오류 메시지
-                             * @example Gemini API 호출이 실패했습니다.
-                             */
-                            aiNoteError: string | null;
                         };
                     };
                 };
@@ -3991,6 +3923,11 @@ export interface paths {
                                  * @example abc123def456ghi7
                                  */
                                 id: string;
+                                /**
+                                 * @description 로드맵을 대표하는 이모지
+                                 * @example 🚀
+                                 */
+                                emoji: string;
                                 /**
                                  * @description 로드맵 제목
                                  * @example JavaScript 풀스택 개발자 로드맵

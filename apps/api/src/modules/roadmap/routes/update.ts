@@ -11,6 +11,9 @@ import {
   RoadmapUpdateRequestSchema,
   RoadmapUpdateResponseSchema,
 } from "../schema";
+import { RoadmapEmoji } from "../utils/emoji";
+
+type RoadmapInsert = typeof roadmap.$inferInsert;
 
 const update = new OpenAPIHono<{
   Variables: {
@@ -105,6 +108,8 @@ const update = new OpenAPIHono<{
           id: roadmap.id,
           userId: roadmap.userId,
           publicId: roadmap.publicId,
+          learningTopic: roadmap.learningTopic,
+          emoji: roadmap.emoji,
         })
         .from(roadmap)
         .where(eq(roadmap.publicId, publicId))
@@ -127,11 +132,26 @@ const update = new OpenAPIHono<{
       }
 
       // Perform the update
+      const { emoji: requestedEmoji, ...restUpdate } =
+        updateData as Partial<RoadmapInsert>;
+
+      const updatePayload: Partial<RoadmapInsert> = {
+        ...restUpdate,
+        updatedAt: new Date(),
+      };
+
+      if (requestedEmoji !== undefined) {
+        updatePayload.emoji = RoadmapEmoji.ensure(
+          requestedEmoji,
+          (restUpdate.learningTopic as string | undefined) ??
+            existingRoadmap[0].learningTopic,
+        );
+      }
+
       const updatedRoadmaps = await db
         .update(roadmap)
         .set({
-          ...updateData,
-          updatedAt: new Date(),
+          ...updatePayload,
         })
         .where(eq(roadmap.publicId, publicId))
         .returning({
@@ -140,6 +160,7 @@ const update = new OpenAPIHono<{
           title: roadmap.title,
           description: roadmap.description,
           status: roadmap.status,
+          emoji: roadmap.emoji,
           learningTopic: roadmap.learningTopic,
           userLevel: roadmap.userLevel,
           targetWeeks: roadmap.targetWeeks,
@@ -166,6 +187,7 @@ const update = new OpenAPIHono<{
       const formattedRoadmap = {
         id: updatedRoadmap.publicId,
         title: updatedRoadmap.title,
+        emoji: updatedRoadmap.emoji,
         description: updatedRoadmap.description,
         status: updatedRoadmap.status as "active" | "archived",
         learningTopic: updatedRoadmap.learningTopic,

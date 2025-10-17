@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
 import aiApp from "./modules/ai";
@@ -13,6 +14,7 @@ import roadmapApp from "./modules/roadmap";
 function createApp() {
   const app = new OpenAPIHono();
 
+  app.use(logger());
   app.use(
     "/*",
     cors({

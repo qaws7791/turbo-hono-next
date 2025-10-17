@@ -43,6 +43,13 @@
       "when": 1760379600000,
       "tag": "0005_goal_completion_calendar",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1760383200000,
+      "tag": "0006_roadmap_emoji_badge",
+      "breakpoints": true
     }
   ]
 }

@@ -146,6 +146,7 @@ const changeStatus = new OpenAPIHono<{
         .returning({
           publicId: roadmap.publicId,
           status: roadmap.status,
+          emoji: roadmap.emoji,
           updatedAt: roadmap.updatedAt,
         });
 
@@ -163,6 +164,7 @@ const changeStatus = new OpenAPIHono<{
         {
           id: updatedRoadmap.publicId,
           status: updatedRoadmap.status as "active" | "archived",
+          emoji: updatedRoadmap.emoji,
           updatedAt: updatedRoadmap.updatedAt.toISOString(),
         },
         status.OK,

@@ -10,6 +10,7 @@ import {
   RoadmapCreateRequestSchema,
   RoadmapCreateResponseSchema,
 } from "../schema";
+import { RoadmapEmoji } from "../utils/emoji";
 
 const create = new OpenAPIHono<{
   Variables: {
@@ -74,6 +75,7 @@ const create = new OpenAPIHono<{
       // Validate required fields
       const {
         title,
+        emoji,
         description,
         learningTopic,
         userLevel,
@@ -87,6 +89,7 @@ const create = new OpenAPIHono<{
 
       // Generate unique public ID
       const publicId = nanoid(16);
+      const resolvedEmoji = RoadmapEmoji.ensure(emoji, learningTopic);
 
       // Create roadmap in database
       const result = await db
@@ -97,6 +100,7 @@ const create = new OpenAPIHono<{
           title,
           description: description || null,
           status: "active",
+          emoji: resolvedEmoji,
           learningTopic,
           userLevel,
           targetWeeks,
@@ -112,6 +116,7 @@ const create = new OpenAPIHono<{
           title: roadmap.title,
           description: roadmap.description,
           status: roadmap.status,
+          emoji: roadmap.emoji,
           learningTopic: roadmap.learningTopic,
           userLevel: roadmap.userLevel,
           targetWeeks: roadmap.targetWeeks,
@@ -139,6 +144,7 @@ const create = new OpenAPIHono<{
         {
           id: createdRoadmap.publicId,
           title: createdRoadmap.title,
+          emoji: createdRoadmap.emoji,
           description: createdRoadmap.description,
           status: createdRoadmap.status as "active" | "archived",
           learningTopic: createdRoadmap.learningTopic,

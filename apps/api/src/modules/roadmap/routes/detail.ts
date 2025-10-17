@@ -216,6 +216,7 @@ const detail = new OpenAPIHono<{
       // Format response
       const response = {
         id: roadmapData.publicId,
+        emoji: roadmapData.emoji,
         title: roadmapData.title,
         description: roadmapData.description,
         status: roadmapData.status as "active" | "archived",

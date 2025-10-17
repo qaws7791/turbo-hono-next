@@ -219,6 +219,7 @@ const generateRoadmap = new OpenAPIHono<{
         {
           roadmap: {
             id: savedRoadmap.publicId,
+            emoji: savedRoadmap.emoji,
             title: savedRoadmap.title,
             description: savedRoadmap.description,
             status: savedRoadmap.status,

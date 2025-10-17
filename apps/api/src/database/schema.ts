@@ -82,6 +82,7 @@ export const roadmap = pgTable("roadmap", {
   title: text("title").notNull(),
   description: text("description"),
   status: text("status").notNull().default("active"), // active, archived
+  emoji: varchar("emoji", { length: 16 }).notNull().default("📚"),
 
   // 개인화 정보
   learningTopic: text("learning_topic").notNull(),

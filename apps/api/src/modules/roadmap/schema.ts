@@ -1,6 +1,16 @@
 import { z } from "@hono/zod-openapi";
 import { AINoteStatusSchema } from "../ai/schema";
 import { DocumentItemSchema } from "../documents/schema";
+import { RoadmapEmoji } from "./utils/emoji";
+
+const emojiSchema = z
+  .string()
+  .trim()
+  .min(1, { message: "로드맵 이모지를 입력하세요." })
+  .max(16, { message: "로드맵 이모지는 16자 이내여야 합니다." })
+  .refine(RoadmapEmoji.isValid, {
+    message: "로드맵 이모지는 단일 이모지여야 합니다.",
+  });
 
 // Request schemas
 export const RoadmapListQuerySchema = z.object({
@@ -38,6 +48,10 @@ export const RoadmapItemSchema = z.object({
   id: z.string().openapi({
     description: "Public ID of the roadmap",
     example: "abc123def456",
+  }),
+  emoji: emojiSchema.openapi({
+    description: "Emoji that represents the roadmap at a glance",
+    example: "🚀",
   }),
   title: z.string().openapi({
     description: "Roadmap title",
@@ -122,6 +136,11 @@ export const RoadmapListResponseSchema = z.object({
           description: "Public ID of the roadmap",
           example: "abc123def456",
         }),
+
+        emoji: emojiSchema.openapi({
+          description: "Emoji that represents the roadmap at a glance",
+          example: "🚀",
+        }),
         title: z.string().openapi({
           description: "Roadmap title",
           example: "Full Stack JavaScript Developer",
@@ -133,6 +152,10 @@ export const RoadmapListResponseSchema = z.object({
         status: z.enum(["active", "archived"]).openapi({
           description: "Current status of the roadmap",
           example: "active",
+        }),
+        goalCompletionPercent: z.number().int().min(0).max(100).openapi({
+          description: "Percentage of completed sub-goals (0-100)",
+          example: 75,
         }),
         learningTopic: z.string().openapi({
           description: "Main learning topic",
@@ -205,6 +228,11 @@ export const RoadmapCreateRequestSchema = z.object({
     description: "Roadmap title",
     example: "Full Stack JavaScript Developer",
   }),
+  emoji: emojiSchema.optional().openapi({
+    description:
+      "Emoji that will be used for the roadmap (fallback applied when omitted)",
+    example: "🧠",
+  }),
   description: z.string().optional().openapi({
     description: "Roadmap description",
     example: "Complete guide to becoming a full stack developer",
@@ -213,12 +241,10 @@ export const RoadmapCreateRequestSchema = z.object({
     description: "Main learning topic",
     example: "JavaScript",
   }),
-  userLevel: z
-    .enum(["beginner", "basic", "intermediate", "advanced", "expert"])
-    .openapi({
-      description: "Target user level",
-      example: "beginner",
-    }),
+  userLevel: z.string().openapi({
+    description: "Target user level",
+    example: "beginner",
+  }),
   targetWeeks: z.number().int().min(1).max(24).openapi({
     description: "Target completion weeks (1-24)",
     example: 12,
@@ -239,7 +265,7 @@ export const RoadmapCreateRequestSchema = z.object({
     description: "Main learning goal",
     example: "웹 개발자 취업",
   }),
-  additionalRequirements: z.string().optional().openapi({
+  additionalRequirements: z.string().nullable().openapi({
     description: "Additional requirements",
     example: "React, Node.js 포함",
   }),
@@ -249,6 +275,10 @@ export const RoadmapCreateResponseSchema = z.object({
   id: z.string().openapi({
     description: "Public ID of the created roadmap",
     example: "abc123def456",
+  }),
+  emoji: emojiSchema.openapi({
+    description: "Emoji assigned to the roadmap",
+    example: "🧠",
   }),
   title: z.string().openapi({
     description: "Roadmap title",
@@ -310,6 +340,10 @@ export const RoadmapUpdateRequestSchema = z.object({
     description: "Roadmap title",
     example: "Full Stack JavaScript Developer",
   }),
+  emoji: emojiSchema.optional().openapi({
+    description: "Emoji that represents the roadmap",
+    example: "🌱",
+  }),
   description: z.string().optional().openapi({
     description: "Roadmap description",
     example: "Complete guide to becoming a full stack developer",
@@ -345,13 +379,74 @@ export const RoadmapUpdateRequestSchema = z.object({
     description: "Main learning goal",
     example: "웹 개발자 취업",
   }),
-  additionalRequirements: z.string().optional().openapi({
+  additionalRequirements: z.string().nullable().openapi({
     description: "Additional requirements",
     example: "React, Node.js 포함",
   }),
 });
 
-export const RoadmapUpdateResponseSchema = RoadmapItemSchema;
+export const RoadmapUpdateResponseSchema = z.object({
+  id: z.string().openapi({
+    description: "Public ID of the roadmap",
+    example: "abc123def456",
+  }),
+  emoji: emojiSchema.openapi({
+    description: "Emoji that represents the roadmap at a glance",
+    example: "🚀",
+  }),
+  title: z.string().openapi({
+    description: "Roadmap title",
+    example: "Full Stack JavaScript Developer",
+  }),
+  description: z.string().nullable().openapi({
+    description: "Roadmap description",
+    example: "Complete guide to becoming a full stack developer",
+  }),
+  status: z.enum(["active", "archived"]).openapi({
+    description: "Current status of the roadmap",
+    example: "active",
+  }),
+  learningTopic: z.string().openapi({
+    description: "Main learning topic",
+    example: "JavaScript",
+  }),
+  userLevel: z.string().openapi({
+    description: "Target user level",
+    example: "beginner",
+  }),
+  targetWeeks: z.number().int().openapi({
+    description: "Target completion weeks",
+    example: 12,
+  }),
+  weeklyHours: z.number().int().openapi({
+    description: "Weekly study hours",
+    example: 10,
+  }),
+  learningStyle: z.string().openapi({
+    description: "Preferred learning style",
+    example: "실습 중심",
+  }),
+  preferredResources: z.string().openapi({
+    description: "Preferred learning resources",
+    example: "온라인 강의",
+  }),
+  mainGoal: z.string().openapi({
+    description: "Main learning goal",
+    example: "웹 개발자 취업",
+  }),
+  additionalRequirements: z.string().nullable().openapi({
+    description: "Additional requirements",
+    example: "React, Node.js 포함",
+  }),
+  createdAt: z.string().openapi({
+    description: "Creation timestamp",
+    example: "2024-01-01T00:00:00.000Z",
+  }),
+  updatedAt: z.string().openapi({
+    description: "Last update timestamp",
+    example: "2024-01-15T10:30:00.000Z",
+  }),
+});
 
 // Roadmap status change schemas
 export const RoadmapStatusChangeRequestSchema = z.object({
@@ -369,27 +464,6 @@ export const RoadmapStatusChangeResponseSchema = z.object({
   status: z.enum(["active", "archived"]).openapi({
     description: "Updated status",
     example: "archived",
-  }),
-  updatedAt: z.string().openapi({
-    description: "Last update timestamp",
-    example: "2024-01-15T10:30:00.000Z",
-  }),
-  aiNoteStatus: AINoteStatusSchema,
-  aiNoteMarkdown: z.string().nullable().openapi({
-    description: "AI가 생성한 학습 노트 (마크다운)",
-    example: "# 학습 개요\n- 목표 정리...",
-  }),
-  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성을 요청한 시각",
-    example: "2024-06-01T10:00:00.000Z",
-  }),
-  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성이 완료되거나 실패한 시각",
-    example: "2024-06-01T10:05:12.000Z",
-  }),
-  aiNoteError: z.string().nullable().openapi({
-    description: "AI 노트 생성 실패 시 오류 메시지",
-    example: "Gemini API 호출이 실패했습니다.",
   }),
 });
 
@@ -826,6 +900,10 @@ export const RoadmapDetailResponseSchema = z.object({
   id: z.string().openapi({
     description: "Public ID of the roadmap",
     example: "abc123def456",
+  }),
+  emoji: emojiSchema.openapi({
+    description: "Emoji assigned to the roadmap",
+    example: "🚀",
   }),
   title: z.string().openapi({
     description: "Roadmap title",

@@ -4,6 +4,7 @@ import { db } from "../../../database/client";
 import { goal, roadmap, subGoal } from "../../../database/schema";
 import { generatePublicId } from "../../../utils/id-generator";
 import type { GeneratedRoadmapSchema } from "../schema";
+import { ensureEmoji } from "../../roadmap/utils/emoji";
 
 export type GeneratedRoadmap = z.infer<typeof GeneratedRoadmapSchema>;
 
@@ -25,6 +26,7 @@ export interface RoadmapCreationData {
 export interface SavedRoadmap {
   id: number;
   publicId: string;
+  emoji: string;
   title: string;
   description: string | null;
   status: string;
@@ -71,6 +73,10 @@ export async function saveRoadmapToDatabase(
   try {
     // 1. Create roadmap record
     const roadmapPublicId = generatePublicId(16);
+    const roadmapEmoji = ensureEmoji(
+      data.generatedRoadmap.emoji,
+      data.personalizedData.learningTopic || data.generatedRoadmap.title,
+    );
     const [savedRoadmap] = await db
       .insert(roadmap)
       .values({
@@ -79,6 +85,7 @@ export async function saveRoadmapToDatabase(
         title: data.generatedRoadmap.title,
         description: data.generatedRoadmap.description,
         status: "active",
+        emoji: roadmapEmoji,
         learningTopic: data.personalizedData.learningTopic,
         userLevel: data.personalizedData.userLevel,
         targetWeeks: data.personalizedData.targetWeeks,
@@ -183,6 +190,7 @@ export async function saveRoadmapToDatabase(
       mainGoal: savedRoadmap.mainGoal,
       additionalRequirements: savedRoadmap.additionalRequirements,
       goals: savedGoals,
+      emoji: savedRoadmap.emoji,
       createdAt: savedRoadmap.createdAt,
       updatedAt: savedRoadmap.updatedAt,
     };

@@ -59,6 +59,7 @@ export interface Goal {
 
 export interface Roadmap {
   id: number;
+  emoji: string;
   title: string;
   description: string | null;
   status: "active" | "archived";

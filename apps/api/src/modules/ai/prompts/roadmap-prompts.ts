@@ -57,8 +57,17 @@ ${additionalRequirements ? `- 추가 요구사항: ${additionalRequirements}` : 
 로드맵 구성:
 - 제목: "${learningTopic}" 관련 매력적인 제목
 - 설명: 로드맵의 전체적인 개요와 목적
+- emoji: 학습 주제를 직관적으로 표현하는 단일 이모지 (예: "🚀")
 - 3-6개의 주요 목표 (Goal)
 - 각 목표당 3-8개의 하위 목표 (SubGoal)
+
+응답은 반드시 JSON 형식으로 제공하고, 다음 키를 모두 포함해야 합니다:
+{
+  "title": string,
+  "description": string,
+  "emoji": string, // 단일 이모지
+  "goals": Goal[]
+}
 
 각 목표와 하위 목표는 구체적이고 실행 가능하며, 순서대로 진행할 수 있도록 구성해주세요.`;
 }
