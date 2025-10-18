@@ -10,6 +10,7 @@ import {
   Tabs as AriaTabs,
   TabsProps as AriaTabsProps,
   composeRenderProps,
+  SelectionIndicator,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
 
@@ -18,9 +19,9 @@ function Tabs({ className, ...props }: AriaTabsProps) {
     <AriaTabs
       className={composeRenderProps(className, (className) =>
         twMerge(
-          "group flex flex-col gap-2",
+          "group flex",
           /* Orientation */
-          "data-[orientation=vertical]:flex-row",
+          "data-[orientation=horizontal]:flex-col",
           className,
         ),
       )}
@@ -36,9 +37,16 @@ const TabList = <T extends object>({
   <AriaTabList
     className={composeRenderProps(className, (className) =>
       twMerge(
-        "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+        "flex",
         /* Orientation */
-        "data-[orientation=vertical]:h-auto data-[orientation=vertical]:flex-col",
+        "data-[orientation=horizontal]:border-b",
+        "data-[orientation=horizontal]:border-border",
+        "data-[orientation=horizontal]:[&_.selection-indicator]:bottom-0",
+        "data-[orientation=horizontal]:[&_.selection-indicator]:left-0",
+        "data-[orientation=horizontal]:[&_.selection-indicator]:w-full",
+        "data-[orientation=horizontal]:[&_.selection-indicator]:border-b-[3px]",
+        "data-[orientation=horizontal]:[&_.selection-indicator]:border-primary",
+        "data-[orientation=vertical]:flex-col",
         className,
       ),
     )}
@@ -50,31 +58,33 @@ const Tab = ({ className, ...props }: AriaTabProps) => (
   <AriaTab
     className={composeRenderProps(className, (className) =>
       twMerge(
-        "inline-flex cursor-pointer justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium outline-none ring-offset-background transition-all",
-        /* Focus Visible */
-        "data-[focus-visible]:ring-2 data-[focus-visible]:ring-ring data-[focus-visible]:ring-offset-2",
+        "relative inline-flex min-w-0 cursor-default items-center justify-center whitespace-nowrap py-2.5 px-4 text-sm font-medium text-muted-foreground outline-none forced-color-adjust:none",
+        /* Hover */
+        "hover:cursor-pointer",
         /* Disabled */
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "disabled:pointer-events-none disabled:opacity-50",
         /* Selected */
-        "data-[selected]:bg-background data-[selected]:text-foreground data-[selected]:shadow-sm ",
+        "selected:text-foreground selected:border-primary",
         /* Orientation */
         "group-data-[orientation=vertical]:w-full",
         className,
       ),
     )}
     {...props}
-  />
+  >
+    {composeRenderProps(props.children, (children) => (
+      <>
+        {children}
+        <SelectionIndicator className="selection-indicator pointer-events-none absolute transition-[translate,width,height] duration-200 motion-reduce:transition-none" />
+      </>
+    ))}
+  </AriaTab>
 );
 
 const TabPanel = ({ className, ...props }: AriaTabPanelProps) => (
   <AriaTabPanel
     className={composeRenderProps(className, (className) =>
-      twMerge(
-        "mt-2 ring-offset-background",
-        /* Focus Visible */
-        "data-[focus-visible]:outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-ring data-[focus-visible]:ring-offset-2",
-        className,
-      ),
+      twMerge("rounded outline-none", className),
     )}
     {...props}
   />
