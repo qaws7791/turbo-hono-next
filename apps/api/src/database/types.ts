@@ -1,6 +1,8 @@
 import {
   account,
   aiNote,
+  aiQuiz,
+  aiQuizResult,
   goal,
   roadmap,
   roadmapDocument,
@@ -45,6 +47,14 @@ export type SubGoalUpdate = Partial<typeof subGoal.$inferInsert>;
 export type AiNote = typeof aiNote.$inferSelect;
 export type AiNoteInsert = typeof aiNote.$inferInsert;
 export type AiNoteUpdate = Partial<typeof aiNote.$inferInsert>;
+
+export type AiQuiz = typeof aiQuiz.$inferSelect;
+export type AiQuizInsert = typeof aiQuiz.$inferInsert;
+export type AiQuizUpdate = Partial<typeof aiQuiz.$inferInsert>;
+
+export type AiQuizResult = typeof aiQuizResult.$inferSelect;
+export type AiQuizResultInsert = typeof aiQuizResult.$inferInsert;
+export type AiQuizResultUpdate = Partial<typeof aiQuizResult.$inferInsert>;
 
 export type RoadmapDocument = typeof roadmapDocument.$inferSelect;
 export type RoadmapDocumentInsert = typeof roadmapDocument.$inferInsert;

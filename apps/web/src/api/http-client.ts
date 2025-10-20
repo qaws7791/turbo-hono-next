@@ -218,6 +218,21 @@ const subGoals = {
       },
     );
   },
+
+  submitQuiz: async (
+    roadmapId: string,
+    subGoalId: string,
+    quizId: string,
+    answers: Array<{ questionId: string; selectedIndex: number }>,
+  ) => {
+    return client.POST(
+      "/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions",
+      {
+        params: { path: { roadmapId, subGoalId, quizId } },
+        body: { answers },
+      },
+    );
+  },
 };
 
 const progress = {
@@ -295,6 +310,29 @@ const ai = {
             : undefined,
       },
     });
+  },
+
+  generateSubGoalQuiz: async (
+    roadmapId: string,
+    subGoalId: string,
+    options?: {
+      force?: boolean;
+    },
+  ) => {
+    return client.POST(
+      "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes",
+      {
+        params: {
+          path: { roadmapId, subGoalId },
+          query:
+            options?.force !== undefined
+              ? {
+                  force: options.force,
+                }
+              : undefined,
+        },
+      },
+    );
   },
 };
 

@@ -11,6 +11,41 @@ export interface Document {
 }
 
 export type SubGoalNoteStatus = "idle" | "processing" | "ready" | "failed";
+export type SubGoalQuizStatus = "idle" | "processing" | "ready" | "failed";
+
+export interface SubGoalQuizQuestion {
+  id: string;
+  prompt: string;
+  options: string[];
+}
+
+export interface SubGoalQuizAnswerReview extends SubGoalQuizQuestion {
+  selectedIndex: number;
+  correctIndex: number;
+  explanation: string;
+  isCorrect: boolean;
+}
+
+export interface SubGoalQuizResult {
+  quizId: string;
+  totalQuestions: number;
+  correctCount: number;
+  scorePercent: number;
+  answers: SubGoalQuizAnswerReview[];
+  submittedAt: string;
+}
+
+export interface SubGoalQuiz {
+  id: string;
+  status: SubGoalQuizStatus;
+  targetQuestionCount: number;
+  totalQuestions: number | null;
+  requestedAt: string | null;
+  completedAt: string | null;
+  errorMessage: string | null;
+  questions: SubGoalQuizQuestion[] | null;
+  latestResult: SubGoalQuizResult | null;
+}
 
 export interface SubGoal {
   id: string;
@@ -41,6 +76,7 @@ export interface SubGoalDetail extends SubGoal {
     id: string;
     title: string;
   };
+  aiQuiz: SubGoalQuiz | null;
 }
 
 export interface Goal {

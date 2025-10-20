@@ -19,6 +19,10 @@ import {
   SUB_GOAL_NOTE_STATUS,
   type SubGoalNoteStatus,
 } from "../../../ai/services/subgoal-note-service";
+import {
+  loadLatestQuizForSubGoal,
+  serializeQuizRecord,
+} from "../../../ai/services/subgoal-quiz-service";
 
 const getSubGoal = new OpenAPIHono<{
   Variables: {
@@ -162,6 +166,14 @@ const getSubGoal = new OpenAPIHono<{
         (subGoalResult.noteStatus as SubGoalNoteStatus | null) ??
         SUB_GOAL_NOTE_STATUS.idle;
 
+      const latestQuiz = await loadLatestQuizForSubGoal({
+        subGoalDbId: subGoalResult.id,
+        userId: auth.user.id,
+      });
+      const aiQuiz = latestQuiz
+        ? serializeQuizRecord(latestQuiz.record, latestQuiz.latestResult)
+        : null;
+
       return c.json(
         {
           id: subGoalResult.publicId,
@@ -191,6 +203,7 @@ const getSubGoal = new OpenAPIHono<{
             id: roadmapResult.publicId,
             title: roadmapResult.title,
           },
+          aiQuiz,
         },
         status.OK,
       );

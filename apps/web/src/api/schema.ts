@@ -2952,6 +2952,126 @@ export interface paths {
                                  */
                                 title: string;
                             };
+                            /** @description 가장 최근의 AI 학습 퀴즈 정보 */
+                            aiQuiz: {
+                                /**
+                                 * @description 퀴즈 ID
+                                 * @example 123
+                                 */
+                                id: string;
+                                /**
+                                 * @description 현재 AI 퀴즈 생성 상태
+                                 * @example processing
+                                 * @enum {string}
+                                 */
+                                status: "idle" | "processing" | "ready" | "failed";
+                                /**
+                                 * @description 생성 요청 시 목표 문항 수
+                                 * @example 8
+                                 */
+                                targetQuestionCount: number;
+                                /**
+                                 * @description 실제 생성된 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number | null;
+                                /**
+                                 * Format: date-time
+                                 * @description 생성 요청 시각
+                                 * @example 2024-06-01T10:00:00.000Z
+                                 */
+                                requestedAt: string | null;
+                                /**
+                                 * Format: date-time
+                                 * @description 생성 완료 시각
+                                 * @example 2024-06-01T10:02:00.000Z
+                                 */
+                                completedAt: string | null;
+                                /**
+                                 * @description 실패 시 사용자에게 노출할 오류 메시지
+                                 * @example Gemini API 호출이 실패했습니다.
+                                 */
+                                errorMessage: string | null;
+                                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                                questions: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                }[] | null;
+                                /** @description 사용자의 가장 최근 퀴즈 결과 */
+                                latestResult: {
+                                    /**
+                                     * @description 채점된 퀴즈 ID
+                                     * @example 123
+                                     */
+                                    quizId: string;
+                                    /**
+                                     * @description 총 문항 수
+                                     * @example 8
+                                     */
+                                    totalQuestions: number;
+                                    /**
+                                     * @description 맞힌 문항 수
+                                     * @example 6
+                                     */
+                                    correctCount: number;
+                                    /**
+                                     * @description 정답 비율 (퍼센트)
+                                     * @example 75
+                                     */
+                                    scorePercent: number;
+                                    /** @description 문항별 채점 정보 */
+                                    answers: {
+                                        /**
+                                         * @description 문항 식별자
+                                         * @example q1
+                                         */
+                                        id: string;
+                                        /**
+                                         * @description 문제 본문
+                                         * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                         */
+                                        prompt: string;
+                                        /** @description 객관식 보기 4개 */
+                                        options: string[];
+                                        /**
+                                         * @description 사용자가 선택한 보기 인덱스
+                                         * @example 1
+                                         */
+                                        selectedIndex: number;
+                                        /**
+                                         * @description 정답 보기 인덱스
+                                         * @example 0
+                                         */
+                                        correctIndex: number;
+                                        /**
+                                         * @description 정답 설명
+                                         * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                         */
+                                        explanation: string;
+                                        /**
+                                         * @description 정답 여부
+                                         * @example true
+                                         */
+                                        isCorrect: boolean;
+                                    }[];
+                                    /**
+                                     * Format: date-time
+                                     * @description 제출 시각
+                                     * @example 2024-06-01T10:05:00.000Z
+                                     */
+                                    submittedAt: string;
+                                } | null;
+                            } | null;
                         };
                     };
                 };
@@ -3625,6 +3745,384 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit answers for an AI-generated sub-goal quiz */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Public ID of the roadmap */
+                    roadmapId: string;
+                    /** @description Public ID of the sub-goal */
+                    subGoalId: string;
+                    /** @description AI 퀴즈 ID */
+                    quizId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        /** @description 사용자가 제출한 문항별 답안 */
+                        answers: {
+                            /**
+                             * @description 문항 식별자
+                             * @example q1
+                             */
+                            questionId: string;
+                            /**
+                             * @description 선택한 보기 인덱스(0-베이스)
+                             * @example 2
+                             */
+                            selectedIndex: number;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Quiz submitted and evaluated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @description AI 퀴즈 세션 데이터 */
+                            quiz: {
+                                /**
+                                 * @description 퀴즈 ID
+                                 * @example 123
+                                 */
+                                id: string;
+                                /**
+                                 * @description 현재 AI 퀴즈 생성 상태
+                                 * @example processing
+                                 * @enum {string}
+                                 */
+                                status: "idle" | "processing" | "ready" | "failed";
+                                /**
+                                 * @description 생성 요청 시 목표 문항 수
+                                 * @example 8
+                                 */
+                                targetQuestionCount: number;
+                                /**
+                                 * @description 실제 생성된 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number | null;
+                                /**
+                                 * Format: date-time
+                                 * @description 생성 요청 시각
+                                 * @example 2024-06-01T10:00:00.000Z
+                                 */
+                                requestedAt: string | null;
+                                /**
+                                 * Format: date-time
+                                 * @description 생성 완료 시각
+                                 * @example 2024-06-01T10:02:00.000Z
+                                 */
+                                completedAt: string | null;
+                                /**
+                                 * @description 실패 시 사용자에게 노출할 오류 메시지
+                                 * @example Gemini API 호출이 실패했습니다.
+                                 */
+                                errorMessage: string | null;
+                                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                                questions: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                }[] | null;
+                                /** @description 사용자의 가장 최근 퀴즈 결과 */
+                                latestResult: {
+                                    /**
+                                     * @description 채점된 퀴즈 ID
+                                     * @example 123
+                                     */
+                                    quizId: string;
+                                    /**
+                                     * @description 총 문항 수
+                                     * @example 8
+                                     */
+                                    totalQuestions: number;
+                                    /**
+                                     * @description 맞힌 문항 수
+                                     * @example 6
+                                     */
+                                    correctCount: number;
+                                    /**
+                                     * @description 정답 비율 (퍼센트)
+                                     * @example 75
+                                     */
+                                    scorePercent: number;
+                                    /** @description 문항별 채점 정보 */
+                                    answers: {
+                                        /**
+                                         * @description 문항 식별자
+                                         * @example q1
+                                         */
+                                        id: string;
+                                        /**
+                                         * @description 문제 본문
+                                         * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                         */
+                                        prompt: string;
+                                        /** @description 객관식 보기 4개 */
+                                        options: string[];
+                                        /**
+                                         * @description 사용자가 선택한 보기 인덱스
+                                         * @example 1
+                                         */
+                                        selectedIndex: number;
+                                        /**
+                                         * @description 정답 보기 인덱스
+                                         * @example 0
+                                         */
+                                        correctIndex: number;
+                                        /**
+                                         * @description 정답 설명
+                                         * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                         */
+                                        explanation: string;
+                                        /**
+                                         * @description 정답 여부
+                                         * @example true
+                                         */
+                                        isCorrect: boolean;
+                                    }[];
+                                    /**
+                                     * Format: date-time
+                                     * @description 제출 시각
+                                     * @example 2024-06-01T10:05:00.000Z
+                                     */
+                                    submittedAt: string;
+                                } | null;
+                            };
+                            /** @description AI 퀴즈 채점 결과 */
+                            evaluation: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Invalid request payload */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Access denied */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Quiz, sub-goal, or roadmap not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Quiz is not ready or already submitted */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Server error while submitting the quiz */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            error: {
+                                /**
+                                 * @description Error code
+                                 * @example roadmap:invalid_pagination_cursor
+                                 */
+                                code: string;
+                                /**
+                                 * @description Error message
+                                 * @example Invalid pagination cursor provided
+                                 */
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/progress/daily": {
@@ -4457,6 +4955,930 @@ export interface paths {
                              * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
                              */
                             errorMessage: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Generate or refresh an AI quiz for a sub-goal */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
+                    force?: boolean | null;
+                };
+                header?: never;
+                path: {
+                    /** @description 로드맵 공개 ID */
+                    roadmapId: string;
+                    /** @description 세부 목표 공개 ID */
+                    subGoalId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Existing quiz status returned */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Quiz generation started */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Authentication required */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Access denied */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Target roadmap or sub-goal not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
+                        };
+                    };
+                };
+                /** @description Server error while generating the quiz */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /**
+                             * @description 퀴즈 ID
+                             * @example 123
+                             */
+                            id: string;
+                            /**
+                             * @description 현재 AI 퀴즈 생성 상태
+                             * @example processing
+                             * @enum {string}
+                             */
+                            status: "idle" | "processing" | "ready" | "failed";
+                            /**
+                             * @description 생성 요청 시 목표 문항 수
+                             * @example 8
+                             */
+                            targetQuestionCount: number;
+                            /**
+                             * @description 실제 생성된 문항 수
+                             * @example 8
+                             */
+                            totalQuestions: number | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 요청 시각
+                             * @example 2024-06-01T10:00:00.000Z
+                             */
+                            requestedAt: string | null;
+                            /**
+                             * Format: date-time
+                             * @description 생성 완료 시각
+                             * @example 2024-06-01T10:02:00.000Z
+                             */
+                            completedAt: string | null;
+                            /**
+                             * @description 실패 시 사용자에게 노출할 오류 메시지
+                             * @example Gemini API 호출이 실패했습니다.
+                             */
+                            errorMessage: string | null;
+                            /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                            questions: {
+                                /**
+                                 * @description 문항 식별자
+                                 * @example q1
+                                 */
+                                id: string;
+                                /**
+                                 * @description 문제 본문
+                                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                 */
+                                prompt: string;
+                                /** @description 객관식 보기 4개 */
+                                options: string[];
+                            }[] | null;
+                            /** @description 사용자의 가장 최근 퀴즈 결과 */
+                            latestResult: {
+                                /**
+                                 * @description 채점된 퀴즈 ID
+                                 * @example 123
+                                 */
+                                quizId: string;
+                                /**
+                                 * @description 총 문항 수
+                                 * @example 8
+                                 */
+                                totalQuestions: number;
+                                /**
+                                 * @description 맞힌 문항 수
+                                 * @example 6
+                                 */
+                                correctCount: number;
+                                /**
+                                 * @description 정답 비율 (퍼센트)
+                                 * @example 75
+                                 */
+                                scorePercent: number;
+                                /** @description 문항별 채점 정보 */
+                                answers: {
+                                    /**
+                                     * @description 문항 식별자
+                                     * @example q1
+                                     */
+                                    id: string;
+                                    /**
+                                     * @description 문제 본문
+                                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                                     */
+                                    prompt: string;
+                                    /** @description 객관식 보기 4개 */
+                                    options: string[];
+                                    /**
+                                     * @description 사용자가 선택한 보기 인덱스
+                                     * @example 1
+                                     */
+                                    selectedIndex: number;
+                                    /**
+                                     * @description 정답 보기 인덱스
+                                     * @example 0
+                                     */
+                                    correctIndex: number;
+                                    /**
+                                     * @description 정답 설명
+                                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                                     */
+                                    explanation: string;
+                                    /**
+                                     * @description 정답 여부
+                                     * @example true
+                                     */
+                                    isCorrect: boolean;
+                                }[];
+                                /**
+                                 * Format: date-time
+                                 * @description 제출 시각
+                                 * @example 2024-06-01T10:05:00.000Z
+                                 */
+                                submittedAt: string;
+                            } | null;
                         };
                     };
                 };

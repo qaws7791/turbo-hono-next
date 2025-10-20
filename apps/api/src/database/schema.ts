@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   serial,
   text,
@@ -167,6 +168,64 @@ export const aiNote = pgTable(
   (table) => [
     uniqueIndex("ai_note_sub_goal_id_idx").on(table.subGoalId),
     index("ai_note_status_idx").on(table.status),
+  ],
+);
+
+/* ========== AI Quiz: 학습 퀴즈 ========== */
+
+export const aiQuiz = pgTable(
+  "ai_quiz",
+  {
+    id: serial("id").primaryKey(),
+    subGoalId: integer("sub_goal_id")
+      .notNull()
+      .references(() => subGoal.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("idle"),
+    questions: jsonb("questions"),
+    targetQuestionCount: integer("target_question_count").notNull().default(4),
+    totalQuestions: integer("total_questions"),
+    requestedAt: timestamp("requested_at"),
+    completedAt: timestamp("completed_at"),
+    errorMessage: text("error_message"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ai_quiz_sub_goal_id_idx").on(table.subGoalId),
+    index("ai_quiz_status_idx").on(table.status),
+  ],
+);
+
+export const aiQuizResult = pgTable(
+  "ai_quiz_result",
+  {
+    id: serial("id").primaryKey(),
+    quizId: integer("quiz_id")
+      .notNull()
+      .references(() => aiQuiz.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    totalQuestions: integer("total_questions").notNull(),
+    correctCount: integer("correct_count").notNull(),
+    answers: jsonb("answers").notNull(),
+    submittedAt: timestamp("submitted_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ai_quiz_result_quiz_id_idx").on(table.quizId),
+    index("ai_quiz_result_user_id_idx").on(table.userId),
   ],
 );
 

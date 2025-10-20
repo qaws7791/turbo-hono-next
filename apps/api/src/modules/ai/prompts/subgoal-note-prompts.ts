@@ -1,4 +1,4 @@
-interface RoadmapSummaryInput {
+export interface RoadmapSummaryInput {
   title: string;
   description: string | null;
   learningTopic: string;
@@ -11,13 +11,13 @@ interface RoadmapSummaryInput {
   additionalRequirements: string | null;
 }
 
-interface FocusGoalInput {
+export interface FocusGoalInput {
   title: string;
   description: string | null;
   order: number;
 }
 
-interface FocusSubGoalInput {
+export interface FocusSubGoalInput {
   title: string;
   description: string | null;
   order: number;
@@ -25,7 +25,7 @@ interface FocusSubGoalInput {
   memo: string | null;
 }
 
-interface RoadmapGoalSummary {
+export interface RoadmapGoalSummary {
   title: string;
   description: string | null;
   order: number;
@@ -37,7 +37,7 @@ interface RoadmapGoalSummary {
   }>;
 }
 
-interface DocumentSummary {
+export interface DocumentSummary {
   fileName: string;
   originalFileType: string;
 }

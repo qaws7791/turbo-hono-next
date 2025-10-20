@@ -1,5 +1,8 @@
 import { z } from "@hono/zod-openapi";
-import { AINoteStatusSchema } from "../ai/schema";
+import {
+  AINoteStatusSchema,
+  GenerateSubGoalQuizResponseSchema,
+} from "../ai/schema";
 import { DocumentItemSchema } from "../documents/schema";
 import { RoadmapEmoji } from "./utils/emoji";
 
@@ -794,6 +797,9 @@ export const SubGoalDetailResponseSchema = SubGoalItemSchema.extend({
     .openapi({
       description: "Parent roadmap metadata",
     }),
+  aiQuiz: GenerateSubGoalQuizResponseSchema.nullable().openapi({
+    description: "가장 최근의 AI 학습 퀴즈 정보",
+  }),
 });
 
 // SubGoal move schema
@@ -858,6 +864,14 @@ export const RoadmapGoalSubGoalParamsSchema = z.object({
     example: "660e8400-e29b-41d4-a716-446655440001",
   }),
 });
+
+export const RoadmapGoalSubGoalQuizParamsSchema =
+  RoadmapGoalSubGoalParamsSchema.extend({
+    quizId: z.string().min(1).openapi({
+      description: "AI 퀴즈 ID",
+      example: "42",
+    }),
+  });
 
 // ========== Roadmap Detail Schema ==========
 

@@ -12,6 +12,7 @@ import createSubGoal from "./routes/sub-goals/create-sub-goal";
 import deleteSubGoal from "./routes/sub-goals/delete-sub-goal";
 import getSubGoal from "./routes/sub-goals/get-sub-goal";
 import moveSubGoal from "./routes/sub-goals/move-sub-goal";
+import submitSubGoalQuiz from "./routes/sub-goals/submit-sub-goal-quiz";
 import updateSubGoal from "./routes/sub-goals/update-sub-goal";
 import update from "./routes/update";
 
@@ -31,5 +32,6 @@ roadmapApp.route("/", updateSubGoal);
 roadmapApp.route("/", deleteSubGoal);
 roadmapApp.route("/", moveSubGoal);
 roadmapApp.route("/", getSubGoal);
+roadmapApp.route("/", submitSubGoalQuiz);
 
 export default roadmapApp;

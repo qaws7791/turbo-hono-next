@@ -50,6 +50,13 @@
       "when": 1760383200000,
       "tag": "0006_roadmap_emoji_badge",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1760897724300,
+      "tag": "0007_damp_layla_miller",
+      "breakpoints": true
     }
   ]
 }

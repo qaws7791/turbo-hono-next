@@ -16,7 +16,19 @@ export type AIErrorType =
   | "roadmap_not_found"
   | "subgoal_not_found"
   | "access_denied"
-  | "note_generation_failed";
+  | "note_generation_failed"
+  | "quiz_generation_failed"
+  | "quiz_not_found"
+  | "quiz_access_denied"
+  | "quiz_not_ready"
+  | "quiz_missing_questions"
+  | "quiz_answers_required"
+  | "quiz_incomplete_answers"
+  | "quiz_duplicate_answers"
+  | "quiz_missing_answer"
+  | "quiz_invalid_option"
+  | "quiz_result_store_failed"
+  | "quiz_load_failed";
 
 export type AIErrorCode = `ai:${AIErrorType}`;
 
