@@ -2,14 +2,15 @@ import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
 import { subGoalDetailQueryOptions } from "@/domains/roadmap/queries/sub-goal-detail-query-options";
 import type { SubGoalNoteStatus } from "@/domains/roadmap/types";
-import { AiNoteTab } from "./components/ai-note-tab";
-import { AiQuizTab } from "./components/ai-quiz-tab";
-import { OverviewTab } from "./components/overview-tab";
 import { Badge } from "@repo/ui/badge";
 import { Icon } from "@repo/ui/icon";
 import { Tab, TabList, TabPanel, Tabs } from "@repo/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { parseAsStringLiteral, useQueryState } from "nuqs";
+import { AiNoteTab } from "./components/ai-note-tab";
+import { AiQuizTab } from "./components/ai-quiz-tab";
+import { OverviewTab } from "./components/overview-tab";
 
 export const Route = createFileRoute(
   "/app/roadmaps/$roadmapId/sub-goals/$subGoalId",
@@ -18,6 +19,10 @@ export const Route = createFileRoute(
 });
 
 const NOTE_REFETCH_INTERVAL_MS = 4000;
+const SUB_GOAL_TAB_VALUES = ["overview", "ai-note", "ai-quiz"] as const;
+type SubGoalTab = (typeof SUB_GOAL_TAB_VALUES)[number];
+const subGoalTabParser =
+  parseAsStringLiteral(SUB_GOAL_TAB_VALUES).withDefault("overview");
 
 function RouteComponent() {
   const { roadmapId, subGoalId } = Route.useParams();
@@ -29,6 +34,11 @@ function RouteComponent() {
       return noteStatus === "processing" ? NOTE_REFETCH_INTERVAL_MS : false;
     },
   });
+
+  const [selectedTab, setSelectedTab] = useQueryState<SubGoalTab>(
+    "tab",
+    subGoalTabParser,
+  );
 
   if (subGoal.isLoading) {
     return (
@@ -76,7 +86,6 @@ function RouteComponent() {
   }
 
   const detail = subGoal.data.data;
-
   return (
     <AppPageLayout>
       <div className="space-y-6">
@@ -134,18 +143,35 @@ function RouteComponent() {
           )}
         </div>
 
-        <Tabs defaultSelectedKey="overview" className="gap-4">
+        <Tabs
+          selectedKey={selectedTab}
+          onSelectionChange={(key) => {
+            const nextTab = String(key) as SubGoalTab;
+            if (nextTab === selectedTab) {
+              return;
+            }
+
+            void setSelectedTab(nextTab);
+          }}
+          className="gap-4"
+        >
           <TabList aria-label="세부 목표 상세 탭">
             <Tab id="overview">개요</Tab>
             <Tab id="ai-note">AI 노트</Tab>
             <Tab id="ai-quiz">학습 퀴즈</Tab>
           </TabList>
 
-          <TabPanel id="overview" className="space-y-4">
+          <TabPanel
+            id="overview"
+            className="space-y-4"
+          >
             <OverviewTab detail={detail} />
           </TabPanel>
 
-          <TabPanel id="ai-note" className="space-y-4">
+          <TabPanel
+            id="ai-note"
+            className="space-y-4"
+          >
             <AiNoteTab
               detail={detail}
               roadmapId={roadmapId}
@@ -153,7 +179,10 @@ function RouteComponent() {
             />
           </TabPanel>
 
-          <TabPanel id="ai-quiz" className="space-y-4">
+          <TabPanel
+            id="ai-quiz"
+            className="space-y-4"
+          >
             <AiQuizTab
               detail={detail}
               roadmapId={roadmapId}

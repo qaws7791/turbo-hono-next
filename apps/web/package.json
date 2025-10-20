@@ -30,6 +30,7 @@
     "@use-funnel/browser": "^0.0.15",
     "lowlight": "^3.3.0",
     "marked": "^16.4.0",
+    "nuqs": "^2.7.2",
     "openapi-fetch": "^0.14.0",
     "react": "catalog:",
     "react-dom": "catalog:",
