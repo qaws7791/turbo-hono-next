@@ -3,7 +3,7 @@ import status from "http-status";
 import { nanoid } from "nanoid";
 import { eq, max } from "drizzle-orm";
 import { db } from "../../../../database/client";
-import { goal, roadmap, subGoal } from "../../../../database/schema";
+import { goal, roadmap, subGoal } from "@repo/database/schema";
 import { SUB_GOAL_NOTE_STATUS } from "../../../ai/services/subgoal-note-service";
 import { authMiddleware, AuthContext } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";

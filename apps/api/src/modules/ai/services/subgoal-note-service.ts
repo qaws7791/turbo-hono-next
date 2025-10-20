@@ -8,7 +8,7 @@ import {
   roadmapDocument as roadmapDocumentTable,
   roadmap as roadmapTable,
   subGoal as subGoalTable,
-} from "../../../database/schema";
+} from "@repo/database/schema";
 import { AIError } from "../errors";
 import {
   generateSubGoalNotePrompt,

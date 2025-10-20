@@ -102,6 +102,9 @@ importers:
       '@neondatabase/serverless':
         specifier: ^1.0.1
         version: 1.0.1
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../../packages/database
       '@scalar/hono-api-reference':
         specifier: ^0.9.18
         version: 0.9.19(hono@4.9.8)
@@ -369,6 +372,37 @@ importers:
       web-vitals:
         specifier: ^4.2.4
         version: 4.2.4
+
+  packages/database:
+    dependencies:
+      '@neondatabase/serverless':
+        specifier: ^1.0.1
+        version: 1.0.1
+      drizzle-orm:
+        specifier: ^0.44.5
+        version: 0.44.5(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@types/pg@8.15.5)
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/prettier-config':
+        specifier: workspace:*
+        version: link:../prettier-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
 
   packages/eslint-config:
     devDependencies:

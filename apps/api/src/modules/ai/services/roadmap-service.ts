@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import type { z } from "zod";
 import { db } from "../../../database/client";
-import { goal, roadmap, subGoal } from "../../../database/schema";
+import { goal, roadmap, subGoal } from "@repo/database/schema";
 import { generatePublicId } from "../../../utils/id-generator";
 import type { GeneratedRoadmapSchema } from "../schema";
 import { ensureEmoji } from "../../roadmap/utils/emoji";

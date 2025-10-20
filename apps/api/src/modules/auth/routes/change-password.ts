@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { account } from "../../../database/schema";
+import { account } from "@repo/database/schema";
 import { passwordUtils } from "../../../utils/password";
 import { AuthError } from "../errors";
 import { AuthModel, type ChangePasswordRequest } from "../schema";

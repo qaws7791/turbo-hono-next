@@ -4,7 +4,7 @@ import { generateObject, ModelMessage } from "ai";
 import { and, eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { roadmapDocument } from "../../../database/schema";
+import { roadmapDocument } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import { generateRoadmapPrompt } from "../prompts/roadmap-prompts";

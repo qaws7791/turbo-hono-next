@@ -1,7 +1,7 @@
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { roadmapDocument } from "../../../database/schema";
+import { roadmapDocument } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import {
   sanitizeFileName,

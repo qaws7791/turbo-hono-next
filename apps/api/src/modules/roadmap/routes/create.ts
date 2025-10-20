@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
 import { db } from "../../../database/client";
-import { roadmap } from "../../../database/schema";
+import { roadmap } from "@repo/database/schema";
 import { authMiddleware, AuthContext } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import {

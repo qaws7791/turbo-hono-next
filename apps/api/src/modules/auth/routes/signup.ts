@@ -5,7 +5,7 @@ import status from "http-status";
 import { nanoid } from "nanoid";
 import { authConfig } from "../../../config/auth";
 import { db } from "../../../database/client";
-import { account, user } from "../../../database/schema";
+import { account, user } from "@repo/database/schema";
 import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";

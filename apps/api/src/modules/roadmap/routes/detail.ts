@@ -8,7 +8,7 @@ import {
   roadmap,
   roadmapDocument,
   subGoal,
-} from "../../../database/schema";
+} from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import {

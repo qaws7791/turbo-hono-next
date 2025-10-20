@@ -2,7 +2,7 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { and, asc, eq, gte, isNotNull, lte } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
-import { goal, roadmap, subGoal } from "../../../database/schema";
+import { goal, roadmap, subGoal } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { ProgressError } from "../errors";
 import {

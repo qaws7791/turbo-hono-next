@@ -2,8 +2,8 @@ import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../../database/client";
-import { aiNote, goal, roadmap, subGoal } from "../../../../database/schema";
-import { SubGoalUpdate } from "../../../../database/types";
+import { aiNote, goal, roadmap, subGoal } from "@repo/database/schema";
+import { SubGoalUpdate } from "@repo/database/types";
 import { AuthContext, authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 import {
