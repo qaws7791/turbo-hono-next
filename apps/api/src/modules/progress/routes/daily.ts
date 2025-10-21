@@ -1,15 +1,11 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { and, asc, eq, gte, isNotNull, lte } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { ProgressError } from "../errors";
-import {
-  GoalActivityQuerySchema,
-  GoalActivityResponseSchema,
-  ProgressErrorResponseSchema,
-} from "../schema";
+import { dailyProgressRoute } from "@repo/api-spec/modules/progress/routes";
 
 const DEFAULT_WINDOW_DAYS = 30;
 
@@ -57,50 +53,10 @@ const dailyProgress = new OpenAPIHono<{
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Progress"],
-    method: "get",
-    path: "/progress/daily",
-    summary: "Get daily goal activity (due & completed)",
+  {
+    ...dailyProgressRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      query: GoalActivityQuerySchema,
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GoalActivityResponseSchema,
-          },
-        },
-        description: "Daily goal activity retrieved successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ProgressErrorResponseSchema,
-          },
-        },
-        description: "Invalid date range or format",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ProgressErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ProgressErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

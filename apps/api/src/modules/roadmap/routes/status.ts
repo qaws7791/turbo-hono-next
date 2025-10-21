@@ -1,97 +1,21 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapParamsSchema,
-  RoadmapStatusChangeRequestSchema,
-  RoadmapStatusChangeResponseSchema,
-} from "../schema";
+import { roadmapStatusRoute } from "@repo/api-spec/modules/roadmap/routes/status";
 
 const changeStatus = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "patch",
-    path: "/roadmaps/{id}/status",
-    summary: "Change roadmap status (active/archived)",
+  {
+    ...roadmapStatusRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: RoadmapStatusChangeRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: RoadmapStatusChangeResponseSchema,
-          },
-        },
-        description: "Roadmap status changed successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not the owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap not found",
-      },
-      [status.CONFLICT]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap already has the requested status",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

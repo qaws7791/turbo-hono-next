@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { and, eq } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
 import status from "http-status";
@@ -8,69 +8,10 @@ import { account, user } from "@repo/database/schema";
 import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";
-import { AuthModel } from "../schema";
+import { loginWithEmailRoute } from "@repo/api-spec/modules/auth/routes";
 
 const loginWithEmail = new OpenAPIHono().openapi(
-  createRoute({
-    tags: ["Auth"],
-    method: "post",
-    path: "/auth/login",
-    summary: "Login with email and password",
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: AuthModel.EmailLoginRequestSchema,
-          },
-        },
-        description: "Login with email and password",
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.SessionResponseSchema,
-          },
-        },
-        description: "Login successful",
-        headers: {
-          "Set-Cookie": {
-            description: "Session cookie",
-            schema: {
-              type: "string",
-              example:
-                "session=sessionTokenValue; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800",
-            },
-          },
-        },
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "Invalid credentials",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "Invalid input",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  loginWithEmailRoute,
   async (c) => {
     try {
       const { email, password } = c.req.valid("json");

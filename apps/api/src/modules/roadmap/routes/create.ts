@@ -1,72 +1,22 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
 import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
 import { authMiddleware, AuthContext } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapCreateRequestSchema,
-  RoadmapCreateResponseSchema,
-} from "../schema";
 import { RoadmapEmoji } from "../utils/emoji";
+import { createRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/create";
 
 const create = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "post",
-    path: "/roadmaps",
-    summary: "Create a new roadmap",
+  {
+    ...createRoadmapRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: RoadmapCreateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.CREATED]: {
-        content: {
-          "application/json": {
-            schema: RoadmapCreateResponseSchema,
-          },
-        },
-        description: "Roadmap created successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

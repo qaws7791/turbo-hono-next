@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { asc, eq } from "drizzle-orm";
 import status from "http-status";
 import { db } from "../../../database/client";
@@ -11,11 +11,7 @@ import {
 } from "@repo/database/schema";
 import { AuthContext, authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapDetailResponseSchema,
-  RoadmapParamsSchema,
-} from "../schema";
+import { roadmapDetailRoute } from "@repo/api-spec/modules/roadmap/routes/detail";
 import {
   SUB_GOAL_NOTE_STATUS,
   type SubGoalNoteStatus,
@@ -26,58 +22,10 @@ const detail = new OpenAPIHono<{
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "get",
-    path: "/roadmaps/{roadmapId}",
-    summary: "Get detailed roadmap with goals and sub-goals",
+  {
+    ...roadmapDetailRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapParamsSchema,
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: RoadmapDetailResponseSchema,
-          },
-        },
-        description: "Roadmap details retrieved successfully",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap not found",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied to this roadmap",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

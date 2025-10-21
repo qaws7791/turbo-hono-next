@@ -1,89 +1,21 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { and, eq, gte, lte, sql, count } from "drizzle-orm";
 import { db } from "../../../../database/client";
 import { goal, roadmap } from "@repo/database/schema";
 import { authMiddleware, AuthContext } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  ErrorResponseSchema,
-  GoalReorderRequestSchema,
-  GoalReorderResponseSchema,
-  RoadmapGoalParamsSchema,
-} from "../../schema";
+import { reorderGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/reorder-goal";
 
 const reorderGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Goals"],
-    method: "patch",
-    path: "/roadmaps/{roadmapId}/goals/{goalId}/order",
-    summary: "Reorder a goal position",
+  {
+    ...reorderGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: GoalReorderRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GoalReorderResponseSchema,
-          },
-        },
-        description: "Goal reordered successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - invalid order position",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Goal or roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

@@ -1,73 +1,21 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { db } from "../../../../database/client";
 import { goal, roadmap } from "@repo/database/schema";
 import { authMiddleware, AuthContext } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  ErrorResponseSchema,
-  GoalDeletionResponseSchema,
-  RoadmapGoalParamsSchema,
-} from "../../schema";
+import { deleteGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/delete-goal";
 
 const deleteGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Goals"],
-    method: "delete",
-    path: "/roadmaps/{roadmapId}/goals/{goalId}",
-    summary: "Delete a goal",
+  {
+    ...deleteGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalParamsSchema,
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GoalDeletionResponseSchema,
-          },
-        },
-        description: "Goal deleted successfully",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Goal or roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

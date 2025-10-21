@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
 import { count, eq, max } from "drizzle-orm";
@@ -6,85 +6,17 @@ import { db } from "../../../../database/client";
 import { goal, roadmap } from "@repo/database/schema";
 import { authMiddleware, AuthContext } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  ErrorResponseSchema,
-  GoalCreateRequestSchema,
-  GoalCreateResponseSchema,
-  RoadmapParamsSchema,
-} from "../../schema";
+import { createGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/create-goal";
 
 const createGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Goals"],
-    method: "post",
-    path: "/roadmaps/{roadmapId}/goals",
-    summary: "Create a new goal for a roadmap",
+  {
+    ...createGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: GoalCreateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.CREATED]: {
-        content: {
-          "application/json": {
-            schema: GoalCreateResponseSchema,
-          },
-        },
-        description: "Goal created successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

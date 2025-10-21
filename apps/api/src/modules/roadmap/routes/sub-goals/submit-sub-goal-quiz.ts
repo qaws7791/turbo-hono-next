@@ -1,100 +1,22 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { authMiddleware, type AuthContext } from "../../../../middleware/auth";
 import { AIError } from "../../../ai/errors";
 import {
-  SubmitSubGoalQuizRequestSchema,
-  SubmitSubGoalQuizResponseSchema,
-} from "../../../ai/schema";
-import {
   serializeQuizRecord,
   submitSubGoalQuiz,
 } from "../../../ai/services/subgoal-quiz-service";
-import {
-  ErrorResponseSchema,
-  RoadmapGoalSubGoalQuizParamsSchema,
-} from "../../schema";
+import { submitSubGoalQuizRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/submit-sub-goal-quiz";
 
-const submitSubGoalQuizRoute = new OpenAPIHono<{
+const submitSubGoalQuiz = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Sub-Goals"],
-    method: "post",
-    path: "/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions",
-    summary: "Submit answers for an AI-generated sub-goal quiz",
+  {
+    ...submitSubGoalQuizRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalSubGoalQuizParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: SubmitSubGoalQuizRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: SubmitSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Quiz submitted and evaluated successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Invalid request payload",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Quiz, sub-goal, or roadmap not found",
-      },
-      [status.CONFLICT]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Quiz is not ready or already submitted",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Server error while submitting the quiz",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");
@@ -164,4 +86,4 @@ const submitSubGoalQuizRoute = new OpenAPIHono<{
   },
 );
 
-export default submitSubGoalQuizRoute;
+export default submitSubGoalQuiz;

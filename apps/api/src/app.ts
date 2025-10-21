@@ -10,6 +10,7 @@ import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
 import progressApp from "./modules/progress";
 import roadmapApp from "./modules/roadmap";
+import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 
 function createApp() {
   const app = new OpenAPIHono();
@@ -37,25 +38,8 @@ function createApp() {
     description: "Session cookie for user authentication",
   });
 
-  app.doc("/doc", {
-    openapi: "3.0.0",
-    info: {
-      version: "1.0.0",
-      title: "Local Creator Market API",
-      description: "API for local creator marketplace with authentication",
-    },
-    servers: [
-      {
-        url: "http://localhost:3001",
-        description: "Development server",
-      },
-    ],
-    security: [
-      {
-        cookieAuth: [],
-      },
-    ],
-  });
+  const document = generateOpenApiDocument();
+  app.doc("/doc", () => document);
   return app;
 }
 

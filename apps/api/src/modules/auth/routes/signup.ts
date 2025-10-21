@@ -1,4 +1,4 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
 import status from "http-status";
@@ -9,50 +9,10 @@ import { account, user } from "@repo/database/schema";
 import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";
-import { AuthModel } from "../schema";
+import { signupRoute } from "@repo/api-spec/modules/auth/routes";
 
 const signup = new OpenAPIHono().openapi(
-  createRoute({
-    method: "post",
-    path: "/auth/signup",
-    tags: ["Auth"],
-    summary: "Register with email and password",
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: AuthModel.EmailSignupRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.CREATED]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.SessionResponseSchema,
-          },
-        },
-        description: "Registration successful",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "Invalid input",
-      },
-      [status.CONFLICT]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "User already exists",
-      },
-    },
-  }),
+  signupRoute,
   async (c) => {
     try {
       const { email, password, name } = c.req.valid("json");

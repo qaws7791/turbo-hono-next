@@ -1,0 +1,59 @@
+{
+  "name": "@repo/api-spec",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./openapi": {
+      "types": "./src/openapi.ts",
+      "default": "./src/openapi.ts"
+    },
+    "./modules/*": {
+      "types": "./src/modules/*.ts",
+      "default": "./src/modules/*.ts"
+    }
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "docs:generate": "tsx src/scripts/generate-doc.ts"
+  },
+  "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
+    "@hono/zod-openapi": "^1.1.0",
+    "@repo/database": "workspace:*",
+    "drizzle-zod": "^0.8.3",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/prettier-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "^4.20.5",
+    "typescript": "catalog:"
+  },
+  "typesVersions": {
+    "*": {
+      "openapi": [
+        "src/openapi.ts"
+      ],
+      "modules/*": [
+        "src/modules/*.ts"
+      ]
+    }
+  }
+}

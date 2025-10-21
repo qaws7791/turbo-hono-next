@@ -1,34 +1,13 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { authMiddleware } from "../../../middleware/auth";
-import { AuthModel } from "../schema";
+import { currentUserRoute } from "@repo/api-spec/modules/auth/routes";
 
 const me = new OpenAPIHono().openapi(
-  createRoute({
-    tags: ["Auth"],
-    method: "get",
-    path: "/auth/me",
-    summary: "Get current user information",
+  {
+    ...currentUserRoute,
     middleware: [authMiddleware] as const,
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.UserResponseSchema,
-          },
-        },
-        description: "Current user information",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: AuthModel.ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-    },
-  }),
+  },
   async (c) => {
     const auth = c.get("auth");
 
