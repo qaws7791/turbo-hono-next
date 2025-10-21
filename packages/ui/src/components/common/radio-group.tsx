@@ -4,15 +4,19 @@ import { Circle } from "lucide-react";
 import {
   Radio as AriaRadio,
   RadioGroup as AriaRadioGroup,
-  RadioGroupProps as AriaRadioGroupProps,
-  RadioProps as AriaRadioProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
 import { tv } from "tailwind-variants";
+
 import { FieldError, Label, labelStyles } from "./form";
+
+import type {
+  RadioGroupProps as AriaRadioGroupProps,
+  RadioProps as AriaRadioProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 const radioGroupStyles = tv({
   base: "group/radiogroup flex flex-col flex-wrap gap-2",

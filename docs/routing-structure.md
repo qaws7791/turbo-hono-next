@@ -20,8 +20,9 @@
     ```ts
     z.object({
       redirect: z.string().trim().catch("/app").default("/app"),
-    })
+    });
     ```
+
     - `redirect`: 로그인 성공 후 이동할 경로 (미설정·유효하지 않은 값은 `/app`으로 강제)
 
 ## App
@@ -49,8 +50,9 @@
     ```ts
     z.object({
       roadmapId: z.string().length(16, "유효한 로드맵 식별자를 입력하세요."),
-    })
+    });
     ```
+
     - `roadmapId`: 로드맵 공개 ID (16자 Nano ID)
   - Query: 없음
 
@@ -68,16 +70,16 @@
     z.object({
       roadmapId: z.string().length(16, "유효한 로드맵 식별자를 입력하세요."),
       subGoalId: z.string().uuid("유효한 세부 목표 식별자를 입력하세요."),
-    })
+    });
     ```
+
     - `roadmapId`: 상위 로드맵 공개 ID (16자 Nano ID)
     - `subGoalId`: 세부 목표 공개 ID (UUID 포맷)
   - Query:
     ```ts
     z.object({
-      tab: z
-        .enum(["overview", "ai-note", "ai-quiz"])
-        .optional(),
-    })
+      tab: z.enum(["overview", "ai-note", "ai-quiz"]).optional(),
+    });
     ```
+
     - `tab`: 활성화할 탭 식별자 (`overview`가 기본 탭)

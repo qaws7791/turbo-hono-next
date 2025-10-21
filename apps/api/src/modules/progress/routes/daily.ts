@@ -1,11 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { and, asc, eq, gte, isNotNull, lte } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { ProgressError } from "../errors";
 import { dailyProgressRoute } from "@repo/api-spec/modules/progress/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { ProgressError } from "../errors";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const DEFAULT_WINDOW_DAYS = 30;
 
@@ -67,7 +71,9 @@ const dailyProgress = new OpenAPIHono<{
         parseDate(query.start) ??
         (() => {
           const fallback = new Date(requestedEnd);
-          fallback.setUTCDate(fallback.getUTCDate() - (DEFAULT_WINDOW_DAYS - 1));
+          fallback.setUTCDate(
+            fallback.getUTCDate() - (DEFAULT_WINDOW_DAYS - 1),
+          );
           return fallback;
         })();
 

@@ -9,13 +9,15 @@ import {
 import { Icon } from "@repo/ui/icon";
 import { Tooltip, TooltipTrigger } from "@repo/ui/tooltip";
 import { twMerge } from "@repo/ui/utils";
+
 import type React from "react";
+
 interface RoadmapInfoProps extends React.ComponentProps<"div"> {
   status: "active" | "archived" | undefined;
   createdAt: string;
   updatedAt: string;
   documents:
-    | {
+    | Array<{
         id: string;
         fileName: string;
         fileSize: number;
@@ -23,7 +25,7 @@ interface RoadmapInfoProps extends React.ComponentProps<"div"> {
         roadmapId: number | null;
         uploadedAt: string;
         createdAt: string;
-      }[]
+      }>
     | undefined;
 }
 

@@ -1,7 +1,8 @@
 import {
-  OpenApiGeneratorV3,
   OpenAPIRegistry,
+  OpenApiGeneratorV3,
 } from "@asteasolutions/zod-to-openapi";
+
 import { aiRoutes } from "./modules/ai/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { documentRoutes } from "./modules/documents/routes";

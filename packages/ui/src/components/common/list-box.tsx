@@ -7,12 +7,15 @@ import {
   Header as AriaHeader,
   ListBox as AriaListBox,
   ListBoxItem as AriaListBoxItem,
-  ListBoxItemProps as AriaListBoxItemProps,
-  ListBoxProps as AriaListBoxProps,
   ListBoxSection as AriaListBoxSection,
   composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
+import type {
+  ListBoxItemProps as AriaListBoxItemProps,
+  ListBoxProps as AriaListBoxProps,
+} from "react-aria-components";
 
 const ListBoxSection = AriaListBoxSection;
 

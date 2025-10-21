@@ -59,7 +59,7 @@ export async function getFromR2(key: string): Promise<Buffer> {
     throw new Error("File not found in R2");
   }
 
-  const chunks: Uint8Array[] = [];
+  const chunks: Array<Uint8Array> = [];
   for await (const chunk of response.Body as any) {
     chunks.push(chunk);
   }
@@ -86,10 +86,7 @@ export async function deleteFromR2(key: string): Promise<void> {
  * @param fileName - 원본 파일명
  * @returns pdfs/{userId}/{timestamp}-{uuid}.{ext}
  */
-export function generateStorageKey(
-  userId: string,
-  fileName: string,
-): string {
+export function generateStorageKey(userId: string, fileName: string): string {
   const timestamp = Date.now();
   const uuid = crypto.randomUUID();
   const ext = fileName.split(".").pop();

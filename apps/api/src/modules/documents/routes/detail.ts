@@ -1,10 +1,14 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
-import { db } from "../../../database/client";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { DocumentError } from "../errors";
 import { documentDetailRoute } from "@repo/api-spec/modules/documents/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { DocumentError } from "../errors";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const detail = new OpenAPIHono<{
   Variables: {

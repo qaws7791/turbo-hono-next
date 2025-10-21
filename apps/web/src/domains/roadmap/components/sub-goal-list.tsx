@@ -1,8 +1,9 @@
-import { SubGoalItem } from "@/domains/roadmap/components/sub-goal-item";
 import type { SubGoal } from "@/domains/roadmap/types";
 
+import { SubGoalItem } from "@/domains/roadmap/components/sub-goal-item";
+
 interface SubGoalListProps {
-  subGoals: SubGoal[];
+  subGoals: Array<SubGoal>;
   goalId: string;
   roadmapId: string;
   onToggleComplete?: (subGoalId: string, isCompleted: boolean) => void;
@@ -39,7 +40,9 @@ function SubGoalList({
           roadmapId={roadmapId}
           onToggleComplete={onToggleComplete}
           onUpdateDueDate={onUpdateDueDate}
-          isUpdatingDueDate={Boolean(updatingDueDateSubGoalIds?.has(subGoal.id))}
+          isUpdatingDueDate={Boolean(
+            updatingDueDateSubGoalIds?.has(subGoal.id),
+          )}
         />
       ))}
     </div>

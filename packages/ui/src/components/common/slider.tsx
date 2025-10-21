@@ -4,18 +4,23 @@ import * as React from "react";
 import {
   Slider as AriaSlider,
   SliderOutput as AriaSliderOutput,
-  SliderOutputProps as AriaSliderOutputProps,
-  SliderProps as AriaSliderProps,
   SliderStateContext as AriaSliderStateContext,
   SliderThumb as AriaSliderThumb,
-  SliderThumbProps as AriaSliderThumbProps,
   SliderTrack as AriaSliderTrack,
-  SliderTrackProps as AriaSliderTrackProps,
   composeRenderProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
+
 import { focusVisibleRing } from "../../utils";
+
 import { labelStyles } from "./form";
+
+import type {
+  SliderOutputProps as AriaSliderOutputProps,
+  SliderProps as AriaSliderProps,
+  SliderThumbProps as AriaSliderThumbProps,
+  SliderTrackProps as AriaSliderTrackProps,
+} from "react-aria-components";
 
 const SliderOutput = ({ className, ...props }: AriaSliderOutputProps) => (
   <AriaSliderOutput
@@ -36,7 +41,7 @@ const sliderStyles = tv({
   },
 });
 
-const Slider = <T extends number | number[]>({
+const Slider = <T extends number | Array<number>>({
   className,
   orientation = "horizontal",
   ...props

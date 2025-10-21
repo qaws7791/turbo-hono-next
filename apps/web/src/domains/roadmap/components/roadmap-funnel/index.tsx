@@ -1,14 +1,20 @@
 "use client";
 import { useFunnel } from "@use-funnel/browser";
 import React from "react";
+
 import { ProgressHeader } from "./progress-header";
 import { DocumentUploadStep } from "./steps/document-upload-step";
 import { GoalsStep } from "./steps/goals-step";
 import { LearningStyleStep } from "./steps/learning-style-step";
 import { ResourceTypesStep } from "./steps/resource-types-step";
 import { TopicSelectionStep } from "./steps/topic-selection-step";
-import type { FunnelData, FunnelSteps, RoadmapFunnelProps } from "@/domains/roadmap/types";
 import { transformFunnelDataToApiFormat } from "./utils";
+
+import type {
+  FunnelData,
+  FunnelSteps,
+  RoadmapFunnelProps,
+} from "@/domains/roadmap/types";
 
 const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
   const [isCreating, setIsCreating] = React.useState(false);

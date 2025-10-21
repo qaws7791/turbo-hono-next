@@ -19,8 +19,7 @@ This Turborepo includes the following packages/apps:
 - `docs`: a [Next.js](https://nextjs.org/) app
 - `web`: another [Next.js](https://nextjs.org/) app
 - `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `@repo/config`: shared ESLint, Prettier, TypeScript presets used across the monorepo
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -90,14 +89,13 @@ Learn more about the power of Turborepo:
 - [eslint v9 is used flat config `eslint.config.js`](https://eslint.org/docs/latest/use/configure/configuration-files)
 - `eslintrc.js` file is deprecated. don't use it.
 
-below is an example of using the `nextJsConfig` from the `@repo/eslint-config/next` package in next.js application.
+Below is an example of using the `reactConfig` from the `@repo/config/eslint/react` export:
 
 ```js
 // eslint.config.js
-import { nextJsConfig } from "@repo/eslint-config/next";
+import { reactConfig } from "@repo/config/eslint/react";
 
-/** @type {import("eslint").Linter.Config} */
-export default nextJsConfig;
+export default [...reactConfig];
 ```
 
 ## Commit Convention

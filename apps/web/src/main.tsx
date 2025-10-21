@@ -6,7 +6,6 @@ import * as TanStackQueryProvider from "@/integrations/tanstack-query/root-provi
 
 // Import the generated route tree
 import { routeTree } from "@/routeTree.gen";
-
 import { AuthProvider, useAuth } from "@/domains/auth/use-auth.tsx";
 import reportWebVitals from "@/reportWebVitals.ts";
 import "@/styles.css";

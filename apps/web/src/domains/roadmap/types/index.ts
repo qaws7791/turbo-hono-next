@@ -16,7 +16,7 @@ export type SubGoalQuizStatus = "idle" | "processing" | "ready" | "failed";
 export interface SubGoalQuizQuestion {
   id: string;
   prompt: string;
-  options: string[];
+  options: Array<string>;
 }
 
 export interface SubGoalQuizAnswerReview extends SubGoalQuizQuestion {
@@ -31,7 +31,7 @@ export interface SubGoalQuizResult {
   totalQuestions: number;
   correctCount: number;
   scorePercent: number;
-  answers: SubGoalQuizAnswerReview[];
+  answers: Array<SubGoalQuizAnswerReview>;
   submittedAt: string;
 }
 
@@ -43,7 +43,7 @@ export interface SubGoalQuiz {
   requestedAt: string | null;
   completedAt: string | null;
   errorMessage: string | null;
-  questions: SubGoalQuizQuestion[] | null;
+  questions: Array<SubGoalQuizQuestion> | null;
   latestResult: SubGoalQuizResult | null;
 }
 
@@ -85,7 +85,7 @@ export interface Goal {
   description: string | null;
   order: number;
   isExpanded: boolean;
-  subGoals: SubGoal[];
+  subGoals: Array<SubGoal>;
 
   // Computed properties for UI
   hasSubGoals: boolean;
@@ -107,7 +107,7 @@ export interface Roadmap {
   preferredResources: string;
   mainGoal: string;
   additionalRequirements?: string;
-  goals: Goal[];
+  goals: Array<Goal>;
   createdAt: string;
   updatedAt: string;
 }

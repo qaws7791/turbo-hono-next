@@ -1,7 +1,8 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { authMiddleware } from "../../../middleware/auth";
 import { currentUserRoute } from "@repo/api-spec/modules/auth/routes";
+
+import { authMiddleware } from "../../../middleware/auth";
 
 const me = new OpenAPIHono().openapi(
   {

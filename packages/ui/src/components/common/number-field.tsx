@@ -3,18 +3,22 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import * as React from "react";
 import {
-  ButtonProps as AriaButtonProps,
   Input as AriaInput,
-  InputProps as AriaInputProps,
   NumberField as AriaNumberField,
-  NumberFieldProps as AriaNumberFieldProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
 import { Button } from "./button";
 import { FieldError, FieldGroup, Label } from "./form";
+
+import type {
+  ButtonProps as AriaButtonProps,
+  InputProps as AriaInputProps,
+  NumberFieldProps as AriaNumberFieldProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 const NumberField = AriaNumberField;
 

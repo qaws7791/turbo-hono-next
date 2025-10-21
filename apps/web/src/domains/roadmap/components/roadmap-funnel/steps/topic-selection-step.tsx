@@ -10,8 +10,10 @@ import {
 import { FormTextField } from "@repo/ui/text-field";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import React from "react";
-import type { FunnelSteps } from "@/domains/roadmap/types";
+
 import { getCurrentLevelLabel } from "../utils";
+
+import type { FunnelSteps } from "@/domains/roadmap/types";
 
 interface TopicSelectionStepProps {
   learningTopic: FunnelSteps["TopicSelection"]["learningTopic"];
@@ -32,7 +34,9 @@ interface TopicSelectionStepProps {
 }
 
 export const TopicSelectionStep = (props: TopicSelectionStepProps) => {
-  const [learningTopic, setLearningTopic] = React.useState<string>(props.learningTopic || "");
+  const [learningTopic, setLearningTopic] = React.useState<string>(
+    props.learningTopic || "",
+  );
   const [currentLevel, setCurrentLevel] = React.useState(
     props.currentLevel || 1,
   );
@@ -145,7 +149,12 @@ export const TopicSelectionStep = (props: TopicSelectionStepProps) => {
 
         <Button
           onClick={() =>
-            props.onNext({ learningTopic, currentLevel, targetWeeks, weeklyHours })
+            props.onNext({
+              learningTopic,
+              currentLevel,
+              targetWeeks,
+              weeklyHours,
+            })
           }
           isDisabled={!isValid}
         >

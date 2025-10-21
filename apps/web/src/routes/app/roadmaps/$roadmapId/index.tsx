@@ -1,13 +1,15 @@
+import { Icon } from "@repo/ui/icon";
+import { useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+
 import type { paths } from "@/api/schema";
+import type { Goal } from "@/domains/roadmap/types";
+
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
 import { GoalList } from "@/domains/roadmap/components/goal-list";
 import RoadmapInfo from "@/domains/roadmap/components/roadmap-info";
 import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
-import type { Goal } from "@/domains/roadmap/types";
-import { Icon } from "@repo/ui/icon";
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
   component: RouteComponent,
@@ -15,8 +17,8 @@ export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
 
 // Transform API data to match component expectations
 function transformGoals(
-  apiGoals: paths["/roadmaps/{roadmapId}"]["get"]["responses"][200]["content"]["application/json"]["goals"][number][],
-): Goal[] {
+  apiGoals: Array<paths["/roadmaps/{roadmapId}"]["get"]["responses"][200]["content"]["application/json"]["goals"][number]>,
+): Array<Goal> {
   return apiGoals.map((goal) => {
     const completedSubGoals =
       goal.subGoals?.filter((subGoal: any) => subGoal.isCompleted).length || 0;

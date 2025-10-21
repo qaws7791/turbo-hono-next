@@ -1,14 +1,17 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { authMiddleware, type AuthContext } from "../../../middleware/auth";
+import { generateSubGoalQuizRoute } from "@repo/api-spec/modules/ai/routes";
+
+import {  authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import {
+  SUB_GOAL_QUIZ_STATUS,
   prepareSubGoalQuizGeneration,
   runSubGoalQuizGeneration,
   serializeQuizRecord,
-  SUB_GOAL_QUIZ_STATUS,
 } from "../services/subgoal-quiz-service";
-import { generateSubGoalQuizRoute } from "@repo/api-spec/modules/ai/routes";
+
+import type {AuthContext} from "../../../middleware/auth";
 
 const generateSubGoalQuiz = new OpenAPIHono<{
   Variables: {

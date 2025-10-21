@@ -1,8 +1,9 @@
 import { createRoute, z } from "@hono/zod-openapi";
+
 import {
+  DocumentErrorResponseSchema,
   DocumentItemSchema,
   DocumentUploadResponseSchema,
-  DocumentErrorResponseSchema,
 } from "./schema";
 
 export const documentDetailRoute = createRoute({
@@ -138,4 +139,7 @@ export const documentUploadRoute = createRoute({
   ],
 });
 
-export const documentRoutes = [documentDetailRoute, documentUploadRoute] as const;
+export const documentRoutes = [
+  documentDetailRoute,
+  documentUploadRoute,
+] as const;

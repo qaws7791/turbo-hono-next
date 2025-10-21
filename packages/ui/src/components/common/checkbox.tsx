@@ -4,16 +4,19 @@ import { Check, Minus } from "lucide-react";
 import {
   Checkbox as AriaCheckbox,
   CheckboxGroup as AriaCheckboxGroup,
-  CheckboxGroupProps as AriaCheckboxGroupProps,
-  type CheckboxProps as AriaCheckboxProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
 import { tv } from "tailwind-variants";
 
 import { FieldError, Label, labelStyles } from "./form";
+
+import type {
+  CheckboxGroupProps as AriaCheckboxGroupProps,
+  CheckboxProps as AriaCheckboxProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 const CheckboxGroup = AriaCheckboxGroup;
 

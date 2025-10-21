@@ -1,12 +1,26 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { and, asc, desc, eq, gt, ilike, inArray, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  lt,
+  or,
+  sql,
+} from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { RoadmapError } from "../errors";
 import { roadmapListRoute } from "@repo/api-spec/modules/roadmap/routes/list";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { RoadmapError } from "../errors";
 import { calculateCompletionPercent } from "../utils/progress";
+
+import type { AuthContext} from "../../../middleware/auth";
 
 // Cursor encoding/decoding utilities
 type SortValue = string | Date;

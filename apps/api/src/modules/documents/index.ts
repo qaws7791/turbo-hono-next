@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+
 import detail from "./routes/detail";
 import upload from "./routes/upload";
 

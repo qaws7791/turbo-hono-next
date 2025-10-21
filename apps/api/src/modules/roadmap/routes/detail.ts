@@ -1,7 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { asc, eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import {
   aiNote,
   goal,
@@ -9,13 +8,18 @@ import {
   roadmapDocument,
   subGoal,
 } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { RoadmapError } from "../errors";
 import { roadmapDetailRoute } from "@repo/api-spec/modules/roadmap/routes/detail";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { RoadmapError } from "../errors";
 import {
-  SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteStatus,
+  SUB_GOAL_NOTE_STATUS
+  
 } from "../../ai/services/subgoal-note-service";
+
+import type { AuthContext} from "../../../middleware/auth";
+import type {SubGoalNoteStatus} from "../../ai/services/subgoal-note-service";
 
 const detail = new OpenAPIHono<{
   Variables: {

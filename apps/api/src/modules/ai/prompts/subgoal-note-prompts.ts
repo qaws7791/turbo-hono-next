@@ -46,10 +46,10 @@ export interface SubGoalNotePromptInput {
   roadmap: RoadmapSummaryInput;
   focusGoal: FocusGoalInput;
   focusSubGoal: FocusSubGoalInput;
-  roadmapGoals: RoadmapGoalSummary[];
+  roadmapGoals: Array<RoadmapGoalSummary>;
   weeklyHours: number;
   totalWeeks: number;
-  referencedDocuments: DocumentSummary[];
+  referencedDocuments: Array<DocumentSummary>;
 }
 
 export function generateSubGoalNotePrompt(

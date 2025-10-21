@@ -1,16 +1,20 @@
 import { google } from "@ai-sdk/google";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { generateObject, ModelMessage } from "ai";
+import { generateObject } from "ai";
 import { and, eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { generateRoadmapRoute } from "@repo/api-spec/modules/ai/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import { generateRoadmapPrompt } from "../prompts/roadmap-prompts";
 import { GeneratedRoadmapSchema } from "../schema";
 import { saveRoadmapToDatabase } from "../services/roadmap-service";
-import { generateRoadmapRoute } from "@repo/api-spec/modules/ai/routes";
+
+import type { AuthContext} from "../../../middleware/auth";
+import type { ModelMessage } from "ai";
 
 const generateRoadmap = new OpenAPIHono<{
   Variables: {
@@ -81,7 +85,7 @@ const generateRoadmap = new OpenAPIHono<{
         includePdfContents: pdfContents !== null,
       });
 
-      const messages: ModelMessage[] = [
+      const messages: Array<ModelMessage> = [
         {
           role: "user",
           content: [

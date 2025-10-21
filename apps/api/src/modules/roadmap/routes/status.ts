@@ -1,11 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { RoadmapError } from "../errors";
 import { roadmapStatusRoute } from "@repo/api-spec/modules/roadmap/routes/status";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { RoadmapError } from "../errors";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const changeStatus = new OpenAPIHono<{
   Variables: {

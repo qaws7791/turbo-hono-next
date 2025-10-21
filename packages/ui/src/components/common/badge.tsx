@@ -1,9 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { tv, VariantProps } from "tailwind-variants";
+import { tv } from "tailwind-variants";
 
 import { focusRing } from "../../utils";
+
+import type { VariantProps } from "tailwind-variants";
 
 const badgeStyles = tv({
   extend: focusRing,

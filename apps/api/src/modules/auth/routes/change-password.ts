@@ -1,13 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { account } from "@repo/database/schema";
+import { changePasswordRoute } from "@repo/api-spec/modules/auth/routes";
+
+import { db } from "../../../database/client";
 import { passwordUtils } from "../../../utils/password";
 import { AuthError } from "../errors";
-import { changePasswordRoute } from "@repo/api-spec/modules/auth/routes";
-import { type ChangePasswordRequest } from "../schema";
 import { authMiddleware } from "../../../middleware/auth";
+
+import type {ChangePasswordRequest} from "../schema";
 
 const changePassword = new OpenAPIHono<{
   Variables: {

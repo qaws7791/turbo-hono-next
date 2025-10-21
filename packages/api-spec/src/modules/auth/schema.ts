@@ -101,7 +101,9 @@ export const AuthModel = AuthSchemas;
 
 export type EmailSignupRequest = z.infer<typeof EmailSignupRequestSchema>;
 export type EmailLoginRequest = z.infer<typeof EmailLoginRequestSchema>;
-export type VerifyMagicLinkRequest = z.infer<typeof VerifyMagicLinkRequestSchema>;
+export type VerifyMagicLinkRequest = z.infer<
+  typeof VerifyMagicLinkRequestSchema
+>;
 export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;
 export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequestSchema>;
 export type GitHubCallbackRequest = z.infer<typeof GitHubCallbackRequestSchema>;

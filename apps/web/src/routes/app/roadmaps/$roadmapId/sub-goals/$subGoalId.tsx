@@ -1,16 +1,19 @@
-import AppPageLayout from "@/components/app-page-layout";
-import { Link } from "@/components/link";
-import { subGoalDetailQueryOptions } from "@/domains/roadmap/queries/sub-goal-detail-query-options";
-import type { SubGoalNoteStatus } from "@/domains/roadmap/types";
 import { Badge } from "@repo/ui/badge";
 import { Icon } from "@repo/ui/icon";
 import { Tab, TabList, TabPanel, Tabs } from "@repo/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
+
 import { AiNoteTab } from "./components/ai-note-tab";
 import { AiQuizTab } from "./components/ai-quiz-tab";
 import { OverviewTab } from "./components/overview-tab";
+
+import type { SubGoalNoteStatus } from "@/domains/roadmap/types";
+
+import { subGoalDetailQueryOptions } from "@/domains/roadmap/queries/sub-goal-detail-query-options";
+import { Link } from "@/components/link";
+import AppPageLayout from "@/components/app-page-layout";
 
 export const Route = createFileRoute(
   "/app/roadmaps/$roadmapId/sub-goals/$subGoalId",

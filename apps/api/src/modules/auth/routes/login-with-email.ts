@@ -2,13 +2,15 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { and, eq } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
 import status from "http-status";
+import { account, user } from "@repo/database/schema";
+import { loginWithEmailRoute } from "@repo/api-spec/modules/auth/routes";
+
 import { authConfig } from "../../../config/auth";
 import { db } from "../../../database/client";
-import { account, user } from "@repo/database/schema";
 import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";
-import { loginWithEmailRoute } from "@repo/api-spec/modules/auth/routes";
+
 
 const loginWithEmail = new OpenAPIHono().openapi(
   loginWithEmailRoute,

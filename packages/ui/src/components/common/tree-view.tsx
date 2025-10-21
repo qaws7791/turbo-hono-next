@@ -2,8 +2,11 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react";
 import * as React from "react";
-import { tv, type VariantProps } from "tailwind-variants";
+import { tv } from "tailwind-variants";
+
 import { Button } from "./button";
+
+import type { VariantProps } from "tailwind-variants";
 
 const treeViewStyles = tv({
   slots: {
@@ -69,7 +72,7 @@ type TreeViewStylesProps = VariantProps<typeof treeViewStyles>;
 export interface TreeNode {
   id: string;
   label: string;
-  children?: TreeNode[];
+  children?: Array<TreeNode>;
   icon?: React.ReactNode;
   data?: Record<string, unknown>;
 }
@@ -90,7 +93,7 @@ interface TreeNodeProps extends TreeViewStylesProps {
 }
 
 interface TreeViewProps extends TreeViewStylesProps {
-  nodes: TreeNode[];
+  nodes: Array<TreeNode>;
   expandedNodes?: Set<string>;
   selectedNode?: string;
   onToggle?: (nodeId: string) => void;

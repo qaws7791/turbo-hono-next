@@ -1,5 +1,7 @@
-import { ContentfulStatusCode } from "hono/utils/http-status";
 import { BaseError } from "../../errors/base.error";
+
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
 
 //snake_case
 export type AuthErrorType =

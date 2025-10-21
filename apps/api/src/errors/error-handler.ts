@@ -1,6 +1,7 @@
-import type { Context } from "hono";
-import { ContentfulStatusCode } from "hono/utils/http-status";
 import { BaseError } from "./base.error";
+
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { Context } from "hono";
 
 export interface ErrorResponse {
   error: string;

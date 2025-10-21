@@ -1,11 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { eq, gt, sql } from "drizzle-orm";
-import { db } from "../../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
-import { RoadmapError } from "../../errors";
 import { deleteSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/delete-sub-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
+import { RoadmapError } from "../../errors";
+
+import type { AuthContext} from "../../../../middleware/auth";
+
 
 const deleteSubGoal = new OpenAPIHono<{
   Variables: {
@@ -35,7 +39,7 @@ const deleteSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -43,7 +47,7 @@ const deleteSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -58,18 +62,14 @@ const deleteSubGoal = new OpenAPIHono<{
         .limit(1);
 
       if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
+        throw new RoadmapError(404, "roadmap:goal_not_found", "Goal not found");
       }
 
       if (goalResult.roadmapId !== roadmapResult.id) {
         throw new RoadmapError(
           404,
           "roadmap:goal_not_found",
-          "Goal does not belong to this roadmap"
+          "Goal does not belong to this roadmap",
         );
       }
 
@@ -89,7 +89,7 @@ const deleteSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:sub_goal_not_found",
-          "Sub-goal not found"
+          "Sub-goal not found",
         );
       }
 
@@ -97,16 +97,14 @@ const deleteSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:sub_goal_not_found",
-          "Sub-goal does not belong to this goal"
+          "Sub-goal does not belong to this goal",
         );
       }
 
       // Perform deletion and reorder in a transaction
       await db.transaction(async (tx) => {
         // Delete the sub-goal
-        await tx
-          .delete(subGoal)
-          .where(eq(subGoal.id, subGoalResult.id));
+        await tx.delete(subGoal).where(eq(subGoal.id, subGoalResult.id));
 
         // Reorder remaining sub-goals to close gaps
         // Decrease order by 1 for all sub-goals with order greater than deleted one
@@ -118,7 +116,7 @@ const deleteSubGoal = new OpenAPIHono<{
           })
           .where(
             eq(subGoal.goalId, goalResult.id) &&
-            gt(subGoal.order, subGoalResult.order)
+              gt(subGoal.order, subGoalResult.order),
           );
       });
 
@@ -128,7 +126,7 @@ const deleteSubGoal = new OpenAPIHono<{
           message: "Sub-goal deleted successfully",
           deletedId: subGoalResult.publicId,
         },
-        status.OK
+        status.OK,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -139,10 +137,10 @@ const deleteSubGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to delete sub-goal"
+        "Failed to delete sub-goal",
       );
     }
-  }
+  },
 );
 
 export default deleteSubGoal;

@@ -11,11 +11,15 @@ import {
   UNSTABLE_Toast as AriaToast,
   UNSTABLE_ToastQueue as AriaToastQueue,
   UNSTABLE_ToastRegion as AriaToastRegion,
-  QueuedToast,
 } from "react-aria-components";
-import { tv, type VariantProps } from "tailwind-variants";
+import { tv } from "tailwind-variants";
+
 import { focusRing } from "../../utils";
+
 import { Button } from "./button";
+
+import type { VariantProps } from "tailwind-variants";
+import type { QueuedToast } from "react-aria-components";
 
 const toastRegionStyles = tv({
   base: [

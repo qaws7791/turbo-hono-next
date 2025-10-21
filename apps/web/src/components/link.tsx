@@ -1,4 +1,4 @@
-import { Link as ReactAriaLink } from '@repo/ui/link'
-import { createLink } from '@tanstack/react-router'
+import { Link as ReactAriaLink } from "@repo/ui/link";
+import { createLink } from "@tanstack/react-router";
 
-export const Link = createLink(ReactAriaLink)
+export const Link = createLink(ReactAriaLink);

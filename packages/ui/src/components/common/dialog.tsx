@@ -5,17 +5,21 @@ import * as React from "react";
 import {
   Button as AriaButton,
   Dialog as AriaDialog,
-  DialogProps as AriaDialogProps,
   DialogTrigger as AriaDialogTrigger,
   Heading as AriaHeading,
-  HeadingProps as AriaHeadingProps,
   Modal as AriaModal,
   ModalOverlay as AriaModalOverlay,
-  ModalOverlayProps as AriaModalOverlayProps,
   composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
-import { type VariantProps, tv } from "tailwind-variants";
+import { tv } from "tailwind-variants";
+
+import type {
+  DialogProps as AriaDialogProps,
+  HeadingProps as AriaHeadingProps,
+  ModalOverlayProps as AriaModalOverlayProps,
+} from "react-aria-components";
+import type { VariantProps } from "tailwind-variants";
 
 const Dialog = AriaDialog;
 

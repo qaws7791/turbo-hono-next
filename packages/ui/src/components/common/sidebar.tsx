@@ -10,10 +10,13 @@ import {
   MenuTrigger,
   Popover,
   composeRenderProps,
-  type LinkProps as AriaLinkProps,
 } from "react-aria-components";
-import { tv, type VariantProps } from "tailwind-variants";
+import { tv } from "tailwind-variants";
+
 import { focusVisibleRing } from "../../utils";
+
+import type { LinkProps as AriaLinkProps } from "react-aria-components";
+import type { VariantProps } from "tailwind-variants";
 
 // Context
 interface SidebarContextValue {
@@ -73,7 +76,7 @@ const userMenuVariants = tv({
 });
 
 // Default nav items (can be overridden via props)
-const DEFAULT_NAV_ITEMS: NavItem[] = [
+const DEFAULT_NAV_ITEMS: Array<NavItem> = [
   { id: "home", label: "Home", icon: Home, href: "/app" },
 ];
 
@@ -136,7 +139,7 @@ interface SidebarContentProps {
 }
 
 interface SidebarNavProps {
-  items?: NavItem[];
+  items?: Array<NavItem>;
   activeItem?: string;
   onItemClick?: (item: NavItem) => void;
   renderItem?: (item: NavItem, isActive: boolean) => React.ReactNode;
@@ -155,28 +158,29 @@ interface SidebarFooterProps {
 
 interface SidebarUserMenuProps {
   user: UserProfile;
-  menuItems?: UserMenuItem[];
+  menuItems?: Array<UserMenuItem>;
   onMenuItemClick?: (action: string) => void;
   renderAvatar?: (user: UserProfile) => React.ReactNode;
   className?: string;
 }
 
 // Default user menu items
-const DEFAULT_USER_MENU_ITEMS: UserMenuItem[] = [
+const DEFAULT_USER_MENU_ITEMS: Array<UserMenuItem> = [
   { id: "profile", label: "Profile Settings", action: "profile" },
   { id: "account", label: "Account Settings", action: "account" },
   { id: "signout", label: "Sign Out", action: "signout" },
 ];
 
 // Sub-components
-const SidebarHeader: React.FC<SidebarHeaderProps> = ({ children, className }) => {
+const SidebarHeader: React.FC<SidebarHeaderProps> = ({
+  children,
+  className,
+}) => {
   const slots = sidebarVariants();
 
   return (
     <div className={slots.header({ className })}>
-      <div className={slots.headerContent()}>
-        {children}
-      </div>
+      <div className={slots.headerContent()}>{children}</div>
     </div>
   );
 };
@@ -196,7 +200,11 @@ const SidebarLogo: React.FC<SidebarLogoProps> = ({
     <>
       <div className={slots.logoIcon()}>
         {src ? (
-          <img src={src} alt={alt} className="w-full h-full object-cover" />
+          <img
+            src={src}
+            alt={alt}
+            className="w-full h-full object-cover"
+          />
         ) : (
           <span className="text-white text-sm font-semibold">
             {text.charAt(0).toUpperCase()}
@@ -214,20 +222,21 @@ const SidebarLogo: React.FC<SidebarLogoProps> = ({
 
   if (href) {
     return (
-      <Link href={href} {...logoProps}>
+      <Link
+        href={href}
+        {...logoProps}
+      >
         {logoContent}
       </Link>
     );
   }
 
-  return (
-    <div {...logoProps}>
-      {logoContent}
-    </div>
-  );
+  return <div {...logoProps}>{logoContent}</div>;
 };
 
-const SidebarCloseButton: React.FC<SidebarCloseButtonProps> = ({ className }) => {
+const SidebarCloseButton: React.FC<SidebarCloseButtonProps> = ({
+  className,
+}) => {
   const { onClose } = useSidebarContext();
   const slots = sidebarVariants();
 
@@ -237,7 +246,10 @@ const SidebarCloseButton: React.FC<SidebarCloseButtonProps> = ({ className }) =>
     <Button
       onPress={onClose}
       className={composeRenderProps("", (classNameProp, renderProps) =>
-        slots.closeButton({ ...renderProps, className: className || classNameProp }),
+        slots.closeButton({
+          ...renderProps,
+          className: className || classNameProp,
+        }),
       )}
       aria-label="Close sidebar"
     >
@@ -273,14 +285,13 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
   );
 };
 
-const SidebarContent: React.FC<SidebarContentProps> = ({ children, className }) => {
+const SidebarContent: React.FC<SidebarContentProps> = ({
+  children,
+  className,
+}) => {
   const slots = sidebarVariants();
 
-  return (
-    <div className={slots.content({ className })}>
-      {children}
-    </div>
-  );
+  return <div className={slots.content({ className })}>{children}</div>;
 };
 
 const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -309,7 +320,10 @@ const SidebarNav: React.FC<SidebarNavProps> = ({
 
         if (renderItem) {
           return (
-            <div key={item.id} onClick={() => handleItemClick(item)}>
+            <div
+              key={item.id}
+              onClick={() => handleItemClick(item)}
+            >
               {renderItem(item, isActive)}
             </div>
           );
@@ -328,14 +342,13 @@ const SidebarNav: React.FC<SidebarNavProps> = ({
   );
 };
 
-const SidebarFooter: React.FC<SidebarFooterProps> = ({ children, className }) => {
+const SidebarFooter: React.FC<SidebarFooterProps> = ({
+  children,
+  className,
+}) => {
   const slots = sidebarVariants();
 
-  return (
-    <div className={slots.footer({ className })}>
-      {children}
-    </div>
-  );
+  return <div className={slots.footer({ className })}>{children}</div>;
 };
 
 const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({
@@ -373,7 +386,10 @@ const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({
     <MenuTrigger>
       <Button
         className={composeRenderProps("", (classNameProp, renderProps) =>
-          userMenuVariants({ ...renderProps, className: className || classNameProp }),
+          userMenuVariants({
+            ...renderProps,
+            className: className || classNameProp,
+          }),
         )}
         aria-label={`User menu for ${user.name}`}
       >
@@ -455,7 +471,7 @@ const LegacySidebar: React.FC<{
   className?: string;
   onClose?: () => void;
   user?: UserProfile;
-  navItems?: NavItem[];
+  navItems?: Array<NavItem>;
   activeItem?: string;
 }> = ({ className, onClose, user, navItems, activeItem }) => {
   const defaultUser: UserProfile = {
@@ -464,14 +480,20 @@ const LegacySidebar: React.FC<{
   };
 
   return (
-    <Sidebar className={className} onClose={onClose}>
+    <Sidebar
+      className={className}
+      onClose={onClose}
+    >
       <Sidebar.Header>
         <Sidebar.Logo />
         <Sidebar.CloseButton />
       </Sidebar.Header>
 
       <Sidebar.Content>
-        <Sidebar.Nav items={navItems} activeItem={activeItem} />
+        <Sidebar.Nav
+          items={navItems}
+          activeItem={activeItem}
+        />
       </Sidebar.Content>
 
       <Sidebar.Footer>
@@ -482,7 +504,14 @@ const LegacySidebar: React.FC<{
 };
 
 // Exports
-export { Sidebar, LegacySidebar, sidebarVariants, useSidebarContext, DEFAULT_NAV_ITEMS, DEFAULT_USER_MENU_ITEMS };
+export {
+  Sidebar,
+  LegacySidebar,
+  sidebarVariants,
+  useSidebarContext,
+  DEFAULT_NAV_ITEMS,
+  DEFAULT_USER_MENU_ITEMS,
+};
 export type {
   NavItem,
   NavItemVariantProps,

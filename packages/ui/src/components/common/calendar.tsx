@@ -7,34 +7,39 @@ import {
   Button as AriaButton,
   Calendar as AriaCalendar,
   CalendarCell as AriaCalendarCell,
-  CalendarCellProps as AriaCalendarCellProps,
   CalendarGrid as AriaCalendarGrid,
   CalendarGridBody as AriaCalendarGridBody,
-  CalendarGridBodyProps as AriaCalendarGridBodyProps,
   CalendarGridHeader as AriaCalendarGridHeader,
+  CalendarHeaderCell as AriaCalendarHeaderCell,
+  Heading as AriaHeading,
+  RangeCalendar as AriaRangeCalendar,
+  RangeCalendarStateContext as AriaRangeCalendarStateContext,
+  Text,
+  composeRenderProps,
+  useLocale,
+} from "react-aria-components";
+
+import { twMerge } from "../../utils";
+
+import { buttonStyles } from "./button";
+
+import type {
+  CalendarCellProps as AriaCalendarCellProps,
+  CalendarGridBodyProps as AriaCalendarGridBodyProps,
   CalendarGridHeaderProps as AriaCalendarGridHeaderProps,
   CalendarGridProps as AriaCalendarGridProps,
-  CalendarHeaderCell as AriaCalendarHeaderCell,
   CalendarHeaderCellProps as AriaCalendarHeaderCellProps,
   CalendarProps as AriaCalendarProps,
   DateValue as AriaDateValue,
-  Heading as AriaHeading,
-  RangeCalendar as AriaRangeCalendar,
   RangeCalendarProps as AriaRangeCalendarProps,
-  RangeCalendarStateContext as AriaRangeCalendarStateContext,
-  composeRenderProps,
-  Text,
-  useLocale,
 } from "react-aria-components";
-import { twMerge } from "../../utils";
-import { buttonStyles } from "./button";
 
 const Calendar = AriaCalendar;
 
 const RangeCalendar = AriaRangeCalendar;
 
 const CalendarHeading = (props: React.ComponentProps<"header">) => {
-  let { direction } = useLocale();
+  const { direction } = useLocale();
 
   return (
     <header

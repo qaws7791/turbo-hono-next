@@ -1,11 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { and, eq, gte, lte, sql, count } from "drizzle-orm";
-import { db } from "../../../../database/client";
+import { and, count, eq, gte, lte, sql } from "drizzle-orm";
 import { goal, roadmap } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
-import { RoadmapError } from "../../errors";
 import { reorderGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/reorder-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
+import { RoadmapError } from "../../errors";
+
+import type { AuthContext} from "../../../../middleware/auth";
+
 
 const reorderGoal = new OpenAPIHono<{
   Variables: {
@@ -36,7 +40,7 @@ const reorderGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -44,7 +48,7 @@ const reorderGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:goal_access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -61,18 +65,14 @@ const reorderGoal = new OpenAPIHono<{
         .limit(1);
 
       if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
+        throw new RoadmapError(404, "roadmap:goal_not_found", "Goal not found");
       }
 
       if (goalResult.roadmapId !== roadmapResult.id) {
         throw new RoadmapError(
           403,
           "roadmap:goal_access_denied",
-          "Goal does not belong to this roadmap"
+          "Goal does not belong to this roadmap",
         );
       }
 
@@ -91,7 +91,7 @@ const reorderGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:goal_order_out_of_range",
-          `Order position must be between 1 and ${totalGoals}`
+          `Order position must be between 1 and ${totalGoals}`,
         );
       }
 
@@ -105,7 +105,7 @@ const reorderGoal = new OpenAPIHono<{
             order: currentOrder,
             updatedAt: new Date().toISOString(),
           },
-          status.OK
+          status.OK,
         );
       }
 
@@ -123,8 +123,8 @@ const reorderGoal = new OpenAPIHono<{
               and(
                 eq(goal.roadmapId, roadmapResult.id),
                 gte(goal.order, currentOrder + 1),
-                lte(goal.order, newOrder)
-              )
+                lte(goal.order, newOrder),
+              ),
             );
         } else {
           // Moving up: increase order of goals between new and current position
@@ -138,8 +138,8 @@ const reorderGoal = new OpenAPIHono<{
               and(
                 eq(goal.roadmapId, roadmapResult.id),
                 gte(goal.order, newOrder),
-                lte(goal.order, currentOrder - 1)
-              )
+                lte(goal.order, currentOrder - 1),
+              ),
             );
         }
 
@@ -165,7 +165,7 @@ const reorderGoal = new OpenAPIHono<{
         throw new RoadmapError(
           500,
           "roadmap:goal_reorder_failed",
-          "Failed to reorder goal"
+          "Failed to reorder goal",
         );
       }
 
@@ -176,7 +176,7 @@ const reorderGoal = new OpenAPIHono<{
           order: result.order,
           updatedAt: result.updatedAt.toISOString(),
         },
-        status.OK
+        status.OK,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -188,7 +188,7 @@ const reorderGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:invalid_goal_order",
-          "Invalid order position provided"
+          "Invalid order position provided",
         );
       }
 
@@ -196,10 +196,10 @@ const reorderGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:goal_reorder_failed",
-        "Failed to reorder goal"
+        "Failed to reorder goal",
       );
     }
-  }
+  },
 );
 
 export default reorderGoal;

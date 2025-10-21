@@ -1,4 +1,5 @@
 import { createRoute } from "@hono/zod-openapi";
+
 import { AuthSchemas } from "./schema";
 
 export const loginWithEmailRoute = createRoute({

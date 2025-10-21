@@ -1,10 +1,12 @@
-import { GoalItem } from "@/domains/roadmap/components/goal-item";
-import type { Goal } from "@/domains/roadmap/types";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 
+import type { Goal } from "@/domains/roadmap/types";
+
+import { GoalItem } from "@/domains/roadmap/components/goal-item";
+
 interface GoalListProps {
-  goals: Goal[];
+  goals: Array<Goal>;
   roadmapId: string;
 }
 

@@ -2,10 +2,11 @@
 
 import {
   Switch as AriaSwitch,
-  SwitchProps as AriaSwitchProps,
   composeRenderProps,
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
+
+import type { SwitchProps as AriaSwitchProps } from "react-aria-components";
 
 const switchContainerStyles = tv({
   base: [

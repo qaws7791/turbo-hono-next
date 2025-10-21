@@ -1,7 +1,9 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { db } from "../../../database/client";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import {
   sanitizeFileName,
   validateFileSize,
@@ -9,7 +11,9 @@ import {
 } from "../../../utils/pdf";
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
 import { DocumentError } from "../errors";
-import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const upload = new OpenAPIHono<{
   Variables: {

@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+
 import changePassword from "./routes/change-password";
 import loginWithEmail from "./routes/login-with-email";
 import logout from "./routes/logout";

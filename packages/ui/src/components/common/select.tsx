@@ -4,19 +4,14 @@ import { ChevronDown } from "lucide-react";
 import * as React from "react";
 import {
   Button as AriaButton,
-  ButtonProps as AriaButtonProps,
   ListBox as AriaListBox,
-  ListBoxProps as AriaListBoxProps,
-  PopoverProps as AriaPopoverProps,
   Select as AriaSelect,
-  SelectProps as AriaSelectProps,
   SelectValue as AriaSelectValue,
-  SelectValueProps as AriaSelectValueProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
 import { FieldError, Label } from "./form";
 import {
   ListBoxCollection,
@@ -25,6 +20,15 @@ import {
   ListBoxSection,
 } from "./list-box";
 import { Popover } from "./popover";
+
+import type {
+  ButtonProps as AriaButtonProps,
+  ListBoxProps as AriaListBoxProps,
+  PopoverProps as AriaPopoverProps,
+  SelectProps as AriaSelectProps,
+  SelectValueProps as AriaSelectValueProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 const Select = AriaSelect;
 

@@ -1,8 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { z } from "zod";
-import { db } from "../../../database/client";
 import {
   aiNote as aiNoteTable,
   aiQuizResult as aiQuizResultTable,
@@ -12,7 +10,18 @@ import {
   roadmap as roadmapTable,
   subGoal as subGoalTable,
 } from "@repo/database/schema";
+
+import { db } from "../../../database/client";
 import { AIError } from "../errors";
+import { generateSubGoalQuizPrompt } from "../prompts/subgoal-quiz-prompts";
+import {
+  SubGoalQuizSchema
+} from "../schema";
+
+import type {
+  GenerateSubGoalQuizResponseSchema,
+  SubGoalQuizSubmissionAnswerSchema} from "../schema";
+import type { z } from "zod";
 import type {
   DocumentSummary,
   FocusGoalInput,
@@ -20,12 +29,6 @@ import type {
   RoadmapGoalSummary,
   RoadmapSummaryInput,
 } from "../prompts/subgoal-note-prompts";
-import { generateSubGoalQuizPrompt } from "../prompts/subgoal-quiz-prompts";
-import {
-  GenerateSubGoalQuizResponseSchema,
-  SubGoalQuizSchema,
-  SubGoalQuizSubmissionAnswerSchema,
-} from "../schema";
 
 const MIN_QUIZ_QUESTIONS = 4;
 const MAX_QUIZ_QUESTIONS = 20;
@@ -43,7 +46,7 @@ export type SubGoalQuizStatus =
 export interface SubGoalQuizQuestion {
   id: string;
   prompt: string;
-  options: string[];
+  options: Array<string>;
   answerIndex: number;
   explanation: string;
 }
@@ -57,7 +60,7 @@ export interface SubGoalQuizRecord {
   requestedAt: Date | null;
   completedAt: Date | null;
   errorMessage: string | null;
-  questions: SubGoalQuizQuestion[] | null;
+  questions: Array<SubGoalQuizQuestion> | null;
 }
 
 export interface SubGoalQuizResultRecord {
@@ -69,7 +72,7 @@ export interface SubGoalQuizResultRecord {
   answers: Array<{
     questionId: string;
     prompt: string;
-    options: string[];
+    options: Array<string>;
     selectedIndex: number;
     correctIndex: number;
     explanation: string;
@@ -86,10 +89,10 @@ export interface SubGoalQuizGenerationJob {
     roadmap: RoadmapSummaryInput;
     focusGoal: FocusGoalInput;
     focusSubGoal: FocusSubGoalInput & { summary: string | null };
-    roadmapGoals: RoadmapGoalSummary[];
-    referencedDocuments: DocumentSummary[];
+    roadmapGoals: Array<RoadmapGoalSummary>;
+    referencedDocuments: Array<DocumentSummary>;
     noteMarkdown: string | null;
-    contextHighlights: string[];
+    contextHighlights: Array<string>;
     contentWordCount: number;
   };
 }
@@ -121,7 +124,7 @@ interface SubmitQuizArgs {
   roadmapPublicId: string;
   subGoalPublicId: string;
   quizId: number;
-  answers: QuizSubmissionAnswer[];
+  answers: Array<QuizSubmissionAnswer>;
 }
 
 interface SubmitQuizResult {
@@ -149,8 +152,8 @@ function computeTargetQuestionCount(
 }
 
 function normalizeQuestions(
-  questions: SubGoalQuizQuestion[] | null,
-): SubGoalQuizQuestion[] | null {
+  questions: Array<SubGoalQuizQuestion> | null,
+): Array<SubGoalQuizQuestion> | null {
   if (!questions) {
     return null;
   }
@@ -172,7 +175,7 @@ function normalizeQuestions(
   });
 }
 
-function parseStoredQuestions(value: unknown): SubGoalQuizQuestion[] | null {
+function parseStoredQuestions(value: unknown): Array<SubGoalQuizQuestion> | null {
   if (!value) {
     return null;
   }
@@ -252,7 +255,7 @@ function mapResultRow(row: {
           ? (item as { prompt: string }).prompt
           : null;
       const options = Array.isArray((item as { options?: unknown }).options)
-        ? ((item as { options: unknown[] }).options as string[])
+        ? ((item as { options: Array<unknown> }).options as Array<string>)
         : null;
       const selectedIndex =
         typeof (item as { selectedIndex?: unknown }).selectedIndex === "number"
@@ -331,8 +334,8 @@ function buildContextHighlights(args: {
   hasNote: boolean;
   descriptionLength: number;
   noteLength: number;
-}): string[] {
-  const highlights: string[] = [];
+}): Array<string> {
+  const highlights: Array<string> = [];
 
   if (!args.hasNote) {
     highlights.push(
@@ -408,7 +411,7 @@ async function loadRoadmapStructure(roadmapId: number) {
 }
 
 async function loadReferencedDocuments(roadmapId: number): Promise<{
-  documents: DocumentSummary[];
+  documents: Array<DocumentSummary>;
 }> {
   const docs = await db
     .select({

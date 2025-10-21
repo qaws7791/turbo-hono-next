@@ -7,10 +7,11 @@ import {
   DialogTrigger,
 } from "@repo/ui/dialog";
 import { Icon } from "@repo/ui/icon";
-import type { NavItem } from "@repo/ui/sidebar";
 import { Sidebar } from "@repo/ui/sidebar";
 import { Outlet, createFileRoute } from "@tanstack/react-router";
 import { MenuIcon } from "lucide-react";
+
+import type { NavItem } from "@repo/ui/sidebar";
 
 const navItems: Array<NavItem> = [
   {

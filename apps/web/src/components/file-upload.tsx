@@ -1,9 +1,10 @@
-import type { Document } from "@/domains/roadmap/types";
 import { useState } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 
+import type { Document } from "@/domains/roadmap/types";
+
 interface FileUploadProps {
-  documents: Document[];
+  documents: Array<Document>;
   onUpload: (file: File) => Promise<void>;
   onDelete: (documentId: string) => void;
   maxFiles?: number;

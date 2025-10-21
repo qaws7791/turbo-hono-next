@@ -1,12 +1,14 @@
-import { api } from "@/api/http-client";
-import { SubGoalList } from "@/domains/roadmap/components/sub-goal-list";
-import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
-import type { Goal } from "@/domains/roadmap/types";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+
+import type { Goal } from "@/domains/roadmap/types";
+
+import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
+import { SubGoalList } from "@/domains/roadmap/components/sub-goal-list";
+import { api } from "@/api/http-client";
 
 interface GoalItemProps {
   goal: Goal;
@@ -75,12 +77,15 @@ function GoalInfo({
                 <div
                   className="h-full bg-primary transition-all duration-300"
                   style={{
-                    width: `${Math.round((goal.completedSubGoals / goal.subGoals.length) * 100)}%`
+                    width: `${Math.round((goal.completedSubGoals / goal.subGoals.length) * 100)}%`,
                   }}
                 />
               </div>
               <span className="text-xs text-muted-foreground font-medium">
-                {Math.round((goal.completedSubGoals / goal.subGoals.length) * 100)}%
+                {Math.round(
+                  (goal.completedSubGoals / goal.subGoals.length) * 100,
+                )}
+                %
               </span>
             </div>
           </div>
@@ -120,9 +125,9 @@ function GoalInfo({
 
 function GoalItem({ goal, roadmapId }: GoalItemProps) {
   const queryClient = useQueryClient();
-  const [updatingDueDateSubGoalIds, setUpdatingDueDateSubGoalIds] = useState<Set<string>>(
-    () => new Set<string>(),
-  );
+  const [updatingDueDateSubGoalIds, setUpdatingDueDateSubGoalIds] = useState<
+    Set<string>
+  >(() => new Set<string>());
 
   const toggleExpansionMutation = useMutation({
     mutationFn: async (newIsExpanded: boolean) => {
@@ -177,7 +182,13 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
   });
 
   const toggleSubGoalCompleteMutation = useMutation({
-    mutationFn: async ({ subGoalId, isCompleted }: { subGoalId: string; isCompleted: boolean }) => {
+    mutationFn: async ({
+      subGoalId,
+      isCompleted,
+    }: {
+      subGoalId: string;
+      isCompleted: boolean;
+    }) => {
       return api.subGoals.update(roadmapId, subGoalId, {
         isCompleted,
       });
@@ -210,14 +221,22 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
                 if (g.id === goal.id) {
                   const updatedSubGoals = g.subGoals.map((sg) =>
                     sg.id === subGoalId
-                      ? { ...sg, isCompleted, completedAt: optimisticCompletedAt }
-                      : sg
+                      ? {
+                          ...sg,
+                          isCompleted,
+                          completedAt: optimisticCompletedAt,
+                        }
+                      : sg,
                   );
 
                   // Recalculate computed properties
-                  const completedSubGoals = updatedSubGoals.filter(sg => sg.isCompleted).length;
+                  const completedSubGoals = updatedSubGoals.filter(
+                    (sg) => sg.isCompleted,
+                  ).length;
                   const hasSubGoals = updatedSubGoals.length > 0;
-                  const goalIsCompleted = hasSubGoals ? completedSubGoals === updatedSubGoals.length : false;
+                  const goalIsCompleted = hasSubGoals
+                    ? completedSubGoals === updatedSubGoals.length
+                    : false;
 
                   return {
                     ...g,
@@ -347,12 +366,18 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
     toggleExpansionMutation.mutate(!goal.isExpanded);
   };
 
-  const handleToggleSubGoalComplete = (subGoalId: string, isCompleted: boolean) => {
+  const handleToggleSubGoalComplete = (
+    subGoalId: string,
+    isCompleted: boolean,
+  ) => {
     if (toggleSubGoalCompleteMutation.isPending) return;
     toggleSubGoalCompleteMutation.mutate({ subGoalId, isCompleted });
   };
 
-  const handleUpdateSubGoalDueDate = (subGoalId: string, dueDate: string | null) => {
+  const handleUpdateSubGoalDueDate = (
+    subGoalId: string,
+    dueDate: string | null,
+  ) => {
     if (updatingDueDateSubGoalIds.has(subGoalId)) {
       return;
     }

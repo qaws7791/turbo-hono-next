@@ -35,7 +35,9 @@ export function isSingleEmoji(value: string): boolean {
   );
 }
 
-export function normalizeEmoji(value: string | null | undefined): string | null {
+export function normalizeEmoji(
+  value: string | null | undefined,
+): string | null {
   if (!value) {
     return null;
   }
@@ -70,7 +72,9 @@ export function pickFallbackEmoji(seed?: string): string {
     return (total + codePoint) % Number.MAX_SAFE_INTEGER;
   }, 0);
 
-  return FALLBACK_EMOJIS[hash % FALLBACK_EMOJIS.length] ?? DEFAULT_ROADMAP_EMOJI;
+  return (
+    FALLBACK_EMOJIS[hash % FALLBACK_EMOJIS.length] ?? DEFAULT_ROADMAP_EMOJI
+  );
 }
 
 export function ensureEmoji(

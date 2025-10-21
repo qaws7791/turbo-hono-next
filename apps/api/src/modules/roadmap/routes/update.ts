@@ -1,12 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { RoadmapError } from "../errors";
 import { updateRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/update";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { RoadmapError } from "../errors";
 import { RoadmapEmoji } from "../utils/emoji";
+
+import type { AuthContext} from "../../../middleware/auth";
 
 type RoadmapInsert = typeof roadmap.$inferInsert;
 

@@ -209,15 +209,10 @@ export const SubGoalQuizQuestionSchema = z
       .openapi({
         description: "객관식 보기 4개",
       }),
-    answerIndex: z
-      .number()
-      .int()
-      .min(0)
-      .max(3)
-      .openapi({
-        description: "정답 보기의 인덱스(0-베이스)",
-        example: 0,
-      }),
+    answerIndex: z.number().int().min(0).max(3).openapi({
+      description: "정답 보기의 인덱스(0-베이스)",
+      example: 0,
+    }),
     explanation: z.string().min(1).openapi({
       description: "정답 해설",
       example: "`useState`는 로컬 상태 관리에 사용되는 React 기본 훅입니다.",
@@ -229,13 +224,9 @@ export const SubGoalQuizQuestionSchema = z
 
 export const SubGoalQuizSchema = z
   .object({
-    questions: z
-      .array(SubGoalQuizQuestionSchema)
-      .min(4)
-      .max(20)
-      .openapi({
-        description: "4~20개의 객관식 문제",
-      }),
+    questions: z.array(SubGoalQuizQuestionSchema).min(4).max(20).openapi({
+      description: "4~20개의 객관식 문제",
+    }),
   })
   .openapi({
     description: "AI가 생성한 전체 퀴즈 구조",
@@ -273,12 +264,9 @@ export const SubGoalQuizRecordSchema = z
       description: "실패 시 사용자에게 노출할 오류 메시지",
       example: "Gemini API 호출이 실패했습니다.",
     }),
-    questions: z
-      .array(SubGoalQuizPublicQuestionSchema)
-      .nullable()
-      .openapi({
-        description: "사용자에게 노출할 문제 목록 (생성 완료 시 제공)",
-      }),
+    questions: z.array(SubGoalQuizPublicQuestionSchema).nullable().openapi({
+      description: "사용자에게 노출할 문제 목록 (생성 완료 시 제공)",
+    }),
   })
   .openapi({
     description: "AI 퀴즈 세션 데이터",
@@ -289,50 +277,32 @@ export const SubGoalQuizSubmissionAnswerSchema = z.object({
     description: "문항 식별자",
     example: "q1",
   }),
-  selectedIndex: z
-    .number()
-    .int()
-    .min(0)
-    .max(3)
-    .openapi({
-      description: "선택한 보기 인덱스(0-베이스)",
-      example: 2,
-    }),
+  selectedIndex: z.number().int().min(0).max(3).openapi({
+    description: "선택한 보기 인덱스(0-베이스)",
+    example: 2,
+  }),
 });
 
 export const SubmitSubGoalQuizRequestSchema = z
   .object({
-    answers: z
-      .array(SubGoalQuizSubmissionAnswerSchema)
-      .min(1)
-      .openapi({
-        description: "사용자가 제출한 문항별 답안",
-      }),
+    answers: z.array(SubGoalQuizSubmissionAnswerSchema).min(1).openapi({
+      description: "사용자가 제출한 문항별 답안",
+    }),
   })
   .openapi({
     description: "AI 퀴즈 제출 요청",
   });
 
-export const SubGoalQuizEvaluationAnswerSchema = SubGoalQuizPublicQuestionSchema.extend(
-  {
-    selectedIndex: z
-      .number()
-      .int()
-      .min(0)
-      .max(3)
-      .openapi({
-        description: "사용자가 선택한 보기 인덱스",
-        example: 1,
-      }),
-    correctIndex: z
-      .number()
-      .int()
-      .min(0)
-      .max(3)
-      .openapi({
-        description: "정답 보기 인덱스",
-        example: 0,
-      }),
+export const SubGoalQuizEvaluationAnswerSchema =
+  SubGoalQuizPublicQuestionSchema.extend({
+    selectedIndex: z.number().int().min(0).max(3).openapi({
+      description: "사용자가 선택한 보기 인덱스",
+      example: 1,
+    }),
+    correctIndex: z.number().int().min(0).max(3).openapi({
+      description: "정답 보기 인덱스",
+      example: 0,
+    }),
     explanation: z.string().openapi({
       description: "정답 설명",
       example: "이 선택지가 정답인 이유를 상세히 설명합니다.",
@@ -341,8 +311,7 @@ export const SubGoalQuizEvaluationAnswerSchema = SubGoalQuizPublicQuestionSchema
       description: "정답 여부",
       example: true,
     }),
-  },
-);
+  });
 
 export const SubGoalQuizEvaluationResultSchema = z
   .object({
@@ -358,20 +327,13 @@ export const SubGoalQuizEvaluationResultSchema = z
       description: "맞힌 문항 수",
       example: 6,
     }),
-    scorePercent: z
-      .number()
-      .min(0)
-      .max(100)
-      .openapi({
-        description: "정답 비율 (퍼센트)",
-        example: 75,
-      }),
-    answers: z
-      .array(SubGoalQuizEvaluationAnswerSchema)
-      .min(1)
-      .openapi({
-        description: "문항별 채점 정보",
-      }),
+    scorePercent: z.number().min(0).max(100).openapi({
+      description: "정답 비율 (퍼센트)",
+      example: 75,
+    }),
+    answers: z.array(SubGoalQuizEvaluationAnswerSchema).min(1).openapi({
+      description: "문항별 채점 정보",
+    }),
     submittedAt: z.string().datetime().openapi({
       description: "제출 시각",
       example: "2024-06-01T10:05:00.000Z",
@@ -381,11 +343,13 @@ export const SubGoalQuizEvaluationResultSchema = z
     description: "AI 퀴즈 채점 결과",
   });
 
-export const GenerateSubGoalQuizResponseSchema = SubGoalQuizRecordSchema.extend({
-  latestResult: SubGoalQuizEvaluationResultSchema.nullable().openapi({
-    description: "사용자의 가장 최근 퀴즈 결과",
-  }),
-});
+export const GenerateSubGoalQuizResponseSchema = SubGoalQuizRecordSchema.extend(
+  {
+    latestResult: SubGoalQuizEvaluationResultSchema.nullable().openapi({
+      description: "사용자의 가장 최근 퀴즈 결과",
+    }),
+  },
+);
 
 export const GenerateSubGoalQuizParamsSchema = GenerateSubGoalNoteParamsSchema;
 export const GenerateSubGoalQuizQuerySchema = GenerateSubGoalNoteQuerySchema;

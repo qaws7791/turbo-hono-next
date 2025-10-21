@@ -2,11 +2,15 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
 import { count, eq, max } from "drizzle-orm";
-import { db } from "../../../../database/client";
 import { goal, roadmap } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
-import { RoadmapError } from "../../errors";
 import { createGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/create-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
+import { RoadmapError } from "../../errors";
+
+import type { AuthContext} from "../../../../middleware/auth";
+
 
 const createGoal = new OpenAPIHono<{
   Variables: {
@@ -37,7 +41,7 @@ const createGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -45,7 +49,7 @@ const createGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -91,7 +95,7 @@ const createGoal = new OpenAPIHono<{
         throw new RoadmapError(
           500,
           "roadmap:goal_creation_failed",
-          "Failed to create goal"
+          "Failed to create goal",
         );
       }
 
@@ -108,7 +112,7 @@ const createGoal = new OpenAPIHono<{
           createdAt: createdGoal.createdAt.toISOString(),
           updatedAt: createdGoal.updatedAt.toISOString(),
         },
-        status.CREATED
+        status.CREATED,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -120,7 +124,7 @@ const createGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:goal_validation_failed",
-          "Invalid goal data provided"
+          "Invalid goal data provided",
         );
       }
 
@@ -128,10 +132,10 @@ const createGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to create goal"
+        "Failed to create goal",
       );
     }
-  }
+  },
 );
 
 export default createGoal;

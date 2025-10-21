@@ -1,24 +1,23 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../../database/client";
-import {
-  aiNote,
-  goal,
-  roadmap,
-  subGoal,
-} from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../../middleware/auth";
-import { RoadmapError } from "../../errors";
+import { aiNote, goal, roadmap, subGoal } from "@repo/database/schema";
 import { getSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/get-sub-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
+import { RoadmapError } from "../../errors";
 import {
-  SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteStatus,
+  SUB_GOAL_NOTE_STATUS
+  
 } from "../../../ai/services/subgoal-note-service";
 import {
   loadLatestQuizForSubGoal,
   serializeQuizRecord,
 } from "../../../ai/services/subgoal-quiz-service";
+
+import type { AuthContext} from "../../../../middleware/auth";
+import type {SubGoalNoteStatus} from "../../../ai/services/subgoal-note-service";
 
 const getSubGoal = new OpenAPIHono<{
   Variables: {

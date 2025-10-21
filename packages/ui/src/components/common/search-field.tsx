@@ -3,20 +3,24 @@
 import { SearchIcon, XIcon } from "lucide-react";
 import {
   Button as AriaButton,
-  ButtonProps as AriaButtonProps,
   Group as AriaGroup,
-  GroupProps as AriaGroupProps,
   Input as AriaInput,
-  InputProps as AriaInputProps,
   SearchField as AriaSearchField,
-  SearchFieldProps as AriaSearchFieldProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
 import { tv } from "tailwind-variants";
+
 import { FieldError, FieldGroup, Label } from "./form";
+
+import type {
+  ButtonProps as AriaButtonProps,
+  GroupProps as AriaGroupProps,
+  InputProps as AriaInputProps,
+  SearchFieldProps as AriaSearchFieldProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 function SearchField({ className, ...props }: AriaSearchFieldProps) {
   return (

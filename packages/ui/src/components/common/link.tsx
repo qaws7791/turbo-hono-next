@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  Link as AriaLink,
-  type LinkProps as AriaLinkProps,
-  composeRenderProps,
-} from "react-aria-components";
-import { type VariantProps } from "tailwind-variants";
-
+import { Link as AriaLink, composeRenderProps } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
 
 import { buttonStyles } from "./button";
+
+import type { LinkProps as AriaLinkProps } from "react-aria-components";
+import type { VariantProps } from "tailwind-variants";
 
 interface LinkProps extends AriaLinkProps, VariantProps<typeof buttonStyles> {}
 

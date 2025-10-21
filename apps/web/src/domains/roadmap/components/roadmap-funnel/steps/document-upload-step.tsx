@@ -1,9 +1,11 @@
-import { api } from "@/api/http-client";
-import { FileUpload } from "@/components/file-upload";
-import type { Document } from "@/domains/roadmap/types";
 import { Button } from "@repo/ui/button";
 import { ChevronRight, FileText } from "lucide-react";
 import React from "react";
+
+import type { Document } from "@/domains/roadmap/types";
+
+import { FileUpload } from "@/components/file-upload";
+import { api } from "@/api/http-client";
 
 interface DocumentUploadStepProps {
   documentId?: string;

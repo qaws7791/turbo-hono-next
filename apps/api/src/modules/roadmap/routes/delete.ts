@@ -1,11 +1,15 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
-import { RoadmapError } from "../errors";
 import { deleteRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/delete";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
+import { RoadmapError } from "../errors";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const deleteRoadmap = new OpenAPIHono<{
   Variables: {

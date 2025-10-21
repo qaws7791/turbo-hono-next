@@ -1,14 +1,18 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { authMiddleware, type AuthContext } from "../../../middleware/auth";
+import { generateSubGoalNoteRoute } from "@repo/api-spec/modules/ai/routes";
+
+import {  authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import {
-  prepareSubGoalNoteGeneration,
-  runSubGoalNoteGeneration,
   SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteRecord,
+  
+  prepareSubGoalNoteGeneration,
+  runSubGoalNoteGeneration
 } from "../services/subgoal-note-service";
-import { generateSubGoalNoteRoute } from "@repo/api-spec/modules/ai/routes";
+
+import type {AuthContext} from "../../../middleware/auth";
+import type {SubGoalNoteRecord} from "../services/subgoal-note-service";
 
 function serializeRecord(record: SubGoalNoteRecord) {
   return {

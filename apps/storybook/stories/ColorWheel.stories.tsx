@@ -1,13 +1,13 @@
-import type { Meta } from '@storybook/react';
-import React from 'react';
-import { ColorWheel } from '../src/ColorWheel';
+import type { Meta } from "@storybook/react";
+import React from "react";
+import { ColorWheel } from "../src/ColorWheel";
 
 const meta: Meta<typeof ColorWheel> = {
   component: ColorWheel,
   parameters: {
-    layout: 'centered'
+    layout: "centered",
   },
-  tags: ['autodocs']
+  tags: ["autodocs"],
 };
 
 export default meta;

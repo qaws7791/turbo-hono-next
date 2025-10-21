@@ -2,12 +2,16 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
 import { eq, max } from "drizzle-orm";
-import { db } from "../../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
-import { SUB_GOAL_NOTE_STATUS } from "../../../ai/services/subgoal-note-service";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
-import { RoadmapError } from "../../errors";
 import { createSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/create-sub-goal";
+
+import { db } from "../../../../database/client";
+import { SUB_GOAL_NOTE_STATUS } from "../../../ai/services/subgoal-note-service";
+import { authMiddleware } from "../../../../middleware/auth";
+import { RoadmapError } from "../../errors";
+
+import type { AuthContext } from "../../../../middleware/auth";
+
 
 const createSubGoal = new OpenAPIHono<{
   Variables: {
@@ -38,7 +42,7 @@ const createSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -46,7 +50,7 @@ const createSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -61,18 +65,14 @@ const createSubGoal = new OpenAPIHono<{
         .limit(1);
 
       if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
+        throw new RoadmapError(404, "roadmap:goal_not_found", "Goal not found");
       }
 
       if (goalResult.roadmapId !== roadmapResult.id) {
         throw new RoadmapError(
           404,
           "roadmap:goal_not_found",
-          "Goal does not belong to this roadmap"
+          "Goal does not belong to this roadmap",
         );
       }
 
@@ -122,7 +122,7 @@ const createSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           500,
           "roadmap:sub_goal_creation_failed",
-          "Failed to create sub-goal"
+          "Failed to create sub-goal",
         );
       }
 
@@ -147,7 +147,7 @@ const createSubGoal = new OpenAPIHono<{
           aiNoteCompletedAt: null,
           aiNoteError: null,
         },
-        status.CREATED
+        status.CREATED,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -159,7 +159,7 @@ const createSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:sub_goal_validation_failed",
-          "Invalid sub-goal data provided"
+          "Invalid sub-goal data provided",
         );
       }
 
@@ -167,10 +167,10 @@ const createSubGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to create sub-goal"
+        "Failed to create sub-goal",
       );
     }
-  }
+  },
 );
 
 export default createSubGoal;

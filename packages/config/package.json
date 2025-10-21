@@ -1,0 +1,28 @@
+{
+  "name": "@repo/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/react": "./eslint/react.js",
+    "./prettier": "./prettier/index.js",
+    "./tsconfig/base": "./tsconfig/base.json",
+    "./tsconfig/hono": "./tsconfig/hono.json",
+    "./tsconfig/react-app": "./tsconfig/react-app.json",
+    "./tsconfig/react-library": "./tsconfig/react-library.json",
+    "./tsconfig/nextjs": "./tsconfig/nextjs.json"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-turbo": "^2.5.0",
+    "globals": "^16.0.0",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.31.0"
+  }
+}
