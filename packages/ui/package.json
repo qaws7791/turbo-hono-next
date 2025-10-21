@@ -34,7 +34,6 @@
     "./text-field": "./src/components/common/text-field.tsx",
     "./toast": "./src/components/common/toast.tsx",
     "./tooltip": "./src/components/common/tooltip.tsx",
-    "./tree-view": "./src/components/common/tree-view.tsx",
     "./icon": "./src/components/common/icon.tsx"
   },
   "files": [
