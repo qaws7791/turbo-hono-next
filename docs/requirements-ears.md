@@ -1,0 +1,66 @@
+# 학습 로드맵 서비스 요구사항 (개선된)
+
+| ID | 페이지 | 컴포넌트 / 기능 | EARS 요구사항 (요약) | 관련 API / 데이터 |
+| --- | --- | --- | --- | --- |
+| **REQ-01** | App Shell | `AuthProvider`, `api.auth.me` | [애플리케이션이 초기화될 때], 시스템은 세션 쿠키로 `/auth/me`를 호출하고 응답 사용자를 AuthContext에 저장해야 한다. | `GET /auth/me` Response: `UserResponse` |
+| **REQ-02** | App Shell | `AuthProvider` Loading UI | [인증 상태를 복원하는 동안], 시스템은 전체 화면 "Loading..." 표시로 사용자 입력을 차단해야 한다. | `AuthState.isLoading` |
+| **REQ-03** | App Shell | `useAuth.logout` | [사용자가 로그아웃을 요청할 때], 시스템은 `/auth/logout`을 호출하고 AuthContext를 초기 상태로 재설정해야 한다. | `POST /auth/logout` |
+| **REQ-04** | `/login` | Route `beforeLoad` | [사용자가 인증된 상태로 로그인 페이지를 방문할 때], 시스템은 `search.redirect` 경로로 즉시 리다이렉트해야 한다. | TanStack Router `context.auth` |
+| **REQ-05** | `/login` | `Form`, `Button`, `FormTextField` | [사용자가 유효한 이메일과 비밀번호로 로그인 폼을 제출할 때], 시스템은 `/auth/login`을 호출하고 성공 시 `search.redirect` 경로로 이동해야 한다. | `POST /auth/login` Response: `SessionResponse` |
+| **REQ-06** | `/login` | `LoginComponent` Error Text | [로그인 시도가 실패하면], 시스템은 "로그인에 실패했습니다." 메시지를 표시하고 제출 버튼을 재활성화해야 한다. | Local state `error` |
+| **REQ-07** | `/` | CTA `Link` | [사용자가 "시작하기" 버튼을 클릭할 때], 시스템은 클라이언트 라우팅으로 `/login` 페이지로 이동해야 한다. | `createLink` navigation |
+| **REQ-08** | `/app` | Route `beforeLoad` | [인증되지 않은 사용자가 `/app`을 요청할 때], 시스템은 `/login`으로 리다이렉트하고 현재 URL을 `redirect` 파라미터로 전달해야 한다. | TanStack Router guard |
+| **REQ-09** | `/app` | `RoadmapList` Query | [대시보드가 마운트될 때], 시스템은 `/roadmaps`를 요청해 TanStack Query 캐시에 저장해야 한다. | `GET /roadmaps` Query params |
+| **REQ-09A** | `/app` | `RoadmapList` Progress Metric | [로드맵 목록 API를 호출할 때], 시스템은 각 아이템에 완료된 하위 목표 비율을 정수 `goalCompletionPercent`로 포함해야 한다. | `GET /roadmaps` Response: `goalCompletionPercent (0-100)` |
+| **REQ-09B** | `/app` | `RoadmapList` Emoji Field | [로드맵 목록 API를 호출할 때], 시스템은 각 아이템에 단일 이모지 문자열 `emoji`를 포함해 개인화된 시각적 식별자를 제공해야 한다. | `GET /roadmaps` Response: `emoji` |
+| **REQ-10** | `/app` | `Suspense`, `LoadingSpinner` | [로드맵 데이터를 불러오는 동안], 시스템은 로딩 스피너와 안내 문구를 표시해야 한다. | React Suspense fallback |
+| **REQ-11** | `/app` | `RoadmapList` Empty State | [로드맵 목록이 비어 있을 때], 시스템은 비어 있음 메시지와 `/app/create` 링크를 보여줘야 한다. | Query result `items.length === 0` |
+| **REQ-12** | `/app` | `RoadmapCard` Grid | [로드맵 데이터가 존재할 때], 시스템은 각 아이템을 `RoadmapCard`로 렌더링하고 학습 주제·수준·주당 시간을 표시해야 한다. | Roadmap DTO (`learningTopic`, `userLevel`, `weeklyHours`) |
+| **REQ-12A** | `/app` | `RoadmapCard` Emoji Badge | [로드맵 카드를 렌더링할 때], 시스템은 제목 또는 썸네일 영역에 `emoji` 값을 함께 노출하고 값이 없으면 기본 아이콘으로 대체해야 한다. | Roadmap DTO (`emoji`) |
+| **REQ-13** | `/app` | CTA `Link` "새 로드맵" | [사용자가 "새 로드맵" 버튼을 클릭할 때], 시스템은 `/app/create` 라우트로 이동해야 한다. | Link component |
+| **REQ-14** | `/app` | `RoadmapCard` Navigation | [사용자가 로드맵 카드를 선택할 때], 시스템은 `/app/roadmaps/{roadmapId}` 상세 페이지로 이동해야 한다. | `href` derived from `roadmap.id` |
+| **REQ-15** | `/app` | `Sidebar`, `DialogTrigger` | [모바일 화면에서 햄버거 버튼을 누를 때], 시스템은 사이드바 내비게이션을 슬라이드 패널로 표시하고 닫기 시 이전 뷰로 복귀해야 한다. | `DialogOverlay` state |
+| **REQ-16** | `/app/create` | `DocumentUploadStep` | [사용자가 PDF를 업로드할 때], 시스템은 `/documents/upload`를 호출하고 성공한 문서를 리스트로 보여줘야 한다. | `POST /documents/upload` Response: `DocumentItem` |
+| **REQ-17** | `/app/create` | `DocumentUploadStep` Validation | [업로드 파일이 PDF가 아니거나 10MB를 초과하면], 시스템은 업로드를 중단하고 경고 메시지를 제공해야 한다. | Client validation & server errors |
+| **REQ-18** | `/app/create` | `DocumentUploadStep` Skip | [사용자가 "건너뛰기"를 선택할 때], 시스템은 문서 ID 없이 `TopicSelection` 단계로 진행해야 한다. | `useFunnel` context |
+| **REQ-19** | `/app/create` | `TopicSelectionStep` | [사용자가 학습 주제·수준·기간을 설정하고 "다음"을 누를 때], 시스템은 해당 데이터를 펀넬 컨텍스트에 저장하고 `LearningStyle` 단계로 이동해야 한다. | Funnel context |
+| **REQ-20** | `/app/create` | `LearningStyleStep` | [사용자가 학습 스타일 카드를 선택하고 "다음"을 누를 때], 시스템은 선택값을 저장하고 `ResourceTypes` 단계로 진행해야 한다. | Funnel context |
+| **REQ-21** | `/app/create` | `ResourceTypesStep` | [사용자가 선호 자료를 선택하고 "다음"을 누를 때], 시스템은 선택값을 저장하고 `Goals` 단계로 이동해야 한다. | Funnel context |
+| **REQ-22** | `/app/create` | `GoalsStep` Submit | [사용자가 주요 목표를 입력하고 "완료"를 누를 때], 시스템은 데이터를 `transformFunnelDataToApiFormat`으로 변환해 `/ai/roadmaps/generate`를 호출해야 한다. | `POST /ai/roadmaps/generate` Body: `ApiRoadmapData` |
+| **REQ-22A** | `/app/create` | AI Response Emoji | [AI 로드맵 생성을 요청할 때], 시스템은 AI가 반환한 로드맵 데이터에 단일 이모지 문자열을 포함하도록 프롬프트를 구성하고, 누락된 경우 서버 기본값으로 보완해야 한다. | `POST /ai/roadmaps/generate` Response: `emoji` |
+| **REQ-23** | `/app/create` | `GoalsStep` Error Alert | [AI 로드맵 생성이 실패하면], 시스템은 오류 메시지를 경고 영역에 표시하고 제출 버튼을 복구해야 한다. | Mutation error |
+| **REQ-24** | `/app/create` | `RoadmapFunnel` Completion | [AI 로드맵 생성이 성공하면], 시스템은 `/app`으로 리다이렉트하고 목록을 최신 상태로 보여주기 위해 캐시를 무효화해야 한다. | Navigation & Query invalidation |
+| **REQ-25** | `/app/roadmaps/$roadmapId` | `useQuery` Detail Fetch | [사용자가 로드맵 상세 경로에 접근할 때], 시스템은 `/roadmaps/{roadmapId}`를 호출해 목표·세부 목표 데이터를 수신해야 한다. | `GET /roadmaps/{roadmapId}` |
+| **REQ-25A** | `/app/roadmaps/$roadmapId` | Detail Emoji Field | [로드맵 상세 API를 호출할 때], 시스템은 상단 메타데이터에 사용할 단일 이모지 문자열 `emoji`를 포함해야 한다. | `GET /roadmaps/{roadmapId}` Response: `emoji` |
+| **REQ-26** | `/app/roadmaps/$roadmapId` | Loading Skeleton | [로드맵 상세 데이터를 불러오는 동안], 시스템은 로딩 스피너와 안내 문구를 표시해야 한다. | Query state `isLoading` |
+| **REQ-27** | `/app/roadmaps/$roadmapId` | Error State | [로드맵 조회가 실패하면], 시스템은 오류 메시지와 `/app`으로 돌아가는 링크를 제공해야 한다. | Query state `isError` |
+| **REQ-28** | `/app/roadmaps/$roadmapId` | Header `Link` | [사용자가 "뒤로가기" 링크를 클릭할 때], 시스템은 `/app`으로 이동해야 한다. | Link navigation |
+| **REQ-28A** | `/app/roadmaps/$roadmapId` | Header Emoji Display | [로드맵 상세 헤더를 렌더링할 때], 시스템은 제목 근처에 `emoji` 값을 표시하고 값이 없으면 기본 아이콘으로 대체해야 한다. | Roadmap detail data (`emoji`) |
+| **REQ-29** | `/app/roadmaps/$roadmapId` | `RoadmapInfo` Dialog | [사용자가 "문서" 버튼을 선택할 때], 시스템은 연관 문서 목록을 사이드 패널로 표시해야 한다. | Detail response `documents[]` |
+| **REQ-30** | `/app/roadmaps/$roadmapId` | `GoalList` Summary | [로드맵에 목표가 있을 때], 시스템은 목표 개수와 각 `GoalItem`을 목록으로 렌더링해야 한다. | `goals` array |
+| **REQ-31** | `/app/roadmaps/$roadmapId` | `GoalItem` Expansion | [사용자가 "세부 목표 보기/접기"를 누를 때], 시스템은 `/roadmaps/{roadmapId}/goals/{goalId}` 업데이트를 호출해 `isExpanded` 값을 토글해야 한다. | `PUT /roadmaps/{roadmapId}/goals/{goalId}` |
+| **REQ-32** | `/app/roadmaps/$roadmapId` | `GoalItem` Progress Bar | [세부 목표가 있을 때], 시스템은 완료 개수를 계산해 퍼센트 진행률과 막대를 표시해야 한다. | Derived from `goal.subGoals` |
+| **REQ-33** | `/app/roadmaps/$roadmapId` | `GoalItem` Complete Toggle | [사용자가 세부 목표 완료 토글을 누를 때], 시스템은 `/roadmaps/{roadmapId}/sub-goals/{subGoalId}`에 `isCompleted`를 전송하고 낙관적으로 UI를 업데이트해야 한다. | `PUT /roadmaps/{roadmapId}/sub-goals/{subGoalId}` |
+| **REQ-34** | `/app/roadmaps/$roadmapId` | `SubGoalItem` DueDate Menu | [사용자가 마감일을 저장하거나 제거할 때], 시스템은 동일 엔드포인트에 `dueDate` 값을 전송하고 처리 후 로드맵 데이터를 재검증해야 한다. | `PUT /roadmaps/{roadmapId}/sub-goals/{subGoalId}` |
+| **REQ-35** | `/app/roadmaps/$roadmapId` | `SubGoalItem` Navigation | [사용자가 세부 목표 컨테이너를 클릭할 때], 시스템은 `/app/roadmaps/{roadmapId}/sub-goals/{subGoalId}` 상세 페이지로 이동해야 한다. | Route params |
+| **REQ-36** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | Detail Query | [세부 목표 상세 페이지가 로드될 때], 시스템은 `/roadmaps/{roadmapId}/sub-goals/{subGoalId}`를 호출해 최신 상태를 가져와야 한다. | `GET /roadmaps/{roadmapId}/sub-goals/{subGoalId}` |
+| **REQ-37** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | Polling | [AI 노트 상태가 `processing`일 때], 시스템은 4초 간격으로 세부 목표 상세 데이터를 재요청해야 한다. | TanStack Query `refetchInterval` |
+| **REQ-38** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | `Generate Note` Button | [사용자가 AI 노트 생성을 요청할 때], 시스템은 `/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes`를 호출하고 상태를 `processing`으로 표시해야 한다. | `POST /ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes` |
+| **REQ-39** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | Failure Banner | [AI 노트 생성이 실패하면], 시스템은 응답 오류 메시지를 경고 배너로 표시하고 상태를 `failed`로 유지해야 한다. | Response fields `errorMessage`, `status` |
+| **REQ-40** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | `AINoteViewer` | [AI 노트가 `ready` 상태일 때], 시스템은 Markdown을 HTML로 변환해 읽기 전용 에디터에 표시해야 한다. | `aiNoteMarkdown` |
+| **REQ-41** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | Breadcrumb `Link` | [사용자가 "로드맵 상세로 돌아가기"를 클릭할 때], 시스템은 `/app/roadmaps/{roadmapId}`로 이동해야 한다. | Link navigation |
+| **REQ-41A** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | `AI Quiz` Generate Button | [사용자가 "AI 퀴즈 생성" 버튼을 클릭할 때], 시스템은 `/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes` API를 호출하고 상태가 `processing`인 동안 버튼을 비활성화해야 한다. | `POST /ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes` |
+| **REQ-41B** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | `AI Quiz` Question List | [AI 퀴즈 상태가 `ready`일 때], 시스템은 응답에 포함된 4~20개의 객관식 문항과 각 보기 4개를 렌더링해야 한다. | `SubGoalDetail.aiQuiz.questions` |
+| **REQ-41C** | `/app/roadmaps/$roadmapId/sub-goals/$subGoalId` | `AI Quiz` Submission | [사용자가 모든 문항에 답변하고 "결과 제출"을 누를 때], 시스템은 `/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions` API를 호출하고 응답의 정답·해설을 하이라이트해야 한다. | `POST /roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions` |
+| **REQ-42** | API (Auth) | `POST /auth/signup` | [사용자가 이메일·비밀번호·이름으로 회원가입을 요청할 때], 시스템은 중복 이메일을 차단하고 사용자·계정·세션을 생성한 뒤 세션 쿠키를 설정해야 한다. | Request: `EmailSignupRequest`, Response: `SessionResponse` |
+| **REQ-43** | API (Auth) | `PUT /auth/change-password` | [인증된 사용자가 현재·새 비밀번호를 제출할 때], 시스템은 현재 비밀번호를 검증하고 저장된 해시를 교체해야 한다. | Request: `ChangePasswordRequest` |
+| **REQ-44** | API (Documents) | `GET /documents/{publicId}` | [인증된 사용자가 문서 상세를 요청할 때], 시스템은 소유권을 확인하고 문서 메타데이터를 반환해야 한다. | Response: `DocumentItem` |
+| **REQ-45** | API (Roadmap) | `PATCH /roadmaps/{id}/status` | [사용자가 로드맵 상태 변경을 요청할 때], 시스템은 현재 상태와 다를 경우에만 상태를 갱신하고 변경 시각을 반환해야 한다. | Request: `{ status }`, Response: status payload |
+| **REQ-46** | API (Roadmap) | `DELETE /roadmaps/{id}` | [사용자가 로드맵 삭제를 요청할 때], 시스템은 소유권을 검증하고 목표·세부 목표를 포함해 데이터를 삭제해야 한다. | Response: `{ deletedId }` |
+| **REQ-47** | API (Goals) | `POST /roadmaps/{roadmapId}/goals` | [사용자가 목표 생성을 요청할 때], 시스템은 다음 순서를 계산해 목표를 추가하고 생성 정보를 반환해야 한다. | Response: `GoalCreateResponse` |
+| **REQ-48** | API (Goals) | `PATCH /roadmaps/{roadmapId}/goals/{goalId}/order` | [사용자가 목표 순서 변경을 요청할 때], 시스템은 동일 로드맵 내 다른 목표의 순서를 재배치해야 한다. | Request: `{ newOrder }`, Response: order payload |
+| **REQ-49** | API (SubGoals) | `POST /roadmaps/{roadmapId}/goals/{goalId}/sub-goals` | [사용자가 세부 목표 생성을 요청할 때], 시스템은 기본 상태를 설정하고 생성된 세부 목표의 공개 ID를 반환해야 한다. | Response: `SubGoalCreateResponse` |
+| **REQ-50** | API (SubGoals) | `PATCH /roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move` | [사용자가 세부 목표 이동을 요청할 때], 시스템은 현재·대상 목표의 순서를 정리하고 새 위치 정보를 반환해야 한다. | Request: `{ newGoalId, newOrder? }`, Response: move payload |
+| **REQ-51** | `/app` | `CompletionCalendarSection`, `GoalActivityList` | [인증된 사용자가 `/app` 대시보드를 열 때], 시스템은 날짜 선택이 가능한 캘린더를 표시하고 선택한 날짜의 마감 예정·완료된 세부 목표를 유형 배지와 함께 카드 리스트로 보여줘야 한다. | `GET /progress/daily` Response: `GoalActivityDay[]` |
+| **REQ-52** | `/app` | `GoalActivityCard` Navigation | [사용자가 날짜별 활동 카드 항목을 클릭할 때], 시스템은 `/app/roadmaps/{roadmapId}/sub-goals/{subGoalId}` 상세 페이지로 이동해야 한다. | TanStack Router `createLink` |
+| **REQ-53** | API (Progress) | `GET /progress/daily` | [클라이언트가 날짜별 목표 활동을 요청할 때], 시스템은 인증 사용자의 세부 목표 중 완료 일자 또는 마감일이 조회 범위에 포함된 항목을 날짜별로 그룹화해 반환해야 한다. | Response: `GoalActivityDay[]` |
