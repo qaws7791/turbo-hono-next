@@ -4,6 +4,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { CONFIG } from "../config";
 
 /**
  * R2 클라이언트 초기화
@@ -11,10 +12,10 @@ import {
  */
 export const r2Client = new S3Client({
   region: "auto",
-  endpoint: process.env.R2_ENDPOINT!,
+  endpoint: CONFIG.R2_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    accessKeyId: CONFIG.R2_ACCESS_KEY_ID,
+    secretAccessKey: CONFIG.R2_SECRET_ACCESS_KEY,
   },
 });
 
@@ -32,14 +33,14 @@ export async function uploadToR2(
 ): Promise<string> {
   await r2Client.send(
     new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: CONFIG.R2_BUCKET_NAME,
       Key: key,
       Body: buffer,
       ContentType: contentType,
     }),
   );
 
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
+  return `${CONFIG.R2_PUBLIC_URL}/${key}`;
 }
 
 /**
@@ -50,7 +51,7 @@ export async function uploadToR2(
 export async function getFromR2(key: string): Promise<Buffer> {
   const response = await r2Client.send(
     new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: CONFIG.R2_BUCKET_NAME,
       Key: key,
     }),
   );
@@ -74,7 +75,7 @@ export async function getFromR2(key: string): Promise<Buffer> {
 export async function deleteFromR2(key: string): Promise<void> {
   await r2Client.send(
     new DeleteObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME!,
+      Bucket: CONFIG.R2_BUCKET_NAME,
       Key: key,
     }),
   );
@@ -86,10 +87,7 @@ export async function deleteFromR2(key: string): Promise<void> {
  * @param fileName - 원본 파일명
  * @returns pdfs/{userId}/{timestamp}-{uuid}.{ext}
  */
-export function generateStorageKey(
-  userId: string,
-  fileName: string,
-): string {
+export function generateStorageKey(userId: string, fileName: string): string {
   const timestamp = Date.now();
   const uuid = crypto.randomUUID();
   const ext = fileName.split(".").pop();
