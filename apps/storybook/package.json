@@ -5,6 +5,11 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint stories --ext .ts,.tsx",
+    "lint:fix": "eslint stories --ext .ts,.tsx --fix",
+    "format": "prettier --write \"stories/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"stories/**/*.{ts,tsx}\"",
     "serve": "npx http-server storybook-static -p 6007 -o",
     "clean": "rm -rf storybook-static"
   },
@@ -37,6 +42,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-aria-components": "^2.0.0",
     "typescript": "5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "@repo/config": "workspace:*"
   }
 }

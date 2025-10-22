@@ -6,6 +6,7 @@
     "dev": "vite --port 3000",
     "start": "vite --port 3000",
     "build": "vite build && tsc",
+    "check-types": "tsc --noEmit",
     "serve": "vite preview",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",

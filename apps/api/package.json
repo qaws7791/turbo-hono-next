@@ -8,6 +8,7 @@
     "start": "node ./dist/src/index.js",
     "vercel:dev": "npm run build && vercel dev",
     "build": "tsc",
+    "check-types": "tsc --noEmit",
     "deploy": "vercel",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
