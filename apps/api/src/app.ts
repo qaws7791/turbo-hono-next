@@ -1,8 +1,9 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { generateOpenApiDocument } from "@repo/api-spec/openapi";
+
 import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
 import aiApp from "./modules/ai";
@@ -37,25 +38,8 @@ function createApp() {
     description: "Session cookie for user authentication",
   });
 
-  app.doc("/doc", {
-    openapi: "3.0.0",
-    info: {
-      version: "1.0.0",
-      title: "Local Creator Market API",
-      description: "API for local creator marketplace with authentication",
-    },
-    servers: [
-      {
-        url: "http://localhost:3001",
-        description: "Development server",
-      },
-    ],
-    security: [
-      {
-        cookieAuth: [],
-      },
-    ],
-  });
+  const document = generateOpenApiDocument();
+  app.doc("/doc", () => document);
   return app;
 }
 

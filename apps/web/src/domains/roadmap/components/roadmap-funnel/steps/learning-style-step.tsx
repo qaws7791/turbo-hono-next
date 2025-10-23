@@ -1,7 +1,9 @@
 import { Button } from "@repo/ui/button";
 import { ChevronLeft, ChevronRight, User } from "lucide-react";
 import React from "react";
+
 import { learningStyles } from "../constants";
+
 import type { FunnelSteps } from "@/domains/roadmap/types";
 
 interface LearningStyleStepProps {
@@ -11,9 +13,8 @@ interface LearningStyleStepProps {
 }
 
 export const LearningStyleStep = (props: LearningStyleStepProps) => {
-  const [selectedLearningStyle, setSelectedLearningStyle] = React.useState<
-    string
-  >(props.learningStyle || "");
+  const [selectedLearningStyle, setSelectedLearningStyle] =
+    React.useState<string>(props.learningStyle || "");
   const isValid = selectedLearningStyle.length > 0;
   return (
     <>

@@ -1,72 +1,26 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../middleware/auth";
+import { createRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/create";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapCreateRequestSchema,
-  RoadmapCreateResponseSchema,
-} from "../schema";
 import { RoadmapEmoji } from "../utils/emoji";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const create = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "post",
-    path: "/roadmaps",
-    summary: "Create a new roadmap",
+  {
+    ...createRoadmapRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: RoadmapCreateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.CREATED]: {
-        content: {
-          "application/json": {
-            schema: RoadmapCreateResponseSchema,
-          },
-        },
-        description: "Roadmap created successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");
@@ -133,7 +87,7 @@ const create = new OpenAPIHono<{
         throw new RoadmapError(
           500,
           "roadmap:creation_failed",
-          "Failed to create roadmap"
+          "Failed to create roadmap",
         );
       }
 
@@ -158,7 +112,7 @@ const create = new OpenAPIHono<{
           createdAt: createdRoadmap.createdAt.toISOString(),
           updatedAt: createdRoadmap.updatedAt.toISOString(),
         },
-        status.CREATED
+        status.CREATED,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -170,7 +124,7 @@ const create = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:validation_failed",
-          "Invalid roadmap data provided"
+          "Invalid roadmap data provided",
         );
       }
 
@@ -178,10 +132,10 @@ const create = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to create roadmap"
+        "Failed to create roadmap",
       );
     }
-  }
+  },
 );
 
 export default create;

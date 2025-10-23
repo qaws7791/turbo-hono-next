@@ -2,11 +2,13 @@
 
 import {
   ProgressBar as AriaProgressBar,
-  ProgressBarProps as AriaProgressBarProps,
   composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
 import { Label, labelStyles } from "./form";
+
+import type { ProgressBarProps as AriaProgressBarProps } from "react-aria-components";
 
 interface ProgressProps extends AriaProgressBarProps {
   barClassName?: string;

@@ -1,6 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
-
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -12,8 +11,9 @@ import {
 import { Form } from "@repo/ui/form";
 import { Link } from "@repo/ui/link";
 import { FormTextField } from "@repo/ui/text-field";
-import type React from "react";
 import { useState } from "react";
+
+import type React from "react";
 
 export const Route = createFileRoute("/login/")({
   validateSearch: z.object({

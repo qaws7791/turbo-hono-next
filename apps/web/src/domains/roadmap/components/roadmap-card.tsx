@@ -3,10 +3,12 @@ import { Progress } from "@repo/ui/progress-bar";
 import { focusRing } from "@repo/ui/utils";
 import { Calendar, Tag } from "lucide-react";
 import * as React from "react";
-import type { LinkProps as AriaLinkProps } from "react-aria-components";
 import { Link, composeRenderProps } from "react-aria-components";
-import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
+
+import type { LinkProps as AriaLinkProps } from "react-aria-components";
+import type { VariantProps } from "tailwind-variants";
+
 
 type RoadmapListItem = {
   id: string;

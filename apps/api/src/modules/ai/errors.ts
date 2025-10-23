@@ -1,5 +1,7 @@
-import { ContentfulStatusCode } from "hono/utils/http-status";
 import { BaseError } from "../../errors/base.error";
+
+import type { ContentfulStatusCode } from "hono/utils/http-status";
+
 
 export type AIErrorType =
   | "generation_failed"

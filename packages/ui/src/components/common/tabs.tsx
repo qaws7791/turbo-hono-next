@@ -3,16 +3,19 @@
 import {
   Tab as AriaTab,
   TabList as AriaTabList,
-  TabListProps as AriaTabListProps,
   TabPanel as AriaTabPanel,
-  TabPanelProps as AriaTabPanelProps,
-  TabProps as AriaTabProps,
   Tabs as AriaTabs,
-  TabsProps as AriaTabsProps,
-  composeRenderProps,
   SelectionIndicator,
+  composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
+import type {
+  TabListProps as AriaTabListProps,
+  TabPanelProps as AriaTabPanelProps,
+  TabProps as AriaTabProps,
+  TabsProps as AriaTabsProps,
+} from "react-aria-components";
 
 function Tabs({ className, ...props }: AriaTabsProps) {
   return (

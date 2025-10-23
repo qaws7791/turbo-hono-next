@@ -1,6 +1,8 @@
 import { Label } from "@repo/ui/form";
 import { Progress } from "@repo/ui/progress-bar";
+
 import { STEP_INFO, TOTAL_STEPS } from "./constants";
+
 import type { StepKeys } from "@/domains/roadmap/types";
 
 interface ProgressHeaderProps {

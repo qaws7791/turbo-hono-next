@@ -1,16 +1,20 @@
-import type { Meta } from '@storybook/react';
-import React from 'react';
-import { Autocomplete, AutocompleteItem, AutocompleteSection } from '../src/Autocomplete';
+import type { Meta } from "@storybook/react";
+import React from "react";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  AutocompleteSection,
+} from "../src/Autocomplete";
 
 const meta: Meta<typeof Autocomplete> = {
   component: Autocomplete,
   parameters: {
-    layout: 'centered'
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   args: {
-    label: 'Ice cream flavor'
-  }
+    label: "Ice cream flavor",
+  },
 };
 
 export default meta;
@@ -27,7 +31,7 @@ export const Example = (args: any) => (
 
 export const DisabledItems = (args: any) => <Example {...args} />;
 DisabledItems.args = {
-  disabledKeys: ['mint']
+  disabledKeys: ["mint"],
 };
 
 export const Sections = (args: any) => (
@@ -56,5 +60,5 @@ export const Sections = (args: any) => (
 );
 
 Sections.args = {
-  label: 'Preferred fruit or vegetable'
+  label: "Preferred fruit or vegetable",
 };

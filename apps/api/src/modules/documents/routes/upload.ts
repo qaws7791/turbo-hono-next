@@ -1,8 +1,9 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
-import { db } from "../../../database/client";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import {
   sanitizeFileName,
   validateFileSize,
@@ -10,75 +11,19 @@ import {
 } from "../../../utils/pdf";
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
 import { DocumentError } from "../errors";
-import { DocumentUploadResponseSchema, ErrorResponseSchema } from "../schema";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const upload = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Documents"],
-    method: "post",
-    path: "/documents/upload",
-    summary: "Upload a PDF document",
-    description:
-      "Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.",
+  {
+    ...documentUploadRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      body: {
-        content: {
-          "multipart/form-data": {
-            schema: {
-              type: "object",
-              properties: {
-                file: {
-                  type: "string",
-                  format: "binary",
-                  description: "PDF file to upload (max 10MB)",
-                },
-              },
-              required: ["file"],
-            },
-          },
-        },
-      },
-    },
-    responses: {
-      [status.CREATED]: {
-        content: {
-          "application/json": {
-            schema: DocumentUploadResponseSchema,
-          },
-        },
-        description: "Document uploaded successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - invalid file",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

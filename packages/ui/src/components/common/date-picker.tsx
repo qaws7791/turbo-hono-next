@@ -3,19 +3,14 @@
 import { CalendarIcon } from "lucide-react";
 import {
   DatePicker as AriaDatePicker,
-  DatePickerProps as AriaDatePickerProps,
   DateRangePicker as AriaDateRangePicker,
-  DateRangePickerProps as AriaDateRangePickerProps,
-  DateValue as AriaDateValue,
   Dialog as AriaDialog,
-  DialogProps as AriaDialogProps,
-  PopoverProps as AriaPopoverProps,
-  ValidationResult as AriaValidationResult,
-  composeRenderProps,
   Text,
+  composeRenderProps,
 } from "react-aria-components";
 
 import { twMerge } from "../../utils";
+
 import { Button } from "./button";
 import {
   Calendar,
@@ -30,6 +25,15 @@ import {
 import { DateInput } from "./date-field";
 import { FieldError, FieldGroup, Label } from "./form";
 import { Popover } from "./popover";
+
+import type {
+  DatePickerProps as AriaDatePickerProps,
+  DateRangePickerProps as AriaDateRangePickerProps,
+  DateValue as AriaDateValue,
+  DialogProps as AriaDialogProps,
+  PopoverProps as AriaPopoverProps,
+  ValidationResult as AriaValidationResult,
+} from "react-aria-components";
 
 const DatePicker = AriaDatePicker;
 

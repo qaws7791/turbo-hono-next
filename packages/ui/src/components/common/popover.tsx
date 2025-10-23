@@ -2,13 +2,17 @@
 
 import {
   Dialog as AriaDialog,
-  DialogProps as AriaDialogProps,
   DialogTrigger as AriaDialogTrigger,
   Popover as AriaPopover,
-  PopoverProps as AriaPopoverProps,
   composeRenderProps,
 } from "react-aria-components";
 import { twMerge } from "tailwind-merge";
+
+import type {
+  DialogProps as AriaDialogProps,
+  PopoverProps as AriaPopoverProps,
+} from "react-aria-components";
+
 const PopoverTrigger = AriaDialogTrigger;
 
 const Popover = ({ className, offset = 4, ...props }: AriaPopoverProps) => (

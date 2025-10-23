@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+
 import { CONFIG } from "../config";
 
 export class EmailService {

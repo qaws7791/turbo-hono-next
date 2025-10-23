@@ -1,8 +1,9 @@
 import { and, eq, gt } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { session, user } from "@repo/database/schema";
+
 import { authConfig } from "../config/auth";
 import { db } from "../database/client";
-import { session, user } from "@repo/database/schema";
 
 export interface SessionData {
   id: string;

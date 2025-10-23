@@ -10,21 +10,21 @@ export interface SubGoalQuizPromptInput {
   roadmap: RoadmapSummaryInput;
   focusGoal: FocusGoalInput;
   focusSubGoal: FocusSubInput;
-  roadmapGoals: RoadmapGoalSummary[];
-  referencedDocuments: DocumentSummary[];
+  roadmapGoals: Array<RoadmapGoalSummary>;
+  referencedDocuments: Array<DocumentSummary>;
   noteMarkdown: string | null;
   targetQuestionCount: number;
   minQuestions: number;
   maxQuestions: number;
   contentWordCount: number;
-  contextHighlights: string[];
+  contextHighlights: Array<string>;
 }
 
 interface FocusSubInput extends FocusSubGoalInput {
   summary: string | null;
 }
 
-function formatRoadmapGoals(goals: RoadmapGoalSummary[]): string {
+function formatRoadmapGoals(goals: Array<RoadmapGoalSummary>): string {
   if (!goals.length) {
     return "- (로드맵에 정의된 목표가 없습니다)";
   }
@@ -48,7 +48,7 @@ function formatRoadmapGoals(goals: RoadmapGoalSummary[]): string {
     .join("\n");
 }
 
-function formatDocuments(documents: DocumentSummary[]): string {
+function formatDocuments(documents: Array<DocumentSummary>): string {
   if (!documents.length) {
     return "- 등록된 참고 문서 없음";
   }

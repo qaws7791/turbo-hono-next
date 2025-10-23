@@ -8,6 +8,7 @@ import {
   Zap,
 } from "lucide-react";
 import React from "react";
+
 import type { FunnelSteps } from "@/domains/roadmap/types";
 
 interface GoalsStepProps {
@@ -27,7 +28,9 @@ interface GoalsStepProps {
 
 export const GoalsStep = (props: GoalsStepProps) => {
   const [mainGoal, setMainGoal] = React.useState(props.mainGoal);
-  const [additionalRequirements, setAdditionalRequirements] = React.useState(props.additionalRequirements);
+  const [additionalRequirements, setAdditionalRequirements] = React.useState(
+    props.additionalRequirements,
+  );
   const isValid = mainGoal && mainGoal.length > 0;
 
   return (

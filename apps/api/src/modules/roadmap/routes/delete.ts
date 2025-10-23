@@ -1,73 +1,25 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { deleteRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/delete";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapDeletionResponseSchema,
-  RoadmapParamsSchema,
-} from "../schema";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const deleteRoadmap = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "delete",
-    path: "/roadmaps/{id}",
-    summary: "Delete a roadmap",
+  {
+    ...deleteRoadmapRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapParamsSchema,
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: RoadmapDeletionResponseSchema,
-          },
-        },
-        description: "Roadmap deleted successfully",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not the owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

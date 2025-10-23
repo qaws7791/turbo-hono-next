@@ -1,86 +1,33 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
+import { aiNote, goal, roadmap, subGoal } from "@repo/database/schema";
+import { getSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/get-sub-goal";
+
 import { db } from "../../../../database/client";
-import {
-  aiNote,
-  goal,
-  roadmap,
-  subGoal,
-} from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../../middleware/auth";
+import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 import {
-  ErrorResponseSchema,
-  RoadmapGoalSubGoalParamsSchema,
-  SubGoalDetailResponseSchema,
-} from "../../schema";
-import {
-  SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteStatus,
+  SUB_GOAL_NOTE_STATUS
+  
 } from "../../../ai/services/subgoal-note-service";
 import {
   loadLatestQuizForSubGoal,
   serializeQuizRecord,
 } from "../../../ai/services/subgoal-quiz-service";
 
+import type { AuthContext} from "../../../../middleware/auth";
+import type {SubGoalNoteStatus} from "../../../ai/services/subgoal-note-service";
+
 const getSubGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Sub-Goals"],
-    method: "get",
-    path: "/roadmaps/{roadmapId}/sub-goals/{subGoalId}",
-    summary: "Get detailed information about a sub-goal",
+  {
+    ...getSubGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalSubGoalParamsSchema,
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: SubGoalDetailResponseSchema,
-          },
-        },
-        description: "Sub-goal detail retrieved successfully",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap, goal, or sub-goal not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

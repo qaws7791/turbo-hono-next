@@ -8,9 +8,12 @@
     "start": "node ./dist/src/index.js",
     "vercel:dev": "npm run build && vercel dev",
     "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "check-types": "tsc --noEmit",
     "deploy": "vercel",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:seed": "drizzle-kit seed",
@@ -44,12 +47,13 @@
     "pdf-parse": "^1.1.1",
     "resend": "^6.1.0",
     "ws": "^8.18.3",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@repo/api-spec": "workspace:*"
   },
   "devDependencies": {
+    "@repo/config": "workspace:*",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.20.5",
-    "vercel": "^48.0.3",
-    "vitest": "catalog:"
+    "vercel": "^48.0.3"
   }
 }

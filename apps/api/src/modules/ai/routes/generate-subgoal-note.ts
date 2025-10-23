@@ -1,18 +1,18 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { authMiddleware, type AuthContext } from "../../../middleware/auth";
+import { generateSubGoalNoteRoute } from "@repo/api-spec/modules/ai/routes";
+
+import {  authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import {
-  GenerateSubGoalNoteParamsSchema,
-  GenerateSubGoalNoteQuerySchema,
-  GenerateSubGoalNoteResponseSchema,
-} from "../schema";
-import {
-  prepareSubGoalNoteGeneration,
-  runSubGoalNoteGeneration,
   SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteRecord,
+  
+  prepareSubGoalNoteGeneration,
+  runSubGoalNoteGeneration
 } from "../services/subgoal-note-service";
+
+import type {AuthContext} from "../../../middleware/auth";
+import type {SubGoalNoteRecord} from "../services/subgoal-note-service";
 
 function serializeRecord(record: SubGoalNoteRecord) {
   return {
@@ -29,75 +29,10 @@ const generateSubGoalNote = new OpenAPIHono<{
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["AI"],
-    method: "post",
-    path: "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes",
-    summary: "Generate or refresh AI learning note for a sub-goal",
+  {
+    ...generateSubGoalNoteRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: GenerateSubGoalNoteParamsSchema,
-      query: GenerateSubGoalNoteQuerySchema,
-    },
-    responses: {
-      [status.ACCEPTED]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Note generation started",
-      },
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Existing note status returned",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Invalid request",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Access denied",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Target roadmap or sub-goal not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalNoteResponseSchema,
-          },
-        },
-        description: "Server error while generating the note",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

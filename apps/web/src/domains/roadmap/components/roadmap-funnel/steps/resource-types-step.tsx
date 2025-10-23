@@ -1,7 +1,9 @@
 import { Button } from "@repo/ui/button";
 import { ChevronLeft, ChevronRight, Target } from "lucide-react";
 import React from "react";
+
 import { resourceTypes } from "../constants";
+
 import type { FunnelSteps } from "@/domains/roadmap/types";
 
 interface ResourceTypesStepProps {
@@ -11,9 +13,8 @@ interface ResourceTypesStepProps {
 }
 
 export const ResourceTypesStep = (props: ResourceTypesStepProps) => {
-  const [selectedPreferredResources, setSelectedPreferredResources] = React.useState<
-    string
-  >(props.preferredResources || "");
+  const [selectedPreferredResources, setSelectedPreferredResources] =
+    React.useState<string>(props.preferredResources || "");
   const isValid = selectedPreferredResources.length > 0;
   return (
     <>

@@ -1,7 +1,8 @@
+import { createFileRoute } from "@tanstack/react-router";
+
 import { api } from "@/api/http-client";
 import AppPageLayout from "@/components/app-page-layout";
 import RoadmapFunnel from "@/domains/roadmap/components/roadmap-funnel";
-import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/create/")({
   component: CreateComponent,

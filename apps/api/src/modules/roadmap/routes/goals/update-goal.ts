@@ -1,89 +1,25 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { eq } from "drizzle-orm";
-import { db } from "../../../../database/client";
 import { goal, roadmap } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
+import { updateGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/update-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  ErrorResponseSchema,
-  GoalUpdateRequestSchema,
-  GoalUpdateResponseSchema,
-  RoadmapGoalParamsSchema,
-} from "../../schema";
+
+import type { AuthContext} from "../../../../middleware/auth";
+
 
 const updateGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Goals"],
-    method: "put",
-    path: "/roadmaps/{roadmapId}/goals/{goalId}",
-    summary: "Update a goal",
+  {
+    ...updateGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: GoalUpdateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GoalUpdateResponseSchema,
-          },
-        },
-        description: "Goal updated successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Goal or roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");
@@ -104,7 +40,7 @@ const updateGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -112,7 +48,7 @@ const updateGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:goal_access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -127,18 +63,14 @@ const updateGoal = new OpenAPIHono<{
         .limit(1);
 
       if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
+        throw new RoadmapError(404, "roadmap:goal_not_found", "Goal not found");
       }
 
       if (goalResult.roadmapId !== roadmapResult.id) {
         throw new RoadmapError(
           403,
           "roadmap:goal_access_denied",
-          "Goal does not belong to this roadmap"
+          "Goal does not belong to this roadmap",
         );
       }
 
@@ -161,11 +93,12 @@ const updateGoal = new OpenAPIHono<{
       updateData.updatedAt = new Date();
 
       // If no fields to update, return error
-      if (Object.keys(updateData).length === 1) { // Only updatedAt
+      if (Object.keys(updateData).length === 1) {
+        // Only updatedAt
         throw new RoadmapError(
           400,
           "roadmap:goal_validation_failed",
-          "No valid fields provided for update"
+          "No valid fields provided for update",
         );
       }
 
@@ -189,7 +122,7 @@ const updateGoal = new OpenAPIHono<{
         throw new RoadmapError(
           500,
           "roadmap:goal_update_failed",
-          "Failed to update goal"
+          "Failed to update goal",
         );
       }
 
@@ -206,7 +139,7 @@ const updateGoal = new OpenAPIHono<{
           createdAt: updatedGoal.createdAt.toISOString(),
           updatedAt: updatedGoal.updatedAt.toISOString(),
         },
-        status.OK
+        status.OK,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -218,7 +151,7 @@ const updateGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:goal_validation_failed",
-          "Invalid goal data provided"
+          "Invalid goal data provided",
         );
       }
 
@@ -226,10 +159,10 @@ const updateGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to update goal"
+        "Failed to update goal",
       );
     }
-  }
+  },
 );
 
 export default updateGoal;

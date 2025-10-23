@@ -1,84 +1,30 @@
 import { google } from "@ai-sdk/google";
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
-import { generateObject, ModelMessage } from "ai";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { generateObject } from "ai";
 import { and, eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { generateRoadmapRoute } from "@repo/api-spec/modules/ai/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import { generateRoadmapPrompt } from "../prompts/roadmap-prompts";
-import {
-  ErrorResponseSchema,
-  GeneratedRoadmapSchema,
-  GenerateRoadmapRequestSchema,
-  GenerateRoadmapResponseSchema,
-} from "../schema";
+import { GeneratedRoadmapSchema } from "../schema";
 import { saveRoadmapToDatabase } from "../services/roadmap-service";
+
+import type { AuthContext} from "../../../middleware/auth";
+import type { ModelMessage } from "ai";
 
 const generateRoadmap = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["AI"],
-    method: "post",
-    path: "/ai/roadmaps/generate",
-    summary: "Generate a personalized learning roadmap using AI",
+  {
+    ...generateRoadmapRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: GenerateRoadmapRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GenerateRoadmapResponseSchema,
-          },
-        },
-        description: "Roadmap generated successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.TOO_MANY_REQUESTS]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Rate limit exceeded",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const body = c.req.valid("json");
@@ -139,7 +85,7 @@ const generateRoadmap = new OpenAPIHono<{
         includePdfContents: pdfContents !== null,
       });
 
-      const messages: ModelMessage[] = [
+      const messages: Array<ModelMessage> = [
         {
           role: "user",
           content: [

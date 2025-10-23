@@ -1,8 +1,12 @@
-import { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
+
 import { authConfig } from "../config/auth";
 import { AuthError } from "../modules/auth/errors";
-import { SessionData, sessionUtils } from "../utils/session";
+import { sessionUtils } from "../utils/session";
+
+import type { SessionData} from "../utils/session";
+import type { Context, Next } from "hono";
+
 export interface AuthContext {
   user: SessionData["user"];
   session: {

@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+
 import dailyProgress from "./routes/daily";
 
 const progressApp = new OpenAPIHono();

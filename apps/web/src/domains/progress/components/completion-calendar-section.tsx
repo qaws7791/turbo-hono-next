@@ -1,7 +1,4 @@
-import { Link } from "@/components/link";
-import { dailyActivityQueryOptions } from "@/domains/progress/queries/daily-activity-query-options";
 import {
-  CalendarDate,
   endOfMonth,
   getLocalTimeZone,
   startOfMonth,
@@ -18,10 +15,17 @@ import {
   CalendarHeading,
 } from "@repo/ui/calendar";
 import { Card } from "@repo/ui/card";
-import { Icon, type IconName } from "@repo/ui/icon";
+import { Icon  } from "@repo/ui/icon";
 import { twMerge } from "@repo/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
+
+import type {IconName} from "@repo/ui/icon";
+import type {
+  CalendarDate} from "@internationalized/date";
+
+import { dailyActivityQueryOptions } from "@/domains/progress/queries/daily-activity-query-options";
+import { Link } from "@/components/link";
 
 type ApiClient = typeof import("@/api/http-client");
 type DailyActivityResponse = Awaited<
@@ -129,7 +133,7 @@ export function CompletionCalendarSection() {
   const selectedDueCount = selectedDay?.due.length ?? 0;
   const selectedDateLabel = formatDate(selectedDate);
 
-  const dayActivities = React.useMemo<ActivityItem[]>(() => {
+  const dayActivities = React.useMemo<Array<ActivityItem>>(() => {
     if (!selectedDay) return [];
 
     const dueItems = [...selectedDay.due].sort((a, b) =>

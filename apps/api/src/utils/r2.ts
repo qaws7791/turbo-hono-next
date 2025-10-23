@@ -60,7 +60,7 @@ export async function getFromR2(key: string): Promise<Buffer> {
     throw new Error("File not found in R2");
   }
 
-  const chunks: Uint8Array[] = [];
+  const chunks: Array<Uint8Array> = [];
   for await (const chunk of response.Body as any) {
     chunks.push(chunk);
   }

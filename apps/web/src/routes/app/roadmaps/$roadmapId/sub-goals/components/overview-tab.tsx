@@ -1,8 +1,11 @@
-import type { SubGoalDetail } from "@/domains/roadmap/types";
-import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
+
 import { formatDateTime } from "../utils";
+
+import type { SubGoalDetail } from "@/domains/roadmap/types";
+
+import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
 
 type OverviewTabProps = {
   detail: SubGoalDetail;
@@ -92,9 +95,7 @@ export function OverviewTab({ detail }: OverviewTabProps) {
             </div>
             <div>
               <span className="text-muted-foreground">목표</span>
-              <p className="font-medium text-foreground">
-                {detail.goal.title}
-              </p>
+              <p className="font-medium text-foreground">{detail.goal.title}</p>
               {detail.goal.description && (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {detail.goal.description}

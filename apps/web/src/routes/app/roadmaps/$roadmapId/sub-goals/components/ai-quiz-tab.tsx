@@ -1,17 +1,20 @@
-import { api } from "@/api/http-client";
-import type {
-  SubGoalDetail,
-  SubGoalQuizAnswerReview,
-  SubGoalQuizStatus,
-} from "@/domains/roadmap/types";
 import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+
 import { AI_QUIZ_STATUS_META } from "../status-meta";
 import { formatDateTime, formatNullableDateTime } from "../utils";
+
+import type {
+  SubGoalDetail,
+  SubGoalQuizAnswerReview,
+  SubGoalQuizStatus,
+} from "@/domains/roadmap/types";
+
+import { api } from "@/api/http-client";
 
 type AiQuizTabProps = {
   detail: SubGoalDetail;

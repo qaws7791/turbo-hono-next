@@ -1,13 +1,15 @@
-"use client"
+"use client";
 import {
-    Tooltip as AriaTooltip,
-    TooltipTrigger as AriaTooltipTrigger,
-    composeRenderProps,
-    type TooltipProps as AriaTooltipProps,
-} from "react-aria-components"
-import { twMerge } from "../../utils"
+  Tooltip as AriaTooltip,
+  TooltipTrigger as AriaTooltipTrigger,
+  composeRenderProps,
+} from "react-aria-components";
 
-const TooltipTrigger = AriaTooltipTrigger
+import { twMerge } from "../../utils";
+
+import type { TooltipProps as AriaTooltipProps } from "react-aria-components";
+
+const TooltipTrigger = AriaTooltipTrigger;
 
 const Tooltip = ({ className, offset = 4, ...props }: AriaTooltipProps) => (
   <AriaTooltip
@@ -21,12 +23,11 @@ const Tooltip = ({ className, offset = 4, ...props }: AriaTooltipProps) => (
         "data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:zoom-out-95",
         /* Placement */
         "data-[placement=bottom]:slide-in-from-top-2 data-[placement=left]:slide-in-from-right-2 data-[placement=right]:slide-in-from-left-2 data-[placement=top]:slide-in-from-bottom-2",
-        className
-      )
+        className,
+      ),
     )}
     {...props}
   />
-)
+);
 
-export { Tooltip, TooltipTrigger }
-
+export { Tooltip, TooltipTrigger };

@@ -10,9 +10,9 @@ import {
 const meta: Meta<typeof DisclosureGroup> = {
   component: DisclosureGroup,
   parameters: {
-    layout: 'centered'
+    layout: "centered",
   },
-  tags: ['autodocs']
+  tags: ["autodocs"],
 };
 
 export default meta;
@@ -33,4 +33,3 @@ export const Example = (args: any) => (
     </Disclosure>
   </DisclosureGroup>
 );
-

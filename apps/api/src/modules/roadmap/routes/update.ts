@@ -1,17 +1,15 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmap } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { updateRoadmapRoute } from "@repo/api-spec/modules/roadmap/routes/update";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapParamsSchema,
-  RoadmapUpdateRequestSchema,
-  RoadmapUpdateResponseSchema,
-} from "../schema";
 import { RoadmapEmoji } from "../utils/emoji";
+
+import type { AuthContext} from "../../../middleware/auth";
 
 type RoadmapInsert = typeof roadmap.$inferInsert;
 
@@ -20,73 +18,10 @@ const update = new OpenAPIHono<{
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap"],
-    method: "patch",
-    path: "/roadmaps/{id}",
-    summary: "Update a roadmap",
+  {
+    ...updateRoadmapRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: RoadmapUpdateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: RoadmapUpdateResponseSchema,
-          },
-        },
-        description: "Roadmap updated successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not the owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

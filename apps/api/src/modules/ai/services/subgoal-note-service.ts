@@ -1,7 +1,6 @@
 import { google } from "@ai-sdk/google";
-import { generateObject, type ModelMessage } from "ai";
+import {  generateObject } from "ai";
 import { and, asc, desc, eq } from "drizzle-orm";
-import { db } from "../../../database/client";
 import {
   aiNote as aiNoteTable,
   goal as goalTable,
@@ -9,12 +8,17 @@ import {
   roadmap as roadmapTable,
   subGoal as subGoalTable,
 } from "@repo/database/schema";
+
+import { db } from "../../../database/client";
 import { AIError } from "../errors";
 import {
-  generateSubGoalNotePrompt,
-  type SubGoalNotePromptInput,
+  
+  generateSubGoalNotePrompt
 } from "../prompts/subgoal-note-prompts";
 import { SubGoalNoteContentSchema } from "../schema";
+
+import type {SubGoalNotePromptInput} from "../prompts/subgoal-note-prompts";
+import type {ModelMessage} from "ai";
 
 export const SUB_GOAL_NOTE_STATUS = {
   idle: "idle",
@@ -43,7 +47,7 @@ interface NoteDocumentFile {
 export interface SubGoalNoteGenerationJob {
   subGoalDbId: number;
   promptInput: SubGoalNotePromptInput;
-  documentFiles: NoteDocumentFile[];
+  documentFiles: Array<NoteDocumentFile>;
 }
 
 interface PrepareSubGoalNoteGenerationArgs {
@@ -102,7 +106,7 @@ function sanitizeErrorMessage(error: unknown): string {
 function isSubGoalNoteStatus(value: unknown): value is SubGoalNoteStatus {
   return (
     typeof value === "string" &&
-    (Object.values(SUB_GOAL_NOTE_STATUS) as string[]).includes(
+    (Object.values(SUB_GOAL_NOTE_STATUS) as Array<string>).includes(
       value as SubGoalNoteStatus,
     )
   );
@@ -371,7 +375,7 @@ export async function prepareSubGoalNoteGeneration(
     .orderBy(desc(roadmapDocumentTable.uploadedAt))
     .limit(2);
 
-  const documentFiles: NoteDocumentFile[] = [];
+  const documentFiles: Array<NoteDocumentFile> = [];
   const referencedDocuments = documents.map((doc) => ({
     fileName: doc.fileName,
     originalFileType: doc.fileType,
@@ -459,7 +463,7 @@ export async function runSubGoalNoteGeneration(
   job: SubGoalNoteGenerationJob,
 ): Promise<void> {
   const prompt = generateSubGoalNotePrompt(job.promptInput);
-  const messages: ModelMessage[] = [
+  const messages: Array<ModelMessage> = [
     {
       role: "user",
       content: [

@@ -1,6 +1,3 @@
-import { Link } from "@/components/link";
-import type { SubGoal } from "@/domains/roadmap/types";
-import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
 import { parseDate } from "@internationalized/date";
 import { Button } from "@repo/ui/button";
 import {
@@ -16,6 +13,11 @@ import { Icon } from "@repo/ui/icon";
 import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
 import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
+
+import type { SubGoal } from "@/domains/roadmap/types";
+
+import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
+import { Link } from "@/components/link";
 
 interface SubGoalItemProps {
   subGoal: SubGoal;

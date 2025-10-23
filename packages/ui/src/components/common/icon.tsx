@@ -1,4 +1,5 @@
 import { twMerge } from "tailwind-merge";
+
 import type { SolarIconName } from "../../types/solar-icons";
 
 export type IconName = `solar--${SolarIconName}`;

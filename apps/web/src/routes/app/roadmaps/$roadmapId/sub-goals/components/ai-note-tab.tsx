@@ -1,7 +1,3 @@
-import { api } from "@/api/http-client";
-import type { SubGoalDetail } from "@/domains/roadmap/types";
-import { formatNullableDateTime } from "../utils";
-import { AI_NOTE_STATUS_META } from "../status-meta";
 import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
@@ -14,6 +10,13 @@ import StarterKit from "@tiptap/starter-kit";
 import { all, createLowlight } from "lowlight";
 import { marked } from "marked";
 import { useEffect } from "react";
+
+import { AI_NOTE_STATUS_META } from "../status-meta";
+import { formatNullableDateTime } from "../utils";
+
+import type { SubGoalDetail } from "@/domains/roadmap/types";
+
+import { api } from "@/api/http-client";
 
 type AiNoteTabProps = {
   detail: SubGoalDetail;
@@ -87,8 +90,8 @@ export function AiNoteTab({ detail, roadmapId, subGoalId }: AiNoteTabProps) {
         <div className="flex items-center gap-3 rounded-md border border-muted bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <span>
-            AI가 노트를 생성하는 중입니다. 다른 페이지를 방문해도 완료되면 자동으로
-            표시돼요.
+            AI가 노트를 생성하는 중입니다. 다른 페이지를 방문해도 완료되면
+            자동으로 표시돼요.
           </span>
         </div>
       )}
@@ -115,7 +118,9 @@ export function AiNoteTab({ detail, roadmapId, subGoalId }: AiNoteTabProps) {
           </p>
           <ul className="list-inside list-disc space-y-1">
             <li>로드맵, 목표, 참고 문서 정보를 함께 반영합니다.</li>
-            <li>생성된 노트는 언제든지 다시 생성해 최신 내용을 받을 수 있습니다.</li>
+            <li>
+              생성된 노트는 언제든지 다시 생성해 최신 내용을 받을 수 있습니다.
+            </li>
           </ul>
         </div>
       ) : null}
@@ -123,11 +128,15 @@ export function AiNoteTab({ detail, roadmapId, subGoalId }: AiNoteTabProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
         <span>
           최근 요청:{" "}
-          <span className="font-medium text-foreground">{requestedAtLabel}</span>
+          <span className="font-medium text-foreground">
+            {requestedAtLabel}
+          </span>
         </span>
         <span>
           최근 완료:{" "}
-          <span className="font-medium text-foreground">{completedAtLabel}</span>
+          <span className="font-medium text-foreground">
+            {completedAtLabel}
+          </span>
         </span>
       </div>
 

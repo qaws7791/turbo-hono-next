@@ -9,9 +9,9 @@ import {
 const meta: Meta<typeof Disclosure> = {
   component: Disclosure,
   parameters: {
-    layout: 'centered'
+    layout: "centered",
   },
-  tags: ['autodocs']
+  tags: ["autodocs"],
 };
 
 export default meta;

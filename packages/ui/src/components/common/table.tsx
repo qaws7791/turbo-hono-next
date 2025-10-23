@@ -4,23 +4,25 @@ import { ArrowUpDown } from "lucide-react";
 import {
   Cell as AriaCell,
   Column as AriaColumn,
-  ColumnProps as AriaColumnProps,
   ResizableTableContainer as AriaResizableTableContainer,
   Row as AriaRow,
   Table as AriaTable,
   TableBody as AriaTableBody,
   TableHeader as AriaTableHeader,
-  CellProps,
   ColumnResizer,
-  composeRenderProps,
   Group,
+  composeRenderProps,
+} from "react-aria-components";
+import { twMerge } from "tailwind-merge";
+
+import type {
+  ColumnProps as AriaColumnProps,
+  CellProps,
   RowProps,
   TableBodyProps,
   TableHeaderProps,
   TableProps,
 } from "react-aria-components";
-
-import { twMerge } from "tailwind-merge";
 
 const ResizableTableContainer = AriaResizableTableContainer;
 

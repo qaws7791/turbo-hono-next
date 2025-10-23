@@ -1,93 +1,27 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
-import { authMiddleware, type AuthContext } from "../../../middleware/auth";
+import { generateSubGoalQuizRoute } from "@repo/api-spec/modules/ai/routes";
+
+import {  authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
 import {
-  GenerateSubGoalQuizParamsSchema,
-  GenerateSubGoalQuizQuerySchema,
-  GenerateSubGoalQuizResponseSchema,
-} from "../schema";
-import {
+  SUB_GOAL_QUIZ_STATUS,
   prepareSubGoalQuizGeneration,
   runSubGoalQuizGeneration,
   serializeQuizRecord,
-  SUB_GOAL_QUIZ_STATUS,
 } from "../services/subgoal-quiz-service";
+
+import type {AuthContext} from "../../../middleware/auth";
 
 const generateSubGoalQuiz = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["AI"],
-    method: "post",
-    path: "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes",
-    summary: "Generate or refresh an AI quiz for a sub-goal",
+  {
+    ...generateSubGoalQuizRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: GenerateSubGoalQuizParamsSchema,
-      query: GenerateSubGoalQuizQuerySchema,
-    },
-    responses: {
-      [status.ACCEPTED]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Quiz generation started",
-      },
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Existing quiz status returned",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Invalid request",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Access denied",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Target roadmap or sub-goal not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: GenerateSubGoalQuizResponseSchema,
-          },
-        },
-        description: "Server error while generating the quiz",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

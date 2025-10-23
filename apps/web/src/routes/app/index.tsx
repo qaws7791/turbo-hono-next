@@ -1,10 +1,11 @@
+import { Icon } from "@repo/ui/icon";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Suspense } from "react";
+
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
 import { CompletionCalendarSection } from "@/domains/progress/components/completion-calendar-section";
 import RoadmapList from "@/domains/roadmap/components/roadmap-list";
-import { Icon } from "@repo/ui/icon";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Suspense } from "react";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: ({ context, location }) => {

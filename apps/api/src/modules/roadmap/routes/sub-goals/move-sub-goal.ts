@@ -1,89 +1,25 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { eq, gte, lte, max, sql } from "drizzle-orm";
-import { db } from "../../../../database/client";
 import { goal, roadmap, subGoal } from "@repo/database/schema";
-import { authMiddleware, AuthContext } from "../../../../middleware/auth";
+import { moveSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/move-sub-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  ErrorResponseSchema,
-  RoadmapGoalSubGoalParamsSchema,
-  SubGoalMoveRequestSchema,
-  SubGoalMoveResponseSchema,
-} from "../../schema";
+
+import type { AuthContext} from "../../../../middleware/auth";
+
 
 const moveSubGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Sub-Goals"],
-    method: "patch",
-    path: "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move",
-    summary: "Move a sub-goal to another goal or reorder within the same goal",
+  {
+    ...moveSubGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalSubGoalParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: SubGoalMoveRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: SubGoalMoveResponseSchema,
-          },
-        },
-        description: "Sub-goal moved successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap, goal, or sub-goal not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");
@@ -104,7 +40,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -112,7 +48,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -131,7 +67,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:goal_not_found",
-          "Current goal not found"
+          "Current goal not found",
         );
       }
 
@@ -139,7 +75,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:goal_not_found",
-          "Current goal does not belong to this roadmap"
+          "Current goal does not belong to this roadmap",
         );
       }
 
@@ -158,7 +94,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:target_goal_not_found",
-          "Target goal not found"
+          "Target goal not found",
         );
       }
 
@@ -166,7 +102,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:target_goal_not_found",
-          "Target goal does not belong to this roadmap"
+          "Target goal does not belong to this roadmap",
         );
       }
 
@@ -186,7 +122,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:sub_goal_not_found",
-          "Sub-goal not found"
+          "Sub-goal not found",
         );
       }
 
@@ -194,7 +130,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:sub_goal_not_found",
-          "Sub-goal does not belong to the current goal"
+          "Sub-goal does not belong to the current goal",
         );
       }
 
@@ -219,8 +155,8 @@ const moveSubGoal = new OpenAPIHono<{
                   })
                   .where(
                     eq(subGoal.goalId, currentGoalResult.id) &&
-                    gte(subGoal.order, currentOrder + 1) &&
-                    lte(subGoal.order, targetOrder)
+                      gte(subGoal.order, currentOrder + 1) &&
+                      lte(subGoal.order, targetOrder),
                   );
               } else {
                 // Moving up: increase order of items between target and current
@@ -232,8 +168,8 @@ const moveSubGoal = new OpenAPIHono<{
                   })
                   .where(
                     eq(subGoal.goalId, currentGoalResult.id) &&
-                    gte(subGoal.order, targetOrder) &&
-                    lte(subGoal.order, currentOrder - 1)
+                      gte(subGoal.order, targetOrder) &&
+                      lte(subGoal.order, currentOrder - 1),
                   );
               }
 
@@ -258,7 +194,7 @@ const moveSubGoal = new OpenAPIHono<{
             })
             .where(
               eq(subGoal.goalId, currentGoalResult.id) &&
-              gte(subGoal.order, subGoalResult.order + 1)
+                gte(subGoal.order, subGoalResult.order + 1),
             );
 
           // Determine the new order in the target goal
@@ -273,7 +209,7 @@ const moveSubGoal = new OpenAPIHono<{
               })
               .where(
                 eq(subGoal.goalId, targetGoalResult.id) &&
-                gte(subGoal.order, newOrder)
+                  gte(subGoal.order, newOrder),
               );
             finalOrder = newOrder;
           } else {
@@ -317,7 +253,7 @@ const moveSubGoal = new OpenAPIHono<{
           order: updatedSubGoal.order,
           updatedAt: updatedSubGoal.updatedAt.toISOString(),
         },
-        status.OK
+        status.OK,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -329,7 +265,7 @@ const moveSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:sub_goal_validation_failed",
-          "Invalid move operation data provided"
+          "Invalid move operation data provided",
         );
       }
 
@@ -337,10 +273,10 @@ const moveSubGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to move sub-goal"
+        "Failed to move sub-goal",
       );
     }
-  }
+  },
 );
 
 export default moveSubGoal;

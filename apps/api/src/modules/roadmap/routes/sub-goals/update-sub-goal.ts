@@ -1,94 +1,30 @@
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import status from "http-status";
-import { db } from "../../../../database/client";
 import { aiNote, goal, roadmap, subGoal } from "@repo/database/schema";
-import { SubGoalUpdate } from "@repo/database/types";
-import { AuthContext, authMiddleware } from "../../../../middleware/auth";
+import { updateSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/update-sub-goal";
+
+import { db } from "../../../../database/client";
+import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 import {
-  ErrorResponseSchema,
-  RoadmapGoalSubGoalParamsSchema,
-  SubGoalUpdateRequestSchema,
-  SubGoalUpdateResponseSchema,
-} from "../../schema";
-import {
-  SUB_GOAL_NOTE_STATUS,
-  type SubGoalNoteStatus,
+  SUB_GOAL_NOTE_STATUS
+  
 } from "../../../ai/services/subgoal-note-service";
+
+import type { AuthContext} from "../../../../middleware/auth";
+import type { SubGoalUpdate } from "@repo/database/types";
+import type {SubGoalNoteStatus} from "../../../ai/services/subgoal-note-service";
 
 const updateSubGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Roadmap Sub-Goals"],
-    method: "put",
-    path: "/roadmaps/{roadmapId}/sub-goals/{subGoalId}",
-    summary: "Update a sub-goal",
+  {
+    ...updateSubGoalRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: RoadmapGoalSubGoalParamsSchema,
-      body: {
-        content: {
-          "application/json": {
-            schema: SubGoalUpdateRequestSchema,
-          },
-        },
-      },
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: SubGoalUpdateResponseSchema,
-          },
-        },
-        description: "Sub-goal updated successfully",
-      },
-      [status.BAD_REQUEST]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Bad request - validation failed",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied - not roadmap owner",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Roadmap, goal, or sub-goal not found",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");
@@ -109,7 +45,7 @@ const updateSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
-          "Roadmap not found"
+          "Roadmap not found",
         );
       }
 
@@ -117,7 +53,7 @@ const updateSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
-          "You do not have permission to modify this roadmap"
+          "You do not have permission to modify this roadmap",
         );
       }
 
@@ -137,11 +73,11 @@ const updateSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           404,
           "roadmap:sub_goal_not_found",
-          "Sub-goal not found"
+          "Sub-goal not found",
         );
       }
 
-            // Check if goal exists and belongs to this roadmap
+      // Check if goal exists and belongs to this roadmap
       const [goalResult] = await db
         .select({
           id: goal.id,
@@ -152,25 +88,22 @@ const updateSubGoal = new OpenAPIHono<{
         .limit(1);
 
       if (!goalResult) {
-        throw new RoadmapError(
-          404,
-          "roadmap:goal_not_found",
-          "Goal not found"
-        );
+        throw new RoadmapError(404, "roadmap:goal_not_found", "Goal not found");
       }
 
       if (goalResult.roadmapId !== roadmapResult.id) {
         throw new RoadmapError(
           404,
           "roadmap:goal_not_found",
-          "Goal does not belong to this roadmap"
+          "Goal does not belong to this roadmap",
         );
       }
 
       // Prepare update data
       const updateData: SubGoalUpdate = {};
       if (body.title !== undefined) updateData.title = body.title;
-      if (body.description !== undefined) updateData.description = body.description || null;
+      if (body.description !== undefined)
+        updateData.description = body.description || null;
       if (body.isCompleted !== undefined) {
         const isCompleting = body.isCompleted && !subGoalResult.isCompleted;
         const isReopening = !body.isCompleted && subGoalResult.isCompleted;
@@ -183,7 +116,8 @@ const updateSubGoal = new OpenAPIHono<{
           updateData.completedAt = null;
         }
       }
-      if (body.dueDate !== undefined) updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
+      if (body.dueDate !== undefined)
+        updateData.dueDate = body.dueDate ? new Date(body.dueDate) : null;
       if (body.memo !== undefined) updateData.memo = body.memo || null;
 
       // Always update the updatedAt field
@@ -194,25 +128,25 @@ const updateSubGoal = new OpenAPIHono<{
         .update(subGoal)
         .set(updateData)
         .where(eq(subGoal.id, subGoalResult.id))
-      .returning({
-        id: subGoal.id,
-        publicId: subGoal.publicId,
-        title: subGoal.title,
-        description: subGoal.description,
-        isCompleted: subGoal.isCompleted,
-        completedAt: subGoal.completedAt,
-        dueDate: subGoal.dueDate,
-        memo: subGoal.memo,
-        order: subGoal.order,
-        createdAt: subGoal.createdAt,
-        updatedAt: subGoal.updatedAt,
-      });
+        .returning({
+          id: subGoal.id,
+          publicId: subGoal.publicId,
+          title: subGoal.title,
+          description: subGoal.description,
+          isCompleted: subGoal.isCompleted,
+          completedAt: subGoal.completedAt,
+          dueDate: subGoal.dueDate,
+          memo: subGoal.memo,
+          order: subGoal.order,
+          createdAt: subGoal.createdAt,
+          updatedAt: subGoal.updatedAt,
+        });
 
       if (!result || result.length === 0) {
         throw new RoadmapError(
           500,
           "roadmap:sub_goal_update_failed",
-          "Failed to update sub-goal"
+          "Failed to update sub-goal",
         );
       }
 
@@ -253,7 +187,7 @@ const updateSubGoal = new OpenAPIHono<{
           aiNoteCompletedAt: noteRow?.completedAt?.toISOString() ?? null,
           aiNoteError: noteRow?.errorMessage ?? null,
         },
-        status.OK
+        status.OK,
       );
     } catch (error) {
       if (error instanceof RoadmapError) {
@@ -265,7 +199,7 @@ const updateSubGoal = new OpenAPIHono<{
         throw new RoadmapError(
           400,
           "roadmap:sub_goal_validation_failed",
-          "Invalid sub-goal data provided"
+          "Invalid sub-goal data provided",
         );
       }
 
@@ -273,10 +207,10 @@ const updateSubGoal = new OpenAPIHono<{
       throw new RoadmapError(
         500,
         "roadmap:internal_error",
-        "Failed to update sub-goal"
+        "Failed to update sub-goal",
       );
     }
-  }
+  },
 );
 
 export default updateSubGoal;

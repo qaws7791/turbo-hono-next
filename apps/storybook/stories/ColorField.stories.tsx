@@ -1,17 +1,17 @@
-import type { Meta } from '@storybook/react';
-import React from 'react';
-import { ColorField } from '../src/ColorField';
+import type { Meta } from "@storybook/react";
+import React from "react";
+import { ColorField } from "../src/ColorField";
 
 const meta: Meta<typeof ColorField> = {
   component: ColorField,
   parameters: {
-    layout: 'centered'
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   args: {
-    label: 'Color',
-    defaultValue: '#ff0'
-  }
+    label: "Color",
+    defaultValue: "#ff0",
+  },
 };
 
 export default meta;

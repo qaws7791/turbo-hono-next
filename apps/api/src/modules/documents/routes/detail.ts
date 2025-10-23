@@ -1,78 +1,24 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
-import status from "http-status";
-import { db } from "../../../database/client";
 import { roadmapDocument } from "@repo/database/schema";
-import { AuthContext, authMiddleware } from "../../../middleware/auth";
+import { documentDetailRoute } from "@repo/api-spec/modules/documents/routes";
+
+import { db } from "../../../database/client";
+import { authMiddleware } from "../../../middleware/auth";
 import { DocumentError } from "../errors";
-import { DocumentItemSchema, ErrorResponseSchema } from "../schema";
+
+import type { AuthContext} from "../../../middleware/auth";
+
 
 const detail = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
-  createRoute({
-    tags: ["Documents"],
-    method: "get",
-    path: "/documents/{publicId}",
-    summary: "Get document details",
-    description: "Retrieve detailed information about a specific document",
+  {
+    ...documentDetailRoute,
     middleware: [authMiddleware] as const,
-    request: {
-      params: z.object({
-        publicId: z.string().openapi({
-          description: "Document public ID",
-          example: "550e8400-e29b-41d4-a716-446655440000",
-        }),
-      }),
-    },
-    responses: {
-      [status.OK]: {
-        content: {
-          "application/json": {
-            schema: z.object({
-              success: z.boolean(),
-              document: DocumentItemSchema,
-            }),
-          },
-        },
-        description: "Document retrieved successfully",
-      },
-      [status.NOT_FOUND]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Document not found",
-      },
-      [status.FORBIDDEN]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Access denied",
-      },
-      [status.UNAUTHORIZED]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Authentication required",
-      },
-      [status.INTERNAL_SERVER_ERROR]: {
-        content: {
-          "application/json": {
-            schema: ErrorResponseSchema,
-          },
-        },
-        description: "Internal server error",
-      },
-    },
-  }),
+  },
   async (c) => {
     try {
       const auth = c.get("auth");

@@ -1,4 +1,5 @@
 import createClient from "openapi-fetch";
+
 import type { paths } from "./schema";
 
 const client = createClient<paths>({
@@ -265,7 +266,7 @@ const documents = {
 
 const ai = {
   generateRoadmap: async (data: {
-    documentIds?: string[];
+    documentIds?: Array<string>;
     learningTopic: string;
     userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
     targetWeeks: number;

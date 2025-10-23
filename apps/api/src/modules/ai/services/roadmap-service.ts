@@ -1,10 +1,13 @@
 import { randomUUID } from "crypto";
-import type { z } from "zod";
-import { db } from "../../../database/client";
+
 import { goal, roadmap, subGoal } from "@repo/database/schema";
+
+import { db } from "../../../database/client";
 import { generatePublicId } from "../../../utils/id-generator";
-import type { GeneratedRoadmapSchema } from "../schema";
 import { ensureEmoji } from "../../roadmap/utils/emoji";
+
+import type { GeneratedRoadmapSchema } from "../schema";
+import type { z } from "zod";
 
 export type GeneratedRoadmap = z.infer<typeof GeneratedRoadmapSchema>;
 
@@ -38,7 +41,7 @@ export interface SavedRoadmap {
   preferredResources: string;
   mainGoal: string;
   additionalRequirements: string | null;
-  goals: SavedGoal[];
+  goals: Array<SavedGoal>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,7 +52,7 @@ export interface SavedGoal {
   description: string | null;
   order: number;
   isExpanded: boolean;
-  subGoals: SavedSubGoal[];
+  subGoals: Array<SavedSubGoal>;
 }
 
 export interface SavedSubGoal {
@@ -104,7 +107,7 @@ export async function saveRoadmapToDatabase(
     }
 
     // 2. Create goals and subgoals
-    const savedGoals: SavedGoal[] = [];
+    const savedGoals: Array<SavedGoal> = [];
 
     for (const [goalIndex, goalData] of data.generatedRoadmap.goals.entries()) {
       const goalPublicId = randomUUID();
@@ -127,7 +130,7 @@ export async function saveRoadmapToDatabase(
       }
 
       // 3. Create subgoals for this goal
-      const savedSubGoals: SavedSubGoal[] = [];
+      const savedSubGoals: Array<SavedSubGoal> = [];
 
       for (const [subGoalIndex, subGoalData] of goalData.subGoals.entries()) {
         const subGoalPublicId = randomUUID();

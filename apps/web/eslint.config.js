@@ -1,5 +1,5 @@
 //  @ts-check
 
-import { reactConfig } from '@repo/eslint-config/react'
+import { reactConfig } from '@repo/config/eslint/react'
 
 export default [...reactConfig]
