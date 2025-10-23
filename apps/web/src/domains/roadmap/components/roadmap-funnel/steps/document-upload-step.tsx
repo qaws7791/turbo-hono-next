@@ -4,8 +4,8 @@ import React from "react";
 
 import type { Document } from "@/domains/roadmap/types";
 
-import { FileUpload } from "@/components/file-upload";
 import { api } from "@/api/http-client";
+import { FileUpload } from "@/components/file-upload";
 
 interface DocumentUploadStepProps {
   documentId?: string;
@@ -39,14 +39,9 @@ export const DocumentUploadStep = (props: DocumentUploadStepProps) => {
     }
   };
 
-  const handleDelete = async (documentId: string) => {
-    try {
-      await api.documents.delete(documentId);
-      setDocument(null);
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("파일 삭제에 실패했습니다.");
-    }
+  const handleDelete = (_documentId: string) => {
+    console.log("handleDelete", _documentId);
+    setDocument(null);
   };
 
   const handleNext = () => {

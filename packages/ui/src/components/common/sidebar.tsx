@@ -358,8 +358,6 @@ const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({
   renderAvatar,
   className,
 }) => {
-  const slots = sidebarVariants();
-
   const handleMenuItemClick = (action: string) => {
     onMenuItemClick?.(action);
   };

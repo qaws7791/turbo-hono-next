@@ -15,21 +15,21 @@ import {
   CalendarHeading,
 } from "@repo/ui/calendar";
 import { Card } from "@repo/ui/card";
-import { Icon  } from "@repo/ui/icon";
+import { Icon } from "@repo/ui/icon";
 import { twMerge } from "@repo/ui/utils";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
 
-import type {IconName} from "@repo/ui/icon";
-import type {
-  CalendarDate} from "@internationalized/date";
+import type { CalendarDate } from "@internationalized/date";
+import type { IconName } from "@repo/ui/icon";
+import type * as HttpClient from "@/api/http-client";
 
 import { dailyActivityQueryOptions } from "@/domains/progress/queries/daily-activity-query-options";
 import { Link } from "@/components/link";
 
-type ApiClient = typeof import("@/api/http-client");
+type ApiClient = typeof HttpClient.api;
 type DailyActivityResponse = Awaited<
-  ReturnType<ApiClient["api"]["progress"]["daily"]>
+  ReturnType<ApiClient["progress"]["daily"]>
 >;
 type DailyActivityData = NonNullable<DailyActivityResponse["data"]>;
 type DailyActivityDay = DailyActivityData["items"][number];
@@ -106,8 +106,12 @@ export function CompletionCalendarSection() {
 
   const { data } = useQuery(dailyActivityQueryOptions(range));
   const activityData: DailyActivityData | undefined = data?.data;
+  const activityItems = activityData?.items;
 
-  const activityDays = activityData?.items ?? [];
+  const activityDays = React.useMemo<Array<DailyActivityDay>>(
+    () => activityItems ?? [],
+    [activityItems],
+  );
 
   const activityMap = React.useMemo(() => {
     const map = new Map<string, DailyActivityDay>();
@@ -118,7 +122,7 @@ export function CompletionCalendarSection() {
   }, [activityDays]);
 
   const monthTotals = React.useMemo(() => {
-    return activityDays.reduce(
+    return activityDays.reduce<{ completed: number; due: number }>(
       (totals, day) => ({
         completed: totals.completed + day.completed.length,
         due: totals.due + day.due.length,
@@ -261,6 +265,9 @@ export function CompletionCalendarSection() {
               <ul className="space-y-3">
                 {dayActivities.map((activity) => {
                   const meta = activityMeta[activity.type];
+                  if (!meta) {
+                    return null;
+                  }
 
                   return (
                     <li key={`${activity.type}-${activity.subGoalId}`}>

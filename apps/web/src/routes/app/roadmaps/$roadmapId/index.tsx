@@ -15,16 +15,19 @@ export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
   component: RouteComponent,
 });
 
+type ApiGoal =
+  paths["/roadmaps/{roadmapId}"]["get"]["responses"][200]["content"]["application/json"]["goals"][number];
+type ApiSubGoal = ApiGoal["subGoals"] extends Array<infer T> ? T : never;
+
 // Transform API data to match component expectations
-function transformGoals(
-  apiGoals: Array<paths["/roadmaps/{roadmapId}"]["get"]["responses"][200]["content"]["application/json"]["goals"][number]>,
-): Array<Goal> {
+function transformGoals(apiGoals: Array<ApiGoal>): Array<Goal> {
   return apiGoals.map((goal) => {
+    const subGoals: Array<ApiSubGoal> = goal.subGoals ?? [];
     const completedSubGoals =
-      goal.subGoals?.filter((subGoal: any) => subGoal.isCompleted).length || 0;
-    const hasSubGoals = goal.subGoals?.length > 0;
+      subGoals.filter((subGoal: ApiSubGoal) => subGoal.isCompleted).length || 0;
+    const hasSubGoals = subGoals.length > 0;
     const isCompleted = hasSubGoals
-      ? completedSubGoals === goal.subGoals.length
+      ? completedSubGoals === subGoals.length
       : false;
 
     return {
@@ -33,7 +36,7 @@ function transformGoals(
       description: goal.description,
       order: goal.order,
       isExpanded: goal.isExpanded,
-      subGoals: goal.subGoals || [],
+      subGoals,
       hasSubGoals,
       completedSubGoals,
       isCompleted,

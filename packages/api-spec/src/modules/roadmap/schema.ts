@@ -861,6 +861,10 @@ export const RoadmapGoalSubGoalParamsSchema = z.object({
     description: "Public ID of the roadmap",
     example: "abc123def456",
   }),
+  goalId: z.string().min(1).openapi({
+    description: "Public ID of the goal",
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  }),
   subGoalId: z.string().min(1).openapi({
     description: "Public ID of the sub-goal",
     example: "660e8400-e29b-41d4-a716-446655440001",

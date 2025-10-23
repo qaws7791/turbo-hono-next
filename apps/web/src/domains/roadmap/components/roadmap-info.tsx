@@ -89,7 +89,7 @@ export default function RoadmapInfo({
               side="right"
               className="sm:max-w-[425px]"
             >
-              {({ close }) => (
+              {() => (
                 <>
                   <DialogHeader>
                     <DialogTitle>문서 목록</DialogTitle>

@@ -138,7 +138,7 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
     }
 
     setSelectedAnswers({});
-  }, [quizData?.id, quizData?.latestResult?.submittedAt]);
+  }, [quizData]);
 
   const handleGenerateQuiz = (force?: boolean) => {
     if (isQuizProcessing) {
@@ -180,9 +180,6 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
       answers: answersPayload,
     });
   };
-
-  console.log(latestQuizResult);
-  console.log(quizResultMap);
 
   return (
     <>

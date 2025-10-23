@@ -2,6 +2,16 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "./schema";
 
+type RoadmapCreateBody = NonNullable<
+  paths["/roadmaps"]["post"]["requestBody"]
+>["content"]["application/json"];
+type RoadmapUpdateBody = NonNullable<
+  paths["/roadmaps/{id}"]["patch"]["requestBody"]
+>["content"]["application/json"];
+type DocumentUploadBody = NonNullable<
+  paths["/documents/upload"]["post"]["requestBody"]
+>["content"]["multipart/form-data"];
+
 const client = createClient<paths>({
   baseUrl: "http://localhost:3001",
   credentials: "include",
@@ -66,10 +76,15 @@ const roadmaps = {
     learningStyle: string;
     preferredResources: string;
     mainGoal: string;
-    additionalRequirements?: string;
+    additionalRequirements?: string | null;
   }) => {
+    const body: RoadmapCreateBody = {
+      ...data,
+      additionalRequirements: data.additionalRequirements ?? null,
+    };
+
     return client.POST("/roadmaps", {
-      body: data,
+      body,
     });
   },
 
@@ -86,12 +101,20 @@ const roadmaps = {
       learningStyle?: string;
       preferredResources?: string;
       mainGoal?: string;
-      additionalRequirements?: string;
+      additionalRequirements?: string | null;
     },
   ) => {
+    const body =
+      data.additionalRequirements !== undefined
+        ? {
+            ...data,
+            additionalRequirements: data.additionalRequirements,
+          }
+        : data;
+
     return client.PATCH("/roadmaps/{id}", {
       params: { path: { roadmapId } },
-      body: data,
+      body: body as RoadmapUpdateBody,
     });
   },
 
@@ -252,7 +275,7 @@ const documents = {
     formData.append("file", file);
 
     return client.POST("/documents/upload", {
-      body: formData as any,
+      body: formData as unknown as DocumentUploadBody,
       bodySerializer: () => formData,
     });
   },
