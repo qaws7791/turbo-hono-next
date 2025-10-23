@@ -10,11 +10,11 @@ import { all, createLowlight } from "lowlight";
 import { marked } from "marked";
 import { useEffect } from "react";
 
-import type { SubGoalDetail } from "@/domains/roadmap/model/types";
+import type { SubGoalDetail } from "@/features/roadmap/model/types";
 
-import { AI_NOTE_STATUS_META } from "@/domains/roadmap/model/status-meta";
-import { formatNullableDateTime } from "@/domains/roadmap/model/date";
-import { useSubGoalNote } from "@/domains/roadmap/hooks/use-sub-goal-note";
+import { AI_NOTE_STATUS_META } from "@/features/roadmap/model/status-meta";
+import { formatNullableDateTime } from "@/features/roadmap/model/date";
+import { useSubGoalNote } from "@/features/roadmap/hooks/use-sub-goal-note";
 
 type AiNoteTabProps = {
   detail: SubGoalDetail;

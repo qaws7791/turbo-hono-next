@@ -8,9 +8,9 @@ import { AiNoteTab } from "./components/ai-note-tab";
 import { AiQuizTab } from "./components/ai-quiz-tab";
 import { OverviewTab } from "./components/overview-tab";
 
-import { useSubGoalDetail } from "@/domains/roadmap/hooks/use-sub-goal-detail";
-import { Link } from "@/components/link";
-import AppPageLayout from "@/components/app-page-layout";
+import { useSubGoalDetail } from "@/features/roadmap/hooks/use-sub-goal-detail";
+import { Link } from "@/shared/components/link";
+import { AppPageLayout } from "@/shared/components/app-page-layout";
 
 export const Route = createFileRoute(
   "/app/roadmaps/$roadmapId/sub-goals/$subGoalId",

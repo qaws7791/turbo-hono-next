@@ -3,17 +3,11 @@ import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import type { RouterContext as AppRouterContext } from "@/app/router";
 
-import type { AuthState } from "@/domains/auth/hooks/use-auth";
-import type { QueryClient } from "@tanstack/react-query";
+import TanStackQueryDevtools from "@/app/devtools/query-devtools";
 
-interface MyRouterContext {
-  queryClient: QueryClient;
-  auth: AuthState;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<AppRouterContext>()({
   component: () => (
     <>
       <NuqsAdapter>

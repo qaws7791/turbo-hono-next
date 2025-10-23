@@ -8,14 +8,14 @@ import type {
   SubGoalDetail,
   SubGoalQuizAnswerReview,
   SubGoalQuizStatus,
-} from "@/domains/roadmap/model/types";
+} from "@/features/roadmap/model/types";
 
-import { AI_QUIZ_STATUS_META } from "@/domains/roadmap/model/status-meta";
+import { AI_QUIZ_STATUS_META } from "@/features/roadmap/model/status-meta";
 import {
   formatDateTime,
   formatNullableDateTime,
-} from "@/domains/roadmap/model/date";
-import { useSubGoalQuiz } from "@/domains/roadmap/hooks/use-sub-goal-quiz";
+} from "@/features/roadmap/model/date";
+import { useSubGoalQuiz } from "@/features/roadmap/hooks/use-sub-goal-quiz";
 
 type AiQuizTabProps = {
   detail: SubGoalDetail;

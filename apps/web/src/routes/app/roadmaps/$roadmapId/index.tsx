@@ -1,11 +1,11 @@
 import { Icon } from "@repo/ui/icon";
 import { createFileRoute } from "@tanstack/react-router";
 
-import AppPageLayout from "@/components/app-page-layout";
-import { Link } from "@/components/link";
-import { GoalList } from "@/domains/roadmap/components/goal-list";
-import RoadmapInfo from "@/domains/roadmap/components/roadmap-info";
-import { useRoadmapDetail } from "@/domains/roadmap/hooks/use-roadmap-detail";
+import { AppPageLayout } from "@/shared/components/app-page-layout";
+import { Link } from "@/shared/components/link";
+import { GoalList } from "@/features/roadmap/components/goal-list";
+import RoadmapInfo from "@/features/roadmap/components/roadmap-info";
+import { useRoadmapDetail } from "@/features/roadmap/hooks/use-roadmap-detail";
 
 export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
   component: RouteComponent,
