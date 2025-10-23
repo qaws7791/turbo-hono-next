@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
-import type { FunnelSteps } from "@/domains/roadmap/types";
+import type { FunnelSteps } from "@/domains/roadmap/model/types";
 
 interface GoalsStepProps {
   mainGoal: FunnelSteps["Goals"]["mainGoal"];

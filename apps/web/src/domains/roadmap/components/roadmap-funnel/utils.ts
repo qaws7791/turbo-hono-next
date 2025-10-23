@@ -1,4 +1,4 @@
-import type { ApiRoadmapData, FunnelData } from "@/domains/roadmap/types";
+import type { ApiRoadmapData, FunnelData } from "@/domains/roadmap/model/types";
 
 export const getCurrentLevelLabel = (level: number) => {
   return level === 1

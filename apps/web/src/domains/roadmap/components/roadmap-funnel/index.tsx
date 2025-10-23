@@ -14,7 +14,7 @@ import type {
   FunnelData,
   FunnelSteps,
   RoadmapFunnelProps,
-} from "@/domains/roadmap/types";
+} from "@/domains/roadmap/model/types";
 
 const RoadmapFunnel = ({ onSubmit }: RoadmapFunnelProps) => {
   const [isCreating, setIsCreating] = React.useState(false);

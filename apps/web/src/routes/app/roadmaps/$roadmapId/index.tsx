@@ -2,47 +2,16 @@ import { Icon } from "@repo/ui/icon";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import type { paths } from "@/api/schema";
-import type { Goal } from "@/domains/roadmap/types";
-
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
 import { GoalList } from "@/domains/roadmap/components/goal-list";
 import RoadmapInfo from "@/domains/roadmap/components/roadmap-info";
-import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
+import { roadmapQueryOptions } from "@/domains/roadmap/hooks/roadmap-query-options";
+import { transformGoals } from "@/domains/roadmap/model/goal";
 
 export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
   component: RouteComponent,
 });
-
-type ApiGoal =
-  paths["/roadmaps/{roadmapId}"]["get"]["responses"][200]["content"]["application/json"]["goals"][number];
-type ApiSubGoal = ApiGoal["subGoals"] extends Array<infer T> ? T : never;
-
-// Transform API data to match component expectations
-function transformGoals(apiGoals: Array<ApiGoal>): Array<Goal> {
-  return apiGoals.map((goal) => {
-    const subGoals: Array<ApiSubGoal> = goal.subGoals ?? [];
-    const completedSubGoals =
-      subGoals.filter((subGoal: ApiSubGoal) => subGoal.isCompleted).length || 0;
-    const hasSubGoals = subGoals.length > 0;
-    const isCompleted = hasSubGoals
-      ? completedSubGoals === subGoals.length
-      : false;
-
-    return {
-      id: goal.id,
-      title: goal.title,
-      description: goal.description,
-      order: goal.order,
-      isExpanded: goal.isExpanded,
-      subGoals,
-      hasSubGoals,
-      completedSubGoals,
-      isCompleted,
-    };
-  });
-}
 
 function RouteComponent() {
   const { roadmapId } = Route.useParams();

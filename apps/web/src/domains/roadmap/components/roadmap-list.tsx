@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { Link } from "@/components/link";
 import { RoadmapCard } from "@/domains/roadmap/components/roadmap-card";
-import { roadmapsQueryOptions } from "@/domains/roadmap/queries/roadmaps-query-options";
+import { roadmapsQueryOptions } from "@/domains/roadmap/hooks/roadmaps-query-options";
 
 export default function RoadmapList() {
   const { data: roadmaps } = useSuspenseQuery(roadmapsQueryOptions());

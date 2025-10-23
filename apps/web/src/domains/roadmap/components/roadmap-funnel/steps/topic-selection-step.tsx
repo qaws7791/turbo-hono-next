@@ -13,7 +13,7 @@ import React from "react";
 
 import { getCurrentLevelLabel } from "../utils";
 
-import type { FunnelSteps } from "@/domains/roadmap/types";
+import type { FunnelSteps } from "@/domains/roadmap/model/types";
 
 interface TopicSelectionStepProps {
   learningTopic: FunnelSteps["TopicSelection"]["learningTopic"];

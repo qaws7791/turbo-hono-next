@@ -1,4 +1,4 @@
-import type { SubGoal } from "@/domains/roadmap/types";
+import type { SubGoal } from "@/domains/roadmap/model/types";
 
 import { SubGoalItem } from "@/domains/roadmap/components/sub-goal-item";
 

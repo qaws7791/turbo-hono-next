@@ -4,9 +4,9 @@ import { Icon } from "@repo/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import type { Goal } from "@/domains/roadmap/types";
+import type { Goal } from "@/domains/roadmap/model/types";
 
-import { roadmapQueryOptions } from "@/domains/roadmap/queries/roadmap-query-options";
+import { roadmapQueryOptions } from "@/domains/roadmap/hooks/roadmap-query-options";
 import { SubGoalList } from "@/domains/roadmap/components/sub-goal-list";
 import { api } from "@/api/http-client";
 

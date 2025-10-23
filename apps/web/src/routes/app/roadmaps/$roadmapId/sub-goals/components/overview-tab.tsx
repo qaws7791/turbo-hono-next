@@ -1,11 +1,10 @@
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 
-import { formatDateTime } from "../utils";
+import type { SubGoalDetail } from "@/domains/roadmap/model/types";
 
-import type { SubGoalDetail } from "@/domains/roadmap/types";
-
-import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
+import { formatDateTime } from "@/domains/roadmap/model/date";
+import { formatSubGoalDueDate } from "@/domains/roadmap/model/format-sub-goal-due-date";
 
 type OverviewTabProps = {
   detail: SubGoalDetail;

@@ -3,7 +3,7 @@ import { Progress } from "@repo/ui/progress-bar";
 
 import { STEP_INFO, TOTAL_STEPS } from "./constants";
 
-import type { StepKeys } from "@/domains/roadmap/types";
+import type { StepKeys } from "@/domains/roadmap/model/types";
 
 interface ProgressHeaderProps {
   currentStep: StepKeys;

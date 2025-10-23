@@ -5,7 +5,7 @@ import { NuqsAdapter } from "nuqs/adapters/tanstack-router";
 
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
-import type { AuthState } from "@/domains/auth/use-auth";
+import type { AuthState } from "@/domains/auth/hooks/use-auth";
 import type { QueryClient } from "@tanstack/react-query";
 
 interface MyRouterContext {

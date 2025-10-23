@@ -14,10 +14,10 @@ import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
 import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 
-import type { SubGoal } from "@/domains/roadmap/types";
+import type { SubGoal } from "@/domains/roadmap/model/types";
 
 import { Link } from "@/components/link";
-import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
+import { formatSubGoalDueDate } from "@/domains/roadmap/model/format-sub-goal-due-date";
 
 interface SubGoalItemProps {
   subGoal: SubGoal;

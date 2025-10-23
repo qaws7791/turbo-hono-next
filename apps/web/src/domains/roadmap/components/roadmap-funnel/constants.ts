@@ -1,4 +1,4 @@
-import type { StepKeys } from "@/domains/roadmap/types";
+import type { StepKeys } from "@/domains/roadmap/model/types";
 
 export const STEP_INFO: Record<
   StepKeys,

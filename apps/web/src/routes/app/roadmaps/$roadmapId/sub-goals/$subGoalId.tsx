@@ -9,9 +9,9 @@ import { AiNoteTab } from "./components/ai-note-tab";
 import { AiQuizTab } from "./components/ai-quiz-tab";
 import { OverviewTab } from "./components/overview-tab";
 
-import type { SubGoalNoteStatus } from "@/domains/roadmap/types";
+import type { SubGoalNoteStatus } from "@/domains/roadmap/model/types";
 
-import { subGoalDetailQueryOptions } from "@/domains/roadmap/queries/sub-goal-detail-query-options";
+import { subGoalDetailQueryOptions } from "@/domains/roadmap/hooks/sub-goal-detail-query-options";
 import { Link } from "@/components/link";
 import AppPageLayout from "@/components/app-page-layout";
 

@@ -1,7 +1,7 @@
 import type {
   SubGoalNoteStatus,
   SubGoalQuizStatus,
-} from "@/domains/roadmap/types";
+} from "@/domains/roadmap/model/types";
 
 export const AI_NOTE_STATUS_META: Record<
   SubGoalNoteStatus,

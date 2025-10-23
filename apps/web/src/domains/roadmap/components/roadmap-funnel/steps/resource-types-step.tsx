@@ -4,7 +4,7 @@ import React from "react";
 
 import { resourceTypes } from "../constants";
 
-import type { FunnelSteps } from "@/domains/roadmap/types";
+import type { FunnelSteps } from "@/domains/roadmap/model/types";
 
 interface ResourceTypesStepProps {
   preferredResources: FunnelSteps["ResourceTypes"]["preferredResources"];

@@ -5,15 +5,17 @@ import { Icon } from "@repo/ui/icon";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
-import { AI_QUIZ_STATUS_META } from "../status-meta";
-import { formatDateTime, formatNullableDateTime } from "../utils";
-
 import type {
   SubGoalDetail,
   SubGoalQuizAnswerReview,
   SubGoalQuizStatus,
-} from "@/domains/roadmap/types";
+} from "@/domains/roadmap/model/types";
 
+import { AI_QUIZ_STATUS_META } from "@/domains/roadmap/model/status-meta";
+import {
+  formatDateTime,
+  formatNullableDateTime,
+} from "@/domains/roadmap/model/date";
 import { api } from "@/api/http-client";
 
 type AiQuizTabProps = {

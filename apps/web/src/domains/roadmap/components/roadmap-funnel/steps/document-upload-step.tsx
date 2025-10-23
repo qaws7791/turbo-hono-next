@@ -2,7 +2,7 @@ import { Button } from "@repo/ui/button";
 import { ChevronRight, FileText } from "lucide-react";
 import React from "react";
 
-import type { Document } from "@/domains/roadmap/types";
+import type { Document } from "@/domains/roadmap/model/types";
 
 import { api } from "@/api/http-client";
 import { FileUpload } from "@/components/file-upload";

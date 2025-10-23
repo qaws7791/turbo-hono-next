@@ -1,7 +1,7 @@
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 
-import type { Goal } from "@/domains/roadmap/types";
+import type { Goal } from "@/domains/roadmap/model/types";
 
 import { GoalItem } from "@/domains/roadmap/components/goal-item";
 

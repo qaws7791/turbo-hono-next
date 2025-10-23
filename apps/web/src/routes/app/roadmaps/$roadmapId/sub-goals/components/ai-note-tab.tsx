@@ -11,11 +11,10 @@ import { all, createLowlight } from "lowlight";
 import { marked } from "marked";
 import { useEffect } from "react";
 
-import { AI_NOTE_STATUS_META } from "../status-meta";
-import { formatNullableDateTime } from "../utils";
+import type { SubGoalDetail } from "@/domains/roadmap/model/types";
 
-import type { SubGoalDetail } from "@/domains/roadmap/types";
-
+import { AI_NOTE_STATUS_META } from "@/domains/roadmap/model/status-meta";
+import { formatNullableDateTime } from "@/domains/roadmap/model/date";
 import { api } from "@/api/http-client";
 
 type AiNoteTabProps = {

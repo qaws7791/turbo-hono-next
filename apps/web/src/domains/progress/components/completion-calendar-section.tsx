@@ -24,7 +24,7 @@ import type { CalendarDate } from "@internationalized/date";
 import type { IconName } from "@repo/ui/icon";
 import type * as HttpClient from "@/api/http-client";
 
-import { dailyActivityQueryOptions } from "@/domains/progress/queries/daily-activity-query-options";
+import { dailyActivityQueryOptions } from "@/domains/progress/hooks/daily-activity-query-options";
 import { Link } from "@/components/link";
 
 type ApiClient = typeof HttpClient.api;

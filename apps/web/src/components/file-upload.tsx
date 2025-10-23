@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, FileTrigger } from "react-aria-components";
 
-import type { Document } from "@/domains/roadmap/types";
+import type { Document } from "@/domains/roadmap/model/types";
 
 interface FileUploadProps {
   documents: Array<Document>;
