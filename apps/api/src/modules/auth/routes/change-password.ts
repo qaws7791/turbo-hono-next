@@ -9,7 +9,7 @@ import { passwordUtils } from "../../../utils/password";
 import { AuthError } from "../errors";
 import { authMiddleware } from "../../../middleware/auth";
 
-import type {ChangePasswordRequest} from "../schema";
+import type { ChangePasswordRequest } from "../schema";
 
 const changePassword = new OpenAPIHono<{
   Variables: {
@@ -43,7 +43,9 @@ const changePassword = new OpenAPIHono<{
         .where(eq(account.userId, user.id))
         .limit(1);
 
-      if (!userAccount.length || !userAccount[0].password) {
+      const [accountRow] = userAccount;
+
+      if (!accountRow?.password) {
         throw new AuthError(
           401,
           "auth:invalid_credentials",
@@ -53,7 +55,7 @@ const changePassword = new OpenAPIHono<{
 
       const isCurrentPasswordValid = await passwordUtils.verify(
         currentPassword,
-        userAccount[0].password,
+        accountRow.password,
       );
       if (!isCurrentPasswordValid) {
         throw new AuthError(

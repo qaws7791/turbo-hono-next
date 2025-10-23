@@ -12,19 +12,36 @@ import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";
 
+interface SignupResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    emailVerified: boolean;
+    image: string | null;
+  };
+  session: {
+    id: string;
+    expiresAt: string;
+  };
+}
 
 const signup = new OpenAPIHono().openapi(signupRoute, async (c) => {
   try {
-    const { email, password, name } = c.req.valid("json");
+    const { email, password, name: rawName } = c.req.valid("json");
+    const normalizedName = rawName ? rawName.trim() : "";
+    const [localPart = email] = email.split("@");
+    const displayName: string =
+      normalizedName.length > 0 ? normalizedName : localPart;
 
     // Check if user already exists
-    const existingUser = await db
+    const existingUsers = await db
       .select()
       .from(user)
       .where(eq(user.email, email))
       .limit(1);
 
-    if (existingUser.length > 0) {
+    if (existingUsers.length > 0) {
       throw new AuthError(409, "auth:user_exists", "User already exists");
     }
 
@@ -35,17 +52,19 @@ const signup = new OpenAPIHono().openapi(signupRoute, async (c) => {
     const userId = nanoid();
     const now = new Date();
 
-    await db.insert(user).values({
+    const newUser: typeof user.$inferInsert = {
       id: userId,
       email,
-      name: name || email.split("@")[0],
+      name: displayName,
       createdAt: now,
       updatedAt: now,
-    });
+    };
+
+    await db.insert(user).values(newUser);
 
     // Create account with password
     const accountId = nanoid();
-    await db.insert(account).values({
+    const newAccount: typeof account.$inferInsert = {
       id: accountId,
       accountId: email,
       providerId: "email",
@@ -53,7 +72,9 @@ const signup = new OpenAPIHono().openapi(signupRoute, async (c) => {
       password: hashedPassword,
       createdAt: now,
       updatedAt: now,
-    });
+    };
+
+    await db.insert(account).values(newAccount);
 
     // Create session
     const userAgent = c.req.header("user-agent");
@@ -74,24 +95,23 @@ const signup = new OpenAPIHono().openapi(signupRoute, async (c) => {
       path: "/",
     });
 
-    return c.json(
-      {
-        user: {
-          id: userId,
-          email,
-          name: name || email.split("@")[0],
-          emailVerified: false,
-          image: null,
-        },
-        session: {
-          id: sessionToken,
-          expiresAt: new Date(
-            Date.now() + authConfig.session.expiresIn * 1000,
-          ).toISOString(),
-        },
+    const response: SignupResponse = {
+      user: {
+        id: userId,
+        email,
+        name: displayName,
+        emailVerified: false,
+        image: null,
       },
-      status.CREATED,
-    );
+      session: {
+        id: sessionToken,
+        expiresAt: new Date(
+          Date.now() + authConfig.session.expiresIn * 1000,
+        ).toISOString(),
+      },
+    };
+
+    return c.json(response, status.CREATED);
   } catch (error) {
     if (error instanceof AuthError) {
       throw error;

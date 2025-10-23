@@ -12,7 +12,6 @@ import { RoadmapError } from "../../errors";
 
 import type { AuthContext } from "../../../../middleware/auth";
 
-
 const createSubGoal = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
@@ -93,7 +92,7 @@ const createSubGoal = new OpenAPIHono<{
       const { title, description, dueDate, memo } = body;
 
       // Create sub-goal in database
-      const result = await db
+      const [createdSubGoal] = await db
         .insert(subGoal)
         .values({
           publicId,
@@ -118,15 +117,13 @@ const createSubGoal = new OpenAPIHono<{
           updatedAt: subGoal.updatedAt,
         });
 
-      if (!result || result.length === 0) {
+      if (!createdSubGoal) {
         throw new RoadmapError(
           500,
           "roadmap:sub_goal_creation_failed",
           "Failed to create sub-goal",
         );
       }
-
-      const createdSubGoal = result[0];
 
       // Format response
       return c.json(

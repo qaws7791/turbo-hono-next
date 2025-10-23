@@ -8,8 +8,7 @@ import { db } from "../../../../database/client";
 import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 
-import type { AuthContext} from "../../../../middleware/auth";
-
+import type { AuthContext } from "../../../../middleware/auth";
 
 const updateGoal = new OpenAPIHono<{
   Variables: {
@@ -75,7 +74,7 @@ const updateGoal = new OpenAPIHono<{
       }
 
       // Prepare update data - only include fields that are provided
-      const updateData: any = {};
+      const updateData: Partial<typeof goal.$inferInsert> = {};
 
       if (body.title !== undefined) {
         updateData.title = body.title;
@@ -103,7 +102,7 @@ const updateGoal = new OpenAPIHono<{
       }
 
       // Update goal in database
-      const result = await db
+      const [updatedGoal] = await db
         .update(goal)
         .set(updateData)
         .where(eq(goal.id, goalResult.id))
@@ -118,15 +117,13 @@ const updateGoal = new OpenAPIHono<{
           updatedAt: goal.updatedAt,
         });
 
-      if (!result || result.length === 0) {
+      if (!updatedGoal) {
         throw new RoadmapError(
           500,
           "roadmap:goal_update_failed",
           "Failed to update goal",
         );
       }
-
-      const updatedGoal = result[0];
 
       // Format response
       return c.json(
@@ -138,6 +135,11 @@ const updateGoal = new OpenAPIHono<{
           isExpanded: updatedGoal.isExpanded,
           createdAt: updatedGoal.createdAt.toISOString(),
           updatedAt: updatedGoal.updatedAt.toISOString(),
+          aiNoteStatus: "idle" as const,
+          aiNoteMarkdown: null,
+          aiNoteRequestedAt: null,
+          aiNoteCompletedAt: null,
+          aiNoteError: null,
         },
         status.OK,
       );

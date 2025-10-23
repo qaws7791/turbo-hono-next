@@ -12,8 +12,7 @@ import {
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
 import { DocumentError } from "../errors";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const upload = new OpenAPIHono<{
   Variables: {
@@ -94,6 +93,14 @@ const upload = new OpenAPIHono<{
           storageUrl,
         })
         .returning();
+
+      if (!document) {
+        throw new DocumentError(
+          500,
+          "document:upload_failed",
+          "Failed to persist uploaded document",
+        );
+      }
 
       return c.json(
         {

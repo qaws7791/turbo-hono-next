@@ -8,8 +8,7 @@ import { db } from "../../../../database/client";
 import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 
-import type { AuthContext} from "../../../../middleware/auth";
-
+import type { AuthContext } from "../../../../middleware/auth";
 
 const moveSubGoal = new OpenAPIHono<{
   Variables: {
@@ -244,6 +243,14 @@ const moveSubGoal = new OpenAPIHono<{
         .from(subGoal)
         .where(eq(subGoal.id, subGoalResult.id))
         .limit(1);
+
+      if (!updatedSubGoal) {
+        throw new RoadmapError(
+          500,
+          "roadmap:sub_goal_update_failed",
+          "Failed to load sub-goal after move",
+        );
+      }
 
       // Format response
       return c.json(

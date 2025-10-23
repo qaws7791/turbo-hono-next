@@ -14,13 +14,12 @@ import {
 import { db } from "../../../database/client";
 import { AIError } from "../errors";
 import { generateSubGoalQuizPrompt } from "../prompts/subgoal-quiz-prompts";
-import {
-  SubGoalQuizSchema
-} from "../schema";
+import { SubGoalQuizSchema } from "../schema";
 
 import type {
   GenerateSubGoalQuizResponseSchema,
-  SubGoalQuizSubmissionAnswerSchema} from "../schema";
+  SubGoalQuizSubmissionAnswerSchema,
+} from "../schema";
 import type { z } from "zod";
 import type {
   DocumentSummary,
@@ -175,7 +174,9 @@ function normalizeQuestions(
   });
 }
 
-function parseStoredQuestions(value: unknown): Array<SubGoalQuizQuestion> | null {
+function parseStoredQuestions(
+  value: unknown,
+): Array<SubGoalQuizQuestion> | null {
   if (!value) {
     return null;
   }
@@ -317,7 +318,7 @@ function summarizeMarkdown(content: string | null): string | null {
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`([^`]*)`/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/[#>*_\-]/g, "")
+    .replace(/[-#>*_]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -648,6 +649,14 @@ export async function prepareSubGoalQuizGeneration(
       questions: aiQuizTable.questions,
     });
 
+  if (!insertedQuiz) {
+    throw new AIError(
+      500,
+      "ai:database_error",
+      "퀴즈 요청 생성에 실패했습니다.",
+    );
+  }
+
   await db
     .update(subGoalTable)
     .set({ updatedAt: now })
@@ -973,6 +982,14 @@ export async function submitSubGoalQuiz(
       answers: aiQuizResultTable.answers,
       submittedAt: aiQuizResultTable.submittedAt,
     });
+
+  if (!storedResult) {
+    throw new AIError(
+      500,
+      "ai:quiz_result_store_failed",
+      "퀴즈 결과 저장에 실패했습니다.",
+    );
+  }
 
   await db
     .update(aiQuizTable)

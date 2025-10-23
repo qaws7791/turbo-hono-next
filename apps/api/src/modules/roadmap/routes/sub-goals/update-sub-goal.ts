@@ -7,14 +7,11 @@ import { updateSubGoalRoute } from "@repo/api-spec/modules/roadmap/routes/sub-go
 import { db } from "../../../../database/client";
 import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
-import {
-  SUB_GOAL_NOTE_STATUS
-  
-} from "../../../ai/services/subgoal-note-service";
+import { SUB_GOAL_NOTE_STATUS } from "../../../ai/services/subgoal-note-service";
 
-import type { AuthContext} from "../../../../middleware/auth";
+import type { AuthContext } from "../../../../middleware/auth";
 import type { SubGoalUpdate } from "@repo/database/types";
-import type {SubGoalNoteStatus} from "../../../ai/services/subgoal-note-service";
+import type { SubGoalNoteStatus } from "../../../ai/services/subgoal-note-service";
 
 const updateSubGoal = new OpenAPIHono<{
   Variables: {
@@ -124,7 +121,7 @@ const updateSubGoal = new OpenAPIHono<{
       updateData.updatedAt = new Date();
 
       // Update sub-goal in database
-      const result = await db
+      const [updatedSubGoal] = await db
         .update(subGoal)
         .set(updateData)
         .where(eq(subGoal.id, subGoalResult.id))
@@ -142,15 +139,13 @@ const updateSubGoal = new OpenAPIHono<{
           updatedAt: subGoal.updatedAt,
         });
 
-      if (!result || result.length === 0) {
+      if (!updatedSubGoal) {
         throw new RoadmapError(
           500,
           "roadmap:sub_goal_update_failed",
           "Failed to update sub-goal",
         );
       }
-
-      const updatedSubGoal = result[0];
 
       const [noteRow] = await db
         .select({

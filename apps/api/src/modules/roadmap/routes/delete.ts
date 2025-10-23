@@ -8,8 +8,7 @@ import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const deleteRoadmap = new OpenAPIHono<{
   Variables: {
@@ -26,7 +25,7 @@ const deleteRoadmap = new OpenAPIHono<{
       const { roadmapId: publicId } = c.req.valid("param");
 
       // Check if roadmap exists and user has access
-      const existingRoadmap = await db
+      const existingRoadmaps = await db
         .select({
           id: roadmap.id,
           userId: roadmap.userId,
@@ -37,7 +36,9 @@ const deleteRoadmap = new OpenAPIHono<{
         .where(eq(roadmap.publicId, publicId))
         .limit(1);
 
-      if (existingRoadmap.length === 0) {
+      const [existingRoadmap] = existingRoadmaps;
+
+      if (!existingRoadmap) {
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
@@ -45,7 +46,7 @@ const deleteRoadmap = new OpenAPIHono<{
         );
       }
 
-      if (existingRoadmap[0].userId !== auth.user.id) {
+      if (existingRoadmap.userId !== auth.user.id) {
         throw new RoadmapError(
           403,
           "roadmap:access_denied",

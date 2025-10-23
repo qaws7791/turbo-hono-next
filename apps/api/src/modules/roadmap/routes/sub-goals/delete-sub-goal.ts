@@ -8,8 +8,7 @@ import { db } from "../../../../database/client";
 import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 
-import type { AuthContext} from "../../../../middleware/auth";
-
+import type { AuthContext } from "../../../../middleware/auth";
 
 const deleteSubGoal = new OpenAPIHono<{
   Variables: {

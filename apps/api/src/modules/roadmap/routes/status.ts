@@ -8,8 +8,7 @@ import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const changeStatus = new OpenAPIHono<{
   Variables: {
@@ -38,7 +37,9 @@ const changeStatus = new OpenAPIHono<{
         .where(eq(roadmap.publicId, publicId))
         .limit(1);
 
-      if (existingRoadmap.length === 0) {
+      const [roadmapRow] = existingRoadmap;
+
+      if (!roadmapRow) {
         throw new RoadmapError(
           404,
           "roadmap:roadmap_not_found",
@@ -46,7 +47,7 @@ const changeStatus = new OpenAPIHono<{
         );
       }
 
-      if (existingRoadmap[0].userId !== auth.user.id) {
+      if (roadmapRow.userId !== auth.user.id) {
         throw new RoadmapError(
           403,
           "roadmap:access_denied",
@@ -55,7 +56,7 @@ const changeStatus = new OpenAPIHono<{
       }
 
       // Check if status is already the requested status
-      if (existingRoadmap[0].status === newStatus) {
+      if (roadmapRow.status === newStatus) {
         throw new RoadmapError(
           409,
           "roadmap:roadmap_already_archived",
@@ -64,7 +65,7 @@ const changeStatus = new OpenAPIHono<{
       }
 
       // Perform the status update
-      const updatedRoadmaps = await db
+      const [updatedRoadmap] = await db
         .update(roadmap)
         .set({
           status: newStatus,
@@ -78,15 +79,13 @@ const changeStatus = new OpenAPIHono<{
           updatedAt: roadmap.updatedAt,
         });
 
-      if (updatedRoadmaps.length === 0) {
+      if (!updatedRoadmap) {
         throw new RoadmapError(
           500,
           "roadmap:status_change_failed",
           "Failed to change roadmap status",
         );
       }
-
-      const updatedRoadmap = updatedRoadmaps[0];
 
       return c.json(
         {

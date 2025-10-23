@@ -11,7 +11,6 @@ import { passwordUtils } from "../../../utils/password";
 import { sessionUtils } from "../../../utils/session";
 import { AuthError } from "../errors";
 
-
 const loginWithEmail = new OpenAPIHono().openapi(
   loginWithEmailRoute,
   async (c) => {
@@ -37,7 +36,9 @@ const loginWithEmail = new OpenAPIHono().openapi(
         .where(and(eq(user.email, email), eq(account.providerId, "email")))
         .limit(1);
 
-      if (result.length === 0 || !result[0].account.password) {
+      const [loginRow] = result;
+
+      if (!loginRow) {
         throw new AuthError(
           401,
           "auth:invalid_credentials",
@@ -45,20 +46,22 @@ const loginWithEmail = new OpenAPIHono().openapi(
         );
       }
 
-      const { user: foundUser, account: foundAccount } = result[0];
+      const accountPassword = loginRow.account.password;
 
-      if (!foundAccount.password) {
+      if (!accountPassword) {
         throw new AuthError(
           401,
           "auth:invalid_credentials",
           "Invalid credentials",
         );
       }
+
+      const foundUser = loginRow.user;
 
       // Verify password
       const isValidPassword = await passwordUtils.verify(
         password,
-        foundAccount.password,
+        accountPassword,
       );
       if (!isValidPassword) {
         throw new AuthError(

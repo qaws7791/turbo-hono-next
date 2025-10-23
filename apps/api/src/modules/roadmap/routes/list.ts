@@ -20,7 +20,7 @@ import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import { calculateCompletionPercent } from "../utils/progress";
 
-import type { AuthContext} from "../../../middleware/auth";
+import type { AuthContext } from "../../../middleware/auth";
 
 // Cursor encoding/decoding utilities
 type SortValue = string | Date;
@@ -208,6 +208,13 @@ const list = new OpenAPIHono<{
       let nextCursor: string | null = null;
       if (hasNext && items.length > 0) {
         const lastItem = items[items.length - 1];
+        if (!lastItem) {
+          throw new RoadmapError(
+            500,
+            "roadmap:internal_error",
+            "Failed to determine next pagination cursor",
+          );
+        }
         const sortValue =
           sort === "title"
             ? lastItem.title

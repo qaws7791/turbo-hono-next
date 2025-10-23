@@ -2,16 +2,16 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { submitSubGoalQuizRoute } from "@repo/api-spec/modules/roadmap/routes/sub-goals/submit-sub-goal-quiz";
 
-import {  authMiddleware } from "../../../../middleware/auth";
+import { authMiddleware } from "../../../../middleware/auth";
 import { AIError } from "../../../ai/errors";
 import {
   serializeQuizRecord,
   submitSubGoalQuiz,
 } from "../../../ai/services/subgoal-quiz-service";
 
-import type {AuthContext} from "../../../../middleware/auth";
+import type { AuthContext } from "../../../../middleware/auth";
 
-const submitSubGoalQuiz = new OpenAPIHono<{
+const submitSubGoalQuizHandler = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
@@ -89,4 +89,4 @@ const submitSubGoalQuiz = new OpenAPIHono<{
   },
 );
 
-export default submitSubGoalQuiz;
+export default submitSubGoalQuizHandler;

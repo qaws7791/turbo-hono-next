@@ -1,7 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { nanoid } from "nanoid";
-import { count, eq, max } from "drizzle-orm";
+import { eq, max } from "drizzle-orm";
 import { goal, roadmap } from "@repo/database/schema";
 import { createGoalRoute } from "@repo/api-spec/modules/roadmap/routes/goals/create-goal";
 
@@ -9,8 +9,7 @@ import { db } from "../../../../database/client";
 import { authMiddleware } from "../../../../middleware/auth";
 import { RoadmapError } from "../../errors";
 
-import type { AuthContext} from "../../../../middleware/auth";
-
+import type { AuthContext } from "../../../../middleware/auth";
 
 const createGoal = new OpenAPIHono<{
   Variables: {
@@ -70,7 +69,7 @@ const createGoal = new OpenAPIHono<{
       const { title, description, isExpanded = true } = body;
 
       // Create goal in database
-      const result = await db
+      const [createdGoal] = await db
         .insert(goal)
         .values({
           publicId,
@@ -91,15 +90,13 @@ const createGoal = new OpenAPIHono<{
           updatedAt: goal.updatedAt,
         });
 
-      if (!result || result.length === 0) {
+      if (!createdGoal) {
         throw new RoadmapError(
           500,
           "roadmap:goal_creation_failed",
           "Failed to create goal",
         );
       }
-
-      const createdGoal = result[0];
 
       // Format response
       return c.json(
@@ -111,6 +108,11 @@ const createGoal = new OpenAPIHono<{
           isExpanded: createdGoal.isExpanded,
           createdAt: createdGoal.createdAt.toISOString(),
           updatedAt: createdGoal.updatedAt.toISOString(),
+          aiNoteStatus: "idle" as const,
+          aiNoteMarkdown: null,
+          aiNoteRequestedAt: null,
+          aiNoteCompletedAt: null,
+          aiNoteError: null,
         },
         status.CREATED,
       );

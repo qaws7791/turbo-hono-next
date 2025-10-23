@@ -4,7 +4,7 @@ import { goal, roadmap, subGoal } from "@repo/database/schema";
 
 import { db } from "../../../database/client";
 import { generatePublicId } from "../../../utils/id-generator";
-import { ensureEmoji } from "../../roadmap/utils/emoji";
+import { RoadmapEmoji } from "../../roadmap/utils/emoji";
 
 import type { GeneratedRoadmapSchema } from "../schema";
 import type { z } from "zod";
@@ -76,7 +76,7 @@ export async function saveRoadmapToDatabase(
   try {
     // 1. Create roadmap record
     const roadmapPublicId = generatePublicId(16);
-    const roadmapEmoji = ensureEmoji(
+    const roadmapEmoji = RoadmapEmoji.ensure(
       data.generatedRoadmap.emoji,
       data.personalizedData.learningTopic || data.generatedRoadmap.title,
     );

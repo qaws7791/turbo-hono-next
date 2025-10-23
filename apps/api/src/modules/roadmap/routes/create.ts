@@ -9,8 +9,7 @@ import { authMiddleware } from "../../../middleware/auth";
 import { RoadmapError } from "../errors";
 import { RoadmapEmoji } from "../utils/emoji";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const create = new OpenAPIHono<{
   Variables: {
@@ -46,7 +45,7 @@ const create = new OpenAPIHono<{
       const resolvedEmoji = RoadmapEmoji.ensure(emoji, learningTopic);
 
       // Create roadmap in database
-      const result = await db
+      const [createdRoadmap] = await db
         .insert(roadmap)
         .values({
           publicId,
@@ -83,15 +82,13 @@ const create = new OpenAPIHono<{
           updatedAt: roadmap.updatedAt,
         });
 
-      if (!result || result.length === 0) {
+      if (!createdRoadmap) {
         throw new RoadmapError(
           500,
           "roadmap:creation_failed",
           "Failed to create roadmap",
         );
       }
-
-      const createdRoadmap = result[0];
 
       // Format response
       return c.json(

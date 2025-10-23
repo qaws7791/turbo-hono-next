@@ -60,12 +60,7 @@ export async function getFromR2(key: string): Promise<Buffer> {
     throw new Error("File not found in R2");
   }
 
-  const chunks: Array<Uint8Array> = [];
-  for await (const chunk of response.Body as any) {
-    chunks.push(chunk);
-  }
-
-  return Buffer.concat(chunks);
+  return bodyToBuffer(response.Body);
 }
 
 /**
@@ -93,4 +88,77 @@ export function generateStorageKey(userId: string, fileName: string): string {
   const ext = fileName.split(".").pop();
 
   return `pdfs/${userId}/${timestamp}-${uuid}.${ext}`;
+}
+
+type GetObjectBody = NonNullable<GetObjectCommandOutput["Body"]>;
+
+function resolvePublicBaseUrl(): string {
+  const baseUrl =
+    process.env.R2_PUBLIC_BASE_URL ?? process.env.R2_PUBLIC_URL ?? "";
+
+  if (!baseUrl) {
+    throw new Error("R2 public URL is not configured");
+  }
+
+  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+}
+
+function hasTransformToByteArray(body: GetObjectBody): body is GetObjectBody & {
+  transformToByteArray: () => Promise<Uint8Array>;
+} {
+  return (
+    typeof (body as { transformToByteArray?: unknown }).transformToByteArray ===
+    "function"
+  );
+}
+
+function isAsyncIterable(
+  value: GetObjectBody,
+): value is GetObjectBody & AsyncIterable<unknown> {
+  return (
+    typeof value === "object" && value !== null && Symbol.asyncIterator in value
+  );
+}
+
+async function collectFromAsyncIterable(
+  source: AsyncIterable<unknown>,
+): Promise<Buffer> {
+  const chunks: Array<Buffer> = [];
+
+  for await (const chunk of source) {
+    if (typeof chunk === "string") {
+      chunks.push(Buffer.from(chunk));
+    } else if (chunk instanceof Uint8Array) {
+      chunks.push(Buffer.from(chunk));
+    } else {
+      throw new Error("Unsupported stream chunk type");
+    }
+  }
+
+  return Buffer.concat(chunks);
+}
+
+async function bodyToBuffer(body: GetObjectBody): Promise<Buffer> {
+  if (hasTransformToByteArray(body)) {
+    const bytes = await body.transformToByteArray();
+    return Buffer.from(bytes);
+  }
+
+  if (isAsyncIterable(body)) {
+    return collectFromAsyncIterable(body);
+  }
+
+  if (
+    typeof (body as { arrayBuffer?: () => Promise<ArrayBuffer> })
+      .arrayBuffer === "function"
+  ) {
+    const arrayBuffer = await (
+      body as {
+        arrayBuffer: () => Promise<ArrayBuffer>;
+      }
+    ).arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+
+  throw new Error("Unsupported R2 response body type");
 }

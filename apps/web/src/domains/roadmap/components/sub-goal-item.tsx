@@ -16,8 +16,8 @@ import * as React from "react";
 
 import type { SubGoal } from "@/domains/roadmap/types";
 
-import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
 import { Link } from "@/components/link";
+import { formatSubGoalDueDate } from "@/domains/roadmap/utils/format-sub-goal-due-date";
 
 interface SubGoalItemProps {
   subGoal: SubGoal;
@@ -208,7 +208,6 @@ const SubGoalItem = ({
   subGoal,
   index,
   roadmapId,
-  goalId,
   className,
   onToggleComplete,
   onUpdateDueDate,
@@ -221,7 +220,7 @@ const SubGoalItem = ({
       to: "/app/roadmaps/$roadmapId/sub-goals/$subGoalId",
       params: { roadmapId, subGoalId: subGoal.id },
     });
-  }, [navigate, roadmapId, goalId, subGoal.id]);
+  }, [navigate, roadmapId, subGoal.id]);
 
   const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
