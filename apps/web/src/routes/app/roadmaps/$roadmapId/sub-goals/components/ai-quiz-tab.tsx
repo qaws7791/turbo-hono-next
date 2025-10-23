@@ -2,7 +2,6 @@ import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 import type {
@@ -16,7 +15,7 @@ import {
   formatDateTime,
   formatNullableDateTime,
 } from "@/domains/roadmap/model/date";
-import { api } from "@/api/http-client";
+import { useSubGoalQuiz } from "@/domains/roadmap/hooks/use-sub-goal-quiz";
 
 type AiQuizTabProps = {
   detail: SubGoalDetail;
@@ -25,68 +24,23 @@ type AiQuizTabProps = {
 };
 
 export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
-  const queryClient = useQueryClient();
   const [selectedAnswers, setSelectedAnswers] = useState<
     Record<string, number>
   >({});
 
-  const generateQuizMutation = useMutation({
-    mutationFn: (options?: { force?: boolean }) =>
-      api.ai.generateSubGoalQuiz(
-        roadmapId,
-        subGoalId,
-        options?.force ? { force: options.force } : undefined,
-      ),
-    onSuccess: async () => {
-      setSelectedAnswers({});
-      await queryClient.invalidateQueries({
-        queryKey: ["subgoal", roadmapId, subGoalId],
-      });
-    },
-  });
-
-  const submitQuizMutation = useMutation({
-    mutationFn: async (variables: {
-      quizId: string;
-      answers: Array<{ questionId: string; selectedIndex: number }>;
-    }) => {
-      return api.subGoals.submitQuiz(
-        roadmapId,
-        subGoalId,
-        variables.quizId,
-        variables.answers,
-      );
-    },
-    onSuccess: async (response) => {
-      const payload = response.data;
-      if (payload?.evaluation) {
-        const nextSelections = payload.evaluation.answers.reduce<
-          Record<string, number>
-        >((accumulator, answer) => {
-          accumulator[answer.id] = answer.selectedIndex;
-          return accumulator;
-        }, {});
-        setSelectedAnswers(nextSelections);
-      }
-      await queryClient.invalidateQueries({
-        queryKey: ["subgoal", roadmapId, subGoalId],
-      });
-    },
-  });
+  const {
+    generateQuiz,
+    isGeneratePending,
+    generateErrorMessage,
+    submitQuiz,
+    isSubmitPending,
+    submitErrorMessage,
+  } = useSubGoalQuiz({ roadmapId, subGoalId });
 
   const quizData = detail.aiQuiz;
   const quizStatus: SubGoalQuizStatus = quizData?.status ?? "idle";
   const quizStatusMeta = AI_QUIZ_STATUS_META[quizStatus];
-  const isQuizProcessing =
-    quizStatus === "processing" || generateQuizMutation.isPending;
-  const generateQuizErrorMessage =
-    generateQuizMutation.error instanceof Error
-      ? generateQuizMutation.error.message
-      : null;
-  const submitQuizErrorMessage =
-    submitQuizMutation.error instanceof Error
-      ? submitQuizMutation.error.message
-      : null;
+  const isQuizProcessing = quizStatus === "processing" || isGeneratePending;
   const quizQuestions = quizData?.questions ?? [];
   const latestQuizResult = quizData?.latestResult ?? null;
   const quizRequestedAtLabel = formatNullableDateTime(quizData?.requestedAt);
@@ -115,12 +69,12 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
         quizQuestions.length > 0 &&
         !latestQuizResult &&
         allQuestionsAnswered,
-    ) && !submitQuizMutation.isPending;
+    ) && !isSubmitPending;
   const isQuizOptionDisabled =
     quizStatus !== "ready" ||
     Boolean(latestQuizResult) ||
     isQuizProcessing ||
-    submitQuizMutation.isPending;
+    isSubmitPending;
 
   useEffect(() => {
     if (!quizData) {
@@ -142,12 +96,13 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
     setSelectedAnswers({});
   }, [quizData]);
 
-  const handleGenerateQuiz = (force?: boolean) => {
+  const handleGenerateQuiz = async (force?: boolean) => {
     if (isQuizProcessing) {
       return;
     }
 
-    void generateQuizMutation.mutateAsync(force ? { force: true } : undefined);
+    await generateQuiz(force);
+    setSelectedAnswers({});
   };
 
   const handleSelectAnswer = (questionId: string, optionIndex: number) => {
@@ -161,7 +116,7 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
     }));
   };
 
-  const handleSubmitQuiz = () => {
+  const handleSubmitQuiz = async () => {
     if (!quizData || !canSubmitQuiz) {
       return;
     }
@@ -177,10 +132,21 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
       };
     });
 
-    submitQuizMutation.mutate({
+    const response = await submitQuiz({
       quizId: quizData.id,
       answers: answersPayload,
     });
+
+    const payload = response.data;
+    if (payload?.evaluation) {
+      const nextSelections = payload.evaluation.answers.reduce<
+        Record<string, number>
+      >((accumulator, answer) => {
+        accumulator[answer.id] = answer.selectedIndex;
+        return accumulator;
+      }, {});
+      setSelectedAnswers(nextSelections);
+    }
   };
 
   return (
@@ -215,9 +181,9 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
           </div>
         )}
 
-        {generateQuizErrorMessage && (
+        {generateErrorMessage && (
           <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {generateQuizErrorMessage}
+            {generateErrorMessage}
           </div>
         )}
 
@@ -406,16 +372,16 @@ export function AiQuizTab({ detail, roadmapId, subGoalId }: AiQuizTabProps) {
                 {answeredCount}/{quizQuestions.length} 문항 선택됨
               </div>
               <div className="flex flex-col items-end gap-2">
-                {submitQuizErrorMessage && (
+                {submitErrorMessage && (
                   <div className="text-sm text-destructive">
-                    {submitQuizErrorMessage}
+                    {submitErrorMessage}
                   </div>
                 )}
                 <Button
                   onClick={handleSubmitQuiz}
                   isDisabled={!canSubmitQuiz}
                 >
-                  {submitQuizMutation.isPending && (
+                  {isSubmitPending && (
                     <span className="mr-2 inline-flex h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   )}
                   결과 제출

@@ -17,14 +17,13 @@ import {
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
 import { twMerge } from "@repo/ui/utils";
-import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
 
 import type { CalendarDate } from "@internationalized/date";
 import type { IconName } from "@repo/ui/icon";
 import type * as HttpClient from "@/api/http-client";
 
-import { dailyActivityQueryOptions } from "@/domains/progress/hooks/daily-activity-query-options";
+import { useDailyActivity } from "@/domains/progress/hooks/use-daily-activity";
 import { Link } from "@/components/link";
 
 type ApiClient = typeof HttpClient.api;
@@ -104,7 +103,7 @@ export function CompletionCalendarSection() {
     return { start, end };
   }, [visibleDate]);
 
-  const { data } = useQuery(dailyActivityQueryOptions(range));
+  const { data } = useDailyActivity(range);
   const activityData: DailyActivityData | undefined = data?.data;
   const activityItems = activityData?.items;
 

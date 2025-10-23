@@ -1,13 +1,11 @@
 import { Icon } from "@repo/ui/icon";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import AppPageLayout from "@/components/app-page-layout";
 import { Link } from "@/components/link";
 import { GoalList } from "@/domains/roadmap/components/goal-list";
 import RoadmapInfo from "@/domains/roadmap/components/roadmap-info";
-import { roadmapQueryOptions } from "@/domains/roadmap/hooks/roadmap-query-options";
-import { transformGoals } from "@/domains/roadmap/model/goal";
+import { useRoadmapDetail } from "@/domains/roadmap/hooks/use-roadmap-detail";
 
 export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
   component: RouteComponent,
@@ -15,9 +13,10 @@ export const Route = createFileRoute("/app/roadmaps/$roadmapId/")({
 
 function RouteComponent() {
   const { roadmapId } = Route.useParams();
-  const roadmap = useQuery(roadmapQueryOptions(roadmapId));
+  const { isLoading, isError, error, roadmap, goals } =
+    useRoadmapDetail(roadmapId);
 
-  if (roadmap.isLoading) {
+  if (isLoading) {
     return (
       <AppPageLayout>
         <div className="flex items-center justify-center min-h-96">
@@ -32,7 +31,7 @@ function RouteComponent() {
     );
   }
 
-  if (roadmap.isError || !roadmap.data) {
+  if (isError || !roadmap) {
     return (
       <AppPageLayout>
         <div className="flex items-center justify-center min-h-96">
@@ -41,8 +40,9 @@ function RouteComponent() {
               로드맵을 찾을 수 없습니다
             </h2>
             <p className="text-sm text-muted-foreground">
-              {roadmap.error?.message ||
-                "존재하지 않는 로드맵이거나 접근 권한이 없습니다."}
+              {error instanceof Error
+                ? error.message
+                : "존재하지 않는 로드맵이거나 접근 권한이 없습니다."}
             </p>
             <Link
               to="/app"
@@ -61,11 +61,9 @@ function RouteComponent() {
     );
   }
 
-  const roadmapData = roadmap.data.data;
-  const transformedGoals = transformGoals(roadmapData?.goals || []);
-  const roadmapEmoji = roadmapData?.emoji || "📚";
-  const emojiLabel = roadmapData?.title
-    ? `${roadmapData.title} 로드맵 아이콘`
+  const roadmapEmoji = roadmap.emoji || "📚";
+  const emojiLabel = roadmap.title
+    ? `${roadmap.title} 로드맵 아이콘`
     : "로드맵 아이콘";
 
   return (
@@ -94,22 +92,22 @@ function RouteComponent() {
                 {roadmapEmoji}
               </span>
               <h1 className="text-2xl font-bold text-foreground">
-                {roadmapData?.title}
+                {roadmap.title}
               </h1>
             </div>
-            {roadmapData?.description && (
-              <p className="text-muted-foreground">{roadmapData.description}</p>
+            {roadmap.description && (
+              <p className="text-muted-foreground">{roadmap.description}</p>
             )}
           </div>
         </div>
 
         {/* 로드맵 정보 */}
         <RoadmapInfo
-          id={roadmapData?.id}
-          status={roadmapData?.status}
-          createdAt={roadmapData?.createdAt || ""}
-          updatedAt={roadmapData?.updatedAt || ""}
-          documents={roadmapData?.documents}
+          id={roadmap.id}
+          status={roadmap.status}
+          createdAt={roadmap.createdAt || ""}
+          updatedAt={roadmap.updatedAt || ""}
+          documents={roadmap.documents}
         />
 
         {/* 메인 콘텐츠 - 좌우 분할 */}
@@ -118,7 +116,7 @@ function RouteComponent() {
           <div className="col-span-3 space-y-6">
             {/* 목표 목록 */}
             <GoalList
-              goals={transformedGoals}
+              goals={goals}
               roadmapId={roadmapId}
             />
           </div>

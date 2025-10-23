@@ -1,7 +1,6 @@
 import { Badge } from "@repo/ui/badge";
 import { Icon } from "@repo/ui/icon";
 import { Tab, TabList, TabPanel, Tabs } from "@repo/ui/tabs";
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { parseAsStringLiteral, useQueryState } from "nuqs";
 
@@ -9,9 +8,7 @@ import { AiNoteTab } from "./components/ai-note-tab";
 import { AiQuizTab } from "./components/ai-quiz-tab";
 import { OverviewTab } from "./components/overview-tab";
 
-import type { SubGoalNoteStatus } from "@/domains/roadmap/model/types";
-
-import { subGoalDetailQueryOptions } from "@/domains/roadmap/hooks/sub-goal-detail-query-options";
+import { useSubGoalDetail } from "@/domains/roadmap/hooks/use-sub-goal-detail";
 import { Link } from "@/components/link";
 import AppPageLayout from "@/components/app-page-layout";
 
@@ -21,7 +18,6 @@ export const Route = createFileRoute(
   component: RouteComponent,
 });
 
-const NOTE_REFETCH_INTERVAL_MS = 4000;
 const SUB_GOAL_TAB_VALUES = ["overview", "ai-note", "ai-quiz"] as const;
 type SubGoalTab = (typeof SUB_GOAL_TAB_VALUES)[number];
 const subGoalTabParser =
@@ -29,14 +25,7 @@ const subGoalTabParser =
 
 function RouteComponent() {
   const { roadmapId, subGoalId } = Route.useParams();
-  const subGoal = useQuery({
-    ...subGoalDetailQueryOptions(roadmapId, subGoalId),
-    refetchInterval: (query) => {
-      const noteStatus =
-        query.state.data?.data?.aiNoteStatus ?? ("idle" as SubGoalNoteStatus);
-      return noteStatus === "processing" ? NOTE_REFETCH_INTERVAL_MS : false;
-    },
-  });
+  const subGoal = useSubGoalDetail(roadmapId, subGoalId);
 
   const [selectedTab, setSelectedTab] = useQueryState<SubGoalTab>(
     "tab",

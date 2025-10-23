@@ -1,12 +1,11 @@
 import { Icon } from "@repo/ui/icon";
-import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { Link } from "@/components/link";
 import { RoadmapCard } from "@/domains/roadmap/components/roadmap-card";
-import { roadmapsQueryOptions } from "@/domains/roadmap/hooks/roadmaps-query-options";
+import { useRoadmapList } from "@/domains/roadmap/hooks/use-roadmap-list";
 
 export default function RoadmapList() {
-  const { data: roadmaps } = useSuspenseQuery(roadmapsQueryOptions());
+  const { data: roadmaps } = useRoadmapList();
 
   const totalRoadmaps = roadmaps?.data?.items.length ?? 0;
 

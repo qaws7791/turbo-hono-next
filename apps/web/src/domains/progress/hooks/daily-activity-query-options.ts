@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { api } from "@/api/http-client";
 
-interface DailyActivityParams {
+export interface DailyActivityParams {
   start: string;
   end: string;
 }

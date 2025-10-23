@@ -1,14 +1,11 @@
 import { Button } from "@repo/ui/button";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 
 import type { Goal } from "@/domains/roadmap/model/types";
 
-import { roadmapQueryOptions } from "@/domains/roadmap/hooks/roadmap-query-options";
 import { SubGoalList } from "@/domains/roadmap/components/sub-goal-list";
-import { api } from "@/api/http-client";
+import { useGoalItem } from "@/domains/roadmap/hooks/use-goal-item";
 
 interface GoalItemProps {
   goal: Goal;
@@ -124,273 +121,21 @@ function GoalInfo({
 }
 
 function GoalItem({ goal, roadmapId }: GoalItemProps) {
-  const queryClient = useQueryClient();
-  const [updatingDueDateSubGoalIds, setUpdatingDueDateSubGoalIds] = useState<
-    Set<string>
-  >(() => new Set<string>());
-
-  const toggleExpansionMutation = useMutation({
-    mutationFn: async (newIsExpanded: boolean) => {
-      return api.goals.update(roadmapId, goal.id, {
-        isExpanded: newIsExpanded,
-      });
-    },
-    onMutate: async (newIsExpanded: boolean) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-
-      // Snapshot the previous value
-      const previousData = queryClient.getQueryData(["roadmap", roadmapId]);
-      console.log(newIsExpanded);
-      // Optimistically update the goal expansion state
-      queryClient.setQueryData(
-        roadmapQueryOptions(roadmapId).queryKey,
-        (old) => {
-          const roadmap = old?.data;
-          if (!roadmap) return old;
-          console.log(roadmap);
-          return {
-            ...old,
-            data: {
-              ...roadmap,
-              goals: roadmap.goals.map((g) =>
-                g.id === goal.id ? { ...g, isExpanded: newIsExpanded } : g,
-              ),
-            },
-          };
-        },
-      );
-
-      return { previousData };
-    },
-    onError: (error, _newIsExpanded, context) => {
-      // Rollback on error
-      if (context?.previousData) {
-        queryClient.setQueryData(["roadmap", roadmapId], context.previousData);
-      }
-      console.error("Failed to toggle goal expansion:", error);
-      // TODO: Show error toast notification
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-    },
-  });
-
-  const toggleSubGoalCompleteMutation = useMutation({
-    mutationFn: async ({
-      subGoalId,
-      isCompleted,
-    }: {
-      subGoalId: string;
-      isCompleted: boolean;
-    }) => {
-      return api.subGoals.update(roadmapId, subGoalId, {
-        isCompleted,
-      });
-    },
-    onMutate: async ({ subGoalId, isCompleted }) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-
-      // Snapshot the previous value
-      const previousData = queryClient.getQueryData(["roadmap", roadmapId]);
-
-      // Optimistically update the sub-goal completion state
-      queryClient.setQueryData(
-        roadmapQueryOptions(roadmapId).queryKey,
-        (old) => {
-          const roadmap = old?.data;
-          if (!roadmap) return old;
-
-          const optimisticCompletedAt = isCompleted
-            ? new Date().toISOString()
-            : null;
-
-          return {
-            ...old,
-            data: {
-              ...roadmap,
-              goals: roadmap.goals.map((g) => {
-                if (g.id === goal.id) {
-                  const updatedSubGoals = g.subGoals.map((sg) =>
-                    sg.id === subGoalId
-                      ? {
-                          ...sg,
-                          isCompleted,
-                          completedAt: optimisticCompletedAt,
-                        }
-                      : sg,
-                  );
-
-                  // Recalculate computed properties
-                  const completedSubGoals = updatedSubGoals.filter(
-                    (sg) => sg.isCompleted,
-                  ).length;
-                  const hasSubGoals = updatedSubGoals.length > 0;
-                  const goalIsCompleted = hasSubGoals
-                    ? completedSubGoals === updatedSubGoals.length
-                    : false;
-
-                  return {
-                    ...g,
-                    subGoals: updatedSubGoals,
-                    completedSubGoals,
-                    hasSubGoals,
-                    isCompleted: goalIsCompleted,
-                  };
-                }
-                return g;
-              }),
-            },
-          };
-        },
-      );
-
-      return { previousData };
-    },
-    onError: (error, _variables, context) => {
-      // Rollback on error
-      if (context?.previousData) {
-        queryClient.setQueryData(["roadmap", roadmapId], context.previousData);
-      }
-      console.error("Failed to toggle sub-goal completion:", error);
-      // TODO: Show error toast notification
-    },
-    onSettled: () => {
-      // Always refetch after error or success
-      queryClient.invalidateQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-    },
-  });
-
-  const updateSubGoalDueDateMutation = useMutation({
-    mutationFn: async ({
-      subGoalId,
-      dueDate,
-    }: {
-      subGoalId: string;
-      dueDate: string | null;
-    }) => {
-      return api.subGoals.update(roadmapId, subGoalId, {
-        dueDate,
-      });
-    },
-    onMutate: async ({ subGoalId, dueDate }) => {
-      setUpdatingDueDateSubGoalIds((previous) => {
-        if (previous.has(subGoalId)) return previous;
-        const next = new Set(previous);
-        next.add(subGoalId);
-        return next;
-      });
-
-      await queryClient.cancelQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-
-      const previousData = queryClient.getQueryData(["roadmap", roadmapId]);
-
-      queryClient.setQueryData(
-        roadmapQueryOptions(roadmapId).queryKey,
-        (old) => {
-          const roadmap = old?.data;
-          if (!roadmap) return old;
-
-          return {
-            ...old,
-            data: {
-              ...roadmap,
-              goals: roadmap.goals.map((g) => {
-                if (g.id === goal.id) {
-                  const updatedSubGoals = g.subGoals.map((sg) =>
-                    sg.id === subGoalId
-                      ? {
-                          ...sg,
-                          dueDate,
-                        }
-                      : sg,
-                  );
-
-                  return {
-                    ...g,
-                    subGoals: updatedSubGoals,
-                  };
-                }
-                return g;
-              }),
-            },
-          };
-        },
-      );
-
-      return { previousData, subGoalId };
-    },
-    onError: (error, _variables, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(["roadmap", roadmapId], context.previousData);
-      }
-      if (context?.subGoalId) {
-        setUpdatingDueDateSubGoalIds((previous) => {
-          if (!previous.has(context.subGoalId)) return previous;
-          const next = new Set(previous);
-          next.delete(context.subGoalId);
-          return next;
-        });
-      }
-      console.error("Failed to update sub-goal due date:", error);
-    },
-    onSettled: (_data, _error, variables) => {
-      if (variables?.subGoalId) {
-        setUpdatingDueDateSubGoalIds((previous) => {
-          if (!previous.has(variables.subGoalId)) return previous;
-          const next = new Set(previous);
-          next.delete(variables.subGoalId);
-          return next;
-        });
-      }
-      queryClient.invalidateQueries({
-        queryKey: ["roadmap", roadmapId],
-      });
-    },
-  });
-
-  const handleToggleExpansion = () => {
-    if (toggleExpansionMutation.isPending) return;
-    toggleExpansionMutation.mutate(!goal.isExpanded);
-  };
-
-  const handleToggleSubGoalComplete = (
-    subGoalId: string,
-    isCompleted: boolean,
-  ) => {
-    if (toggleSubGoalCompleteMutation.isPending) return;
-    toggleSubGoalCompleteMutation.mutate({ subGoalId, isCompleted });
-  };
-
-  const handleUpdateSubGoalDueDate = (
-    subGoalId: string,
-    dueDate: string | null,
-  ) => {
-    if (updatingDueDateSubGoalIds.has(subGoalId)) {
-      return;
-    }
-    updateSubGoalDueDateMutation.mutate({ subGoalId, dueDate });
-  };
+  const {
+    isTogglingGoal,
+    updatingDueDateSubGoalIds,
+    toggleExpansion,
+    toggleSubGoalCompletion,
+    updateSubGoalDueDate,
+  } = useGoalItem({ goal, roadmapId });
 
   return (
     <Card className="py-2 px-2">
       <div className="p-4 space-y-4">
         <GoalInfo
           goal={goal}
-          onToggleExpansion={handleToggleExpansion}
-          isToggling={toggleExpansionMutation.isPending}
+          onToggleExpansion={toggleExpansion}
+          isToggling={isTogglingGoal}
         />
 
         {goal.isExpanded && goal.hasSubGoals && (
@@ -399,8 +144,8 @@ function GoalItem({ goal, roadmapId }: GoalItemProps) {
               subGoals={goal.subGoals}
               goalId={goal.id}
               roadmapId={roadmapId}
-              onToggleComplete={handleToggleSubGoalComplete}
-              onUpdateDueDate={handleUpdateSubGoalDueDate}
+              onToggleComplete={toggleSubGoalCompletion}
+              onUpdateDueDate={updateSubGoalDueDate}
               updatingDueDateSubGoalIds={updatingDueDateSubGoalIds}
             />
           </div>
