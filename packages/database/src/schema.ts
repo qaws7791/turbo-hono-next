@@ -72,9 +72,9 @@ export const verification = pgTable("verification", {
   ),
 });
 
-/* ========== Roadmap: 로드맵 ========== */
+/* ========== LearningPlan: 학습 계획 ========== */
 
-export const roadmap = pgTable("roadmap", {
+export const learningPlan = pgTable("learning_plan", {
   id: serial("id").primaryKey(),
   publicId: varchar("public_id", { length: 16 }).notNull().unique(),
   userId: text("user_id")
@@ -103,14 +103,14 @@ export const roadmap = pgTable("roadmap", {
     .notNull(),
 });
 
-/* ========== Goal: 목표 ========== */
+/* ========== LearningModule: 학습 모듈 ========== */
 
-export const goal = pgTable("goal", {
+export const learningModule = pgTable("learning_module", {
   id: serial("id").primaryKey(),
   publicId: uuid("public_id").notNull().unique(),
-  roadmapId: integer("roadmap_id")
+  learningPlanId: integer("learning_plan_id")
     .notNull()
-    .references(() => roadmap.id, { onDelete: "cascade" }),
+    .references(() => learningPlan.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   order: integer("order").notNull(),
@@ -123,14 +123,14 @@ export const goal = pgTable("goal", {
     .notNull(),
 });
 
-/* ========== SubGoal: 하위 목표 ========== */
+/* ========== LearningTask: 학습 태스크 ========== */
 
-export const subGoal = pgTable("sub_goal", {
+export const learningTask = pgTable("learning_task", {
   id: serial("id").primaryKey(),
   publicId: uuid("public_id").notNull().unique(),
-  goalId: integer("goal_id")
+  learningModuleId: integer("learning_module_id")
     .notNull()
-    .references(() => goal.id, { onDelete: "cascade" }),
+    .references(() => learningModule.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   isCompleted: boolean("is_completed").default(false).notNull(),
@@ -150,9 +150,9 @@ export const aiNote = pgTable(
   "ai_note",
   {
     id: serial("id").primaryKey(),
-    subGoalId: integer("sub_goal_id")
+    learningTaskId: integer("learning_task_id")
       .notNull()
-      .references(() => subGoal.id, { onDelete: "cascade" }),
+      .references(() => learningTask.id, { onDelete: "cascade" }),
     status: text("status").notNull().default("idle"),
     markdown: text("markdown"),
     requestedAt: timestamp("requested_at"),
@@ -166,7 +166,7 @@ export const aiNote = pgTable(
       .notNull(),
   },
   (table) => [
-    uniqueIndex("ai_note_sub_goal_id_idx").on(table.subGoalId),
+    uniqueIndex("ai_note_learning_task_id_idx").on(table.learningTaskId),
     index("ai_note_status_idx").on(table.status),
   ],
 );
@@ -177,9 +177,9 @@ export const aiQuiz = pgTable(
   "ai_quiz",
   {
     id: serial("id").primaryKey(),
-    subGoalId: integer("sub_goal_id")
+    learningTaskId: integer("learning_task_id")
       .notNull()
-      .references(() => subGoal.id, { onDelete: "cascade" }),
+      .references(() => learningTask.id, { onDelete: "cascade" }),
     status: text("status").notNull().default("idle"),
     questions: jsonb("questions"),
     targetQuestionCount: integer("target_question_count").notNull().default(4),
@@ -195,7 +195,7 @@ export const aiQuiz = pgTable(
       .notNull(),
   },
   (table) => [
-    index("ai_quiz_sub_goal_id_idx").on(table.subGoalId),
+    index("ai_quiz_learning_task_id_idx").on(table.learningTaskId),
     index("ai_quiz_status_idx").on(table.status),
   ],
 );
@@ -229,9 +229,9 @@ export const aiQuizResult = pgTable(
   ],
 );
 
-/* ========== RoadmapDocument: 로드맵 문서 ========== */
+/* ========== LearningPlanDocument: 학습 계획 문서 ========== */
 
-export const roadmapDocument = pgTable("roadmap_document", {
+export const learningPlanDocument = pgTable("learning_plan_document", {
   id: serial("id").primaryKey(),
   publicId: uuid("public_id")
     .notNull()
@@ -239,9 +239,12 @@ export const roadmapDocument = pgTable("roadmap_document", {
     .$defaultFn(() => crypto.randomUUID()),
 
   // 관계
-  roadmapId: integer("roadmap_id").references(() => roadmap.id, {
-    onDelete: "cascade",
-  }),
+  learningPlanId: integer("learning_plan_id").references(
+    () => learningPlan.id,
+    {
+      onDelete: "cascade",
+    },
+  ),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

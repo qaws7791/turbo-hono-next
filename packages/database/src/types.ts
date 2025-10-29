@@ -3,11 +3,11 @@ import type {
   aiNote,
   aiQuiz,
   aiQuizResult,
-  goal,
-  roadmap,
-  roadmapDocument,
+  learningModule,
+  learningPlan,
+  learningPlanDocument,
+  learningTask,
   session,
-  subGoal,
   user,
   verification,
 } from "./schema";
@@ -32,17 +32,17 @@ export type Verification = typeof verification.$inferSelect;
 export type VerificationInsert = typeof verification.$inferInsert;
 export type VerificationUpdate = Partial<typeof verification.$inferInsert>;
 
-export type Roadmap = typeof roadmap.$inferSelect;
-export type RoadmapInsert = typeof roadmap.$inferInsert;
-export type RoadmapUpdate = Partial<typeof roadmap.$inferInsert>;
+export type LearningPlan = typeof learningPlan.$inferSelect;
+export type LearningPlanInsert = typeof learningPlan.$inferInsert;
+export type LearningPlanUpdate = Partial<typeof learningPlan.$inferInsert>;
 
-export type Goal = typeof goal.$inferSelect;
-export type GoalInsert = typeof goal.$inferInsert;
-export type GoalUpdate = Partial<typeof goal.$inferInsert>;
+export type LearningModule = typeof learningModule.$inferSelect;
+export type LearningModuleInsert = typeof learningModule.$inferInsert;
+export type LearningModuleUpdate = Partial<typeof learningModule.$inferInsert>;
 
-export type SubGoal = typeof subGoal.$inferSelect;
-export type SubGoalInsert = typeof subGoal.$inferInsert;
-export type SubGoalUpdate = Partial<typeof subGoal.$inferInsert>;
+export type LearningTask = typeof learningTask.$inferSelect;
+export type LearningTaskInsert = typeof learningTask.$inferInsert;
+export type LearningTaskUpdate = Partial<typeof learningTask.$inferInsert>;
 
 export type AiNote = typeof aiNote.$inferSelect;
 export type AiNoteInsert = typeof aiNote.$inferInsert;
@@ -56,8 +56,9 @@ export type AiQuizResult = typeof aiQuizResult.$inferSelect;
 export type AiQuizResultInsert = typeof aiQuizResult.$inferInsert;
 export type AiQuizResultUpdate = Partial<typeof aiQuizResult.$inferInsert>;
 
-export type RoadmapDocument = typeof roadmapDocument.$inferSelect;
-export type RoadmapDocumentInsert = typeof roadmapDocument.$inferInsert;
-export type RoadmapDocumentUpdate = Partial<
-  typeof roadmapDocument.$inferInsert
+export type LearningPlanDocument = typeof learningPlanDocument.$inferSelect;
+export type LearningPlanDocumentInsert =
+  typeof learningPlanDocument.$inferInsert;
+export type LearningPlanDocumentUpdate = Partial<
+  typeof learningPlanDocument.$inferInsert
 >;

@@ -1,2 +1,0 @@
--- Migration superseded by 0004_resilient_lemur.
--- Intentionally left blank to preserve journal history.
