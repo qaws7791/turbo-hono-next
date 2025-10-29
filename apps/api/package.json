@@ -13,13 +13,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "db:push": "drizzle-kit push",
-    "db:pull": "drizzle-kit pull",
-    "db:seed": "drizzle-kit seed",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.14",
@@ -52,7 +46,6 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
-    "drizzle-kit": "^0.31.4",
     "tsx": "^4.20.5",
     "vercel": "^48.0.3"
   }
