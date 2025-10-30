@@ -4,7 +4,10 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+
 import { CONFIG } from "../config";
+
+import type { GetObjectCommandOutput } from "@aws-sdk/client-s3";
 
 /**
  * R2 클라이언트 초기화
@@ -91,17 +94,6 @@ export function generateStorageKey(userId: string, fileName: string): string {
 }
 
 type GetObjectBody = NonNullable<GetObjectCommandOutput["Body"]>;
-
-function resolvePublicBaseUrl(): string {
-  const baseUrl =
-    process.env.R2_PUBLIC_BASE_URL ?? process.env.R2_PUBLIC_URL ?? "";
-
-  if (!baseUrl) {
-    throw new Error("R2 public URL is not configured");
-  }
-
-  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-}
 
 function hasTransformToByteArray(body: GetObjectBody): body is GetObjectBody & {
   transformToByteArray: () => Promise<Uint8Array>;

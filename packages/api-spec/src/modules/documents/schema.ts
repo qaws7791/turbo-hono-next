@@ -21,8 +21,8 @@ export const DocumentItemSchema = z.object({
     description: "Public URL to access the file",
     example: "https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf",
   }),
-  roadmapId: z.number().int().nullable().openapi({
-    description: "Associated roadmap ID (null if not yet linked)",
+  learningPlanId: z.number().int().nullable().openapi({
+    description: "Associated learningPlan ID (null if not yet linked)",
     example: 123,
   }),
   uploadedAt: z.string().openapi({

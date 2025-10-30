@@ -2,7 +2,6 @@ import { BaseError } from "../../errors/base.error";
 
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-
 export type DocumentErrorType =
   | "document_not_found"
   | "access_denied"
@@ -13,7 +12,7 @@ export type DocumentErrorType =
   | "deletion_failed"
   | "extraction_failed"
   | "validation_failed"
-  | "document_linked_to_roadmap"
+  | "document_linked_to_learning_plan"
   | "missing_file"
   | "storage_error"
   | "internal_error";

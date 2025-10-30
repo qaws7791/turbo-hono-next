@@ -2,7 +2,6 @@ import { BaseError } from "../../errors/base.error";
 
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-
 export type AIErrorType =
   | "generation_failed"
   | "invalid_request"
@@ -15,8 +14,8 @@ export type AIErrorType =
   | "database_error"
   | "database_transaction_failed"
   | "document_not_found"
-  | "roadmap_not_found"
-  | "subgoal_not_found"
+  | "learning_plan_not_found"
+  | "learning_task_not_found"
   | "access_denied"
   | "note_generation_failed"
   | "quiz_generation_failed"

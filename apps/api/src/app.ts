@@ -10,7 +10,7 @@ import aiApp from "./modules/ai";
 import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
 import progressApp from "./modules/progress";
-import roadmapApp from "./modules/roadmap";
+import learningPlanApp from "./modules/learning-plan";
 
 function createApp() {
   const app = new OpenAPIHono();
@@ -43,7 +43,13 @@ function createApp() {
   return app;
 }
 
-const routes = [authApp, roadmapApp, progressApp, aiApp, documentsApp] as const;
+const routes = [
+  authApp,
+  learningPlanApp,
+  progressApp,
+  aiApp,
+  documentsApp,
+] as const;
 
 const app = createApp();
 

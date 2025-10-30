@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
 // Request schemas
-export const GenerateRoadmapRequestSchema = z.object({
+export const GenerateLearningPlanRequestSchema = z.object({
   learningTopic: z.string().min(1).openapi({
     description: "학습하고자 하는 주제",
     example: "JavaScript 풀스택 개발",
@@ -65,7 +65,7 @@ export const AINoteStatusSchema = z
     example: "processing",
   });
 
-export const SubGoalNoteContentSchema = z
+export const LearningTaskNoteContentSchema = z
   .object({
     markdown: z.string().min(80).openapi({
       description: "생성된 학습 노트의 마크다운 텍스트",
@@ -77,7 +77,7 @@ export const SubGoalNoteContentSchema = z
     description: "AI가 생성한 학습 노트 결과",
   });
 
-export const GenerateSubGoalNoteQuerySchema = z
+export const GenerateLearningTaskNoteQuerySchema = z
   .object({
     force: z.coerce.boolean().optional().openapi({
       description: "기존 노트가 있더라도 재생성을 강제로 요청합니다",
@@ -88,13 +88,13 @@ export const GenerateSubGoalNoteQuerySchema = z
     description: "AI 노트 생성 시 사용되는 쿼리 파라미터",
   });
 
-export const GenerateSubGoalNoteParamsSchema = z
+export const GenerateLearningTaskNoteParamsSchema = z
   .object({
-    roadmapId: z.string().min(1).openapi({
+    learningPlanId: z.string().min(1).openapi({
       description: "로드맵 공개 ID",
       example: "abc123def456",
     }),
-    subGoalId: z.string().min(1).openapi({
+    learningTaskId: z.string().min(1).openapi({
       description: "세부 목표 공개 ID",
       example: "550e8400-e29b-41d4-a716-446655440000",
     }),
@@ -104,7 +104,7 @@ export const GenerateSubGoalNoteParamsSchema = z
   });
 
 // Response schemas
-export const GeneratedSubGoalSchema = z.object({
+export const GeneratedLearningTaskSchema = z.object({
   title: z.string().openapi({
     description: "하위 목표 제목",
     example: "HTML 기본 태그 학습",
@@ -120,7 +120,7 @@ export const GeneratedSubGoalSchema = z.object({
   }),
 });
 
-export const GeneratedGoalSchema = z.object({
+export const GeneratedLearningModuleSchema = z.object({
   title: z.string().openapi({
     description: "상위 목표 제목",
     example: "HTML/CSS 기초",
@@ -133,12 +133,12 @@ export const GeneratedGoalSchema = z.object({
     description: "상위 목표 순서",
     example: 1,
   }),
-  subGoals: z.array(GeneratedSubGoalSchema).openapi({
+  learningTasks: z.array(GeneratedLearningTaskSchema).openapi({
     description: "하위 목표들",
   }),
 });
 
-export const GeneratedRoadmapSchema = z.object({
+export const GeneratedLearningPlanSchema = z.object({
   title: z.string().openapi({
     description: "생성된 로드맵 제목",
     example: "JavaScript 풀스택 개발자 로드맵",
@@ -152,12 +152,12 @@ export const GeneratedRoadmapSchema = z.object({
     description: "로드맵을 가장 잘 표현하는 단일 이모지.",
     example: "🚀",
   }),
-  goals: z.array(GeneratedGoalSchema).openapi({
+  learningModules: z.array(GeneratedLearningModuleSchema).openapi({
     description: "상위 목표들",
   }),
 });
 
-export const GenerateSubGoalNoteResponseSchema = z
+export const GenerateLearningTaskNoteResponseSchema = z
   .object({
     status: AINoteStatusSchema,
     markdown: z.string().nullable().openapi({
@@ -188,7 +188,7 @@ export const AIQuizStatusSchema = z
     example: "processing",
   });
 
-export const SubGoalQuizQuestionSchema = z
+export const LearningTaskQuizQuestionSchema = z
   .object({
     id: z.string().min(1).openapi({
       description: "문항 식별자",
@@ -222,9 +222,9 @@ export const SubGoalQuizQuestionSchema = z
     description: "AI가 생성한 객관식 문제",
   });
 
-export const SubGoalQuizSchema = z
+export const LearningTaskQuizSchema = z
   .object({
-    questions: z.array(SubGoalQuizQuestionSchema).min(4).max(20).openapi({
+    questions: z.array(LearningTaskQuizQuestionSchema).min(4).max(20).openapi({
       description: "4~20개의 객관식 문제",
     }),
   })
@@ -232,12 +232,13 @@ export const SubGoalQuizSchema = z
     description: "AI가 생성한 전체 퀴즈 구조",
   });
 
-export const SubGoalQuizPublicQuestionSchema = SubGoalQuizQuestionSchema.omit({
-  answerIndex: true,
-  explanation: true,
-});
+export const LearningTaskQuizPublicQuestionSchema =
+  LearningTaskQuizQuestionSchema.omit({
+    answerIndex: true,
+    explanation: true,
+  });
 
-export const SubGoalQuizRecordSchema = z
+export const LearningTaskQuizRecordSchema = z
   .object({
     id: z.string().openapi({
       description: "퀴즈 ID",
@@ -264,15 +265,18 @@ export const SubGoalQuizRecordSchema = z
       description: "실패 시 사용자에게 노출할 오류 메시지",
       example: "Gemini API 호출이 실패했습니다.",
     }),
-    questions: z.array(SubGoalQuizPublicQuestionSchema).nullable().openapi({
-      description: "사용자에게 노출할 문제 목록 (생성 완료 시 제공)",
-    }),
+    questions: z
+      .array(LearningTaskQuizPublicQuestionSchema)
+      .nullable()
+      .openapi({
+        description: "사용자에게 노출할 문제 목록 (생성 완료 시 제공)",
+      }),
   })
   .openapi({
     description: "AI 퀴즈 세션 데이터",
   });
 
-export const SubGoalQuizSubmissionAnswerSchema = z.object({
+export const LearningTaskQuizSubmissionAnswerSchema = z.object({
   questionId: z.string().min(1).openapi({
     description: "문항 식별자",
     example: "q1",
@@ -283,9 +287,9 @@ export const SubGoalQuizSubmissionAnswerSchema = z.object({
   }),
 });
 
-export const SubmitSubGoalQuizRequestSchema = z
+export const SubmitLearningTaskQuizRequestSchema = z
   .object({
-    answers: z.array(SubGoalQuizSubmissionAnswerSchema).min(1).openapi({
+    answers: z.array(LearningTaskQuizSubmissionAnswerSchema).min(1).openapi({
       description: "사용자가 제출한 문항별 답안",
     }),
   })
@@ -293,8 +297,8 @@ export const SubmitSubGoalQuizRequestSchema = z
     description: "AI 퀴즈 제출 요청",
   });
 
-export const SubGoalQuizEvaluationAnswerSchema =
-  SubGoalQuizPublicQuestionSchema.extend({
+export const LearningTaskQuizEvaluationAnswerSchema =
+  LearningTaskQuizPublicQuestionSchema.extend({
     selectedIndex: z.number().int().min(0).max(3).openapi({
       description: "사용자가 선택한 보기 인덱스",
       example: 1,
@@ -313,7 +317,7 @@ export const SubGoalQuizEvaluationAnswerSchema =
     }),
   });
 
-export const SubGoalQuizEvaluationResultSchema = z
+export const LearningTaskQuizEvaluationResultSchema = z
   .object({
     quizId: z.string().openapi({
       description: "채점된 퀴즈 ID",
@@ -331,7 +335,7 @@ export const SubGoalQuizEvaluationResultSchema = z
       description: "정답 비율 (퍼센트)",
       example: 75,
     }),
-    answers: z.array(SubGoalQuizEvaluationAnswerSchema).min(1).openapi({
+    answers: z.array(LearningTaskQuizEvaluationAnswerSchema).min(1).openapi({
       description: "문항별 채점 정보",
     }),
     submittedAt: z.string().datetime().openapi({
@@ -343,28 +347,29 @@ export const SubGoalQuizEvaluationResultSchema = z
     description: "AI 퀴즈 채점 결과",
   });
 
-export const GenerateSubGoalQuizResponseSchema = SubGoalQuizRecordSchema.extend(
-  {
-    latestResult: SubGoalQuizEvaluationResultSchema.nullable().openapi({
+export const GenerateLearningTaskQuizResponseSchema =
+  LearningTaskQuizRecordSchema.extend({
+    latestResult: LearningTaskQuizEvaluationResultSchema.nullable().openapi({
       description: "사용자의 가장 최근 퀴즈 결과",
     }),
-  },
-);
+  });
 
-export const GenerateSubGoalQuizParamsSchema = GenerateSubGoalNoteParamsSchema;
-export const GenerateSubGoalQuizQuerySchema = GenerateSubGoalNoteQuerySchema;
+export const GenerateLearningTaskQuizParamsSchema =
+  GenerateLearningTaskNoteParamsSchema;
+export const GenerateLearningTaskQuizQuerySchema =
+  GenerateLearningTaskNoteQuerySchema;
 
-export const SubmitSubGoalQuizResponseSchema = z
+export const SubmitLearningTaskQuizResponseSchema = z
   .object({
-    quiz: GenerateSubGoalQuizResponseSchema,
-    evaluation: SubGoalQuizEvaluationResultSchema,
+    quiz: GenerateLearningTaskQuizResponseSchema,
+    evaluation: LearningTaskQuizEvaluationResultSchema,
   })
   .openapi({
     description: "AI 퀴즈 제출 후 채점 결과와 최신 퀴즈 정보를 제공합니다.",
   });
 
-// Database roadmap schemas (for saved data response)
-export const SavedSubGoalSchema = z.object({
+// Database learningPlan schemas (for saved data response)
+export const SavedLearningTaskSchema = z.object({
   id: z.string().openapi({
     description: "하위 목표 ID",
     example: "a1b2c3d4e5f6g7h8",
@@ -396,7 +401,7 @@ export const SavedSubGoalSchema = z.object({
   }),
 });
 
-export const SavedGoalSchema = z.object({
+export const SavedLearningModuleSchema = z.object({
   id: z.string().openapi({
     description: "상위 목표 ID",
     example: "x1y2z3a4b5c6d7e8",
@@ -417,12 +422,12 @@ export const SavedGoalSchema = z.object({
     description: "펼침 여부",
     example: true,
   }),
-  subGoals: z.array(SavedSubGoalSchema).openapi({
+  learningTasks: z.array(SavedLearningTaskSchema).openapi({
     description: "하위 목표들",
   }),
 });
 
-export const SavedRoadmapSchema = z.object({
+export const SavedLearningPlanSchema = z.object({
   id: z.string().openapi({
     description: "로드맵 공개 ID",
     example: "abc123def456ghi7",
@@ -477,7 +482,7 @@ export const SavedRoadmapSchema = z.object({
     description: "추가 요구사항",
     example: "React 중심으로 학습하고 싶습니다",
   }),
-  goals: z.array(SavedGoalSchema).openapi({
+  learningModules: z.array(SavedLearningModuleSchema).openapi({
     description: "상위 목표들",
   }),
   createdAt: z.string().datetime().openapi({
@@ -490,8 +495,8 @@ export const SavedRoadmapSchema = z.object({
   }),
 });
 
-export const GenerateRoadmapResponseSchema = z.object({
-  roadmap: SavedRoadmapSchema,
+export const GenerateLearningPlanResponseSchema = z.object({
+  learningPlan: SavedLearningPlanSchema,
   message: z.string().openapi({
     description: "생성 완료 메시지",
     example: "로드맵이 성공적으로 생성되었습니다.",

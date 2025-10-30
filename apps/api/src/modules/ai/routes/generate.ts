@@ -3,26 +3,26 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { generateObject } from "ai";
 import { and, eq } from "drizzle-orm";
 import status from "http-status";
-import { roadmapDocument } from "@repo/database/schema";
-import { generateRoadmapRoute } from "@repo/api-spec/modules/ai/routes";
+import { learningPlanDocument } from "@repo/database/schema";
+import { generateLearningPlanRoute } from "@repo/api-spec/modules/ai/routes";
 
 import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import { AIError } from "../errors";
-import { generateRoadmapPrompt } from "../prompts/roadmap-prompts";
-import { GeneratedRoadmapSchema } from "../schema";
-import { saveRoadmapToDatabase } from "../services/roadmap-service";
+import { generateLearningPlanPrompt } from "../prompts/learning-plan-prompts";
+import { GeneratedLearningPlanSchema } from "../schema";
+import { saveLearningPlanToDatabase } from "../services/learning-plan-service";
 
-import type { AuthContext} from "../../../middleware/auth";
+import type { AuthContext } from "../../../middleware/auth";
 import type { ModelMessage } from "ai";
 
-const generateRoadmap = new OpenAPIHono<{
+const generateLearningPlan = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
   {
-    ...generateRoadmapRoute,
+    ...generateLearningPlanRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
@@ -53,11 +53,11 @@ const generateRoadmap = new OpenAPIHono<{
       const [document] = documentId
         ? await db
             .select()
-            .from(roadmapDocument)
+            .from(learningPlanDocument)
             .where(
               and(
-                eq(roadmapDocument.publicId, documentId),
-                eq(roadmapDocument.userId, auth.user.id),
+                eq(learningPlanDocument.publicId, documentId),
+                eq(learningPlanDocument.userId, auth.user.id),
               ),
             )
             .limit(1)
@@ -72,8 +72,8 @@ const generateRoadmap = new OpenAPIHono<{
         ? await fetch(document.storageUrl).then((res) => res.arrayBuffer())
         : null;
 
-      // Generate structured roadmap using AI
-      const prompt = generateRoadmapPrompt({
+      // Generate structured learningPlan using AI
+      const prompt = generateLearningPlanPrompt({
         learningTopic,
         userLevel,
         targetWeeks,
@@ -112,7 +112,7 @@ const generateRoadmap = new OpenAPIHono<{
 
       const result = await generateObject({
         model: google("gemini-2.5-flash-lite"),
-        schema: GeneratedRoadmapSchema,
+        schema: GeneratedLearningPlanSchema,
         temperature: 0.7,
         messages: messages,
       });
@@ -121,20 +121,20 @@ const generateRoadmap = new OpenAPIHono<{
         throw new AIError(
           500,
           "ai:generation_failed",
-          "Failed to generate roadmap structure",
+          "Failed to generate learningPlan structure",
         );
       }
 
-      const generatedRoadmap = result.object;
+      const generatedLearningPlan = result.object;
 
-      // Save the generated roadmap to the database with transaction
+      // Save the generated learningPlan to the database with transaction
       console.log(
-        "Generated roadmap:",
-        JSON.stringify(generatedRoadmap, null, 2),
+        "Generated learningPlan:",
+        JSON.stringify(generatedLearningPlan, null, 2),
       );
-      const savedRoadmap = await saveRoadmapToDatabase({
+      const savedLearningPlan = await saveLearningPlanToDatabase({
         userId: auth.user.id,
-        generatedRoadmap,
+        generatedLearningPlan,
         personalizedData: {
           learningTopic,
           userLevel,
@@ -147,55 +147,59 @@ const generateRoadmap = new OpenAPIHono<{
         },
       });
 
-      // Link documents to the roadmap if provided
+      // Link documents to the learningPlan if provided
       if (documentId) {
         await db
-          .update(roadmapDocument)
-          .set({ roadmapId: savedRoadmap.id })
+          .update(learningPlanDocument)
+          .set({ learningPlanId: savedLearningPlan.id })
           .where(
             and(
-              eq(roadmapDocument.publicId, documentId),
-              eq(roadmapDocument.userId, auth.user.id),
+              eq(learningPlanDocument.publicId, documentId),
+              eq(learningPlanDocument.userId, auth.user.id),
             ),
           );
       }
 
-      // Return the saved roadmap data
+      // Return the saved learningPlan data
       return c.json(
         {
-          roadmap: {
-            id: savedRoadmap.publicId,
-            emoji: savedRoadmap.emoji,
-            title: savedRoadmap.title,
-            description: savedRoadmap.description,
-            status: savedRoadmap.status,
-            learningTopic: savedRoadmap.learningTopic,
-            userLevel: savedRoadmap.userLevel,
-            targetWeeks: savedRoadmap.targetWeeks,
-            weeklyHours: savedRoadmap.weeklyHours,
-            learningStyle: savedRoadmap.learningStyle,
-            preferredResources: savedRoadmap.preferredResources,
-            mainGoal: savedRoadmap.mainGoal,
+          learningPlan: {
+            id: savedLearningPlan.publicId,
+            emoji: savedLearningPlan.emoji,
+            title: savedLearningPlan.title,
+            description: savedLearningPlan.description,
+            status: savedLearningPlan.status,
+            learningTopic: savedLearningPlan.learningTopic,
+            userLevel: savedLearningPlan.userLevel,
+            targetWeeks: savedLearningPlan.targetWeeks,
+            weeklyHours: savedLearningPlan.weeklyHours,
+            learningStyle: savedLearningPlan.learningStyle,
+            preferredResources: savedLearningPlan.preferredResources,
+            mainGoal: savedLearningPlan.mainGoal,
             additionalRequirements:
-              savedRoadmap.additionalRequirements || undefined,
-            goals: savedRoadmap.goals.map((goal) => ({
-              id: goal.publicId,
-              title: goal.title,
-              description: goal.description,
-              order: goal.order,
-              isExpanded: goal.isExpanded,
-              subGoals: goal.subGoals.map((subGoal) => ({
-                id: subGoal.publicId,
-                title: subGoal.title,
-                description: subGoal.description,
-                order: subGoal.order,
-                isCompleted: subGoal.isCompleted,
-                dueDate: subGoal.dueDate?.toISOString(),
-                memo: subGoal.memo,
-              })),
-            })),
-            createdAt: savedRoadmap.createdAt.toISOString(),
-            updatedAt: savedRoadmap.updatedAt.toISOString(),
+              savedLearningPlan.additionalRequirements || undefined,
+            learningModules: savedLearningPlan.learningModules.map(
+              (learningModule) => ({
+                id: learningModule.publicId,
+                title: learningModule.title,
+                description: learningModule.description,
+                order: learningModule.order,
+                isExpanded: learningModule.isExpanded,
+                learningTasks: learningModule.learningTasks.map(
+                  (learningTask) => ({
+                    id: learningTask.publicId,
+                    title: learningTask.title,
+                    description: learningTask.description,
+                    order: learningTask.order,
+                    isCompleted: learningTask.isCompleted,
+                    dueDate: learningTask.dueDate?.toISOString(),
+                    memo: learningTask.memo,
+                  }),
+                ),
+              }),
+            ),
+            createdAt: savedLearningPlan.createdAt.toISOString(),
+            updatedAt: savedLearningPlan.updatedAt.toISOString(),
           },
           message: "로드맵이 성공적으로 생성되었습니다.",
         },
@@ -251,7 +255,7 @@ const generateRoadmap = new OpenAPIHono<{
           throw new AIError(
             500,
             "ai:database_error",
-            "Failed to save roadmap to database",
+            "Failed to save learningPlan to database",
           );
         }
 
@@ -267,19 +271,19 @@ const generateRoadmap = new OpenAPIHono<{
           throw new AIError(
             500,
             "ai:database_transaction_failed",
-            "Database transaction failed while saving roadmap",
+            "Database transaction failed while saving learningPlan",
           );
         }
       }
 
-      console.error("AI roadmap generation error:", error);
+      console.error("AI learningPlan generation error:", error);
       throw new AIError(
         500,
         "ai:internal_error",
-        "Failed to generate roadmap due to internal error",
+        "Failed to generate learningPlan due to internal error",
       );
     }
   },
 );
 
-export default generateRoadmap;
+export default generateLearningPlan;

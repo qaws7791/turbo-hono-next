@@ -1,8 +1,8 @@
 import { createRoute } from "@hono/zod-openapi";
 
 import {
-  GoalActivityQuerySchema,
-  GoalActivityResponseSchema,
+  LearningModuleActivityQuerySchema,
+  LearningModuleActivityResponseSchema,
   ProgressErrorResponseSchema,
 } from "./schema";
 
@@ -10,16 +10,16 @@ export const dailyProgressRoute = createRoute({
   tags: ["Progress"],
   method: "get",
   path: "/progress/daily",
-  summary: "Get daily goal activity (due & completed)",
+  summary: "Get daily learning module activity (due & completed)",
   request: {
-    query: GoalActivityQuerySchema,
+    query: LearningModuleActivityQuerySchema,
   },
   responses: {
     200: {
-      description: "Daily goal activity retrieved successfully",
+      description: "Daily learning module activity retrieved successfully",
       content: {
         "application/json": {
-          schema: GoalActivityResponseSchema,
+          schema: LearningModuleActivityResponseSchema,
         },
       },
     },

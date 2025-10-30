@@ -1,14 +1,13 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
-import { roadmapDocument } from "@repo/database/schema";
+import { learningPlanDocument } from "@repo/database/schema";
 import { documentDetailRoute } from "@repo/api-spec/modules/documents/routes";
 
 import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import { DocumentError } from "../errors";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const detail = new OpenAPIHono<{
   Variables: {
@@ -28,8 +27,8 @@ const detail = new OpenAPIHono<{
       // Query document
       const [document] = await db
         .select()
-        .from(roadmapDocument)
-        .where(eq(roadmapDocument.publicId, publicId))
+        .from(learningPlanDocument)
+        .where(eq(learningPlanDocument.publicId, publicId))
         .limit(1);
 
       // Check if document exists
@@ -59,7 +58,7 @@ const detail = new OpenAPIHono<{
             fileSize: document.fileSize,
             fileType: document.fileType,
             storageUrl: document.storageUrl,
-            roadmapId: document.roadmapId,
+            learningPlanId: document.learningPlanId,
             uploadedAt: document.uploadedAt.toISOString(),
             createdAt: document.createdAt.toISOString(),
           },

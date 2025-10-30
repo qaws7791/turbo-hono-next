@@ -1,13 +1,13 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 
-import generateRoadmap from "./routes/generate";
-import generateSubGoalNote from "./routes/generate-subgoal-note";
-import generateSubGoalQuiz from "./routes/generate-subgoal-quiz";
+import generateLearningPlan from "./routes/generate";
+import generateLearningTaskNote from "./routes/generate-learning-task-note";
+import generateLearningTaskQuiz from "./routes/generate-learning-task-quiz";
 
 const aiApp = new OpenAPIHono();
 
-aiApp.route("/", generateRoadmap);
-aiApp.route("/", generateSubGoalNote);
-aiApp.route("/", generateSubGoalQuiz);
+aiApp.route("/", generateLearningPlan);
+aiApp.route("/", generateLearningTaskNote);
+aiApp.route("/", generateLearningTaskQuiz);
 
 export default aiApp;

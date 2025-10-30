@@ -1,15 +1,18 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { and, asc, eq, gte, isNotNull, lte } from "drizzle-orm";
 import status from "http-status";
-import { goal, roadmap, subGoal } from "@repo/database/schema";
+import {
+  learningModule,
+  learningPlan,
+  learningTask,
+} from "@repo/database/schema";
 import { dailyProgressRoute } from "@repo/api-spec/modules/progress/routes";
 
 import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import { ProgressError } from "../errors";
 
-import type { AuthContext} from "../../../middleware/auth";
-
+import type { AuthContext } from "../../../middleware/auth";
 
 const DEFAULT_WINDOW_DAYS = 30;
 
@@ -90,21 +93,21 @@ const dailyProgress = new OpenAPIHono<{
 
       type ActivityAccumulator = {
         due: Array<{
-          roadmapId: string;
-          roadmapTitle: string;
-          goalId: string;
-          goalTitle: string;
-          subGoalId: string;
-          subGoalTitle: string;
+          learningPlanId: string;
+          learningPlanTitle: string;
+          learningModuleId: string;
+          learningModuleTitle: string;
+          learningTaskId: string;
+          learningTaskTitle: string;
           dueDate: string;
         }>;
         completed: Array<{
-          roadmapId: string;
-          roadmapTitle: string;
-          goalId: string;
-          goalTitle: string;
-          subGoalId: string;
-          subGoalTitle: string;
+          learningPlanId: string;
+          learningPlanTitle: string;
+          learningModuleId: string;
+          learningModuleTitle: string;
+          learningTaskId: string;
+          learningTaskTitle: string;
           completedAt: string;
         }>;
       };
@@ -123,77 +126,89 @@ const dailyProgress = new OpenAPIHono<{
 
       const completedRows = await db
         .select({
-          completedAt: subGoal.completedAt,
-          roadmapPublicId: roadmap.publicId,
-          roadmapTitle: roadmap.title,
-          goalPublicId: goal.publicId,
-          goalTitle: goal.title,
-          subGoalPublicId: subGoal.publicId,
-          subGoalTitle: subGoal.title,
+          completedAt: learningTask.completedAt,
+          learningPlanPublicId: learningPlan.publicId,
+          learningPlanTitle: learningPlan.title,
+          learningModulePublicId: learningModule.publicId,
+          learningModuleTitle: learningModule.title,
+          learningTaskPublicId: learningTask.publicId,
+          learningTaskTitle: learningTask.title,
         })
-        .from(subGoal)
-        .innerJoin(goal, eq(goal.id, subGoal.goalId))
-        .innerJoin(roadmap, eq(roadmap.id, goal.roadmapId))
+        .from(learningTask)
+        .innerJoin(
+          learningModule,
+          eq(learningModule.id, learningTask.learningModuleId),
+        )
+        .innerJoin(
+          learningPlan,
+          eq(learningPlan.id, learningModule.learningPlanId),
+        )
         .where(
           and(
-            eq(roadmap.userId, auth.user.id),
-            isNotNull(subGoal.completedAt),
-            gte(subGoal.completedAt, startBoundary),
-            lte(subGoal.completedAt, endBoundary),
+            eq(learningPlan.userId, auth.user.id),
+            isNotNull(learningTask.completedAt),
+            gte(learningTask.completedAt, startBoundary),
+            lte(learningTask.completedAt, endBoundary),
           ),
         )
-        .orderBy(asc(subGoal.completedAt));
+        .orderBy(asc(learningTask.completedAt));
 
       for (const row of completedRows) {
         if (!row.completedAt) continue;
         const dateKey = toIsoDate(row.completedAt);
         const bucket = ensureActivityBucket(activityByDate, dateKey);
         bucket.completed.push({
-          roadmapId: row.roadmapPublicId,
-          roadmapTitle: row.roadmapTitle,
-          goalId: row.goalPublicId,
-          goalTitle: row.goalTitle,
-          subGoalId: row.subGoalPublicId,
-          subGoalTitle: row.subGoalTitle,
+          learningPlanId: row.learningPlanPublicId,
+          learningPlanTitle: row.learningPlanTitle,
+          learningModuleId: row.learningModulePublicId,
+          learningModuleTitle: row.learningModuleTitle,
+          learningTaskId: row.learningTaskPublicId,
+          learningTaskTitle: row.learningTaskTitle,
           completedAt: row.completedAt.toISOString(),
         });
       }
 
       const dueRows = await db
         .select({
-          dueDate: subGoal.dueDate,
-          roadmapPublicId: roadmap.publicId,
-          roadmapTitle: roadmap.title,
-          goalPublicId: goal.publicId,
-          goalTitle: goal.title,
-          subGoalPublicId: subGoal.publicId,
-          subGoalTitle: subGoal.title,
+          dueDate: learningTask.dueDate,
+          learningPlanPublicId: learningPlan.publicId,
+          learningPlanTitle: learningPlan.title,
+          learningModulePublicId: learningModule.publicId,
+          learningModuleTitle: learningModule.title,
+          learningTaskPublicId: learningTask.publicId,
+          learningTaskTitle: learningTask.title,
         })
-        .from(subGoal)
-        .innerJoin(goal, eq(goal.id, subGoal.goalId))
-        .innerJoin(roadmap, eq(roadmap.id, goal.roadmapId))
+        .from(learningTask)
+        .innerJoin(
+          learningModule,
+          eq(learningModule.id, learningTask.learningModuleId),
+        )
+        .innerJoin(
+          learningPlan,
+          eq(learningPlan.id, learningModule.learningPlanId),
+        )
         .where(
           and(
-            eq(roadmap.userId, auth.user.id),
-            isNotNull(subGoal.dueDate),
-            eq(subGoal.isCompleted, false),
-            gte(subGoal.dueDate, startBoundary),
-            lte(subGoal.dueDate, endBoundary),
+            eq(learningPlan.userId, auth.user.id),
+            isNotNull(learningTask.dueDate),
+            eq(learningTask.isCompleted, false),
+            gte(learningTask.dueDate, startBoundary),
+            lte(learningTask.dueDate, endBoundary),
           ),
         )
-        .orderBy(asc(subGoal.dueDate));
+        .orderBy(asc(learningTask.dueDate));
 
       for (const row of dueRows) {
         if (!row.dueDate) continue;
         const dateKey = toIsoDate(row.dueDate);
         const bucket = ensureActivityBucket(activityByDate, dateKey);
         bucket.due.push({
-          roadmapId: row.roadmapPublicId,
-          roadmapTitle: row.roadmapTitle,
-          goalId: row.goalPublicId,
-          goalTitle: row.goalTitle,
-          subGoalId: row.subGoalPublicId,
-          subGoalTitle: row.subGoalTitle,
+          learningPlanId: row.learningPlanPublicId,
+          learningPlanTitle: row.learningPlanTitle,
+          learningModuleId: row.learningModulePublicId,
+          learningModuleTitle: row.learningModuleTitle,
+          learningTaskId: row.learningTaskPublicId,
+          learningTaskTitle: row.learningTaskTitle,
           dueDate: row.dueDate.toISOString(),
         });
       }
@@ -221,7 +236,7 @@ const dailyProgress = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Daily goal activity aggregation error:", error);
+      console.error("Daily learning module activity aggregation error:", error);
       throw new ProgressError(
         500,
         "progress:internal_error",

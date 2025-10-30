@@ -1,5 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { roadmapDocument } from "@repo/database/schema";
+import { learningPlanDocument } from "@repo/database/schema";
 import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
 
 import { db } from "../../../database/client";
@@ -83,7 +83,7 @@ const upload = new OpenAPIHono<{
 
       // Save to database
       const [document] = await db
-        .insert(roadmapDocument)
+        .insert(learningPlanDocument)
         .values({
           userId,
           fileName: sanitizedFileName,
@@ -111,7 +111,7 @@ const upload = new OpenAPIHono<{
             fileSize: document.fileSize,
             fileType: document.fileType,
             storageUrl: document.storageUrl,
-            roadmapId: document.roadmapId,
+            learningPlanId: document.learningPlanId,
             uploadedAt: document.uploadedAt.toISOString(),
             createdAt: document.createdAt.toISOString(),
           },

@@ -2,36 +2,36 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  GenerateRoadmapRequestSchema,
-  GenerateRoadmapResponseSchema,
-  GenerateSubGoalNoteParamsSchema,
-  GenerateSubGoalNoteQuerySchema,
-  GenerateSubGoalNoteResponseSchema,
-  GenerateSubGoalQuizParamsSchema,
-  GenerateSubGoalQuizQuerySchema,
-  GenerateSubGoalQuizResponseSchema,
+  GenerateLearningPlanRequestSchema,
+  GenerateLearningPlanResponseSchema,
+  GenerateLearningTaskNoteParamsSchema,
+  GenerateLearningTaskNoteQuerySchema,
+  GenerateLearningTaskNoteResponseSchema,
+  GenerateLearningTaskQuizParamsSchema,
+  GenerateLearningTaskQuizQuerySchema,
+  GenerateLearningTaskQuizResponseSchema,
 } from "./schema";
 
-export const generateRoadmapRoute = createRoute({
+export const generateLearningPlanRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/roadmaps/generate",
-  summary: "Generate a personalized learning roadmap using AI",
+  path: "/ai/learningPlans/generate",
+  summary: "Generate a personalized learning learningPlan using AI",
   request: {
     body: {
       content: {
         "application/json": {
-          schema: GenerateRoadmapRequestSchema,
+          schema: GenerateLearningPlanRequestSchema,
         },
       },
     },
   },
   responses: {
     200: {
-      description: "Roadmap generated successfully",
+      description: "LearningPlan generated successfully",
       content: {
         "application/json": {
-          schema: GenerateRoadmapResponseSchema,
+          schema: GenerateLearningPlanResponseSchema,
         },
       },
     },
@@ -75,21 +75,21 @@ export const generateRoadmapRoute = createRoute({
   ],
 });
 
-export const generateSubGoalNoteRoute = createRoute({
+export const generateLearningTaskNoteRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes",
-  summary: "Generate or refresh AI learning note for a sub-goal",
+  path: "/ai/learningPlans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
+  summary: "Generate or refresh AI learning note for a learning-task",
   request: {
-    params: GenerateSubGoalNoteParamsSchema,
-    query: GenerateSubGoalNoteQuerySchema,
+    params: GenerateLearningTaskNoteParamsSchema,
+    query: GenerateLearningTaskNoteQuerySchema,
   },
   responses: {
     202: {
       description: "Note generation started",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -97,7 +97,7 @@ export const generateSubGoalNoteRoute = createRoute({
       description: "Existing note status returned",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -105,7 +105,7 @@ export const generateSubGoalNoteRoute = createRoute({
       description: "Invalid request",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -113,7 +113,7 @@ export const generateSubGoalNoteRoute = createRoute({
       description: "Authentication required",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -121,15 +121,15 @@ export const generateSubGoalNoteRoute = createRoute({
       description: "Access denied",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
     404: {
-      description: "Target roadmap or sub-goal not found",
+      description: "Target learningPlan or learning-task not found",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -137,7 +137,7 @@ export const generateSubGoalNoteRoute = createRoute({
       description: "Server error while generating the note",
       content: {
         "application/json": {
-          schema: GenerateSubGoalNoteResponseSchema,
+          schema: GenerateLearningTaskNoteResponseSchema,
         },
       },
     },
@@ -149,21 +149,21 @@ export const generateSubGoalNoteRoute = createRoute({
   ],
 });
 
-export const generateSubGoalQuizRoute = createRoute({
+export const generateLearningTaskQuizRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes",
-  summary: "Generate or refresh an AI quiz for a sub-goal",
+  path: "/ai/learningPlans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
+  summary: "Generate or refresh an AI quiz for a learning-task",
   request: {
-    params: GenerateSubGoalQuizParamsSchema,
-    query: GenerateSubGoalQuizQuerySchema,
+    params: GenerateLearningTaskQuizParamsSchema,
+    query: GenerateLearningTaskQuizQuerySchema,
   },
   responses: {
     202: {
       description: "Quiz generation started",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -171,7 +171,7 @@ export const generateSubGoalQuizRoute = createRoute({
       description: "Existing quiz status returned",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -179,7 +179,7 @@ export const generateSubGoalQuizRoute = createRoute({
       description: "Invalid request",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -187,7 +187,7 @@ export const generateSubGoalQuizRoute = createRoute({
       description: "Authentication required",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -195,15 +195,15 @@ export const generateSubGoalQuizRoute = createRoute({
       description: "Access denied",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
     404: {
-      description: "Target roadmap or sub-goal not found",
+      description: "Target learningPlan or learning-task not found",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -211,7 +211,7 @@ export const generateSubGoalQuizRoute = createRoute({
       description: "Server error while generating the quiz",
       content: {
         "application/json": {
-          schema: GenerateSubGoalQuizResponseSchema,
+          schema: GenerateLearningTaskQuizResponseSchema,
         },
       },
     },
@@ -224,7 +224,7 @@ export const generateSubGoalQuizRoute = createRoute({
 });
 
 export const aiRoutes = [
-  generateRoadmapRoute,
-  generateSubGoalNoteRoute,
-  generateSubGoalQuizRoute,
+  generateLearningPlanRoute,
+  generateLearningTaskNoteRoute,
+  generateLearningTaskQuizRoute,
 ] as const;
