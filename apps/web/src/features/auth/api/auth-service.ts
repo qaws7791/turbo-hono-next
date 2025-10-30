@@ -42,3 +42,17 @@ export async function login(
 export async function logout(): Promise<void> {
   await api.auth.logout();
 }
+
+export async function signup(
+  email: string,
+  password: string,
+  name: string,
+): Promise<AuthUser> {
+  const response = await api.auth.signup(email, password, name);
+
+  if (response.error || !response.data?.user) {
+    throw response.error ?? new Error("Signup failed");
+  }
+
+  return mapUser(response.data.user);
+}

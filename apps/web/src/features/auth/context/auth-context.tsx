@@ -7,13 +7,14 @@ import {
   useState,
 } from "react";
 
-import type { ReactNode } from "react";
 import type { AuthContextValue, AuthUser } from "@/features/auth/types";
+import type { ReactNode } from "react";
 
 import {
   fetchCurrentUser,
   login,
   logout,
+  signup,
 } from "@/features/auth/api/auth-service";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -68,6 +69,14 @@ export function AuthProvider({
     setUser(null);
   }, []);
 
+  const handleSignup = useCallback(
+    async (email: string, password: string, name: string) => {
+      const authenticatedUser = await signup(email, password, name);
+      setUser(authenticatedUser);
+    },
+    [],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       isAuthenticated: user !== null,
@@ -75,8 +84,9 @@ export function AuthProvider({
       user,
       login: handleLogin,
       logout: handleLogout,
+      signup: handleSignup,
     }),
-    [handleLogin, handleLogout, isLoading, user],
+    [handleLogin, handleLogout, handleSignup, isLoading, user],
   );
 
   if (isLoading) {
