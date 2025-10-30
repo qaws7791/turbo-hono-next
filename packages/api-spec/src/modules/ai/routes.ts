@@ -15,7 +15,7 @@ import {
 export const generateLearningPlanRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/learningPlans/generate",
+  path: "/ai/learning-plans/generate",
   summary: "Generate a personalized learning learningPlan using AI",
   request: {
     body: {
@@ -78,7 +78,7 @@ export const generateLearningPlanRoute = createRoute({
 export const generateLearningTaskNoteRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/learningPlans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
+  path: "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
   summary: "Generate or refresh AI learning note for a learning-task",
   request: {
     params: GenerateLearningTaskNoteParamsSchema,
@@ -152,7 +152,7 @@ export const generateLearningTaskNoteRoute = createRoute({
 export const generateLearningTaskQuizRoute = createRoute({
   tags: ["AI"],
   method: "post",
-  path: "/ai/learningPlans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
+  path: "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
   summary: "Generate or refresh an AI quiz for a learning-task",
   request: {
     params: GenerateLearningTaskQuizParamsSchema,

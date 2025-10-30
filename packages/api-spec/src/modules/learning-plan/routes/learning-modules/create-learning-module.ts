@@ -10,7 +10,7 @@ import {
 export const createLearningModuleRoute = createRoute({
   tags: ["Learning Plan Learning modules"],
   method: "post",
-  path: "/learning-plans/{learning planId}/learning-modules",
+  path: "/learning-plans/{learningPlanId}/learning-modules",
   summary: "Create a new learning module for a learning plan",
   request: {
     params: LearningPlanParamsSchema,

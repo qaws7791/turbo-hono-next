@@ -868,10 +868,6 @@ export const LearningPlanLearningModuleLearningTaskParamsSchema = z.object({
     description: "Public ID of the learningPlan",
     example: "abc123def456",
   }),
-  learningModuleId: z.string().min(1).openapi({
-    description: "Public ID of the learningModule",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
   learningTaskId: z.string().min(1).openapi({
     description: "Public ID of the learning-task",
     example: "660e8400-e29b-41d4-a716-446655440001",
