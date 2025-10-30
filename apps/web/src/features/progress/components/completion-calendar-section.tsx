@@ -265,12 +265,12 @@ export function CompletionCalendarSection() {
                   }
 
                   return (
-                    <li key={`${activity.type}-${activity.subGoalId}`}>
+                    <li key={`${activity.type}-${activity.learningTaskId}`}>
                       <Link
-                        to="/app/roadmaps/$roadmapId/sub-goals/$subGoalId"
+                        to="/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId"
                         params={{
-                          roadmapId: activity.roadmapId,
-                          subGoalId: activity.subGoalId,
+                          learningPlanId: activity.learningPlanId,
+                          learningTaskId: activity.learningTaskId,
                         }}
                         className="group block focus-visible:outline-none"
                       >
@@ -306,10 +306,11 @@ export function CompletionCalendarSection() {
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-foreground">
-                                {activity.subGoalTitle}
+                                {activity.learningTaskTitle}
                               </p>
                               <p className="mt-1 text-xs text-muted-foreground">
-                                {activity.roadmapTitle} · {activity.goalTitle}
+                                {activity.learningPlanTitle} ·{" "}
+                                {activity.learningModuleTitle}
                               </p>
                             </div>
                           </div>

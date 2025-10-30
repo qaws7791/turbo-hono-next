@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppPageLayout } from "@/shared/components/app-page-layout";
-import RoadmapFunnel from "@/features/roadmap/components/roadmap-funnel";
-import { generateRoadmap } from "@/features/roadmap/api/roadmap-service";
+import LearningPlanFunnel from "@/features/learning-plan/components/learning-plan-funnel";
+import { generateLearningPlan } from "@/features/learning-plan/api/learning-plan-service";
 
 export const Route = createFileRoute("/app/create/")({
   component: CreateComponent,
@@ -13,9 +13,9 @@ function CreateComponent() {
 
   return (
     <AppPageLayout>
-      <RoadmapFunnel
+      <LearningPlanFunnel
         onSubmit={(apiData) => {
-          generateRoadmap(apiData).then(() => {
+          generateLearningPlan(apiData).then(() => {
             navigate({ to: "/app" });
           });
         }}

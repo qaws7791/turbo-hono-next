@@ -26,9 +26,9 @@ const navItems: Array<NavItem> = [
     ),
   },
   {
-    id: "roadmaps",
-    label: "Roadmaps",
-    href: "/app/roadmaps",
+    id: "learning-plans",
+    label: "LearningPlans",
+    href: "/app/learning-plans",
     icon: () => (
       <Icon
         name="solar--bookmark-square-minimalistic-linear"

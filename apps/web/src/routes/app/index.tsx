@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { AppPageLayout } from "@/shared/components/app-page-layout";
 import { Link } from "@/shared/components/link";
 import { CompletionCalendarSection } from "@/features/progress/components/completion-calendar-section";
-import RoadmapList from "@/features/roadmap/components/roadmap-list";
+import LearningPlanList from "@/features/learning-plan/components/learning-plan-list";
 
 export const Route = createFileRoute("/app/")({
   beforeLoad: ({ context, location }) => {
@@ -27,13 +27,13 @@ function RouteComponent() {
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">로드맵</h1>
+          <h1 className="text-3xl font-bold text-foreground">학습 계획</h1>
           <p className="text-muted-foreground mt-1">
-            나의 학습 로드맵을 관리하고 진행상황을 확인해보세요
+            나의 학습 학습 계획을 관리하고 진행상황을 확인해보세요
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* 로드맵 생성 버튼 */}
+          {/* 학습 계획 생성 버튼 */}
           <Link
             variant="primary"
             to="/app/create"
@@ -43,14 +43,14 @@ function RouteComponent() {
               type="iconify"
               name="solar--add-square-outline"
             />
-            새 로드맵
+            새 학습 계획
           </Link>
         </div>
       </div>
 
       <div className="flex flex-row gap-4">
         <Suspense fallback={null}>
-          <RoadmapList />
+          <LearningPlanList />
           <CompletionCalendarSection />
         </Suspense>
       </div>

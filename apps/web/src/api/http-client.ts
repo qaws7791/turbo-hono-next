@@ -2,11 +2,11 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "./schema";
 
-type RoadmapCreateBody = NonNullable<
-  paths["/roadmaps"]["post"]["requestBody"]
+type LearningPlanCreateBody = NonNullable<
+  paths["/learning-plans"]["post"]["requestBody"]
 >["content"]["application/json"];
-type RoadmapUpdateBody = NonNullable<
-  paths["/roadmaps/{id}"]["patch"]["requestBody"]
+type LearningPlanUpdateBody = NonNullable<
+  paths["/learning-plans/{id}"]["patch"]["requestBody"]
 >["content"]["application/json"];
 type DocumentUploadBody = NonNullable<
   paths["/documents/upload"]["post"]["requestBody"]
@@ -45,7 +45,7 @@ const auth = {
   },
 };
 
-const roadmaps = {
+const learningPlans = {
   list: async (params?: {
     cursor?: string;
     limit?: number;
@@ -54,14 +54,14 @@ const roadmaps = {
     sort?: "created_at" | "updated_at" | "title";
     order?: "asc" | "desc";
   }) => {
-    return client.GET("/roadmaps", {
+    return client.GET("/learning-plans", {
       params: { query: params },
     });
   },
 
-  detail: async (roadmapId: string) => {
-    return client.GET("/roadmaps/{roadmapId}", {
-      params: { path: { roadmapId } },
+  detail: async (learningPlanId: string) => {
+    return client.GET("/learning-plans/{learningPlanId}", {
+      params: { path: { learningPlanId } },
     });
   },
 
@@ -78,18 +78,18 @@ const roadmaps = {
     mainGoal: string;
     additionalRequirements?: string | null;
   }) => {
-    const body: RoadmapCreateBody = {
+    const body: LearningPlanCreateBody = {
       ...data,
       additionalRequirements: data.additionalRequirements ?? null,
     };
 
-    return client.POST("/roadmaps", {
+    return client.POST("/learning-plans", {
       body,
     });
   },
 
   update: async (
-    roadmapId: string,
+    learningPlanId: string,
     data: {
       title?: string;
       emoji?: string;
@@ -112,74 +112,90 @@ const roadmaps = {
           }
         : data;
 
-    return client.PATCH("/roadmaps/{id}", {
-      params: { path: { roadmapId } },
-      body: body as RoadmapUpdateBody,
+    return client.PATCH("/learning-plans/{id}", {
+      params: { path: { learningPlanId } },
+      body: body as LearningPlanUpdateBody,
     });
   },
 
-  delete: async (roadmapId: string) => {
-    return client.DELETE("/roadmaps/{id}", {
-      params: { path: { roadmapId } },
+  delete: async (learningPlanId: string) => {
+    return client.DELETE("/learning-plans/{id}", {
+      params: { path: { learningPlanId } },
     });
   },
 
-  updateStatus: async (roadmapId: string, status: "active" | "archived") => {
-    return client.PATCH("/roadmaps/{id}/status", {
-      params: { path: { roadmapId } },
+  updateStatus: async (
+    learningPlanId: string,
+    status: "active" | "archived",
+  ) => {
+    return client.PATCH("/learning-plans/{id}/status", {
+      params: { path: { learningPlanId } },
       body: { status },
     });
   },
 };
 
-const goals = {
+const learningModules = {
   create: async (
-    roadmapId: string,
+    learningPlanId: string,
     data: {
       title: string;
       description?: string;
       isExpanded?: boolean;
     },
   ) => {
-    return client.POST("/roadmaps/{roadmapId}/goals", {
-      params: { path: { roadmapId } },
+    return client.POST("/learning-plans/{learningPlanId}/learning-modules", {
+      params: { path: { learningPlanId } },
       body: data,
     });
   },
 
   update: async (
-    roadmapId: string,
-    goalId: string,
+    learningPlanId: string,
+    learningModuleId: string,
     data: {
       title?: string;
       description?: string;
       isExpanded?: boolean;
     },
   ) => {
-    return client.PUT("/roadmaps/{roadmapId}/goals/{goalId}", {
-      params: { path: { roadmapId, goalId } },
-      body: data,
-    });
+    return client.PUT(
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
+      {
+        params: { path: { learningPlanId, learningModuleId } },
+        body: data,
+      },
+    );
   },
 
-  delete: async (roadmapId: string, goalId: string) => {
-    return client.DELETE("/roadmaps/{roadmapId}/goals/{goalId}", {
-      params: { path: { roadmapId, goalId } },
-    });
+  delete: async (learningPlanId: string, learningModuleId: string) => {
+    return client.DELETE(
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
+      {
+        params: { path: { learningPlanId, learningModuleId } },
+      },
+    );
   },
 
-  reorder: async (roadmapId: string, goalId: string, newOrder: number) => {
-    return client.PATCH("/roadmaps/{roadmapId}/goals/{goalId}/order", {
-      params: { path: { roadmapId, goalId } },
-      body: { newOrder },
-    });
+  reorder: async (
+    learningPlanId: string,
+    learningModuleId: string,
+    newOrder: number,
+  ) => {
+    return client.PATCH(
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/order",
+      {
+        params: { path: { learningPlanId, learningModuleId } },
+        body: { newOrder },
+      },
+    );
   },
 };
 
-const subGoals = {
+const learningTasks = {
   create: async (
-    roadmapId: string,
-    goalId: string,
+    learningPlanId: string,
+    learningModuleId: string,
     data: {
       title: string;
       description?: string;
@@ -187,21 +203,27 @@ const subGoals = {
       memo?: string;
     },
   ) => {
-    return client.POST("/roadmaps/{roadmapId}/goals/{goalId}/sub-goals", {
-      params: { path: { roadmapId, goalId } },
-      body: data,
-    });
+    return client.POST(
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks",
+      {
+        params: { path: { learningPlanId, learningModuleId } },
+        body: data,
+      },
+    );
   },
 
-  detail: async (roadmapId: string, subGoalId: string) => {
-    return client.GET("/roadmaps/{roadmapId}/sub-goals/{subGoalId}", {
-      params: { path: { roadmapId, subGoalId } },
-    });
+  detail: async (learningPlanId: string, learningTaskId: string) => {
+    return client.GET(
+      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
+      {
+        params: { path: { learningPlanId, learningTaskId } },
+      },
+    );
   },
 
   update: async (
-    roadmapId: string,
-    subGoalId: string,
+    learningPlanId: string,
+    learningTaskId: string,
     data: {
       title?: string;
       description?: string;
@@ -210,49 +232,56 @@ const subGoals = {
       memo?: string;
     },
   ) => {
-    return client.PUT("/roadmaps/{roadmapId}/sub-goals/{subGoalId}", {
-      params: { path: { roadmapId, subGoalId } },
-      body: data,
-    });
+    return client.PUT(
+      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
+      {
+        params: { path: { learningPlanId, learningTaskId } },
+        body: data,
+      },
+    );
   },
 
-  delete: async (roadmapId: string, goalId: string, subGoalId: string) => {
+  delete: async (
+    learningPlanId: string,
+    learningModuleId: string,
+    learningTaskId: string,
+  ) => {
     return client.DELETE(
-      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}",
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}",
       {
-        params: { path: { roadmapId, goalId, subGoalId } },
+        params: { path: { learningPlanId, learningModuleId, learningTaskId } },
       },
     );
   },
 
   move: async (
-    roadmapId: string,
-    goalId: string,
-    subGoalId: string,
+    learningPlanId: string,
+    learningModuleId: string,
+    learningTaskId: string,
     data: {
-      newGoalId: string;
+      newLearningModuleId: string;
       newOrder?: number;
     },
   ) => {
     return client.PATCH(
-      "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move",
+      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move",
       {
-        params: { path: { roadmapId, goalId, subGoalId } },
+        params: { path: { learningPlanId, learningModuleId, learningTaskId } },
         body: data,
       },
     );
   },
 
   submitQuiz: async (
-    roadmapId: string,
-    subGoalId: string,
+    learningPlanId: string,
+    learningTaskId: string,
     quizId: string,
     answers: Array<{ questionId: string; selectedIndex: number }>,
   ) => {
     return client.POST(
-      "/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions",
+      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes/{quizId}/submissions",
       {
-        params: { path: { roadmapId, subGoalId, quizId } },
+        params: { path: { learningPlanId, learningTaskId, quizId } },
         body: { answers },
       },
     );
@@ -288,7 +317,7 @@ const documents = {
 };
 
 const ai = {
-  generateRoadmap: async (data: {
+  generateLearningPlan: async (data: {
     documentIds?: Array<string>;
     learningTopic: string;
     userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
@@ -311,43 +340,46 @@ const ai = {
     mainGoal: string;
     additionalRequirements?: string | undefined;
   }) => {
-    return client.POST("/ai/roadmaps/generate", {
+    return client.POST("/ai/learning-plans/generate", {
       body: data,
     });
   },
 
-  generateSubGoalNote: async (
-    roadmapId: string,
-    subGoalId: string,
-    options?: {
-      force?: boolean;
-    },
-  ) => {
-    return client.POST("/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes", {
-      params: {
-        path: { roadmapId, subGoalId },
-        query:
-          options?.force !== undefined
-            ? {
-                force: options.force,
-              }
-            : undefined,
-      },
-    });
-  },
-
-  generateSubGoalQuiz: async (
-    roadmapId: string,
-    subGoalId: string,
+  generateLearningTaskNote: async (
+    learningPlanId: string,
+    learningTaskId: string,
     options?: {
       force?: boolean;
     },
   ) => {
     return client.POST(
-      "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes",
+      "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
       {
         params: {
-          path: { roadmapId, subGoalId },
+          path: { learningPlanId, learningTaskId },
+          query:
+            options?.force !== undefined
+              ? {
+                  force: options.force,
+                }
+              : undefined,
+        },
+      },
+    );
+  },
+
+  generateLearningTaskQuiz: async (
+    learningPlanId: string,
+    learningTaskId: string,
+    options?: {
+      force?: boolean;
+    },
+  ) => {
+    return client.POST(
+      "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
+      {
+        params: {
+          path: { learningPlanId, learningTaskId },
           query:
             options?.force !== undefined
               ? {
@@ -362,9 +394,9 @@ const ai = {
 
 export const api = {
   auth,
-  roadmaps,
-  goals,
-  subGoals,
+  learningPlans,
+  learningModules,
+  learningTasks,
   progress,
   documents,
   ai,

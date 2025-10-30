@@ -8,193 +8,215 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as AppRouteRouteImport } from "./routes/app/route";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as LoginIndexRouteImport } from "./routes/login/index";
-import { Route as AppIndexRouteImport } from "./routes/app/index";
-import { Route as AppCreateIndexRouteImport } from "./routes/app/create/index";
-import { Route as AppRoadmapsRoadmapIdIndexRouteImport } from "./routes/app/roadmaps/$roadmapId/index";
-import { Route as AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport } from "./routes/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignupIndexRouteImport } from './routes/signup/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppCreateIndexRouteImport } from './routes/app/create/index'
+import { Route as AppLearningPlansLearningPlanIdIndexRouteImport } from './routes/app/learning-plans/$learningPlanId/index'
+import { Route as AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRouteImport } from './routes/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
 
 const AppRouteRoute = AppRouteRouteImport.update({
-  id: "/app",
-  path: "/app",
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SignupIndexRoute = SignupIndexRouteImport.update({
+  id: '/signup/',
+  path: '/signup/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
-  id: "/login/",
-  path: "/login/",
+  id: '/login/',
+  path: '/login/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => AppRouteRoute,
-} as any);
+} as any)
 const AppCreateIndexRoute = AppCreateIndexRouteImport.update({
-  id: "/create/",
-  path: "/create/",
+  id: '/create/',
+  path: '/create/',
   getParentRoute: () => AppRouteRoute,
-} as any);
-const AppRoadmapsRoadmapIdIndexRoute =
-  AppRoadmapsRoadmapIdIndexRouteImport.update({
-    id: "/roadmaps/$roadmapId/",
-    path: "/roadmaps/$roadmapId/",
+} as any)
+const AppLearningPlansLearningPlanIdIndexRoute =
+  AppLearningPlansLearningPlanIdIndexRouteImport.update({
+    id: '/learning-plans/$learningPlanId/',
+    path: '/learning-plans/$learningPlanId/',
     getParentRoute: () => AppRouteRoute,
-  } as any);
-const AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute =
-  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport.update({
-    id: "/roadmaps/$roadmapId/sub-goals/$subGoalId",
-    path: "/roadmaps/$roadmapId/sub-goals/$subGoalId",
+  } as any)
+const AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute =
+  AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRouteImport.update({
+    id: '/learning-plans/$learningPlanId/learning-tasks/$learningTaskId',
+    path: '/learning-plans/$learningPlanId/learning-tasks/$learningTaskId',
     getParentRoute: () => AppRouteRoute,
-  } as any);
+  } as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/app": typeof AppRouteRouteWithChildren;
-  "/app/": typeof AppIndexRoute;
-  "/login": typeof LoginIndexRoute;
-  "/app/create": typeof AppCreateIndexRoute;
-  "/app/roadmaps/$roadmapId": typeof AppRoadmapsRoadmapIdIndexRoute;
-  "/app/roadmaps/$roadmapId/sub-goals/$subGoalId": typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute;
+  '/': typeof IndexRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/app/': typeof AppIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/signup': typeof SignupIndexRoute
+  '/app/create': typeof AppCreateIndexRoute
+  '/app/learning-plans/$learningPlanId': typeof AppLearningPlansLearningPlanIdIndexRoute
+  '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId': typeof AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/app": typeof AppIndexRoute;
-  "/login": typeof LoginIndexRoute;
-  "/app/create": typeof AppCreateIndexRoute;
-  "/app/roadmaps/$roadmapId": typeof AppRoadmapsRoadmapIdIndexRoute;
-  "/app/roadmaps/$roadmapId/sub-goals/$subGoalId": typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute;
+  '/': typeof IndexRoute
+  '/app': typeof AppIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/signup': typeof SignupIndexRoute
+  '/app/create': typeof AppCreateIndexRoute
+  '/app/learning-plans/$learningPlanId': typeof AppLearningPlansLearningPlanIdIndexRoute
+  '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId': typeof AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/app": typeof AppRouteRouteWithChildren;
-  "/app/": typeof AppIndexRoute;
-  "/login/": typeof LoginIndexRoute;
-  "/app/create/": typeof AppCreateIndexRoute;
-  "/app/roadmaps/$roadmapId/": typeof AppRoadmapsRoadmapIdIndexRoute;
-  "/app/roadmaps/$roadmapId/sub-goals/$subGoalId": typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/app/': typeof AppIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/signup/': typeof SignupIndexRoute
+  '/app/create/': typeof AppCreateIndexRoute
+  '/app/learning-plans/$learningPlanId/': typeof AppLearningPlansLearningPlanIdIndexRoute
+  '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId': typeof AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/app"
-    | "/app/"
-    | "/login"
-    | "/app/create"
-    | "/app/roadmaps/$roadmapId"
-    | "/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/app'
+    | '/app/'
+    | '/login'
+    | '/signup'
+    | '/app/create'
+    | '/app/learning-plans/$learningPlanId'
+    | '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/app"
-    | "/login"
-    | "/app/create"
-    | "/app/roadmaps/$roadmapId"
-    | "/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
+    | '/'
+    | '/app'
+    | '/login'
+    | '/signup'
+    | '/app/create'
+    | '/app/learning-plans/$learningPlanId'
+    | '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
   id:
-    | "__root__"
-    | "/"
-    | "/app"
-    | "/app/"
-    | "/login/"
-    | "/app/create/"
-    | "/app/roadmaps/$roadmapId/"
-    | "/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/'
+    | '/login/'
+    | '/signup/'
+    | '/app/create/'
+    | '/app/learning-plans/$learningPlanId/'
+    | '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  AppRouteRoute: typeof AppRouteRouteWithChildren;
-  LoginIndexRoute: typeof LoginIndexRoute;
+  IndexRoute: typeof IndexRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  LoginIndexRoute: typeof LoginIndexRoute
+  SignupIndexRoute: typeof SignupIndexRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/app": {
-      id: "/app";
-      path: "/app";
-      fullPath: "/app";
-      preLoaderRoute: typeof AppRouteRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/login/": {
-      id: "/login/";
-      path: "/login";
-      fullPath: "/login";
-      preLoaderRoute: typeof LoginIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/app/": {
-      id: "/app/";
-      path: "/";
-      fullPath: "/app/";
-      preLoaderRoute: typeof AppIndexRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/app/create/": {
-      id: "/app/create/";
-      path: "/create";
-      fullPath: "/app/create";
-      preLoaderRoute: typeof AppCreateIndexRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/app/roadmaps/$roadmapId/": {
-      id: "/app/roadmaps/$roadmapId/";
-      path: "/roadmaps/$roadmapId";
-      fullPath: "/app/roadmaps/$roadmapId";
-      preLoaderRoute: typeof AppRoadmapsRoadmapIdIndexRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
-    "/app/roadmaps/$roadmapId/sub-goals/$subGoalId": {
-      id: "/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
-      path: "/roadmaps/$roadmapId/sub-goals/$subGoalId";
-      fullPath: "/app/roadmaps/$roadmapId/sub-goals/$subGoalId";
-      preLoaderRoute: typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRouteImport;
-      parentRoute: typeof AppRouteRoute;
-    };
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup/': {
+      id: '/signup/'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/create/': {
+      id: '/app/create/'
+      path: '/create'
+      fullPath: '/app/create'
+      preLoaderRoute: typeof AppCreateIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/learning-plans/$learningPlanId/': {
+      id: '/app/learning-plans/$learningPlanId/'
+      path: '/learning-plans/$learningPlanId'
+      fullPath: '/app/learning-plans/$learningPlanId'
+      preLoaderRoute: typeof AppLearningPlansLearningPlanIdIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId': {
+      id: '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
+      path: '/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
+      fullPath: '/app/learning-plans/$learningPlanId/learning-tasks/$learningTaskId'
+      preLoaderRoute: typeof AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
   }
 }
 
 interface AppRouteRouteChildren {
-  AppIndexRoute: typeof AppIndexRoute;
-  AppCreateIndexRoute: typeof AppCreateIndexRoute;
-  AppRoadmapsRoadmapIdIndexRoute: typeof AppRoadmapsRoadmapIdIndexRoute;
-  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute: typeof AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute;
+  AppIndexRoute: typeof AppIndexRoute
+  AppCreateIndexRoute: typeof AppCreateIndexRoute
+  AppLearningPlansLearningPlanIdIndexRoute: typeof AppLearningPlansLearningPlanIdIndexRoute
+  AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute: typeof AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppCreateIndexRoute: AppCreateIndexRoute,
-  AppRoadmapsRoadmapIdIndexRoute: AppRoadmapsRoadmapIdIndexRoute,
-  AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute:
-    AppRoadmapsRoadmapIdSubGoalsSubGoalIdRoute,
-};
+  AppLearningPlansLearningPlanIdIndexRoute:
+    AppLearningPlansLearningPlanIdIndexRoute,
+  AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute:
+    AppLearningPlansLearningPlanIdLearningTasksLearningTaskIdRoute,
+}
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
-);
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   LoginIndexRoute: LoginIndexRoute,
-};
+  SignupIndexRoute: SignupIndexRoute,
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()

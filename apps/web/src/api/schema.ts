@@ -4,6 +4,184 @@
  */
 
 export interface paths {
+  "/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Login with email and password */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      /** @description Login with email and password */
+      requestBody?: {
+        content: {
+          "application/json": {
+            /** Format: email */
+            email: string;
+            password: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Login successful */
+        200: {
+          headers: {
+            /** @description Session cookie */
+            "Set-Cookie"?: string;
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              user: {
+                id: string;
+                /** Format: email */
+                email: string;
+                name: string;
+                emailVerified: boolean;
+                image: string | null;
+              };
+              session: {
+                id: string;
+                expiresAt: string;
+              };
+            };
+          };
+        };
+        /** @description Invalid input */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: string;
+              code: string;
+            };
+          };
+        };
+        /** @description Invalid credentials */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: string;
+              code: string;
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: string;
+              code: string;
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/auth/signup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Register with email and password */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /** Format: email */
+            email: string;
+            name?: string;
+            password: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Registration successful */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              user: {
+                id: string;
+                /** Format: email */
+                email: string;
+                name: string;
+                emailVerified: boolean;
+                image: string | null;
+              };
+              session: {
+                id: string;
+                expiresAt: string;
+              };
+            };
+          };
+        };
+        /** @description Invalid input */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: string;
+              code: string;
+            };
+          };
+        };
+        /** @description User already exists */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: string;
+              code: string;
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/auth/change-password": {
     parameters: {
       query?: never;
@@ -27,6 +205,10 @@ export interface paths {
         content: {
           "application/json": {
             currentPassword: string;
+            /**
+             * @description 새로운 비밀번호
+             * @example new-secure-password
+             */
             newPassword: string;
           };
         };
@@ -89,101 +271,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/auth/login": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Login with email and password */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      /** @description Login with email and password */
-      requestBody?: {
-        content: {
-          "application/json": {
-            /** Format: email */
-            email: string;
-            password: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Login successful */
-        200: {
-          headers: {
-            /** @description Session cookie */
-            "Set-Cookie"?: string;
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              user: {
-                id: string;
-                email: string;
-                name: string;
-                emailVerified: boolean;
-                image: string | null;
-              };
-              session: {
-                id: string;
-                expiresAt: string;
-              };
-            };
-          };
-        };
-        /** @description Invalid input */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Invalid credentials */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/auth/logout": {
     parameters: {
       query?: never;
@@ -235,87 +322,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/auth/signup": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Register with email and password */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /** Format: email */
-            email: string;
-            name?: string;
-            password: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Registration successful */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              user: {
-                id: string;
-                email: string;
-                name: string;
-                emailVerified: boolean;
-                image: string | null;
-              };
-              session: {
-                id: string;
-                expiresAt: string;
-              };
-            };
-          };
-        };
-        /** @description Invalid input */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description User already exists */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/auth/me": {
     parameters: {
       query?: never;
@@ -341,6 +347,7 @@ export interface paths {
           content: {
             "application/json": {
               id: string;
+              /** Format: email */
               email: string;
               name: string;
               emailVerified: boolean;
@@ -370,1087 +377,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/roadmaps": {
+  "/documents/{publicId}": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** Get roadmap list with pagination and filtering */
-    get: {
-      parameters: {
-        query?: {
-          /** @description Cursor for pagination (encoded string) */
-          cursor?: string;
-          /** @description Number of items to return */
-          limit?: number;
-          /** @description Search query for title or description */
-          search?: string;
-          /** @description Filter by roadmap status */
-          status?: "active" | "archived";
-          /** @description Sort field */
-          sort?: "created_at" | "updated_at" | "title";
-          /** @description Sort order */
-          order?: "asc" | "desc";
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Roadmap list retrieved successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /** @description List of roadmaps */
-              items: Array<{
-                /**
-                 * @description Public ID of the roadmap
-                 * @example abc123def456
-                 */
-                id: string;
-                /**
-                 * @description Emoji that represents the roadmap at a glance
-                 * @example 🚀
-                 */
-                emoji: string;
-                /**
-                 * @description Roadmap title
-                 * @example Full Stack JavaScript Developer
-                 */
-                title: string;
-                /**
-                 * @description Roadmap description
-                 * @example Complete guide to becoming a full stack developer
-                 */
-                description: string | null;
-                /**
-                 * @description Current status of the roadmap
-                 * @example active
-                 * @enum {string}
-                 */
-                status: "active" | "archived";
-                /**
-                 * @description Percentage of completed sub-goals (0-100)
-                 * @example 75
-                 */
-                goalCompletionPercent: number;
-                /**
-                 * @description Main learning topic
-                 * @example JavaScript
-                 */
-                learningTopic: string;
-                /**
-                 * @description Target user level
-                 * @example beginner
-                 */
-                userLevel: string;
-                /**
-                 * @description Target completion weeks
-                 * @example 12
-                 */
-                targetWeeks: number;
-                /**
-                 * @description Weekly study hours
-                 * @example 10
-                 */
-                weeklyHours: number;
-                /**
-                 * @description Preferred learning style
-                 * @example 실습 중심
-                 */
-                learningStyle: string;
-                /**
-                 * @description Preferred learning resources
-                 * @example 온라인 강의
-                 */
-                preferredResources: string;
-                /**
-                 * @description Main learning goal
-                 * @example 웹 개발자 취업
-                 */
-                mainGoal: string;
-                /**
-                 * @description Additional requirements
-                 * @example React, Node.js 포함
-                 */
-                additionalRequirements: string | null;
-                /**
-                 * @description Creation timestamp
-                 * @example 2024-01-01T00:00:00.000Z
-                 */
-                createdAt: string;
-                /**
-                 * @description Last update timestamp
-                 * @example 2024-01-15T10:30:00.000Z
-                 */
-                updatedAt: string;
-              }>;
-              /** @description Pagination information */
-              pagination: {
-                /**
-                 * @description Whether there are more items
-                 * @example true
-                 */
-                hasNext: boolean;
-                /**
-                 * @description Cursor for the next page
-                 * @example eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==
-                 */
-                nextCursor: string | null;
-                /**
-                 * @description Total number of items (if available)
-                 * @example 150
-                 */
-                total: number;
-              };
-            };
-          };
-        };
-        /** @description Bad request - invalid parameters */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    /** Create a new roadmap */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Roadmap title
-             * @example Full Stack JavaScript Developer
-             */
-            title: string;
-            /**
-             * @description Emoji that will be used for the roadmap (fallback applied when omitted)
-             * @example 🧠
-             */
-            emoji?: string;
-            /**
-             * @description Roadmap description
-             * @example Complete guide to becoming a full stack developer
-             */
-            description?: string;
-            /**
-             * @description Main learning topic
-             * @example JavaScript
-             */
-            learningTopic: string;
-            /**
-             * @description Target user level
-             * @example beginner
-             */
-            userLevel: string;
-            /**
-             * @description Target completion weeks (1-24)
-             * @example 12
-             */
-            targetWeeks: number;
-            /**
-             * @description Weekly study hours (1-60)
-             * @example 10
-             */
-            weeklyHours: number;
-            /**
-             * @description Preferred learning style
-             * @example 실습 중심
-             */
-            learningStyle: string;
-            /**
-             * @description Preferred learning resources
-             * @example 온라인 강의
-             */
-            preferredResources: string;
-            /**
-             * @description Main learning goal
-             * @example 웹 개발자 취업
-             */
-            mainGoal: string;
-            /**
-             * @description Additional requirements
-             * @example React, Node.js 포함
-             */
-            additionalRequirements: string | null;
-          };
-        };
-      };
-      responses: {
-        /** @description Roadmap created successfully */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the created roadmap
-               * @example abc123def456
-               */
-              id: string;
-              /**
-               * @description Emoji assigned to the roadmap
-               * @example 🧠
-               */
-              emoji: string;
-              /**
-               * @description Roadmap title
-               * @example Full Stack JavaScript Developer
-               */
-              title: string;
-              /**
-               * @description Roadmap description
-               * @example Complete guide to becoming a full stack developer
-               */
-              description: string | null;
-              /**
-               * @description Current status of the roadmap
-               * @example active
-               * @enum {string}
-               */
-              status: "active" | "archived";
-              /**
-               * @description Main learning topic
-               * @example JavaScript
-               */
-              learningTopic: string;
-              /**
-               * @description Target user level
-               * @example beginner
-               */
-              userLevel: string;
-              /**
-               * @description Target completion weeks
-               * @example 12
-               */
-              targetWeeks: number;
-              /**
-               * @description Weekly study hours
-               * @example 10
-               */
-              weeklyHours: number;
-              /**
-               * @description Preferred learning style
-               * @example 실습 중심
-               */
-              learningStyle: string;
-              /**
-               * @description Preferred learning resources
-               * @example 온라인 강의
-               */
-              preferredResources: string;
-              /**
-               * @description Main learning goal
-               * @example 웹 개발자 취업
-               */
-              mainGoal: string;
-              /**
-               * @description Additional requirements
-               * @example React, Node.js 포함
-               */
-              additionalRequirements: string | null;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              updatedAt: string;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a roadmap */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Roadmap deleted successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Deletion confirmation message
-               * @example Roadmap deleted successfully
-               */
-              message: string;
-              /**
-               * @description Public ID of the deleted roadmap
-               * @example abc123def456
-               */
-              deletedId: string;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /** Update a roadmap */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Roadmap title
-             * @example Full Stack JavaScript Developer
-             */
-            title?: string;
-            /**
-             * @description Emoji that represents the roadmap
-             * @example 🌱
-             */
-            emoji?: string;
-            /**
-             * @description Roadmap description
-             * @example Complete guide to becoming a full stack developer
-             */
-            description?: string;
-            /**
-             * @description Main learning topic
-             * @example JavaScript
-             */
-            learningTopic?: string;
-            /**
-             * @description Target user level
-             * @example beginner
-             * @enum {string}
-             */
-            userLevel?:
-              | "beginner"
-              | "basic"
-              | "intermediate"
-              | "advanced"
-              | "expert";
-            /**
-             * @description Target completion weeks (1-24)
-             * @example 12
-             */
-            targetWeeks?: number;
-            /**
-             * @description Weekly study hours (1-60)
-             * @example 10
-             */
-            weeklyHours?: number;
-            /**
-             * @description Preferred learning style
-             * @example 실습 중심
-             */
-            learningStyle?: string;
-            /**
-             * @description Preferred learning resources
-             * @example 온라인 강의
-             */
-            preferredResources?: string;
-            /**
-             * @description Main learning goal
-             * @example 웹 개발자 취업
-             */
-            mainGoal?: string;
-            /**
-             * @description Additional requirements
-             * @example React, Node.js 포함
-             */
-            additionalRequirements: string | null;
-          };
-        };
-      };
-      responses: {
-        /** @description Roadmap updated successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the roadmap
-               * @example abc123def456
-               */
-              id: string;
-              /**
-               * @description Emoji that represents the roadmap at a glance
-               * @example 🚀
-               */
-              emoji: string;
-              /**
-               * @description Roadmap title
-               * @example Full Stack JavaScript Developer
-               */
-              title: string;
-              /**
-               * @description Roadmap description
-               * @example Complete guide to becoming a full stack developer
-               */
-              description: string | null;
-              /**
-               * @description Current status of the roadmap
-               * @example active
-               * @enum {string}
-               */
-              status: "active" | "archived";
-              /**
-               * @description Main learning topic
-               * @example JavaScript
-               */
-              learningTopic: string;
-              /**
-               * @description Target user level
-               * @example beginner
-               */
-              userLevel: string;
-              /**
-               * @description Target completion weeks
-               * @example 12
-               */
-              targetWeeks: number;
-              /**
-               * @description Weekly study hours
-               * @example 10
-               */
-              weeklyHours: number;
-              /**
-               * @description Preferred learning style
-               * @example 실습 중심
-               */
-              learningStyle: string;
-              /**
-               * @description Preferred learning resources
-               * @example 온라인 강의
-               */
-              preferredResources: string;
-              /**
-               * @description Main learning goal
-               * @example 웹 개발자 취업
-               */
-              mainGoal: string;
-              /**
-               * @description Additional requirements
-               * @example React, Node.js 포함
-               */
-              additionalRequirements: string | null;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get detailed roadmap with goals and sub-goals */
+    /**
+     * Get document details
+     * @description Retrieve detailed information about a specific document
+     */
     get: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
+          /** @description Document public ID */
+          publicId: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Roadmap details retrieved successfully */
+        /** @description Document retrieved successfully */
         200: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Public ID of the roadmap
-               * @example abc123def456
-               */
-              id: string;
-              /**
-               * @description Emoji assigned to the roadmap
-               * @example 🚀
-               */
-              emoji: string;
-              /**
-               * @description Roadmap title
-               * @example Full Stack JavaScript Developer
-               */
-              title: string;
-              /**
-               * @description Roadmap description
-               * @example Complete guide to becoming a full stack developer
-               */
-              description: string | null;
-              /**
-               * @description Current status of the roadmap
-               * @example active
-               * @enum {string}
-               */
-              status: "active" | "archived";
-              /**
-               * @description Main learning topic
-               * @example JavaScript
-               */
-              learningTopic: string;
-              /**
-               * @description Target user level
-               * @example beginner
-               */
-              userLevel: string;
-              /**
-               * @description Target completion weeks
-               * @example 12
-               */
-              targetWeeks: number;
-              /**
-               * @description Weekly study hours
-               * @example 10
-               */
-              weeklyHours: number;
-              /**
-               * @description Preferred learning style
-               * @example 실습 중심
-               */
-              learningStyle: string;
-              /**
-               * @description Preferred learning resources
-               * @example 온라인 강의
-               */
-              preferredResources: string;
-              /**
-               * @description Main learning goal
-               * @example 웹 개발자 취업
-               */
-              mainGoal: string;
-              /**
-               * @description Additional requirements
-               * @example React, Node.js 포함
-               */
-              additionalRequirements: string | null;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /** @description List of goals with their sub-goals */
-              goals: Array<{
-                /**
-                 * @description Public ID of the goal
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: string;
-                /**
-                 * @description Goal title
-                 * @example Learn JavaScript Fundamentals
-                 */
-                title: string;
-                /**
-                 * @description Goal description
-                 * @example Master variables, functions, loops, and basic DOM manipulation
-                 */
-                description: string | null;
-                /**
-                 * @description Display order of the goal
-                 * @example 1
-                 */
-                order: number;
-                /**
-                 * @description Whether the goal is expanded in UI
-                 * @example true
-                 */
-                isExpanded: boolean;
-                /**
-                 * @description Creation timestamp
-                 * @example 2024-01-01T00:00:00.000Z
-                 */
-                createdAt: string;
-                /**
-                 * @description Last update timestamp
-                 * @example 2024-01-15T10:30:00.000Z
-                 */
-                updatedAt: string;
-                /** @description List of sub-goals under this goal */
-                subGoals: Array<{
-                  /**
-                   * @description Public ID of the sub-goal
-                   * @example 660e8400-e29b-41d4-a716-446655440001
-                   */
-                  id: string;
-                  /**
-                   * @description Sub-goal title
-                   * @example Learn variables and data types
-                   */
-                  title: string;
-                  /**
-                   * @description Sub-goal description
-                   * @example Understand different data types: string, number, boolean, array, object
-                   */
-                  description: string | null;
-                  /**
-                   * @description Whether the sub-goal is completed
-                   * @example false
-                   */
-                  isCompleted: boolean;
-                  /**
-                   * Format: date-time
-                   * @description Timestamp when the sub-goal was marked as completed
-                   * @example 2024-02-15T09:30:00.000Z
-                   */
-                  completedAt: string | null;
-                  /**
-                   * @description Due date for the sub-goal
-                   * @example 2024-02-15T00:00:00.000Z
-                   */
-                  dueDate: string | null;
-                  /**
-                   * @description Personal memo for the sub-goal
-                   * @example Focus on practice with real examples
-                   */
-                  memo: string | null;
-                  /**
-                   * @description Display order of the sub-goal
-                   * @example 1
-                   */
-                  order: number;
-                  /**
-                   * @description Creation timestamp
-                   * @example 2024-01-01T00:00:00.000Z
-                   */
-                  createdAt: string;
-                  /**
-                   * @description Last update timestamp
-                   * @example 2024-01-15T10:30:00.000Z
-                   */
-                  updatedAt: string;
-                  /**
-                   * @description 현재 AI 노트 생성 상태
-                   * @example processing
-                   * @enum {string}
-                   */
-                  aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-                  /**
-                   * @description AI가 생성한 학습 노트 (마크다운)
-                   * @example # 학습 개요
-                   *     - 목표 정리...
-                   */
-                  aiNoteMarkdown: string | null;
-                  /**
-                   * Format: date-time
-                   * @description AI 노트 생성을 요청한 시각
-                   * @example 2024-06-01T10:00:00.000Z
-                   */
-                  aiNoteRequestedAt: string | null;
-                  /**
-                   * Format: date-time
-                   * @description AI 노트 생성이 완료되거나 실패한 시각
-                   * @example 2024-06-01T10:05:12.000Z
-                   */
-                  aiNoteCompletedAt: string | null;
-                  /**
-                   * @description AI 노트 생성 실패 시 오류 메시지
-                   * @example Gemini API 호출이 실패했습니다.
-                   */
-                  aiNoteError: string | null;
-                }>;
-              }>;
-              /** @description List of documents associated with the roadmap */
-              documents: Array<{
+              success: boolean;
+              document: {
                 /**
                  * @description Public ID of the document
                  * @example 550e8400-e29b-41d4-a716-446655440000
@@ -1472,10 +430,15 @@ export interface paths {
                  */
                 fileType: string;
                 /**
-                 * @description Associated roadmap ID (null if not yet linked)
+                 * @description Public URL to access the file
+                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
+                 */
+                storageUrl: string;
+                /**
+                 * @description Associated learningPlan ID (null if not yet linked)
                  * @example 123
                  */
-                roadmapId: number | null;
+                learningPlanId: number | null;
                 /**
                  * @description Upload timestamp
                  * @example 2024-01-01T00:00:00.000Z
@@ -1486,184 +449,6 @@ export interface paths {
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
-              }>;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied to this roadmap */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{id}/status": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Change roadmap status (active/archived) */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description New status for the roadmap
-             * @example archived
-             * @enum {string}
-             */
-            status: "active" | "archived";
-          };
-        };
-      };
-      responses: {
-        /** @description Roadmap status changed successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the roadmap
-               * @example abc123def456
-               */
-              id: string;
-              /**
-               * @description Updated status
-               * @example archived
-               * @enum {string}
-               */
-              status: "active" | "archived";
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
               };
             };
           };
@@ -1675,2363 +460,20 @@ export interface paths {
           };
           content: {
             "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap already has the requested status */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Create a new goal for a roadmap */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Goal title
-             * @example Learn JavaScript Fundamentals
-             */
-            title: string;
-            /**
-             * @description Goal description
-             * @example Master variables, functions, loops, and basic DOM manipulation
-             */
-            description?: string;
-            /**
-             * @description Whether the goal should be expanded by default
-             * @default true
-             * @example true
-             */
-            isExpanded?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Goal created successfully */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
               /**
-               * @description Public ID of the goal
-               * @example 550e8400-e29b-41d4-a716-446655440000
-               */
-              id: string;
-              /**
-               * @description Goal title
-               * @example Learn JavaScript Fundamentals
-               */
-              title: string;
-              /**
-               * @description Goal description
-               * @example Master variables, functions, loops, and basic DOM manipulation
-               */
-              description: string | null;
-              /**
-               * @description Display order of the goal
-               * @example 1
-               */
-              order: number;
-              /**
-               * @description Whether the goal is expanded in UI
-               * @example true
-               */
-              isExpanded: boolean;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals/{goalId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /** Update a goal */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the goal */
-          goalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Goal title
-             * @example Learn JavaScript Fundamentals
-             */
-            title?: string;
-            /**
-             * @description Goal description
-             * @example Master variables, functions, loops, and basic DOM manipulation
-             */
-            description?: string;
-            /**
-             * @description Whether the goal is expanded in UI
-             * @example true
-             */
-            isExpanded?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Goal updated successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the goal
-               * @example 550e8400-e29b-41d4-a716-446655440000
-               */
-              id: string;
-              /**
-               * @description Goal title
-               * @example Learn JavaScript Fundamentals
-               */
-              title: string;
-              /**
-               * @description Goal description
-               * @example Master variables, functions, loops, and basic DOM manipulation
-               */
-              description: string | null;
-              /**
-               * @description Display order of the goal
-               * @example 1
-               */
-              order: number;
-              /**
-               * @description Whether the goal is expanded in UI
-               * @example true
-               */
-              isExpanded: boolean;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Goal or roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    post?: never;
-    /** Delete a goal */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the goal */
-          goalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Goal deleted successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Deletion confirmation message
-               * @example Goal deleted successfully
-               */
-              message: string;
-              /**
-               * @description Public ID of the deleted goal
-               * @example 550e8400-e29b-41d4-a716-446655440000
-               */
-              deletedId: string;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Goal or roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals/{goalId}/order": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Reorder a goal position */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the goal */
-          goalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description New order position for the goal (1-based)
-             * @example 3
-             */
-            newOrder: number;
-          };
-        };
-      };
-      responses: {
-        /** @description Goal reordered successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the reordered goal
-               * @example 550e8400-e29b-41d4-a716-446655440000
-               */
-              id: string;
-              /**
-               * @description Updated order position
-               * @example 3
-               */
-              order: number;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-            };
-          };
-        };
-        /** @description Bad request - invalid order position */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Goal or roadmap not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Create a new sub-goal for a goal */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the goal */
-          goalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Sub-goal title
-             * @example Learn variables and data types
-             */
-            title: string;
-            /**
-             * @description Sub-goal description
-             * @example Understand different data types: string, number, boolean, array, object
-             */
-            description?: string;
-            /**
-             * Format: date-time
-             * @description Due date for the sub-goal (ISO 8601 format)
-             * @example 2024-02-15T00:00:00.000Z
-             */
-            dueDate?: string;
-            /**
-             * @description Personal memo for the sub-goal
-             * @example Focus on practice with real examples
-             */
-            memo?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Sub-goal created successfully */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the sub-goal
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              id: string;
-              /**
-               * @description Sub-goal title
-               * @example Learn variables and data types
-               */
-              title: string;
-              /**
-               * @description Sub-goal description
-               * @example Understand different data types: string, number, boolean, array, object
-               */
-              description: string | null;
-              /**
-               * @description Whether the sub-goal is completed
+               * @description Request success status
                * @example false
                */
-              isCompleted: boolean;
-              /**
-               * Format: date-time
-               * @description Timestamp when the sub-goal was marked as completed
-               * @example 2024-02-15T09:30:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description Due date for the sub-goal
-               * @example 2024-02-15T00:00:00.000Z
-               */
-              dueDate: string | null;
-              /**
-               * @description Personal memo for the sub-goal
-               * @example Focus on practice with real examples
-               */
-              memo: string | null;
-              /**
-               * @description Display order of the sub-goal
-               * @example 1
-               */
-              order: number;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
+              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
+                 * @example document:invalid_file_type
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap or goal not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/sub-goals/{subGoalId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get detailed information about a sub-goal */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the sub-goal */
-          subGoalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Sub-goal detail retrieved successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the sub-goal
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              id: string;
-              /**
-               * @description Sub-goal title
-               * @example Learn variables and data types
-               */
-              title: string;
-              /**
-               * @description Sub-goal description
-               * @example Understand different data types: string, number, boolean, array, object
-               */
-              description: string | null;
-              /**
-               * @description Whether the sub-goal is completed
-               * @example false
-               */
-              isCompleted: boolean;
-              /**
-               * Format: date-time
-               * @description Timestamp when the sub-goal was marked as completed
-               * @example 2024-02-15T09:30:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description Due date for the sub-goal
-               * @example 2024-02-15T00:00:00.000Z
-               */
-              dueDate: string | null;
-              /**
-               * @description Personal memo for the sub-goal
-               * @example Focus on practice with real examples
-               */
-              memo: string | null;
-              /**
-               * @description Display order of the sub-goal
-               * @example 1
-               */
-              order: number;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-              /** @description Parent goal metadata */
-              goal: {
-                /**
-                 * @description Public ID of the parent goal
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: string;
-                /**
-                 * @description Title of the parent goal
-                 * @example Master JavaScript fundamentals
-                 */
-                title: string;
-                /**
-                 * @description Description of the parent goal
-                 * @example Focus on core JavaScript knowledge before diving into frameworks
-                 */
-                description: string | null;
-                /**
-                 * @description Display order of the goal
-                 * @example 1
-                 */
-                order: number;
-              };
-              /** @description Parent roadmap metadata */
-              roadmap: {
-                /**
-                 * @description Public ID of the roadmap
-                 * @example abc123def456
-                 */
-                id: string;
-                /**
-                 * @description Title of the roadmap
-                 * @example Full-stack Development Roadmap
-                 */
-                title: string;
-              };
-              /** @description 가장 최근의 AI 학습 퀴즈 정보 */
-              aiQuiz: {
-                /**
-                 * @description 퀴즈 ID
-                 * @example 123
-                 */
-                id: string;
-                /**
-                 * @description 현재 AI 퀴즈 생성 상태
-                 * @example processing
-                 * @enum {string}
-                 */
-                status: "idle" | "processing" | "ready" | "failed";
-                /**
-                 * @description 생성 요청 시 목표 문항 수
-                 * @example 8
-                 */
-                targetQuestionCount: number;
-                /**
-                 * @description 실제 생성된 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 요청 시각
-                 * @example 2024-06-01T10:00:00.000Z
-                 */
-                requestedAt: string | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 완료 시각
-                 * @example 2024-06-01T10:02:00.000Z
-                 */
-                completedAt: string | null;
-                /**
-                 * @description 실패 시 사용자에게 노출할 오류 메시지
-                 * @example Gemini API 호출이 실패했습니다.
-                 */
-                errorMessage: string | null;
-                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-                questions:
-                  | Array<{
-                      /**
-                       * @description 문항 식별자
-                       * @example q1
-                       */
-                      id: string;
-                      /**
-                       * @description 문제 본문
-                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                       */
-                      prompt: string;
-                      /** @description 객관식 보기 4개 */
-                      options: Array<string>;
-                    }>
-                  | null;
-                /** @description 사용자의 가장 최근 퀴즈 결과 */
-                latestResult: {
-                  /**
-                   * @description 채점된 퀴즈 ID
-                   * @example 123
-                   */
-                  quizId: string;
-                  /**
-                   * @description 총 문항 수
-                   * @example 8
-                   */
-                  totalQuestions: number;
-                  /**
-                   * @description 맞힌 문항 수
-                   * @example 6
-                   */
-                  correctCount: number;
-                  /**
-                   * @description 정답 비율 (퍼센트)
-                   * @example 75
-                   */
-                  scorePercent: number;
-                  /** @description 문항별 채점 정보 */
-                  answers: Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                    /**
-                     * @description 사용자가 선택한 보기 인덱스
-                     * @example 1
-                     */
-                    selectedIndex: number;
-                    /**
-                     * @description 정답 보기 인덱스
-                     * @example 0
-                     */
-                    correctIndex: number;
-                    /**
-                     * @description 정답 설명
-                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                     */
-                    explanation: string;
-                    /**
-                     * @description 정답 여부
-                     * @example true
-                     */
-                    isCorrect: boolean;
-                  }>;
-                  /**
-                   * Format: date-time
-                   * @description 제출 시각
-                   * @example 2024-06-01T10:05:00.000Z
-                   */
-                  submittedAt: string;
-                } | null;
-              } | null;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap, goal, or sub-goal not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    /** Update a sub-goal */
-    put: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the sub-goal */
-          subGoalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Sub-goal title
-             * @example Learn variables and data types
-             */
-            title?: string;
-            /**
-             * @description Sub-goal description
-             * @example Understand different data types: string, number, boolean, array, object
-             */
-            description?: string;
-            /**
-             * @description Whether the sub-goal is completed
-             * @example true
-             */
-            isCompleted?: boolean;
-            /**
-             * Format: date-time
-             * @description Due date for the sub-goal (ISO 8601 format)
-             * @example 2024-02-15T00:00:00.000Z
-             */
-            dueDate?: string | null;
-            /**
-             * @description Personal memo for the sub-goal
-             * @example Focus on practice with real examples
-             */
-            memo?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Sub-goal updated successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the sub-goal
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              id: string;
-              /**
-               * @description Sub-goal title
-               * @example Learn variables and data types
-               */
-              title: string;
-              /**
-               * @description Sub-goal description
-               * @example Understand different data types: string, number, boolean, array, object
-               */
-              description: string | null;
-              /**
-               * @description Whether the sub-goal is completed
-               * @example false
-               */
-              isCompleted: boolean;
-              /**
-               * Format: date-time
-               * @description Timestamp when the sub-goal was marked as completed
-               * @example 2024-02-15T09:30:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description Due date for the sub-goal
-               * @example 2024-02-15T00:00:00.000Z
-               */
-              dueDate: string | null;
-              /**
-               * @description Personal memo for the sub-goal
-               * @example Focus on practice with real examples
-               */
-              memo: string | null;
-              /**
-               * @description Display order of the sub-goal
-               * @example 1
-               */
-              order: number;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap, goal, or sub-goal not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a sub-goal */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the sub-goal */
-          subGoalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Sub-goal deleted successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Deletion confirmation message
-               * @example Sub-goal deleted successfully
-               */
-              message: string;
-              /**
-               * @description Public ID of the deleted sub-goal
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              deletedId: string;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap, goal, or sub-goal not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/goals/{goalId}/sub-goals/{subGoalId}/move": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    /** Move a sub-goal to another goal or reorder within the same goal */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the sub-goal */
-          subGoalId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /**
-             * @description Public ID of the target goal to move sub-goal to
-             * @example 550e8400-e29b-41d4-a716-446655440000
-             */
-            newGoalId: string;
-            /**
-             * @description New order position for the sub-goal (1-based). If not provided, will be placed at the end.
-             * @example 2
-             */
-            newOrder?: number;
-          };
-        };
-      };
-      responses: {
-        /** @description Sub-goal moved successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the moved sub-goal
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              id: string;
-              /**
-               * @description Public ID of the goal the sub-goal was moved to
-               * @example 550e8400-e29b-41d4-a716-446655440000
-               */
-              goalId: string;
-              /**
-               * @description Updated order position
-               * @example 2
-               */
-              order: number;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-            };
-          };
-        };
-        /** @description Bad request - validation failed */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not roadmap owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Roadmap, goal, or sub-goal not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes/{quizId}/submissions": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /** Submit answers for an AI-generated sub-goal quiz */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the roadmap */
-          roadmapId: string;
-          /** @description Public ID of the sub-goal */
-          subGoalId: string;
-          /** @description AI 퀴즈 ID */
-          quizId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /** @description 사용자가 제출한 문항별 답안 */
-            answers: Array<{
-              /**
-               * @description 문항 식별자
-               * @example q1
-               */
-              questionId: string;
-              /**
-               * @description 선택한 보기 인덱스(0-베이스)
-               * @example 2
-               */
-              selectedIndex: number;
-            }>;
-          };
-        };
-      };
-      responses: {
-        /** @description Quiz submitted and evaluated successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /** @description AI 퀴즈 세션 데이터 */
-              quiz: {
-                /**
-                 * @description 퀴즈 ID
-                 * @example 123
-                 */
-                id: string;
-                /**
-                 * @description 현재 AI 퀴즈 생성 상태
-                 * @example processing
-                 * @enum {string}
-                 */
-                status: "idle" | "processing" | "ready" | "failed";
-                /**
-                 * @description 생성 요청 시 목표 문항 수
-                 * @example 8
-                 */
-                targetQuestionCount: number;
-                /**
-                 * @description 실제 생성된 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 요청 시각
-                 * @example 2024-06-01T10:00:00.000Z
-                 */
-                requestedAt: string | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 완료 시각
-                 * @example 2024-06-01T10:02:00.000Z
-                 */
-                completedAt: string | null;
-                /**
-                 * @description 실패 시 사용자에게 노출할 오류 메시지
-                 * @example Gemini API 호출이 실패했습니다.
-                 */
-                errorMessage: string | null;
-                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-                questions:
-                  | Array<{
-                      /**
-                       * @description 문항 식별자
-                       * @example q1
-                       */
-                      id: string;
-                      /**
-                       * @description 문제 본문
-                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                       */
-                      prompt: string;
-                      /** @description 객관식 보기 4개 */
-                      options: Array<string>;
-                    }>
-                  | null;
-                /** @description 사용자의 가장 최근 퀴즈 결과 */
-                latestResult: {
-                  /**
-                   * @description 채점된 퀴즈 ID
-                   * @example 123
-                   */
-                  quizId: string;
-                  /**
-                   * @description 총 문항 수
-                   * @example 8
-                   */
-                  totalQuestions: number;
-                  /**
-                   * @description 맞힌 문항 수
-                   * @example 6
-                   */
-                  correctCount: number;
-                  /**
-                   * @description 정답 비율 (퍼센트)
-                   * @example 75
-                   */
-                  scorePercent: number;
-                  /** @description 문항별 채점 정보 */
-                  answers: Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                    /**
-                     * @description 사용자가 선택한 보기 인덱스
-                     * @example 1
-                     */
-                    selectedIndex: number;
-                    /**
-                     * @description 정답 보기 인덱스
-                     * @example 0
-                     */
-                    correctIndex: number;
-                    /**
-                     * @description 정답 설명
-                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                     */
-                    explanation: string;
-                    /**
-                     * @description 정답 여부
-                     * @example true
-                     */
-                    isCorrect: boolean;
-                  }>;
-                  /**
-                   * Format: date-time
-                   * @description 제출 시각
-                   * @example 2024-06-01T10:05:00.000Z
-                   */
-                  submittedAt: string;
-                } | null;
-              };
-              /** @description AI 퀴즈 채점 결과 */
-              evaluation: {
-                /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
-                 */
-                quizId: string;
-                /**
-                 * @description 총 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              };
-            };
-          };
-        };
-        /** @description Invalid request payload */
-        400: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @example Only PDF files are allowed
                  */
                 message: string;
               };
@@ -4045,81 +487,255 @@ export interface paths {
           };
           content: {
             "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
+                 * @example document:invalid_file_type
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @example Only PDF files are allowed
                  */
                 message: string;
               };
             };
           };
         };
-        /** @description Quiz, sub-goal, or roadmap not found */
+        /** @description Document not found */
         404: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
+                 * @example document:invalid_file_type
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @example Only PDF files are allowed
                  */
                 message: string;
               };
             };
           };
         };
-        /** @description Quiz is not ready or already submitted */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Server error while submitting the quiz */
+        /** @description Internal server error */
         500: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example roadmap:invalid_pagination_cursor
+                 * @example document:invalid_file_type
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @example Only PDF files are allowed
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/documents/upload": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Upload a PDF document
+     * @description Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "multipart/form-data": {
+            /**
+             * Format: binary
+             * @description PDF file to upload (max 10MB)
+             */
+            file: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Document uploaded successfully */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Upload success status
+               * @example true
+               */
+              success: boolean;
+              /** @description Uploaded document information */
+              document: {
+                /**
+                 * @description Public ID of the document
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                id: string;
+                /**
+                 * @description Original file name
+                 * @example learning-guide.pdf
+                 */
+                fileName: string;
+                /**
+                 * @description File size in bytes
+                 * @example 1048576
+                 */
+                fileSize: number;
+                /**
+                 * @description MIME type of the file
+                 * @example application/pdf
+                 */
+                fileType: string;
+                /**
+                 * @description Public URL to access the file
+                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
+                 */
+                storageUrl: string;
+                /**
+                 * @description Associated learningPlan ID (null if not yet linked)
+                 * @example 123
+                 */
+                learningPlanId: number | null;
+                /**
+                 * @description Upload timestamp
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                uploadedAt: string;
+                /**
+                 * @description Creation timestamp
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                createdAt: string;
+              };
+            };
+          };
+        };
+        /** @description Bad request - invalid file */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
+              error: {
+                /**
+                 * @description Error code
+                 * @example document:invalid_file_type
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Only PDF files are allowed
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
+              error: {
+                /**
+                 * @description Error code
+                 * @example document:invalid_file_type
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Only PDF files are allowed
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Request success status
+               * @example false
+               */
+              success: boolean;
+              error: {
+                /**
+                 * @description Error code
+                 * @example document:invalid_file_type
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Only PDF files are allowed
                  */
                 message: string;
               };
@@ -4141,7 +757,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get daily goal activity (due & completed) */
+    /** Get daily learning module activity (due & completed) */
     get: {
       parameters: {
         query?: {
@@ -4156,7 +772,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Daily goal activity retrieved successfully */
+        /** @description Daily learning module activity retrieved successfully */
         200: {
           headers: {
             [name: string]: unknown;
@@ -4189,34 +805,34 @@ export interface paths {
                    * @description 로드맵 공개 ID (16자 NanoID)
                    * @example abcdEfghijklmnop
                    */
-                  roadmapId: string;
+                  learningPlanId: string;
                   /**
                    * @description 로드맵 제목
                    * @example 프론트엔드 전환 로드맵
                    */
-                  roadmapTitle: string;
+                  learningPlanTitle: string;
                   /**
                    * Format: uuid
                    * @description 목표 공개 ID (UUID)
                    * @example 30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d
                    */
-                  goalId: string;
+                  learningModuleId: string;
                   /**
                    * @description 목표 제목
                    * @example React 기본기 다지기
                    */
-                  goalTitle: string;
+                  learningModuleTitle: string;
                   /**
                    * Format: uuid
                    * @description 세부 목표 공개 ID (UUID)
                    * @example f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7
                    */
-                  subGoalId: string;
+                  learningTaskId: string;
                   /**
                    * @description 세부 목표 제목
                    * @example Hooks 패턴 정리하기
                    */
-                  subGoalTitle: string;
+                  learningTaskTitle: string;
                   /**
                    * Format: date-time
                    * @description 세부 목표 마감일 (ISO 8601)
@@ -4230,34 +846,34 @@ export interface paths {
                    * @description 로드맵 공개 ID (16자 NanoID)
                    * @example abcdEfghijklmnop
                    */
-                  roadmapId: string;
+                  learningPlanId: string;
                   /**
                    * @description 로드맵 제목
                    * @example 프론트엔드 전환 로드맵
                    */
-                  roadmapTitle: string;
+                  learningPlanTitle: string;
                   /**
                    * Format: uuid
                    * @description 목표 공개 ID (UUID)
                    * @example 30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d
                    */
-                  goalId: string;
+                  learningModuleId: string;
                   /**
                    * @description 목표 제목
                    * @example React 기본기 다지기
                    */
-                  goalTitle: string;
+                  learningModuleTitle: string;
                   /**
                    * Format: uuid
                    * @description 세부 목표 공개 ID (UUID)
                    * @example f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7
                    */
-                  subGoalId: string;
+                  learningTaskId: string;
                   /**
                    * @description 세부 목표 제목
                    * @example Hooks 패턴 정리하기
                    */
-                  subGoalTitle: string;
+                  learningTaskTitle: string;
                   /**
                    * Format: date-time
                    * @description 세부 목표 완료 시각 (ISO 8601)
@@ -4345,7 +961,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/roadmaps/generate": {
+  "/ai/learning-plans/generate": {
     parameters: {
       query?: never;
       header?: never;
@@ -4354,7 +970,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Generate a personalized learning roadmap using AI */
+    /** Generate a personalized learning learningPlan using AI */
     post: {
       parameters: {
         query?: never;
@@ -4429,14 +1045,14 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Roadmap generated successfully */
+        /** @description LearningPlan generated successfully */
         200: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              roadmap: {
+              learningPlan: {
                 /**
                  * @description 로드맵 공개 ID
                  * @example abc123def456ghi7
@@ -4503,7 +1119,7 @@ export interface paths {
                  */
                 additionalRequirements?: string;
                 /** @description 상위 목표들 */
-                goals: Array<{
+                learningModules: Array<{
                   /**
                    * @description 상위 목표 ID
                    * @example x1y2z3a4b5c6d7e8
@@ -4530,7 +1146,7 @@ export interface paths {
                    */
                   isExpanded: boolean;
                   /** @description 하위 목표들 */
-                  subGoals: Array<{
+                  learningTasks: Array<{
                     /**
                      * @description 하위 목표 ID
                      * @example a1b2c3d4e5f6g7h8
@@ -4686,7 +1302,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/notes": {
+  "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes": {
     parameters: {
       query?: never;
       header?: never;
@@ -4695,7 +1311,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Generate or refresh AI learning note for a sub-goal */
+    /** Generate or refresh AI learning note for a learning-task */
     post: {
       parameters: {
         query?: {
@@ -4705,9 +1321,9 @@ export interface paths {
         header?: never;
         path: {
           /** @description 로드맵 공개 ID */
-          roadmapId: string;
+          learningPlanId: string;
           /** @description 세부 목표 공개 ID */
-          subGoalId: string;
+          learningTaskId: string;
         };
         cookie?: never;
       };
@@ -4903,7 +1519,7 @@ export interface paths {
             };
           };
         };
-        /** @description Target roadmap or sub-goal not found */
+        /** @description Target learningPlan or learning-task not found */
         404: {
           headers: {
             [name: string]: unknown;
@@ -4987,7 +1603,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/roadmaps/{roadmapId}/sub-goals/{subGoalId}/quizzes": {
+  "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes": {
     parameters: {
       query?: never;
       header?: never;
@@ -4996,7 +1612,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Generate or refresh an AI quiz for a sub-goal */
+    /** Generate or refresh an AI quiz for a learning-task */
     post: {
       parameters: {
         query?: {
@@ -5006,9 +1622,9 @@ export interface paths {
         header?: never;
         path: {
           /** @description 로드맵 공개 ID */
-          roadmapId: string;
+          learningPlanId: string;
           /** @description 세부 목표 공개 ID */
-          subGoalId: string;
+          learningTaskId: string;
         };
         cookie?: never;
       };
@@ -5659,7 +2275,7 @@ export interface paths {
             };
           };
         };
-        /** @description Target roadmap or sub-goal not found */
+        /** @description Target learningPlan or learning-task not found */
         404: {
           headers: {
             [name: string]: unknown;
@@ -5925,117 +2541,164 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/documents/upload": {
+  "/learning-plans": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    /**
-     * Upload a PDF document
-     * @description Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.
-     */
-    post: {
+    /** Get learningPlan list with pagination and filtering */
+    get: {
       parameters: {
-        query?: never;
+        query?: {
+          /** @description Cursor for pagination (encoded string) */
+          cursor?: string;
+          /** @description Number of items to return */
+          limit?: number;
+          /** @description Search query for title or description */
+          search?: string;
+          /** @description Filter by learningPlan status */
+          status?: "active" | "archived";
+          /** @description Sort field */
+          sort?: "created_at" | "updated_at" | "title";
+          /** @description Sort order */
+          order?: "asc" | "desc";
+        };
         header?: never;
         path?: never;
         cookie?: never;
       };
-      requestBody?: {
-        content: {
-          "multipart/form-data": {
-            /**
-             * Format: binary
-             * @description PDF file to upload (max 10MB)
-             */
-            file: string;
-          };
-        };
-      };
+      requestBody?: never;
       responses: {
-        /** @description Document uploaded successfully */
-        201: {
+        /** @description LearningPlan list retrieved successfully */
+        200: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Upload success status
-               * @example true
-               */
-              success: boolean;
-              /** @description Uploaded document information */
-              document: {
+              /** @description List of learningPlans */
+              items: Array<{
                 /**
-                 * @description Public ID of the document
-                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 * @description Public ID of the learningPlan
+                 * @example abc123def456
                  */
                 id: string;
                 /**
-                 * @description Original file name
-                 * @example learning-guide.pdf
+                 * @description Emoji that represents the learningPlan at a glance
+                 * @example 🚀
                  */
-                fileName: string;
+                emoji: string;
                 /**
-                 * @description File size in bytes
-                 * @example 1048576
+                 * @description LearningPlan title
+                 * @example Full Stack JavaScript Developer
                  */
-                fileSize: number;
+                title: string;
                 /**
-                 * @description MIME type of the file
-                 * @example application/pdf
+                 * @description LearningPlan description
+                 * @example Complete guide to becoming a full stack developer
                  */
-                fileType: string;
+                description: string | null;
                 /**
-                 * @description Public URL to access the file
-                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
+                 * @description Current status of the learningPlan
+                 * @example active
+                 * @enum {string}
                  */
-                storageUrl: string;
+                status: "active" | "archived";
                 /**
-                 * @description Associated roadmap ID (null if not yet linked)
-                 * @example 123
+                 * @description Percentage of completed learning-tasks (0-100)
+                 * @example 75
                  */
-                roadmapId: number | null;
+                learningModuleCompletionPercent: number;
                 /**
-                 * @description Upload timestamp
-                 * @example 2024-01-01T00:00:00.000Z
+                 * @description Main learning topic
+                 * @example JavaScript
                  */
-                uploadedAt: string;
+                learningTopic: string;
+                /**
+                 * @description Target user level
+                 * @example beginner
+                 */
+                userLevel: string;
+                /**
+                 * @description Target completion weeks
+                 * @example 12
+                 */
+                targetWeeks: number;
+                /**
+                 * @description Weekly study hours
+                 * @example 10
+                 */
+                weeklyHours: number;
+                /**
+                 * @description Preferred learning style
+                 * @example 실습 중심
+                 */
+                learningStyle: string;
+                /**
+                 * @description Preferred learning resources
+                 * @example 온라인 강의
+                 */
+                preferredResources: string;
+                /**
+                 * @description Main learning learningModule
+                 * @example 웹 개발자 취업
+                 */
+                mainGoal: string;
+                /**
+                 * @description Additional requirements
+                 * @example React, Node.js 포함
+                 */
+                additionalRequirements: string | null;
                 /**
                  * @description Creation timestamp
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
+                /**
+                 * @description Last update timestamp
+                 * @example 2024-01-15T10:30:00.000Z
+                 */
+                updatedAt: string;
+              }>;
+              /** @description Pagination information */
+              pagination: {
+                /**
+                 * @description Whether there are more items
+                 * @example true
+                 */
+                hasNext: boolean;
+                /**
+                 * @description Cursor for the next page
+                 * @example eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==
+                 */
+                nextCursor: string | null;
+                /**
+                 * @description Total number of items (if available)
+                 * @example 150
+                 */
+                total: number;
               };
             };
           };
         };
-        /** @description Bad request - invalid file */
+        /** @description Bad request - invalid parameters */
         400: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
@@ -6049,20 +2712,15 @@ export interface paths {
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
@@ -6076,20 +2734,240 @@ export interface paths {
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Create a new learningPlan */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description LearningPlan title
+             * @example Full Stack JavaScript Developer
+             */
+            title: string;
+            /**
+             * @description Emoji that will be used for the learningPlan (fallback applied when omitted)
+             * @example 🧠
+             */
+            emoji?: string;
+            /**
+             * @description LearningPlan description
+             * @example Complete guide to becoming a full stack developer
+             */
+            description?: string;
+            /**
+             * @description Main learning topic
+             * @example JavaScript
+             */
+            learningTopic: string;
+            /**
+             * @description Target user level
+             * @example beginner
+             */
+            userLevel: string;
+            /**
+             * @description Target completion weeks (1-24)
+             * @example 12
+             */
+            targetWeeks: number;
+            /**
+             * @description Weekly study hours (1-60)
+             * @example 10
+             */
+            weeklyHours: number;
+            /**
+             * @description Preferred learning style
+             * @example 실습 중심
+             */
+            learningStyle: string;
+            /**
+             * @description Preferred learning resources
+             * @example 온라인 강의
+             */
+            preferredResources: string;
+            /**
+             * @description Main learning learningModule
+             * @example 웹 개발자 취업
+             */
+            mainGoal: string;
+            /**
+             * @description Additional requirements
+             * @example React, Node.js 포함
+             */
+            additionalRequirements: string | null;
+          };
+        };
+      };
+      responses: {
+        /** @description LearningPlan created successfully */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the created learningPlan
+               * @example abc123def456
+               */
+              id: string;
+              /**
+               * @description Emoji assigned to the learningPlan
+               * @example 🧠
+               */
+              emoji: string;
+              /**
+               * @description LearningPlan title
+               * @example Full Stack JavaScript Developer
+               */
+              title: string;
+              /**
+               * @description LearningPlan description
+               * @example Complete guide to becoming a full stack developer
+               */
+              description: string | null;
+              /**
+               * @description Current status of the learningPlan
+               * @example active
+               * @enum {string}
+               */
+              status: "active" | "archived";
+              /**
+               * @description Main learning topic
+               * @example JavaScript
+               */
+              learningTopic: string;
+              /**
+               * @description Target user level
+               * @example beginner
+               */
+              userLevel: string;
+              /**
+               * @description Target completion weeks
+               * @example 12
+               */
+              targetWeeks: number;
+              /**
+               * @description Weekly study hours
+               * @example 10
+               */
+              weeklyHours: number;
+              /**
+               * @description Preferred learning style
+               * @example 실습 중심
+               */
+              learningStyle: string;
+              /**
+               * @description Preferred learning resources
+               * @example 온라인 강의
+               */
+              preferredResources: string;
+              /**
+               * @description Main learning learningModule
+               * @example 웹 개발자 취업
+               */
+              mainGoal: string;
+              /**
+               * @description Additional requirements
+               * @example React, Node.js 포함
+               */
+              additionalRequirements: string | null;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
@@ -6104,38 +2982,646 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/documents/{publicId}": {
+  "/learning-plans/{id}": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /**
-     * Get document details
-     * @description Retrieve detailed information about a specific document
-     */
-    get: {
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete a learningPlan */
+    delete: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Document public ID */
-          publicId: string;
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Document retrieved successfully */
+        /** @description LearningPlan deleted successfully */
         200: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              success: boolean;
-              document: {
+              /**
+               * @description Deletion confirmation message
+               * @example LearningPlan deleted successfully
+               */
+              message: string;
+              /**
+               * @description Public ID of the deleted learningPlan
+               * @example abc123def456
+               */
+              deletedId: string;
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not the owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    /** Update a learningPlan */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description LearningPlan title
+             * @example Full Stack JavaScript Developer
+             */
+            title?: string;
+            /**
+             * @description Emoji that represents the learningPlan
+             * @example 🌱
+             */
+            emoji?: string;
+            /**
+             * @description LearningPlan description
+             * @example Complete guide to becoming a full stack developer
+             */
+            description?: string;
+            /**
+             * @description Main learning topic
+             * @example JavaScript
+             */
+            learningTopic?: string;
+            /**
+             * @description Target user level
+             * @example beginner
+             * @enum {string}
+             */
+            userLevel?:
+              | "beginner"
+              | "basic"
+              | "intermediate"
+              | "advanced"
+              | "expert";
+            /**
+             * @description Target completion weeks (1-24)
+             * @example 12
+             */
+            targetWeeks?: number;
+            /**
+             * @description Weekly study hours (1-60)
+             * @example 10
+             */
+            weeklyHours?: number;
+            /**
+             * @description Preferred learning style
+             * @example 실습 중심
+             */
+            learningStyle?: string;
+            /**
+             * @description Preferred learning resources
+             * @example 온라인 강의
+             */
+            preferredResources?: string;
+            /**
+             * @description Main learning learningModule
+             * @example 웹 개발자 취업
+             */
+            mainGoal?: string;
+            /**
+             * @description Additional requirements
+             * @example React, Node.js 포함
+             */
+            additionalRequirements: string | null;
+          };
+        };
+      };
+      responses: {
+        /** @description LearningPlan updated successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learningPlan
+               * @example abc123def456
+               */
+              id: string;
+              /**
+               * @description Emoji that represents the learningPlan at a glance
+               * @example 🚀
+               */
+              emoji: string;
+              /**
+               * @description LearningPlan title
+               * @example Full Stack JavaScript Developer
+               */
+              title: string;
+              /**
+               * @description LearningPlan description
+               * @example Complete guide to becoming a full stack developer
+               */
+              description: string | null;
+              /**
+               * @description Current status of the learningPlan
+               * @example active
+               * @enum {string}
+               */
+              status: "active" | "archived";
+              /**
+               * @description Main learning topic
+               * @example JavaScript
+               */
+              learningTopic: string;
+              /**
+               * @description Target user level
+               * @example beginner
+               */
+              userLevel: string;
+              /**
+               * @description Target completion weeks
+               * @example 12
+               */
+              targetWeeks: number;
+              /**
+               * @description Weekly study hours
+               * @example 10
+               */
+              weeklyHours: number;
+              /**
+               * @description Preferred learning style
+               * @example 실습 중심
+               */
+              learningStyle: string;
+              /**
+               * @description Preferred learning resources
+               * @example 온라인 강의
+               */
+              preferredResources: string;
+              /**
+               * @description Main learning learningModule
+               * @example 웹 개발자 취업
+               */
+              mainGoal: string;
+              /**
+               * @description Additional requirements
+               * @example React, Node.js 포함
+               */
+              additionalRequirements: string | null;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not the owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get detailed learningPlan with learningModules and learning-tasks */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description LearningPlan details retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learningPlan
+               * @example abc123def456
+               */
+              id: string;
+              /**
+               * @description Emoji assigned to the learningPlan
+               * @example 🚀
+               */
+              emoji: string;
+              /**
+               * @description LearningPlan title
+               * @example Full Stack JavaScript Developer
+               */
+              title: string;
+              /**
+               * @description LearningPlan description
+               * @example Complete guide to becoming a full stack developer
+               */
+              description: string | null;
+              /**
+               * @description Current status of the learningPlan
+               * @example active
+               * @enum {string}
+               */
+              status: "active" | "archived";
+              /**
+               * @description Main learning topic
+               * @example JavaScript
+               */
+              learningTopic: string;
+              /**
+               * @description Target user level
+               * @example beginner
+               */
+              userLevel: string;
+              /**
+               * @description Target completion weeks
+               * @example 12
+               */
+              targetWeeks: number;
+              /**
+               * @description Weekly study hours
+               * @example 10
+               */
+              weeklyHours: number;
+              /**
+               * @description Preferred learning style
+               * @example 실습 중심
+               */
+              learningStyle: string;
+              /**
+               * @description Preferred learning resources
+               * @example 온라인 강의
+               */
+              preferredResources: string;
+              /**
+               * @description Main learning learningModule
+               * @example 웹 개발자 취업
+               */
+              mainGoal: string;
+              /**
+               * @description Additional requirements
+               * @example React, Node.js 포함
+               */
+              additionalRequirements: string | null;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /** @description List of learningModules with their learning-tasks */
+              learningModules: Array<{
+                /**
+                 * @description Public ID of the learningModule
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                id: string;
+                /**
+                 * @description Learning Module title
+                 * @example Learn JavaScript Fundamentals
+                 */
+                title: string;
+                /**
+                 * @description Learning Module description
+                 * @example Master variables, functions, loops, and basic DOM manipulation
+                 */
+                description: string | null;
+                /**
+                 * @description Display order of the learningModule
+                 * @example 1
+                 */
+                order: number;
+                /**
+                 * @description Whether the learning module is expanded in UI
+                 * @example true
+                 */
+                isExpanded: boolean;
+                /**
+                 * @description Creation timestamp
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                createdAt: string;
+                /**
+                 * @description Last update timestamp
+                 * @example 2024-01-15T10:30:00.000Z
+                 */
+                updatedAt: string;
+                /** @description List of learning-tasks under this learningModule */
+                learningTasks: Array<{
+                  /**
+                   * @description Public ID of the learning-task
+                   * @example 660e8400-e29b-41d4-a716-446655440001
+                   */
+                  id: string;
+                  /**
+                   * @description Learning-task title
+                   * @example Learn variables and data types
+                   */
+                  title: string;
+                  /**
+                   * @description Learning-task description
+                   * @example Understand different data types: string, number, boolean, array, object
+                   */
+                  description: string | null;
+                  /**
+                   * @description Whether the learning-task is completed
+                   * @example false
+                   */
+                  isCompleted: boolean;
+                  /**
+                   * Format: date-time
+                   * @description Timestamp when the learning-task was marked as completed
+                   * @example 2024-02-15T09:30:00.000Z
+                   */
+                  completedAt: string | null;
+                  /**
+                   * @description Due date for the learning-task
+                   * @example 2024-02-15T00:00:00.000Z
+                   */
+                  dueDate: string | null;
+                  /**
+                   * @description Personal memo for the learning-task
+                   * @example Focus on practice with real examples
+                   */
+                  memo: string | null;
+                  /**
+                   * @description Display order of the learning-task
+                   * @example 1
+                   */
+                  order: number;
+                  /**
+                   * @description Creation timestamp
+                   * @example 2024-01-01T00:00:00.000Z
+                   */
+                  createdAt: string;
+                  /**
+                   * @description Last update timestamp
+                   * @example 2024-01-15T10:30:00.000Z
+                   */
+                  updatedAt: string;
+                  /**
+                   * @description 현재 AI 노트 생성 상태
+                   * @example processing
+                   * @enum {string}
+                   */
+                  aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+                  /**
+                   * @description AI가 생성한 학습 노트 (마크다운)
+                   * @example # 학습 개요
+                   *     - 목표 정리...
+                   */
+                  aiNoteMarkdown: string | null;
+                  /**
+                   * Format: date-time
+                   * @description AI 노트 생성을 요청한 시각
+                   * @example 2024-06-01T10:00:00.000Z
+                   */
+                  aiNoteRequestedAt: string | null;
+                  /**
+                   * Format: date-time
+                   * @description AI 노트 생성이 완료되거나 실패한 시각
+                   * @example 2024-06-01T10:05:12.000Z
+                   */
+                  aiNoteCompletedAt: string | null;
+                  /**
+                   * @description AI 노트 생성 실패 시 오류 메시지
+                   * @example Gemini API 호출이 실패했습니다.
+                   */
+                  aiNoteError: string | null;
+                }>;
+              }>;
+              /** @description List of documents associated with the learningPlan */
+              documents: Array<{
                 /**
                  * @description Public ID of the document
                  * @example 550e8400-e29b-41d4-a716-446655440000
@@ -6157,15 +3643,10 @@ export interface paths {
                  */
                 fileType: string;
                 /**
-                 * @description Public URL to access the file
-                 * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
-                 */
-                storageUrl: string;
-                /**
-                 * @description Associated roadmap ID (null if not yet linked)
+                 * @description Associated learningPlan ID (null if not yet linked)
                  * @example 123
                  */
-                roadmapId: number | null;
+                learningPlanId: number | null;
                 /**
                  * @description Upload timestamp
                  * @example 2024-01-01T00:00:00.000Z
@@ -6176,7 +3657,7 @@ export interface paths {
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
-              };
+              }>;
             };
           };
         };
@@ -6187,74 +3668,59 @@ export interface paths {
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
             };
           };
         };
-        /** @description Access denied */
+        /** @description Access denied to this learningPlan */
         403: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
             };
           };
         };
-        /** @description Document not found */
+        /** @description LearningPlan not found */
         404: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
@@ -6268,20 +3734,15 @@ export interface paths {
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
                  * @description Error code
-                 * @example document:invalid_file_type
+                 * @example learningPlan:invalid_pagination_cursor
                  */
                 code: string;
                 /**
                  * @description Error message
-                 * @example Only PDF files are allowed
+                 * @example Invalid pagination cursor provided
                  */
                 message: string;
               };
@@ -6292,6 +3753,2552 @@ export interface paths {
     };
     put?: never;
     post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{id}/status": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Change learningPlan status (active/archived) */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description New status for the learningPlan
+             * @example archived
+             * @enum {string}
+             */
+            status: "active" | "archived";
+          };
+        };
+      };
+      responses: {
+        /** @description LearningPlan status changed successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learningPlan
+               * @example abc123def456
+               */
+              id: string;
+              /**
+               * @description Updated status
+               * @example archived
+               * @enum {string}
+               */
+              status: "active" | "archived";
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not the owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan already has the requested status */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create a new learning module for a learning plan */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description Learning Module title
+             * @example Learn JavaScript Fundamentals
+             */
+            title: string;
+            /**
+             * @description Learning Module description
+             * @example Master variables, functions, loops, and basic DOM manipulation
+             */
+            description?: string;
+            /**
+             * @description Whether the learning module should be expanded by default
+             * @default true
+             * @example true
+             */
+            isExpanded?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning module created successfully */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learningModule
+               * @example 550e8400-e29b-41d4-a716-446655440000
+               */
+              id: string;
+              /**
+               * @description Learning Module title
+               * @example Learn JavaScript Fundamentals
+               */
+              title: string;
+              /**
+               * @description Learning Module description
+               * @example Master variables, functions, loops, and basic DOM manipulation
+               */
+              description: string | null;
+              /**
+               * @description Display order of the learningModule
+               * @example 1
+               */
+              order: number;
+              /**
+               * @description Whether the learning module is expanded in UI
+               * @example true
+               */
+              isExpanded: boolean;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description AI가 생성한 학습 노트 (마크다운)
+               * @example # 학습 개요
+               *     - 목표 정리...
+               */
+              aiNoteMarkdown: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성을 요청한 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              aiNoteRequestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성이 완료되거나 실패한 시각
+               * @example 2024-06-01T10:05:12.000Z
+               */
+              aiNoteCompletedAt: string | null;
+              /**
+               * @description AI 노트 생성 실패 시 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              aiNoteError: string | null;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learning plan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Learning plan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Update a learningModule */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learningModule */
+          learningModuleId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description Learning Module title
+             * @example Learn JavaScript Fundamentals
+             */
+            title?: string;
+            /**
+             * @description Learning Module description
+             * @example Master variables, functions, loops, and basic DOM manipulation
+             */
+            description?: string;
+            /**
+             * @description Whether the learning module is expanded in UI
+             * @example true
+             */
+            isExpanded?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning Module updated successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learningModule
+               * @example 550e8400-e29b-41d4-a716-446655440000
+               */
+              id: string;
+              /**
+               * @description Learning Module title
+               * @example Learn JavaScript Fundamentals
+               */
+              title: string;
+              /**
+               * @description Learning Module description
+               * @example Master variables, functions, loops, and basic DOM manipulation
+               */
+              description: string | null;
+              /**
+               * @description Display order of the learningModule
+               * @example 1
+               */
+              order: number;
+              /**
+               * @description Whether the learning module is expanded in UI
+               * @example true
+               */
+              isExpanded: boolean;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description AI가 생성한 학습 노트 (마크다운)
+               * @example # 학습 개요
+               *     - 목표 정리...
+               */
+              aiNoteMarkdown: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성을 요청한 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              aiNoteRequestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성이 완료되거나 실패한 시각
+               * @example 2024-06-01T10:05:12.000Z
+               */
+              aiNoteCompletedAt: string | null;
+              /**
+               * @description AI 노트 생성 실패 시 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              aiNoteError: string | null;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Learning Module or learningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    post?: never;
+    /** Delete a learningModule */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learningModule */
+          learningModuleId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Learning Module deleted successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Deletion confirmation message
+               * @example Learning Module deleted successfully
+               */
+              message: string;
+              /**
+               * @description Public ID of the deleted learningModule
+               * @example 550e8400-e29b-41d4-a716-446655440000
+               */
+              deletedId: string;
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Learning Module or learningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/order": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Reorder a learning module position */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learningModule */
+          learningModuleId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description New order position for the learning module (1-based)
+             * @example 3
+             */
+            newOrder: number;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning Module reordered successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the reordered learningModule
+               * @example 550e8400-e29b-41d4-a716-446655440000
+               */
+              id: string;
+              /**
+               * @description Updated order position
+               * @example 3
+               */
+              order: number;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Bad request - invalid order position */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Learning Module or learningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Create a new learning-task for a learningModule */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learningModule */
+          learningModuleId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description Learning-task title
+             * @example Learn variables and data types
+             */
+            title: string;
+            /**
+             * @description Learning-task description
+             * @example Understand different data types: string, number, boolean, array, object
+             */
+            description?: string;
+            /**
+             * Format: date-time
+             * @description Due date for the learning-task (ISO 8601 format)
+             * @example 2024-02-15T00:00:00.000Z
+             */
+            dueDate?: string;
+            /**
+             * @description Personal memo for the learning-task
+             * @example Focus on practice with real examples
+             */
+            memo?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning-task created successfully */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learning-task
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              id: string;
+              /**
+               * @description Learning-task title
+               * @example Learn variables and data types
+               */
+              title: string;
+              /**
+               * @description Learning-task description
+               * @example Understand different data types: string, number, boolean, array, object
+               */
+              description: string | null;
+              /**
+               * @description Whether the learning-task is completed
+               * @example false
+               */
+              isCompleted: boolean;
+              /**
+               * Format: date-time
+               * @description Timestamp when the learning-task was marked as completed
+               * @example 2024-02-15T09:30:00.000Z
+               */
+              completedAt: string | null;
+              /**
+               * @description Due date for the learning-task
+               * @example 2024-02-15T00:00:00.000Z
+               */
+              dueDate: string | null;
+              /**
+               * @description Personal memo for the learning-task
+               * @example Focus on practice with real examples
+               */
+              memo: string | null;
+              /**
+               * @description Display order of the learning-task
+               * @example 1
+               */
+              order: number;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description AI가 생성한 학습 노트 (마크다운)
+               * @example # 학습 개요
+               *     - 목표 정리...
+               */
+              aiNoteMarkdown: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성을 요청한 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              aiNoteRequestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성이 완료되거나 실패한 시각
+               * @example 2024-06-01T10:05:12.000Z
+               */
+              aiNoteCompletedAt: string | null;
+              /**
+               * @description AI 노트 생성 실패 시 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              aiNoteError: string | null;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan or learning module not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete a learning-task */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learning-task */
+          learningTaskId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Learning-task deleted successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Deletion confirmation message
+               * @example Learning-task deleted successfully
+               */
+              message: string;
+              /**
+               * @description Public ID of the deleted learning-task
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              deletedId: string;
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan, learningModule, or learning-task not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get detailed information about a learning-task */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learning-task */
+          learningTaskId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Learning-task detail retrieved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learning-task
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              id: string;
+              /**
+               * @description Learning-task title
+               * @example Learn variables and data types
+               */
+              title: string;
+              /**
+               * @description Learning-task description
+               * @example Understand different data types: string, number, boolean, array, object
+               */
+              description: string | null;
+              /**
+               * @description Whether the learning-task is completed
+               * @example false
+               */
+              isCompleted: boolean;
+              /**
+               * Format: date-time
+               * @description Timestamp when the learning-task was marked as completed
+               * @example 2024-02-15T09:30:00.000Z
+               */
+              completedAt: string | null;
+              /**
+               * @description Due date for the learning-task
+               * @example 2024-02-15T00:00:00.000Z
+               */
+              dueDate: string | null;
+              /**
+               * @description Personal memo for the learning-task
+               * @example Focus on practice with real examples
+               */
+              memo: string | null;
+              /**
+               * @description Display order of the learning-task
+               * @example 1
+               */
+              order: number;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description AI가 생성한 학습 노트 (마크다운)
+               * @example # 학습 개요
+               *     - 목표 정리...
+               */
+              aiNoteMarkdown: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성을 요청한 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              aiNoteRequestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성이 완료되거나 실패한 시각
+               * @example 2024-06-01T10:05:12.000Z
+               */
+              aiNoteCompletedAt: string | null;
+              /**
+               * @description AI 노트 생성 실패 시 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              aiNoteError: string | null;
+              /** @description Parent learning module metadata */
+              learningModule: {
+                /**
+                 * @description Public ID of the parent learningModule
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                id: string;
+                /**
+                 * @description Title of the parent learningModule
+                 * @example Master JavaScript fundamentals
+                 */
+                title: string;
+                /**
+                 * @description Description of the parent learningModule
+                 * @example Focus on core JavaScript knowledge before diving into frameworks
+                 */
+                description: string | null;
+                /**
+                 * @description Display order of the learningModule
+                 * @example 1
+                 */
+                order: number;
+              };
+              /** @description Parent learningPlan metadata */
+              learningPlan: {
+                /**
+                 * @description Public ID of the learningPlan
+                 * @example abc123def456
+                 */
+                id: string;
+                /**
+                 * @description Title of the learningPlan
+                 * @example Full-stack Development LearningPlan
+                 */
+                title: string;
+              };
+              /** @description 가장 최근의 AI 학습 퀴즈 정보 */
+              aiQuiz: {
+                /**
+                 * @description 퀴즈 ID
+                 * @example 123
+                 */
+                id: string;
+                /**
+                 * @description 현재 AI 퀴즈 생성 상태
+                 * @example processing
+                 * @enum {string}
+                 */
+                status: "idle" | "processing" | "ready" | "failed";
+                /**
+                 * @description 생성 요청 시 목표 문항 수
+                 * @example 8
+                 */
+                targetQuestionCount: number;
+                /**
+                 * @description 실제 생성된 문항 수
+                 * @example 8
+                 */
+                totalQuestions: number | null;
+                /**
+                 * Format: date-time
+                 * @description 생성 요청 시각
+                 * @example 2024-06-01T10:00:00.000Z
+                 */
+                requestedAt: string | null;
+                /**
+                 * Format: date-time
+                 * @description 생성 완료 시각
+                 * @example 2024-06-01T10:02:00.000Z
+                 */
+                completedAt: string | null;
+                /**
+                 * @description 실패 시 사용자에게 노출할 오류 메시지
+                 * @example Gemini API 호출이 실패했습니다.
+                 */
+                errorMessage: string | null;
+                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                questions:
+                  | Array<{
+                      /**
+                       * @description 문항 식별자
+                       * @example q1
+                       */
+                      id: string;
+                      /**
+                       * @description 문제 본문
+                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                       */
+                      prompt: string;
+                      /** @description 객관식 보기 4개 */
+                      options: Array<string>;
+                    }>
+                  | null;
+                /** @description 사용자의 가장 최근 퀴즈 결과 */
+                latestResult: {
+                  /**
+                   * @description 채점된 퀴즈 ID
+                   * @example 123
+                   */
+                  quizId: string;
+                  /**
+                   * @description 총 문항 수
+                   * @example 8
+                   */
+                  totalQuestions: number;
+                  /**
+                   * @description 맞힌 문항 수
+                   * @example 6
+                   */
+                  correctCount: number;
+                  /**
+                   * @description 정답 비율 (퍼센트)
+                   * @example 75
+                   */
+                  scorePercent: number;
+                  /** @description 문항별 채점 정보 */
+                  answers: Array<{
+                    /**
+                     * @description 문항 식별자
+                     * @example q1
+                     */
+                    id: string;
+                    /**
+                     * @description 문제 본문
+                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                     */
+                    prompt: string;
+                    /** @description 객관식 보기 4개 */
+                    options: Array<string>;
+                    /**
+                     * @description 사용자가 선택한 보기 인덱스
+                     * @example 1
+                     */
+                    selectedIndex: number;
+                    /**
+                     * @description 정답 보기 인덱스
+                     * @example 0
+                     */
+                    correctIndex: number;
+                    /**
+                     * @description 정답 설명
+                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                     */
+                    explanation: string;
+                    /**
+                     * @description 정답 여부
+                     * @example true
+                     */
+                    isCorrect: boolean;
+                  }>;
+                  /**
+                   * Format: date-time
+                   * @description 제출 시각
+                   * @example 2024-06-01T10:05:00.000Z
+                   */
+                  submittedAt: string;
+                } | null;
+              } | null;
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan, learningModule, or learning-task not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    /** Update a learning-task */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learning-task */
+          learningTaskId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description Learning-task title
+             * @example Learn variables and data types
+             */
+            title?: string;
+            /**
+             * @description Learning-task description
+             * @example Understand different data types: string, number, boolean, array, object
+             */
+            description?: string;
+            /**
+             * @description Whether the learning-task is completed
+             * @example true
+             */
+            isCompleted?: boolean;
+            /**
+             * Format: date-time
+             * @description Due date for the learning-task (ISO 8601 format)
+             * @example 2024-02-15T00:00:00.000Z
+             */
+            dueDate?: string | null;
+            /**
+             * @description Personal memo for the learning-task
+             * @example Focus on practice with real examples
+             */
+            memo?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning-task updated successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the learning-task
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              id: string;
+              /**
+               * @description Learning-task title
+               * @example Learn variables and data types
+               */
+              title: string;
+              /**
+               * @description Learning-task description
+               * @example Understand different data types: string, number, boolean, array, object
+               */
+              description: string | null;
+              /**
+               * @description Whether the learning-task is completed
+               * @example false
+               */
+              isCompleted: boolean;
+              /**
+               * Format: date-time
+               * @description Timestamp when the learning-task was marked as completed
+               * @example 2024-02-15T09:30:00.000Z
+               */
+              completedAt: string | null;
+              /**
+               * @description Due date for the learning-task
+               * @example 2024-02-15T00:00:00.000Z
+               */
+              dueDate: string | null;
+              /**
+               * @description Personal memo for the learning-task
+               * @example Focus on practice with real examples
+               */
+              memo: string | null;
+              /**
+               * @description Display order of the learning-task
+               * @example 1
+               */
+              order: number;
+              /**
+               * @description Creation timestamp
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description AI가 생성한 학습 노트 (마크다운)
+               * @example # 학습 개요
+               *     - 목표 정리...
+               */
+              aiNoteMarkdown: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성을 요청한 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              aiNoteRequestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description AI 노트 생성이 완료되거나 실패한 시각
+               * @example 2024-06-01T10:05:12.000Z
+               */
+              aiNoteCompletedAt: string | null;
+              /**
+               * @description AI 노트 생성 실패 시 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              aiNoteError: string | null;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan, learningModule, or learning-task not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Move a learning-task to another learning module or reorder within the same learningModule */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learning-task */
+          learningTaskId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description Public ID of the target learning module to move learning-task to
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            newLearningModuleId: string;
+            /**
+             * @description New order position for the learning-task (1-based). If not provided, will be placed at the end.
+             * @example 2
+             */
+            newOrder?: number;
+          };
+        };
+      };
+      responses: {
+        /** @description Learning-task moved successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description Public ID of the moved learning-task
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              id: string;
+              /**
+               * @description Public ID of the learning module the learning-task was moved to
+               * @example 550e8400-e29b-41d4-a716-446655440000
+               */
+              learningModuleId: string;
+              /**
+               * @description Updated order position
+               * @example 2
+               */
+              order: number;
+              /**
+               * @description Last update timestamp
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+            };
+          };
+        };
+        /** @description Bad request - validation failed */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied - not learningPlan owner */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description LearningPlan, learningModule, or learning-task not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Internal server error */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    trace?: never;
+  };
+  "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes/{quizId}/submissions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Submit answers for an AI-generated learning-task quiz */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description Public ID of the learningPlan */
+          learningPlanId: string;
+          /** @description Public ID of the learning-task */
+          learningTaskId: string;
+          /** @description AI 퀴즈 ID */
+          quizId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /** @description 사용자가 제출한 문항별 답안 */
+            answers: Array<{
+              /**
+               * @description 문항 식별자
+               * @example q1
+               */
+              questionId: string;
+              /**
+               * @description 선택한 보기 인덱스(0-베이스)
+               * @example 2
+               */
+              selectedIndex: number;
+            }>;
+          };
+        };
+      };
+      responses: {
+        /** @description Quiz submitted and evaluated successfully */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /** @description AI 퀴즈 세션 데이터 */
+              quiz: {
+                /**
+                 * @description 퀴즈 ID
+                 * @example 123
+                 */
+                id: string;
+                /**
+                 * @description 현재 AI 퀴즈 생성 상태
+                 * @example processing
+                 * @enum {string}
+                 */
+                status: "idle" | "processing" | "ready" | "failed";
+                /**
+                 * @description 생성 요청 시 목표 문항 수
+                 * @example 8
+                 */
+                targetQuestionCount: number;
+                /**
+                 * @description 실제 생성된 문항 수
+                 * @example 8
+                 */
+                totalQuestions: number | null;
+                /**
+                 * Format: date-time
+                 * @description 생성 요청 시각
+                 * @example 2024-06-01T10:00:00.000Z
+                 */
+                requestedAt: string | null;
+                /**
+                 * Format: date-time
+                 * @description 생성 완료 시각
+                 * @example 2024-06-01T10:02:00.000Z
+                 */
+                completedAt: string | null;
+                /**
+                 * @description 실패 시 사용자에게 노출할 오류 메시지
+                 * @example Gemini API 호출이 실패했습니다.
+                 */
+                errorMessage: string | null;
+                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+                questions:
+                  | Array<{
+                      /**
+                       * @description 문항 식별자
+                       * @example q1
+                       */
+                      id: string;
+                      /**
+                       * @description 문제 본문
+                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                       */
+                      prompt: string;
+                      /** @description 객관식 보기 4개 */
+                      options: Array<string>;
+                    }>
+                  | null;
+                /** @description 사용자의 가장 최근 퀴즈 결과 */
+                latestResult: {
+                  /**
+                   * @description 채점된 퀴즈 ID
+                   * @example 123
+                   */
+                  quizId: string;
+                  /**
+                   * @description 총 문항 수
+                   * @example 8
+                   */
+                  totalQuestions: number;
+                  /**
+                   * @description 맞힌 문항 수
+                   * @example 6
+                   */
+                  correctCount: number;
+                  /**
+                   * @description 정답 비율 (퍼센트)
+                   * @example 75
+                   */
+                  scorePercent: number;
+                  /** @description 문항별 채점 정보 */
+                  answers: Array<{
+                    /**
+                     * @description 문항 식별자
+                     * @example q1
+                     */
+                    id: string;
+                    /**
+                     * @description 문제 본문
+                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                     */
+                    prompt: string;
+                    /** @description 객관식 보기 4개 */
+                    options: Array<string>;
+                    /**
+                     * @description 사용자가 선택한 보기 인덱스
+                     * @example 1
+                     */
+                    selectedIndex: number;
+                    /**
+                     * @description 정답 보기 인덱스
+                     * @example 0
+                     */
+                    correctIndex: number;
+                    /**
+                     * @description 정답 설명
+                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                     */
+                    explanation: string;
+                    /**
+                     * @description 정답 여부
+                     * @example true
+                     */
+                    isCorrect: boolean;
+                  }>;
+                  /**
+                   * Format: date-time
+                   * @description 제출 시각
+                   * @example 2024-06-01T10:05:00.000Z
+                   */
+                  submittedAt: string;
+                } | null;
+              };
+              /** @description AI 퀴즈 채점 결과 */
+              evaluation: {
+                /**
+                 * @description 채점된 퀴즈 ID
+                 * @example 123
+                 */
+                quizId: string;
+                /**
+                 * @description 총 문항 수
+                 * @example 8
+                 */
+                totalQuestions: number;
+                /**
+                 * @description 맞힌 문항 수
+                 * @example 6
+                 */
+                correctCount: number;
+                /**
+                 * @description 정답 비율 (퍼센트)
+                 * @example 75
+                 */
+                scorePercent: number;
+                /** @description 문항별 채점 정보 */
+                answers: Array<{
+                  /**
+                   * @description 문항 식별자
+                   * @example q1
+                   */
+                  id: string;
+                  /**
+                   * @description 문제 본문
+                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                   */
+                  prompt: string;
+                  /** @description 객관식 보기 4개 */
+                  options: Array<string>;
+                  /**
+                   * @description 사용자가 선택한 보기 인덱스
+                   * @example 1
+                   */
+                  selectedIndex: number;
+                  /**
+                   * @description 정답 보기 인덱스
+                   * @example 0
+                   */
+                  correctIndex: number;
+                  /**
+                   * @description 정답 설명
+                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                   */
+                  explanation: string;
+                  /**
+                   * @description 정답 여부
+                   * @example true
+                   */
+                  isCorrect: boolean;
+                }>;
+                /**
+                 * Format: date-time
+                 * @description 제출 시각
+                 * @example 2024-06-01T10:05:00.000Z
+                 */
+                submittedAt: string;
+              };
+            };
+          };
+        };
+        /** @description Invalid request payload */
+        400: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Authentication required */
+        401: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Access denied */
+        403: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Quiz, learning-task, or learningPlan not found */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Quiz is not ready or already submitted */
+        409: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description Server error while submitting the quiz */
+        500: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description Error code
+                 * @example learningPlan:invalid_pagination_cursor
+                 */
+                code: string;
+                /**
+                 * @description Error message
+                 * @example Invalid pagination cursor provided
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
     delete?: never;
     options?: never;
     head?: never;
