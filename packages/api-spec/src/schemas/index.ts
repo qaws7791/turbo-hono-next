@@ -1,3 +1,7 @@
+// Common schemas
+export * from "../common/schema";
+
+// Module schemas
 export * from "../modules/auth/schema";
 export * from "../modules/documents/schema";
 export * from "../modules/progress/schema";

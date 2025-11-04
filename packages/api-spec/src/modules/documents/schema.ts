@@ -90,5 +90,3 @@ export const DocumentSchemas = {
   DocumentDeleteResponseSchema,
   DocumentErrorResponseSchema,
 };
-
-export const ErrorResponseSchema = DocumentErrorResponseSchema;

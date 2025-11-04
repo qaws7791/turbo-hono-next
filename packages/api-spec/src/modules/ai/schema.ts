@@ -1,5 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
+import { ErrorResponseSchema } from "../../common/schema";
+
 // Request schemas
 export const GenerateLearningPlanRequestSchema = z.object({
   learningTopic: z.string().min(1).openapi({
@@ -503,16 +505,5 @@ export const GenerateLearningPlanResponseSchema = z.object({
   }),
 });
 
-// Error response schema
-export const ErrorResponseSchema = z.object({
-  error: z.object({
-    code: z.string().openapi({
-      description: "에러 코드",
-      example: "ai:generation_failed",
-    }),
-    message: z.string().openapi({
-      description: "에러 메시지",
-      example: "로드맵 생성에 실패했습니다.",
-    }),
-  }),
-});
+// Re-export common schemas for convenience
+export { ErrorResponseSchema };

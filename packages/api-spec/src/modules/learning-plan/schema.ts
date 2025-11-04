@@ -5,6 +5,7 @@ import {
   GenerateLearningTaskQuizResponseSchema,
 } from "../ai/schema";
 import { DocumentItemSchema } from "../documents/schema";
+import { ErrorResponseSchema } from "../../common/schema";
 
 import { LearningPlanEmoji } from "./emoji";
 
@@ -497,19 +498,6 @@ export const LearningPlanParamsSchema = z.object({
   }),
 });
 
-export const ErrorResponseSchema = z.object({
-  error: z.object({
-    code: z.string().openapi({
-      description: "Error code",
-      example: "learningPlan:invalid_pagination_cursor",
-    }),
-    message: z.string().openapi({
-      description: "Error message",
-      example: "Invalid pagination cursor provided",
-    }),
-  }),
-});
-
 // ========== Learning Module Schemas ==========
 
 // Learning Module item schema
@@ -993,3 +981,6 @@ export const LearningPlanDetailResponseSchema = z.object({
       description: "List of documents associated with the learningPlan",
     }),
 });
+
+// Re-export common schemas for convenience
+export { ErrorResponseSchema };
