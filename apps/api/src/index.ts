@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 
 import "dotenv/config";
 import app from "./app";
+import { log } from "./lib/logger";
 
 export type { AppType } from "./app";
 
@@ -11,6 +12,9 @@ serve(
     port: 3001,
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}/ui`);
+    log.info(`Server is running on http://localhost:${info.port}/ui`, {
+      port: info.port,
+      environment: process.env.NODE_ENV || "development",
+    });
   },
 );

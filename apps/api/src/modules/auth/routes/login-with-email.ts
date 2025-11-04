@@ -1,15 +1,11 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { and, eq } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
 import status from "http-status";
-import { account, user } from "@repo/database/schema";
 import { loginWithEmailRoute } from "@repo/api-spec/modules/auth/routes";
 
 import { authConfig } from "../../../config/auth";
-import { db } from "../../../database/client";
-import { passwordUtils } from "../../../utils/password";
-import { sessionUtils } from "../../../utils/session";
-import { AuthError } from "../errors";
+import { authService } from "../services/auth.service";
+import { AuthErrors } from "../errors";
 
 const loginWithEmail = new OpenAPIHono().openapi(
   loginWithEmailRoute,
@@ -17,72 +13,21 @@ const loginWithEmail = new OpenAPIHono().openapi(
     try {
       const { email, password } = c.req.valid("json");
 
-      // Find user and their email/password account
-      const result = await db
-        .select({
-          user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            emailVerified: user.emailVerified,
-            image: user.image,
-          },
-          account: {
-            password: account.password,
-          },
-        })
-        .from(user)
-        .innerJoin(account, eq(account.userId, user.id))
-        .where(and(eq(user.email, email), eq(account.providerId, "email")))
-        .limit(1);
-
-      const [loginRow] = result;
-
-      if (!loginRow) {
-        throw new AuthError(
-          401,
-          "auth:invalid_credentials",
-          "Invalid credentials",
-        );
-      }
-
-      const accountPassword = loginRow.account.password;
-
-      if (!accountPassword) {
-        throw new AuthError(
-          401,
-          "auth:invalid_credentials",
-          "Invalid credentials",
-        );
-      }
-
-      const foundUser = loginRow.user;
-
-      // Verify password
-      const isValidPassword = await passwordUtils.verify(
-        password,
-        accountPassword,
-      );
-      if (!isValidPassword) {
-        throw new AuthError(
-          401,
-          "auth:invalid_credentials",
-          "Invalid credentials",
-        );
-      }
-
-      // Create session
+      // Get user agent and IP address for session tracking
       const userAgent = c.req.header("user-agent");
       const ipAddress =
         c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for");
-      const sessionToken = await sessionUtils.createSession(
-        foundUser.id,
+
+      // Call auth service to authenticate and create session
+      const result = await authService.loginWithEmail({
+        email,
+        password,
         userAgent,
         ipAddress,
-      );
+      });
 
       // Set session cookie
-      setCookie(c, authConfig.session.cookieName, sessionToken, {
+      setCookie(c, authConfig.session.cookieName, result.session.id, {
         maxAge: authConfig.session.cookieOptions.maxAge / 1000, // setCookie expects seconds
         httpOnly: authConfig.session.cookieOptions.httpOnly,
         secure: authConfig.session.cookieOptions.secure,
@@ -90,30 +35,13 @@ const loginWithEmail = new OpenAPIHono().openapi(
         path: "/",
       });
 
-      return c.json(
-        {
-          user: {
-            id: foundUser.id,
-            email: foundUser.email,
-            name: foundUser.name,
-            emailVerified: Boolean(foundUser.emailVerified),
-            image: foundUser.image,
-          },
-          session: {
-            id: sessionToken,
-            expiresAt: new Date(
-              Date.now() + authConfig.session.expiresIn * 1000,
-            ).toISOString(),
-          },
-        },
-        status.OK,
-      );
+      return c.json(result, status.OK);
     } catch (error) {
-      if (error instanceof AuthError) {
+      if (error && typeof error === "object" && "code" in error) {
         throw error;
       }
       console.error("Login error:", error);
-      throw new AuthError(500, "auth:internal_error", "Internal server error");
+      throw AuthErrors.forbidden({ message: "Internal server error" });
     }
   },
 );

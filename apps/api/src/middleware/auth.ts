@@ -1,10 +1,10 @@
 import { getCookie } from "hono/cookie";
 
 import { authConfig } from "../config/auth";
-import { AuthError } from "../modules/auth/errors";
-import { sessionUtils } from "../utils/session";
+import { AuthErrors } from "../modules/auth/errors";
+import { sessionService } from "../modules/auth/services/session.service";
 
-import type { SessionData} from "../utils/session";
+import type { SessionData } from "../modules/auth/services/session.service";
 import type { Context, Next } from "hono";
 
 export interface AuthContext {
@@ -20,21 +20,13 @@ export async function authMiddleware(c: Context, next: Next) {
   const sessionToken = getCookie(c, authConfig.session.cookieName);
 
   if (!sessionToken) {
-    throw new AuthError(
-      401,
-      "auth:authentication_required",
-      "Authentication required",
-    );
+    throw AuthErrors.unauthorized();
   }
 
   // Verify session
-  const sessionData = await sessionUtils.getSessionByToken(sessionToken);
+  const sessionData = await sessionService.getSessionByToken(sessionToken);
   if (!sessionData) {
-    throw new AuthError(
-      401,
-      "auth:invalid_or_expired_session",
-      "Invalid or expired session",
-    );
+    throw AuthErrors.sessionExpired();
   }
 
   // Set auth context
@@ -67,7 +59,7 @@ export async function optionalAuthMiddleware(c: Context, next: Next) {
 
   // If token exists, try to verify session
   if (sessionToken) {
-    const sessionData = await sessionUtils.getSessionByToken(sessionToken);
+    const sessionData = await sessionService.getSessionByToken(sessionToken);
     if (sessionData) {
       c.set("auth", {
         user: sessionData.user,

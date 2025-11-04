@@ -1,11 +1,11 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
 import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 
 import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
+import { loggerMiddleware } from "./middleware/logger";
 import aiApp from "./modules/ai";
 import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
@@ -15,7 +15,7 @@ import learningPlanApp from "./modules/learning-plan";
 function createApp() {
   const app = new OpenAPIHono();
 
-  app.use(logger());
+  app.use(loggerMiddleware);
   app.use(
     "/*",
     cors({

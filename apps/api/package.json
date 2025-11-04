@@ -21,8 +21,9 @@
     "@aws-sdk/s3-request-presigner": "^3.705.0",
     "@hono/node-server": "^1.19.3",
     "@hono/zod-openapi": "^1.1.0",
-    "@repo/database": "workspace:*",
     "@neondatabase/serverless": "^1.0.1",
+    "@repo/api-spec": "workspace:*",
+    "@repo/database": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.18",
     "@types/bcryptjs": "^2.4.6",
     "@types/ws": "^8.18.1",
@@ -39,10 +40,12 @@
     "jose": "^6.1.0",
     "nanoid": "^5.1.5",
     "pdf-parse": "^1.1.1",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "pino-pretty": "^13.1.2",
     "resend": "^6.1.0",
     "ws": "^8.18.3",
-    "zod": "catalog:",
-    "@repo/api-spec": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

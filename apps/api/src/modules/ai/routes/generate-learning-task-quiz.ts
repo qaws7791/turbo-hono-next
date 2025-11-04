@@ -3,6 +3,7 @@ import status from "http-status";
 import { generateLearningTaskQuizRoute } from "@repo/api-spec/modules/ai/routes";
 
 import { authMiddleware } from "../../../middleware/auth";
+import { AuthErrors } from "../../auth/errors";
 import { AIError } from "../errors";
 import {
   LEARNING_TASK_QUIZ_STATUS,
@@ -27,11 +28,7 @@ const generateLearningTaskQuiz = new OpenAPIHono<{
       const auth = c.get("auth");
 
       if (!auth?.user?.id) {
-        throw new AIError(
-          401,
-          "ai:authentication_required",
-          "User authentication required",
-        );
+        throw AuthErrors.unauthorized();
       }
 
       const { learningPlanId, learningTaskId } = c.req.valid("param");

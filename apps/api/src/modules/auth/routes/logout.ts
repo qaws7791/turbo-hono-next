@@ -4,8 +4,8 @@ import status from "http-status";
 import { logoutRoute } from "@repo/api-spec/modules/auth/routes";
 
 import { authConfig } from "../../../config/auth";
-import { sessionUtils } from "../../../utils/session";
-import { AuthError } from "../errors";
+import { sessionService } from "../services/session.service";
+import { AuthErrors } from "../errors";
 
 const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
   try {
@@ -14,7 +14,7 @@ const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
 
     // Delete session if token exists
     if (sessionToken) {
-      await sessionUtils.deleteSession(sessionToken);
+      await sessionService.deleteSession(sessionToken);
     }
 
     // Clear session cookie
@@ -31,7 +31,7 @@ const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
     );
   } catch (error) {
     console.error("Logout error:", error);
-    throw new AuthError(500, "auth:internal_error", "Logout failed");
+    throw AuthErrors.forbidden({ message: "Logout failed" });
   }
 });
 

@@ -1,47 +1,122 @@
 import { BaseError } from "../../errors/base.error";
+import { ErrorCodes } from "../../errors/error-codes";
 
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { ErrorCode } from "../../errors/error-codes";
+import type { ErrorDetails } from "../../errors/base.error";
 
-export type LearningPlanErrorType =
-  | "learning_plan_not_found"
-  | "access_denied"
-  | "invalid_pagination_cursor"
-  | "invalid_filter_params"
-  | "validation_failed"
-  | "creation_failed"
-  | "update_failed"
-  | "deletion_failed"
-  | "status_change_failed"
-  | "invalid_learning_plan_id"
-  | "learning_plan_already_archived"
-  | "cannot_delete_active_learning_plan"
-  | "learning_module_not_found"
-  | "learning_module_access_denied"
-  | "learning_module_validation_failed"
-  | "learning_module_creation_failed"
-  | "learning_module_update_failed"
-  | "learning_module_deletion_failed"
-  | "learning_module_reorder_failed"
-  | "invalid_learning_module_id"
-  | "invalid_learning_module_order"
-  | "learning_module_order_out_of_range"
-  | "internal_error"
-  | "learning_task_creation_failed"
-  | "learning_task_validation_failed"
-  | "learning_task_not_found"
-  | "learning_task_deletion_failed"
-  | "learning_task_reorder_failed"
-  | "target_learning_module_not_found"
-  | "learning_task_update_failed";
-
-export type LearningPlanErrorCode = `learning_plan:${LearningPlanErrorType}`;
-
+/**
+ * Learning plan specific error class.
+ * Uses standardized error codes from error-codes.ts
+ */
 export class LearningPlanError extends BaseError {
   constructor(
-    public readonly statusCode: ContentfulStatusCode,
-    public readonly code: LearningPlanErrorCode,
-    public readonly message: string,
+    statusCode: ContentfulStatusCode,
+    code: ErrorCode,
+    message?: string,
+    details?: ErrorDetails,
   ) {
-    super(statusCode, code, message);
+    super(statusCode, code, message || `Learning plan error: ${code}`, details);
   }
 }
+
+/**
+ * Factory functions for common learning plan errors
+ */
+export const LearningPlanErrors = {
+  notFound: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      404,
+      ErrorCodes.NOT_FOUND_LEARNING_PLAN,
+      "Learning plan not found",
+      details,
+    ),
+
+  accessDenied: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      403,
+      ErrorCodes.LEARNING_PLAN_ACCESS_DENIED,
+      "Access denied to learning plan",
+      details,
+    ),
+
+  creationFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_CREATION_FAILED,
+      "Failed to create learning plan",
+      details,
+    ),
+
+  updateFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_UPDATE_FAILED,
+      "Failed to update learning plan",
+      details,
+    ),
+
+  deleteFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_DELETE_FAILED,
+      "Failed to delete learning plan",
+      details,
+    ),
+
+  invalidStatus: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      400,
+      ErrorCodes.LEARNING_PLAN_INVALID_STATUS,
+      "Invalid learning plan status",
+      details,
+    ),
+
+  moduleNotFound: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      404,
+      ErrorCodes.NOT_FOUND_LEARNING_MODULE,
+      "Learning module not found",
+      details,
+    ),
+
+  moduleCreationFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_MODULE_CREATION_FAILED,
+      "Failed to create learning module",
+      details,
+    ),
+
+  taskNotFound: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      404,
+      ErrorCodes.NOT_FOUND_LEARNING_TASK,
+      "Learning task not found",
+      details,
+    ),
+
+  taskCreationFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_TASK_CREATION_FAILED,
+      "Failed to create learning task",
+      details,
+    ),
+
+  taskUpdateFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_TASK_UPDATE_FAILED,
+      "Failed to update learning task",
+      details,
+    ),
+
+  taskMoveFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_TASK_MOVE_FAILED,
+      "Failed to move learning task",
+      details,
+    ),
+};

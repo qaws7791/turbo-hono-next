@@ -1,8 +1,6 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { learningPlanDocument } from "@repo/database/schema";
 import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
 
-import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
 import {
   sanitizeFileName,
@@ -10,7 +8,8 @@ import {
   validatePdfFile,
 } from "../../../utils/pdf";
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
-import { DocumentError } from "../errors";
+import { documentService } from "../services/document.service";
+import { DocumentErrors } from "../errors";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -34,20 +33,14 @@ const upload = new OpenAPIHono<{
 
       // Validate file exists
       if (!file || !(file instanceof File)) {
-        throw new DocumentError(
-          400,
-          "document:missing_file",
-          "No file provided or invalid file",
-        );
+        throw DocumentErrors.validationFailed({
+          message: "No file provided or invalid file",
+        });
       }
 
       // Validate file size (10MB max)
       if (!validateFileSize(file.size)) {
-        throw new DocumentError(
-          400,
-          "document:file_too_large",
-          "File size exceeds 10MB limit",
-        );
+        throw DocumentErrors.tooLarge();
       }
 
       // Read file as buffer
@@ -57,11 +50,7 @@ const upload = new OpenAPIHono<{
       // Validate PDF file
       const isValidPdf = await validatePdfFile(buffer);
       if (!isValidPdf) {
-        throw new DocumentError(
-          400,
-          "document:invalid_file_type",
-          "Only PDF files are allowed",
-        );
+        throw DocumentErrors.invalidType();
       }
 
       // Generate storage key
@@ -74,63 +63,39 @@ const upload = new OpenAPIHono<{
         storageUrl = await uploadToR2(storageKey, buffer, "application/pdf");
       } catch (error) {
         console.error("R2 upload failed:", error);
-        throw new DocumentError(
-          500,
-          "document:upload_failed",
-          "Failed to upload file to storage",
-        );
+        throw DocumentErrors.uploadFailed({
+          message: "Failed to upload file to storage",
+        });
       }
 
-      // Save to database
-      const [document] = await db
-        .insert(learningPlanDocument)
-        .values({
-          userId,
-          fileName: sanitizedFileName,
-          fileSize: file.size,
-          fileType: "application/pdf",
-          storageKey,
-          storageUrl,
-        })
-        .returning();
-
-      if (!document) {
-        throw new DocumentError(
-          500,
-          "document:upload_failed",
-          "Failed to persist uploaded document",
-        );
-      }
+      // Save to database via service
+      const document = await documentService.uploadDocument({
+        userId,
+        fileName: sanitizedFileName,
+        fileSize: file.size,
+        fileType: "application/pdf",
+        storageKey,
+        storageUrl,
+      });
 
       return c.json(
         {
           success: true,
-          document: {
-            id: document.publicId,
-            fileName: document.fileName,
-            fileSize: document.fileSize,
-            fileType: document.fileType,
-            storageUrl: document.storageUrl,
-            learningPlanId: document.learningPlanId,
-            uploadedAt: document.uploadedAt.toISOString(),
-            createdAt: document.createdAt.toISOString(),
-          },
+          document,
         },
         201,
       );
     } catch (error) {
-      // Re-throw DocumentError
-      if (error instanceof DocumentError) {
+      // Re-throw known errors
+      if (error && typeof error === "object" && "code" in error) {
         throw error;
       }
 
       // Handle unexpected errors
       console.error("Document upload error:", error);
-      throw new DocumentError(
-        500,
-        "document:internal_error",
-        "An unexpected error occurred during upload",
-      );
+      throw DocumentErrors.uploadFailed({
+        message: "An unexpected error occurred during upload",
+      });
     }
   },
 );

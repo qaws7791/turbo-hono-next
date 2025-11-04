@@ -10,7 +10,7 @@ import {
 } from "@repo/database/schema";
 
 import { db } from "../../../database/client";
-import { AIError } from "../errors";
+import { AIErrors } from "../errors";
 import { generateLearningTaskNotePrompt } from "../prompts/learning-task-note-prompts";
 import { LearningTaskNoteContentSchema } from "../schema";
 
@@ -89,8 +89,8 @@ function formatDueDateLabel(dueDate: Date | null): string {
 }
 
 function sanitizeErrorMessage(error: unknown): string {
-  if (error instanceof AIError) {
-    return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    return (error.message as string).slice(0, 500);
   }
 
   if (error instanceof Error) {
@@ -210,19 +210,11 @@ export async function prepareLearningTaskNoteGeneration(
     .limit(1);
 
   if (!learningTaskRow) {
-    throw new AIError(
-      404,
-      "ai:learning_task_not_found",
-      "Learning-task not found",
-    );
+    throw AIErrors.learningTaskNotFound();
   }
 
   if (learningTaskRow.learningPlanUserId !== userId) {
-    throw new AIError(
-      403,
-      "ai:access_denied",
-      "Access denied to this learningPlan",
-    );
+    throw AIErrors.accessDenied();
   }
 
   const noteRowExists =
@@ -529,11 +521,7 @@ export async function runLearningTaskNoteGeneration(
     const markdown = result.object?.markdown?.trim();
 
     if (!markdown) {
-      throw new AIError(
-        500,
-        "ai:note_generation_failed",
-        "Failed to generate AI note",
-      );
+      throw AIErrors.noteGenerationFailed();
     }
 
     const completionTimestamp = new Date();

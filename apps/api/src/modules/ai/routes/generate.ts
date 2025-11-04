@@ -1,20 +1,19 @@
 import { google } from "@ai-sdk/google";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { generateObject } from "ai";
-import { and, eq } from "drizzle-orm";
-import status from "http-status";
-import { learningPlanDocument } from "@repo/database/schema";
 import { generateLearningPlanRoute } from "@repo/api-spec/modules/ai/routes";
+import { generateObject } from "ai";
+import status from "http-status";
 
-import { db } from "../../../database/client";
 import { authMiddleware } from "../../../middleware/auth";
-import { AIError } from "../errors";
+import { AuthErrors } from "../../auth/errors";
+import { documentService } from "../../documents/services/document.service";
+import { AIErrors } from "../errors";
 import { generateLearningPlanPrompt } from "../prompts/learning-plan-prompts";
 import { GeneratedLearningPlanSchema } from "../schema";
 import { saveLearningPlanToDatabase } from "../services/learning-plan-service";
 
-import type { AuthContext } from "../../../middleware/auth";
 import type { ModelMessage } from "ai";
+import type { AuthContext } from "../../../middleware/auth";
 
 const generateLearningPlan = new OpenAPIHono<{
   Variables: {
@@ -31,11 +30,7 @@ const generateLearningPlan = new OpenAPIHono<{
       const auth = c.get("auth");
 
       if (!auth?.user?.id) {
-        throw new AIError(
-          401,
-          "ai:authentication_required",
-          "User authentication required",
-        );
+        throw AuthErrors.unauthorized();
       }
 
       const {
@@ -50,21 +45,17 @@ const generateLearningPlan = new OpenAPIHono<{
         documentId,
       } = body;
 
-      const [document] = documentId
-        ? await db
-            .select()
-            .from(learningPlanDocument)
-            .where(
-              and(
-                eq(learningPlanDocument.publicId, documentId),
-                eq(learningPlanDocument.userId, auth.user.id),
-              ),
-            )
-            .limit(1)
-        : [null];
-
-      if (documentId && !document) {
-        throw new AIError(404, "ai:document_not_found", "Document not found");
+      // Get document via service if documentId is provided
+      let document = null;
+      if (documentId) {
+        try {
+          document = await documentService.getDocumentDetail({
+            publicId: documentId,
+            userId: auth.user.id,
+          });
+        } catch {
+          throw AIErrors.documentNotFound();
+        }
       }
 
       // fetch pdf from storage
@@ -118,11 +109,7 @@ const generateLearningPlan = new OpenAPIHono<{
       });
 
       if (!result.object) {
-        throw new AIError(
-          500,
-          "ai:generation_failed",
-          "Failed to generate learningPlan structure",
-        );
+        throw AIErrors.generationFailed();
       }
 
       const generatedLearningPlan = result.object;
@@ -147,17 +134,13 @@ const generateLearningPlan = new OpenAPIHono<{
         },
       });
 
-      // Link documents to the learningPlan if provided
+      // Link document to the learning plan if provided
       if (documentId) {
-        await db
-          .update(learningPlanDocument)
-          .set({ learningPlanId: savedLearningPlan.id })
-          .where(
-            and(
-              eq(learningPlanDocument.publicId, documentId),
-              eq(learningPlanDocument.userId, auth.user.id),
-            ),
-          );
+        await documentService.linkToLearningPlan({
+          publicId: documentId,
+          userId: auth.user.id,
+          learningPlanId: savedLearningPlan.id,
+        });
       }
 
       // Return the saved learningPlan data
@@ -207,7 +190,7 @@ const generateLearningPlan = new OpenAPIHono<{
       );
     } catch (error) {
       // Handle known AI errors
-      if (error instanceof AIError) {
+      if (error instanceof AIErrors.generationFailed().constructor) {
         throw error;
       }
 
@@ -219,69 +202,51 @@ const generateLearningPlan = new OpenAPIHono<{
           errorMessage.includes("quota") ||
           errorMessage.includes("rate limit")
         ) {
-          throw new AIError(
-            429,
-            "ai:quota_exceeded",
-            "API quota exceeded. Please try again later.",
-          );
+          throw AIErrors.apiLimitExceeded();
         }
 
         if (
           errorMessage.includes("model") ||
           errorMessage.includes("unavailable")
         ) {
-          throw new AIError(
-            503,
-            "ai:model_unavailable",
-            "AI model is currently unavailable. Please try again later.",
-          );
+          throw AIErrors.apiUnavailable();
         }
 
         if (
           errorMessage.includes("parsing") ||
           errorMessage.includes("schema")
         ) {
-          throw new AIError(
-            500,
-            "ai:parsing_failed",
-            "Failed to parse AI response. Please try again.",
-          );
+          throw AIErrors.generationFailed({
+            message: "Failed to parse AI response",
+          });
         }
       }
 
       // Handle database errors
       if (error instanceof Error) {
         if (error.message.includes("Failed to create")) {
-          throw new AIError(
-            500,
-            "ai:database_error",
-            "Failed to save learningPlan to database",
-          );
+          throw AIErrors.databaseError({
+            message: "Failed to save learningPlan to database",
+          });
         }
 
         if (error.message.includes("validation")) {
-          throw new AIError(
-            400,
-            "ai:invalid_request",
-            "Invalid request data provided",
-          );
+          throw AIErrors.invalidPrompt({
+            message: "Invalid request data provided",
+          });
         }
 
         if (error.message.includes("transaction")) {
-          throw new AIError(
-            500,
-            "ai:database_transaction_failed",
-            "Database transaction failed while saving learningPlan",
-          );
+          throw AIErrors.transactionFailed({
+            message: "Database transaction failed while saving learningPlan",
+          });
         }
       }
 
       console.error("AI learningPlan generation error:", error);
-      throw new AIError(
-        500,
-        "ai:internal_error",
-        "Failed to generate learningPlan due to internal error",
-      );
+      throw AIErrors.generationFailed({
+        message: "Failed to generate learningPlan due to internal error",
+      });
     }
   },
 );
