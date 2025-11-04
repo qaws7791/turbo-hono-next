@@ -1,8 +1,8 @@
 import { Icon } from "@repo/ui/icon";
 
-import { Link } from "@/shared/components/link";
 import { LearningPlanCard } from "@/features/learning-plan/components/learning-plan-card";
 import { useLearningPlanList } from "@/features/learning-plan/hooks/use-learning-plan-list";
+import { Link } from "@/shared/components/link";
 
 export default function LearningPlanList() {
   const { data: learningPlans } = useLearningPlanList();
@@ -10,10 +10,10 @@ export default function LearningPlanList() {
   const totalLearningPlans = learningPlans?.data?.items.length ?? 0;
 
   return (
-    <div>
+    <div className="flex-1">
       {/* 학습 계획 목록 */}
       {totalLearningPlans === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
+        <div className="flex flex-col items-center justify-center py-12 text-center w-full">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
             <Icon
               type="iconify"
@@ -26,7 +26,7 @@ export default function LearningPlanList() {
           </h3>
           <Link
             to="/app/create"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+            variant="secondary"
           >
             <Icon
               type="iconify"
@@ -37,7 +37,7 @@ export default function LearningPlanList() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-6 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(400px,1fr))] gap-6 w-full">
           {learningPlans.data?.items.map((learningPlan) => (
             <LearningPlanCard
               key={learningPlan.id}
