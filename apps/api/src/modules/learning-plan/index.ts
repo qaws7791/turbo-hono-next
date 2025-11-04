@@ -12,6 +12,8 @@ import changeStatus from "./routes/status";
 import createLearningTask from "./routes/learning-tasks/create-learning-task";
 import deleteLearningTask from "./routes/learning-tasks/delete-learning-task";
 import getLearningTask from "./routes/learning-tasks/get-learning-task";
+import getLearningTaskNote from "./routes/learning-tasks/get-learning-task-note";
+import getLearningTaskQuiz from "./routes/learning-tasks/get-learning-task-quiz";
 import moveLearningTask from "./routes/learning-tasks/move-learning-task";
 import submitLearningTaskQuiz from "./routes/learning-tasks/submit-learning-task-quiz";
 import updateLearningTask from "./routes/learning-tasks/update-learning-task";
@@ -33,6 +35,8 @@ learningPlanApp.route("/", updateLearningTask);
 learningPlanApp.route("/", deleteLearningTask);
 learningPlanApp.route("/", moveLearningTask);
 learningPlanApp.route("/", getLearningTask);
+learningPlanApp.route("/", getLearningTaskNote);
+learningPlanApp.route("/", getLearningTaskQuiz);
 learningPlanApp.route("/", submitLearningTaskQuiz);
 
 export default learningPlanApp;

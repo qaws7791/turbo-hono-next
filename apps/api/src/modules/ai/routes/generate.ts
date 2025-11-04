@@ -1,27 +1,23 @@
-import { google } from "@ai-sdk/google";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { generateLearningPlanRoute } from "@repo/api-spec/modules/ai/routes";
-import { generateObject } from "ai";
+import { generateLearningPlanRoute as generateLearningPlanRouteSpec } from "@repo/api-spec/modules/ai/routes";
 import status from "http-status";
 
+import { generateLearningPlan } from "../../../external/ai/features/learning-plan/generator";
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
 import { AIErrors } from "../errors";
-import { generateLearningPlanPrompt } from "../prompts/learning-plan-prompts";
-import { GeneratedLearningPlanSchema } from "../schema";
 import { saveLearningPlanToDatabase } from "../services/learning-plan-service";
 
-import type { ModelMessage } from "ai";
 import type { AuthContext } from "../../../middleware/auth";
 
-const generateLearningPlan = new OpenAPIHono<{
+const generateLearningPlanRoute = new OpenAPIHono<{
   Variables: {
     auth: AuthContext;
   };
 }>().openapi(
   {
-    ...generateLearningPlanRoute,
+    ...generateLearningPlanRouteSpec,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
@@ -64,55 +60,20 @@ const generateLearningPlan = new OpenAPIHono<{
         : null;
 
       // Generate structured learningPlan using AI
-      const prompt = generateLearningPlanPrompt({
-        learningTopic,
-        userLevel,
-        targetWeeks,
-        weeklyHours,
-        learningStyle,
-        preferredResources,
-        mainGoal,
-        additionalRequirements,
-        includePdfContents: pdfContents !== null,
-      });
-
-      const messages: Array<ModelMessage> = [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: prompt,
-            },
-          ],
+      const generatedLearningPlan = await generateLearningPlan({
+        promptData: {
+          learningTopic,
+          userLevel,
+          targetWeeks,
+          weeklyHours,
+          learningStyle,
+          preferredResources,
+          mainGoal,
+          additionalRequirements,
+          includePdfContents: pdfContents !== null,
         },
-      ];
-
-      if (pdfContents) {
-        messages.push({
-          role: "user",
-          content: [
-            {
-              type: "file",
-              data: Buffer.from(pdfContents),
-              mediaType: "application/pdf",
-            },
-          ],
-        });
-      }
-
-      const result = await generateObject({
-        model: google("gemini-2.5-flash-lite"),
-        schema: GeneratedLearningPlanSchema,
-        temperature: 0.7,
-        messages: messages,
+        pdfContents,
       });
-
-      if (!result.object) {
-        throw AIErrors.generationFailed();
-      }
-
-      const generatedLearningPlan = result.object;
 
       // Save the generated learningPlan to the database with transaction
       console.log(
@@ -251,4 +212,4 @@ const generateLearningPlan = new OpenAPIHono<{
   },
 );
 
-export default generateLearningPlan;
+export default generateLearningPlanRoute;

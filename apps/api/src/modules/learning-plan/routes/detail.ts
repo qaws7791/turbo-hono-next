@@ -3,7 +3,7 @@ import { learningPlanDetailRoute } from "@repo/api-spec/modules/learning-plan/ro
 import status from "http-status";
 
 import { authMiddleware } from "../../../middleware/auth";
-import { learningPlanService } from "../services/learning-plan.service";
+import { learningPlanQueryService } from "../services/learning-plan.query.service";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -20,7 +20,7 @@ const detail = new OpenAPIHono<{
     const auth = c.get("auth");
     const { learningPlanId } = c.req.valid("param");
 
-    const response = await learningPlanService.getLearningPlan({
+    const response = await learningPlanQueryService.getLearningPlan({
       publicId: learningPlanId,
       userId: auth.user.id,
     });

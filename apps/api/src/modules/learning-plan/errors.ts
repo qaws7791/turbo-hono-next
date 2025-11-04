@@ -119,4 +119,12 @@ export const LearningPlanErrors = {
       "Failed to move learning task",
       details,
     ),
+
+  moduleReorderFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_MODULE_REORDER_FAILED,
+      "Failed to reorder learning module",
+      details,
+    ),
 };

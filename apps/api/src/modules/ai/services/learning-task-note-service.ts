@@ -1,5 +1,3 @@
-import { google } from "@ai-sdk/google";
-import { generateObject } from "ai";
 import { and, asc, desc, eq } from "drizzle-orm";
 import {
   aiNote as aiNoteTable,
@@ -10,12 +8,11 @@ import {
 } from "@repo/database/schema";
 
 import { db } from "../../../database/client";
+import { generateLearningTaskNote } from "../../../external/ai/features/learning-task-note/generator";
 import { AIErrors } from "../errors";
-import { generateLearningTaskNotePrompt } from "../prompts/learning-task-note-prompts";
-import { LearningTaskNoteContentSchema } from "../schema";
 
-import type { LearningTaskNotePromptInput } from "../prompts/learning-task-note-prompts";
-import type { ModelMessage } from "ai";
+import type { DocumentFile } from "../../../external/ai/features/learning-task-note/generator";
+import type { LearningTaskNotePromptInput } from "../../../external/ai/features/learning-task-note/prompt";
 
 export const LEARNING_TASK_NOTE_STATUS = {
   idle: "idle",
@@ -35,16 +32,10 @@ export interface LearningTaskNoteRecord {
   errorMessage: string | null;
 }
 
-interface NoteDocumentFile {
-  fileName: string;
-  mediaType: string;
-  buffer: Buffer;
-}
-
 export interface LearningTaskNoteGenerationJob {
   learningTaskDbId: number;
   promptInput: LearningTaskNotePromptInput;
-  documentFiles: Array<NoteDocumentFile>;
+  documentFiles: Array<DocumentFile>;
 }
 
 interface PrepareLearningTaskNoteGenerationArgs {
@@ -149,6 +140,66 @@ async function loadNoteRecord(
     .limit(1);
 
   return mapRecord(row ?? null);
+}
+
+interface GetLearningTaskNoteArgs {
+  userId: string;
+  learningPlanPublicId: string;
+  learningTaskPublicId: string;
+}
+
+export async function getLearningTaskNote(
+  args: GetLearningTaskNoteArgs,
+): Promise<LearningTaskNoteRecord> {
+  const { userId, learningPlanPublicId, learningTaskPublicId } = args;
+
+  const [learningTaskRow] = await db
+    .select({
+      learningTaskDbId: learningTaskTable.id,
+      learningPlanUserId: learningPlanTable.userId,
+      noteStatus: aiNoteTable.status,
+      noteMarkdown: aiNoteTable.markdown,
+      noteRequestedAt: aiNoteTable.requestedAt,
+      noteCompletedAt: aiNoteTable.completedAt,
+      noteErrorMessage: aiNoteTable.errorMessage,
+    })
+    .from(learningTaskTable)
+    .innerJoin(
+      learningModuleTable,
+      eq(learningTaskTable.learningModuleId, learningModuleTable.id),
+    )
+    .innerJoin(
+      learningPlanTable,
+      eq(learningModuleTable.learningPlanId, learningPlanTable.id),
+    )
+    .leftJoin(aiNoteTable, eq(aiNoteTable.learningTaskId, learningTaskTable.id))
+    .where(
+      and(
+        eq(learningTaskTable.publicId, learningTaskPublicId),
+        eq(learningPlanTable.publicId, learningPlanPublicId),
+      ),
+    )
+    .limit(1);
+
+  if (!learningTaskRow) {
+    throw AIErrors.learningTaskNotFound();
+  }
+
+  if (learningTaskRow.learningPlanUserId !== userId) {
+    throw AIErrors.accessDenied();
+  }
+
+  return mapRecord(
+    learningTaskRow.noteStatus
+      ? {
+          status: learningTaskRow.noteStatus,
+          markdown: learningTaskRow.noteMarkdown,
+          requestedAt: learningTaskRow.noteRequestedAt,
+          completedAt: learningTaskRow.noteCompletedAt,
+          errorMessage: learningTaskRow.noteErrorMessage,
+        }
+      : null,
+  );
 }
 
 export async function prepareLearningTaskNoteGeneration(
@@ -395,7 +446,7 @@ export async function prepareLearningTaskNoteGeneration(
     .orderBy(desc(learningPlanDocumentTable.uploadedAt))
     .limit(2);
 
-  const documentFiles: Array<NoteDocumentFile> = [];
+  const documentFiles: Array<DocumentFile> = [];
   const referencedDocuments = documents.map((doc) => ({
     fileName: doc.fileName,
     originalFileType: doc.fileType,
@@ -483,46 +534,11 @@ export async function prepareLearningTaskNoteGeneration(
 export async function runLearningTaskNoteGeneration(
   job: LearningTaskNoteGenerationJob,
 ): Promise<void> {
-  const prompt = generateLearningTaskNotePrompt(job.promptInput);
-  const messages: Array<ModelMessage> = [
-    {
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: prompt,
-        },
-      ],
-    },
-  ];
-
-  for (const file of job.documentFiles) {
-    messages.push({
-      role: "user",
-      content: [
-        {
-          type: "file",
-          data: file.buffer,
-          mediaType: file.mediaType || "application/pdf",
-          filename: file.fileName,
-        },
-      ],
-    });
-  }
-
   try {
-    const result = await generateObject({
-      model: google("gemini-2.5-flash-lite"),
-      schema: LearningTaskNoteContentSchema,
-      temperature: 0.6,
-      messages,
+    const markdown = await generateLearningTaskNote({
+      promptInput: job.promptInput,
+      documentFiles: job.documentFiles,
     });
-
-    const markdown = result.object?.markdown?.trim();
-
-    if (!markdown) {
-      throw AIErrors.noteGenerationFailed();
-    }
 
     const completionTimestamp = new Date();
 

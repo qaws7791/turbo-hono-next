@@ -3,7 +3,7 @@ import { moveLearningTaskRoute } from "@repo/api-spec/modules/learning-plan/rout
 import status from "http-status";
 
 import { authMiddleware } from "../../../../middleware/auth";
-import { learningTaskService } from "../../services/learning-task.service";
+import { learningTaskCommandService } from "../../services/learning-task.command.service";
 
 import type { AuthContext } from "../../../../middleware/auth";
 
@@ -21,7 +21,7 @@ const moveLearningTask = new OpenAPIHono<{
     const { learningPlanId, learningTaskId } = c.req.valid("param");
     const { newLearningModuleId, newOrder } = c.req.valid("json");
 
-    const result = await learningTaskService.moveTask({
+    const result = await learningTaskCommandService.moveTask({
       userId: auth.user.id,
       learningPlanId,
       learningTaskId,

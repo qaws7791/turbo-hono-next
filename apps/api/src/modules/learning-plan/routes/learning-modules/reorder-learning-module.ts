@@ -3,7 +3,7 @@ import status from "http-status";
 import { reorderLearningModuleRoute } from "@repo/api-spec/modules/learning-plan/routes/learning-modules/reorder-learning-module";
 
 import { authMiddleware } from "../../../../middleware/auth";
-import { learningModuleService } from "../../services/learning-module.service";
+import { learningModuleCommandService } from "../../services/learning-module.command.service";
 
 import type { AuthContext } from "../../../../middleware/auth";
 
@@ -21,7 +21,7 @@ const reorderLearningModule = new OpenAPIHono<{
     const { learningPlanId, learningModuleId } = c.req.valid("param");
     const { newOrder } = c.req.valid("json");
 
-    const result = await learningModuleService.reorderModule({
+    const result = await learningModuleCommandService.reorderModule({
       userId: auth.user.id,
       learningPlanId,
       learningModuleId,

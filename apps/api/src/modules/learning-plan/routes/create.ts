@@ -3,7 +3,7 @@ import status from "http-status";
 import { createLearningPlanRoute } from "@repo/api-spec/modules/learning-plan/routes/create";
 
 import { authMiddleware } from "../../../middleware/auth";
-import { learningPlanService } from "../services/learning-plan.service";
+import { learningPlanCommandService } from "../services/learning-plan.command.service";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -24,11 +24,12 @@ const create = new OpenAPIHono<{
     const auth = c.get("auth");
     const body = c.req.valid("json");
 
-    // Delegate to service layer
-    const createdLearningPlan = await learningPlanService.createLearningPlan({
-      userId: auth.user.id,
-      ...body,
-    });
+    // Delegate to command service layer
+    const createdLearningPlan =
+      await learningPlanCommandService.createLearningPlan({
+        userId: auth.user.id,
+        ...body,
+      });
 
     return c.json(createdLearningPlan, status.CREATED);
   },

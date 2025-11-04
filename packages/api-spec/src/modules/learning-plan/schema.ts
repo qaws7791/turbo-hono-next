@@ -1,11 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
-import {
-  AINoteStatusSchema,
-  GenerateLearningTaskQuizResponseSchema,
-} from "../ai/schema";
-import { DocumentItemSchema } from "../documents/schema";
 import { ErrorResponseSchema } from "../../common/schema";
+import { DocumentItemSchema } from "../documents/schema";
 
 import { LearningPlanEmoji } from "./emoji";
 
@@ -115,23 +111,6 @@ export const LearningPlanItemSchema = z.object({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
   }),
-  aiNoteStatus: AINoteStatusSchema,
-  aiNoteMarkdown: z.string().nullable().openapi({
-    description: "AI가 생성한 학습 노트 (마크다운)",
-    example: "# 학습 개요\n- 목표 정리...",
-  }),
-  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성을 요청한 시각",
-    example: "2024-06-01T10:00:00.000Z",
-  }),
-  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성이 완료되거나 실패한 시각",
-    example: "2024-06-01T10:05:12.000Z",
-  }),
-  aiNoteError: z.string().nullable().openapi({
-    description: "AI 노트 생성 실패 시 오류 메시지",
-    example: "Gemini API 호출이 실패했습니다.",
-  }),
 });
 
 export const LearningPlanListResponseSchema = z.object({
@@ -222,10 +201,6 @@ export const LearningPlanListResponseSchema = z.object({
       nextCursor: z.string().nullable().openapi({
         description: "Cursor for the next page",
         example: "eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==",
-      }),
-      total: z.number().int().openapi({
-        description: "Total number of items (if available)",
-        example: 150,
       }),
     })
     .openapi({
@@ -530,23 +505,6 @@ export const LearningModuleItemSchema = z.object({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
   }),
-  aiNoteStatus: AINoteStatusSchema,
-  aiNoteMarkdown: z.string().nullable().openapi({
-    description: "AI가 생성한 학습 노트 (마크다운)",
-    example: "# 학습 개요\n- 목표 정리...",
-  }),
-  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성을 요청한 시각",
-    example: "2024-06-01T10:00:00.000Z",
-  }),
-  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성이 완료되거나 실패한 시각",
-    example: "2024-06-01T10:05:12.000Z",
-  }),
-  aiNoteError: z.string().nullable().openapi({
-    description: "AI 노트 생성 실패 시 오류 메시지",
-    example: "Gemini API 호출이 실패했습니다.",
-  }),
 });
 
 // Learning Module creation schemas
@@ -684,23 +642,6 @@ export const LearningTaskItemSchema = z.object({
     description: "Last update timestamp",
     example: "2024-01-15T10:30:00.000Z",
   }),
-  aiNoteStatus: AINoteStatusSchema,
-  aiNoteMarkdown: z.string().nullable().openapi({
-    description: "AI가 생성한 학습 노트 (마크다운)",
-    example: "# 학습 개요\n- 목표 정리...",
-  }),
-  aiNoteRequestedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성을 요청한 시각",
-    example: "2024-06-01T10:00:00.000Z",
-  }),
-  aiNoteCompletedAt: z.string().datetime().nullable().openapi({
-    description: "AI 노트 생성이 완료되거나 실패한 시각",
-    example: "2024-06-01T10:05:12.000Z",
-  }),
-  aiNoteError: z.string().nullable().openapi({
-    description: "AI 노트 생성 실패 시 오류 메시지",
-    example: "Gemini API 호출이 실패했습니다.",
-  }),
 });
 
 // LearningTask creation schemas
@@ -792,9 +733,6 @@ export const LearningTaskDetailResponseSchema = LearningTaskItemSchema.extend({
     .openapi({
       description: "Parent learningPlan metadata",
     }),
-  aiQuiz: GenerateLearningTaskQuizResponseSchema.nullable().openapi({
-    description: "가장 최근의 AI 학습 퀴즈 정보",
-  }),
 });
 
 // LearningTask move schema

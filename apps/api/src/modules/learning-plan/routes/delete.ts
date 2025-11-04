@@ -3,7 +3,7 @@ import status from "http-status";
 import { deleteLearningPlanRoute } from "@repo/api-spec/modules/learning-plan/routes/delete";
 
 import { authMiddleware } from "../../../middleware/auth";
-import { learningPlanService } from "../services/learning-plan.service";
+import { learningPlanCommandService } from "../services/learning-plan.command.service";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -20,7 +20,7 @@ const deleteLearningPlan = new OpenAPIHono<{
     const auth = c.get("auth");
     const { learningPlanId } = c.req.valid("param");
 
-    const result = await learningPlanService.deleteLearningPlan({
+    const result = await learningPlanCommandService.deleteLearningPlan({
       publicId: learningPlanId,
       userId: auth.user.id,
     });

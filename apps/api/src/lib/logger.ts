@@ -38,7 +38,7 @@ const getTransport = (): pino.TransportSingleOptions | undefined => {
       translateTime: "HH:MM:ss Z",
       ignore: "pid,hostname",
       singleLine: false,
-      messageFormat: "{levelLabel} - {msg}",
+      messageFormat: "{msg}",
       errorLikeObjectKeys: ["err", "error"],
     },
   };
@@ -97,21 +97,33 @@ export const log = {
    * Log debug information (verbose, only in development)
    */
   debug: (msg: string, data?: Record<string, unknown>) => {
-    logger.debug(data, msg);
+    if (data) {
+      logger.debug(data, msg);
+    } else {
+      logger.debug(msg);
+    }
   },
 
   /**
    * Log informational messages
    */
   info: (msg: string, data?: Record<string, unknown>) => {
-    logger.info(data, msg);
+    if (data) {
+      logger.info(data, msg);
+    } else {
+      logger.info(msg);
+    }
   },
 
   /**
    * Log warning messages
    */
   warn: (msg: string, data?: Record<string, unknown>) => {
-    logger.warn(data, msg);
+    if (data) {
+      logger.warn(data, msg);
+    } else {
+      logger.warn(msg);
+    }
   },
 
   /**
@@ -148,28 +160,44 @@ export const log = {
    * Log HTTP request
    */
   http: (msg: string, data?: Record<string, unknown>) => {
-    logger.info(data, `[HTTP] ${msg}`);
+    if (data) {
+      logger.info(data, `[HTTP] ${msg}`);
+    } else {
+      logger.info(`[HTTP] ${msg}`);
+    }
   },
 
   /**
    * Log database operation
    */
   db: (msg: string, data?: Record<string, unknown>) => {
-    logger.debug(data, `[DB] ${msg}`);
+    if (data) {
+      logger.debug(data, `[DB] ${msg}`);
+    } else {
+      logger.debug(`[DB] ${msg}`);
+    }
   },
 
   /**
    * Log AI operation
    */
   ai: (msg: string, data?: Record<string, unknown>) => {
-    logger.info(data, `[AI] ${msg}`);
+    if (data) {
+      logger.info(data, `[AI] ${msg}`);
+    } else {
+      logger.info(`[AI] ${msg}`);
+    }
   },
 
   /**
    * Log authentication operation
    */
   auth: (msg: string, data?: Record<string, unknown>) => {
-    logger.info(data, `[AUTH] ${msg}`);
+    if (data) {
+      logger.info(data, `[AUTH] ${msg}`);
+    } else {
+      logger.info(`[AUTH] ${msg}`);
+    }
   },
 };
 

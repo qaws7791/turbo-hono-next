@@ -3,7 +3,7 @@ import status from "http-status";
 import { learningPlanListRoute } from "@repo/api-spec/modules/learning-plan/routes/list";
 
 import { authMiddleware } from "../../../middleware/auth";
-import { learningPlanService } from "../services/learning-plan.service";
+import { learningPlanQueryService } from "../services/learning-plan.query.service";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -20,7 +20,7 @@ const list = new OpenAPIHono<{
     const auth = c.get("auth");
     const query = c.req.valid("query");
 
-    const response = await learningPlanService.listLearningPlans({
+    const response = await learningPlanQueryService.listLearningPlans({
       userId: auth.user.id,
       cursor: query.cursor,
       limit: query.limit,

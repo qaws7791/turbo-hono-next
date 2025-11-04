@@ -1,5 +1,4 @@
-import { google } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { LearningTaskQuizSchema } from "@repo/api-spec/modules/ai/schema";
 import { and, asc, desc, eq } from "drizzle-orm";
 import {
   aiNote as aiNoteTable,
@@ -14,9 +13,8 @@ import {
 import { db } from "../../../database/client";
 import { BaseError } from "../../../errors/base.error";
 import { ErrorCodes } from "../../../errors/error-codes";
+import { generateLearningTaskQuiz } from "../../../external/ai/features/learning-task-quiz/generator";
 import { AIErrors } from "../errors";
-import { generateLearningTaskQuizPrompt } from "../prompts/learning-task-quiz-prompts";
-import { LearningTaskQuizSchema } from "../schema";
 
 import type {
   GenerateLearningTaskQuizResponseSchema,
@@ -29,7 +27,7 @@ import type {
   FocusLearningTaskInput,
   LearningPlanLearningModuleSummary,
   LearningPlanSummaryInput,
-} from "../prompts/learning-task-note-prompts";
+} from "../../../external/ai/features/learning-task-note/prompt";
 
 const MIN_QUIZ_QUESTIONS = 4;
 const MAX_QUIZ_QUESTIONS = 20;
@@ -551,6 +549,75 @@ export async function loadLatestQuizForLearningTask(
   };
 }
 
+interface GetLearningTaskQuizArgs {
+  userId: string;
+  learningPlanPublicId: string;
+  learningTaskPublicId: string;
+}
+
+export async function getLatestLearningTaskQuiz(
+  args: GetLearningTaskQuizArgs,
+): Promise<{
+  record: LearningTaskQuizRecord;
+  latestResult: LearningTaskQuizResultRecord | null;
+}> {
+  const { userId, learningPlanPublicId, learningTaskPublicId } = args;
+
+  const [learningTaskRow] = await db
+    .select({
+      learningTaskDbId: learningTaskTable.id,
+      learningPlanUserId: learningPlanTable.userId,
+    })
+    .from(learningTaskTable)
+    .innerJoin(
+      learningModuleTable,
+      eq(learningTaskTable.learningModuleId, learningModuleTable.id),
+    )
+    .innerJoin(
+      learningPlanTable,
+      eq(learningModuleTable.learningPlanId, learningPlanTable.id),
+    )
+    .where(
+      and(
+        eq(learningTaskTable.publicId, learningTaskPublicId),
+        eq(learningPlanTable.publicId, learningPlanPublicId),
+      ),
+    )
+    .limit(1);
+
+  if (!learningTaskRow) {
+    throw AIErrors.learningTaskNotFound();
+  }
+
+  if (learningTaskRow.learningPlanUserId !== userId) {
+    throw AIErrors.accessDenied();
+  }
+
+  const result = await loadLatestQuizForLearningTask({
+    learningTaskDbId: learningTaskRow.learningTaskDbId,
+    userId,
+  });
+
+  if (!result) {
+    return {
+      record: {
+        id: 0,
+        learningTaskId: learningTaskRow.learningTaskDbId,
+        status: LEARNING_TASK_QUIZ_STATUS.idle,
+        targetQuestionCount: MIN_QUIZ_QUESTIONS,
+        totalQuestions: null,
+        requestedAt: null,
+        completedAt: null,
+        errorMessage: null,
+        questions: null,
+      },
+      latestResult: null,
+    };
+  }
+
+  return result;
+}
+
 export async function prepareLearningTaskQuizGeneration(
   args: PrepareLearningTaskQuizGenerationArgs,
 ): Promise<PrepareLearningTaskQuizGenerationResult> {
@@ -763,39 +830,25 @@ export async function prepareLearningTaskQuizGeneration(
 export async function runLearningTaskQuizGeneration(
   job: LearningTaskQuizGenerationJob,
 ): Promise<void> {
-  const prompt = generateLearningTaskQuizPrompt({
-    learningPlan: job.promptInput.learningPlan,
-    focusLearningModule: job.promptInput.focusLearningModule,
-    focusLearningTask: job.promptInput.focusLearningTask,
-    learningPlanLearningModules: job.promptInput.learningPlanLearningModules,
-    referencedDocuments: job.promptInput.referencedDocuments,
-    noteMarkdown: job.promptInput.noteMarkdown,
-    targetQuestionCount: job.targetQuestionCount,
-    minQuestions: MIN_QUIZ_QUESTIONS,
-    maxQuestions: MAX_QUIZ_QUESTIONS,
-    contentWordCount: job.promptInput.contentWordCount,
-    contextHighlights: job.promptInput.contextHighlights,
-  });
-
   try {
-    const result = await generateObject({
-      model: google("gemini-2.5-flash-lite"),
-      schema: LearningTaskQuizSchema,
-      temperature: 0.4,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: prompt,
-            },
-          ],
-        },
-      ],
+    const rawQuestions = await generateLearningTaskQuiz({
+      promptInput: {
+        learningPlan: job.promptInput.learningPlan,
+        focusLearningModule: job.promptInput.focusLearningModule,
+        focusLearningTask: job.promptInput.focusLearningTask,
+        learningPlanLearningModules:
+          job.promptInput.learningPlanLearningModules,
+        referencedDocuments: job.promptInput.referencedDocuments,
+        noteMarkdown: job.promptInput.noteMarkdown,
+        targetQuestionCount: job.targetQuestionCount,
+        minQuestions: MIN_QUIZ_QUESTIONS,
+        maxQuestions: MAX_QUIZ_QUESTIONS,
+        contentWordCount: job.promptInput.contentWordCount,
+        contextHighlights: job.promptInput.contextHighlights,
+      },
     });
 
-    const questions = normalizeQuestions(result.object?.questions ?? null);
+    const questions = normalizeQuestions(rawQuestions);
 
     if (!questions || questions.length < MIN_QUIZ_QUESTIONS) {
       throw AIErrors.quizGenerationFailed({

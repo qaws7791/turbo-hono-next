@@ -4,7 +4,7 @@ import type {
   FocusLearningTaskInput,
   LearningPlanLearningModuleSummary,
   LearningPlanSummaryInput,
-} from "./learning-task-note-prompts";
+} from "../learning-task-note/prompt";
 
 export interface LearningTaskQuizPromptInput {
   learningPlan: LearningPlanSummaryInput;

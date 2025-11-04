@@ -3,7 +3,7 @@ import { deleteLearningTaskRoute } from "@repo/api-spec/modules/learning-plan/ro
 import status from "http-status";
 
 import { authMiddleware } from "../../../../middleware/auth";
-import { learningTaskService } from "../../services/learning-task.service";
+import { learningTaskCommandService } from "../../services/learning-task.command.service";
 
 import type { AuthContext } from "../../../../middleware/auth";
 
@@ -20,7 +20,7 @@ const deleteLearningTask = new OpenAPIHono<{
     const auth = c.get("auth");
     const { learningPlanId, learningTaskId } = c.req.valid("param");
 
-    const result = await learningTaskService.deleteTask({
+    const result = await learningTaskCommandService.deleteTask({
       userId: auth.user.id,
       learningPlanId,
       learningTaskId,
