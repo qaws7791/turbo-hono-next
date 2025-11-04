@@ -7,22 +7,29 @@ import {
 } from "./schema";
 
 export const documentDetailRoute = createRoute({
-  tags: ["Documents"],
+  tags: ["documents"],
   method: "get",
   path: "/documents/{publicId}",
-  summary: "Get document details",
-  description: "Retrieve detailed information about a specific document",
+  summary: "문서 상세 정보를 조회합니다",
+  description: `문서 공개 ID를 통해 저장된 DocumentItem을 확인합니다.
+
+- **인증 필요**: cookieAuth 세션이 없으면 401을 반환합니다. 자료 외부 유출을
+  막기 위한 기본 조건입니다.
+- **접근 제어**: 문서 소유자가 아니면 403을 반환합니다. 이는 개인화된
+  학습 기록을 보호하기 위함입니다.
+- **처리 상태**: 텍스트 추출이 진행 중인 경우 일부 필드가 비어 있을 수
+  있습니다.`,
   request: {
     params: z.object({
       publicId: z.string().openapi({
-        description: "Document public ID",
+        description: "문서 공개 ID",
         example: "550e8400-e29b-41d4-a716-446655440000",
       }),
     }),
   },
   responses: {
     200: {
-      description: "Document retrieved successfully",
+      description: "문서를 불러왔습니다.",
       content: {
         "application/json": {
           schema: z.object({
@@ -33,7 +40,7 @@ export const documentDetailRoute = createRoute({
       },
     },
     401: {
-      description: "Authentication required",
+      description: "인증이 필요합니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -41,7 +48,7 @@ export const documentDetailRoute = createRoute({
       },
     },
     403: {
-      description: "Access denied",
+      description: "접근 권한이 없습니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -49,7 +56,7 @@ export const documentDetailRoute = createRoute({
       },
     },
     404: {
-      description: "Document not found",
+      description: "문서를 찾을 수 없습니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -57,7 +64,7 @@ export const documentDetailRoute = createRoute({
       },
     },
     500: {
-      description: "Internal server error",
+      description: "서버 내부 오류가 발생했습니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -73,12 +80,18 @@ export const documentDetailRoute = createRoute({
 });
 
 export const documentUploadRoute = createRoute({
-  tags: ["Documents"],
+  tags: ["documents"],
   method: "post",
   path: "/documents/upload",
-  summary: "Upload a PDF document",
-  description:
-    "Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.",
+  summary: "PDF 학습 자료를 업로드합니다",
+  description: `PDF 파일을 업로드하고 비동기 텍스트 추출을 시작합니다.
+
+- **파일 제한**: 10MB 이하의 PDF만 허용합니다. R2 스토리지 사용량과
+  처리 시간을 제어하기 위한 정책입니다.
+- **비동기 처리**: 응답은 업로드 결과만 반환하고 텍스트 추출은 백그라운드에서
+  수행됩니다.
+- **보안 주의**: 민감 정보가 포함된 파일은 암호화 저장되며, 업로드 후에도
+  접근 권한 검사가 적용됩니다.`,
   request: {
     body: {
       content: {
@@ -89,7 +102,7 @@ export const documentUploadRoute = createRoute({
               file: {
                 type: "string",
                 format: "binary",
-                description: "PDF file to upload (max 10MB)",
+                description: "업로드할 PDF 파일(최대 10MB)",
               },
             },
             required: ["file"],
@@ -100,7 +113,7 @@ export const documentUploadRoute = createRoute({
   },
   responses: {
     201: {
-      description: "Document uploaded successfully",
+      description: "문서를 업로드했습니다.",
       content: {
         "application/json": {
           schema: DocumentUploadResponseSchema,
@@ -108,7 +121,7 @@ export const documentUploadRoute = createRoute({
       },
     },
     400: {
-      description: "Bad request - invalid file",
+      description: "파일 형식이 유효하지 않습니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -116,7 +129,7 @@ export const documentUploadRoute = createRoute({
       },
     },
     401: {
-      description: "Authentication required",
+      description: "인증이 필요합니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,
@@ -124,7 +137,7 @@ export const documentUploadRoute = createRoute({
       },
     },
     500: {
-      description: "Internal server error",
+      description: "서버 내부 오류가 발생했습니다.",
       content: {
         "application/json": {
           schema: DocumentErrorResponseSchema,

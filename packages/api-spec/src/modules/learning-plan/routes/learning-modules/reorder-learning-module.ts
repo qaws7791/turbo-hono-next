@@ -8,10 +8,18 @@ import {
 } from "../../../learning-plan/schema";
 
 export const reorderLearningModuleRoute = createRoute({
-  tags: ["LearningPlan LearningModules"],
+  tags: ["learning-modules"],
   method: "patch",
   path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/order",
-  summary: "Reorder a learning module position",
+  summary: "LearningModule 순서를 재배치합니다",
+  description: `지정한 LearningModule의 표시 순서를 변경합니다.
+
+- **입력 검증**: LearningModuleReorderRequestSchema 범위를 벗어나면 400을
+  반환합니다. 모듈 간 순서 일관성을 지키기 위한 정책입니다.
+- **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 무단 정렬
+  변경을 막기 위한 조치입니다.
+- **원자성**: 순서 변경은 트랜잭션으로 처리되어 중간 상태가 노출되지
+  않습니다.`,
   request: {
     params: LearningPlanLearningModuleParamsSchema,
     body: {
@@ -24,7 +32,7 @@ export const reorderLearningModuleRoute = createRoute({
   },
   responses: {
     200: {
-      description: "Learning Module reordered successfully",
+      description: "LearningModule 순서를 재배치했습니다.",
       content: {
         "application/json": {
           schema: LearningModuleReorderResponseSchema,
@@ -32,7 +40,7 @@ export const reorderLearningModuleRoute = createRoute({
       },
     },
     400: {
-      description: "Bad request - invalid order position",
+      description: "요청한 순서 값이 유효하지 않습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -40,7 +48,7 @@ export const reorderLearningModuleRoute = createRoute({
       },
     },
     401: {
-      description: "Authentication required",
+      description: "인증이 필요합니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -48,7 +56,7 @@ export const reorderLearningModuleRoute = createRoute({
       },
     },
     403: {
-      description: "Access denied - not learningPlan owner",
+      description: "LearningPlan 소유자가 아니므로 접근할 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -56,7 +64,7 @@ export const reorderLearningModuleRoute = createRoute({
       },
     },
     404: {
-      description: "Learning Module or learningPlan not found",
+      description: "LearningModule 또는 LearningPlan을 찾을 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -64,7 +72,7 @@ export const reorderLearningModuleRoute = createRoute({
       },
     },
     500: {
-      description: "Internal server error",
+      description: "서버 내부 오류가 발생했습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,

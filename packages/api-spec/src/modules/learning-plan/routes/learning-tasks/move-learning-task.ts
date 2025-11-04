@@ -8,11 +8,19 @@ import {
 } from "../../../learning-plan/schema";
 
 export const moveLearningTaskRoute = createRoute({
-  tags: ["LearningPlan Sub-LearningModules"],
+  tags: ["learning-tasks"],
   method: "patch",
   path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move",
-  summary:
-    "Move a learning-task to another learning module or reorder within the same learningModule",
+  summary: "LearningTask를 다른 LearningModule로 이동하거나 순서를 조정합니다",
+  description: `LearningTask를 다른 LearningModule로 옮기거나 동일 모듈 내
+  순서를 변경합니다.
+
+- **입력 검증**: LearningTaskMoveRequestSchema 범위를 벗어나면 400을
+  반환합니다. 이는 잘못된 이동으로 인한 순서 꼬임을 막기 위한 정책입니다.
+- **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 계획
+  무단 수정을 방지합니다.
+- **원자성**: 이동과 순서 조정이 단일 트랜잭션으로 처리되어 중간 상태가
+  노출되지 않습니다.`,
   request: {
     params: LearningPlanLearningModuleLearningTaskParamsSchema,
     body: {
@@ -25,7 +33,7 @@ export const moveLearningTaskRoute = createRoute({
   },
   responses: {
     200: {
-      description: "Learning-task moved successfully",
+      description: "LearningTask를 이동했습니다.",
       content: {
         "application/json": {
           schema: LearningTaskMoveResponseSchema,
@@ -33,7 +41,7 @@ export const moveLearningTaskRoute = createRoute({
       },
     },
     400: {
-      description: "Bad request - validation failed",
+      description: "요청 본문이 검증을 통과하지 못했습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -41,7 +49,7 @@ export const moveLearningTaskRoute = createRoute({
       },
     },
     401: {
-      description: "Authentication required",
+      description: "인증이 필요합니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -49,7 +57,7 @@ export const moveLearningTaskRoute = createRoute({
       },
     },
     403: {
-      description: "Access denied - not learningPlan owner",
+      description: "LearningPlan 소유자가 아니므로 접근할 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -57,7 +65,8 @@ export const moveLearningTaskRoute = createRoute({
       },
     },
     404: {
-      description: "LearningPlan, learningModule, or learning-task not found",
+      description:
+        "LearningPlan, LearningModule 또는 LearningTask를 찾을 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -65,7 +74,7 @@ export const moveLearningTaskRoute = createRoute({
       },
     },
     500: {
-      description: "Internal server error",
+      description: "서버 내부 오류가 발생했습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,

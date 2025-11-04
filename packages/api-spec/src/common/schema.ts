@@ -7,12 +7,12 @@ import { z } from "@hono/zod-openapi";
 export const ErrorResponseSchema = z.object({
   error: z.object({
     code: z.string().openapi({
-      description: "Error code",
+      description: "에러 코드",
       example: "VALIDATION_ERROR",
     }),
     message: z.string().openapi({
-      description: "Error message",
-      example: "Invalid request data",
+      description: "에러 메시지",
+      example: "요청 데이터가 유효하지 않습니다.",
     }),
   }),
 });

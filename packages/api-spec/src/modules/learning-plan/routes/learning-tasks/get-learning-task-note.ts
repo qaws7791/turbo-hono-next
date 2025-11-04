@@ -7,18 +7,24 @@ import {
 } from "../../../ai/schema";
 
 export const getLearningTaskNoteRoute = createRoute({
-  tags: ["LearningPlan Sub-LearningModules"],
+  tags: ["learning-tasks"],
   method: "get",
   path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
-  summary: "Get AI-generated note for a learning-task",
-  description:
-    "학습 태스크에 대해 생성된 AI 노트를 조회합니다. 생성된 노트가 없는 경우 idle 상태를 반환합니다.",
+  summary: "AI가 생성한 LearningTask 노트를 조회합니다",
+  description: `해당 LearningTask에 대해 생성된 AI 노트와 상태를 반환합니다.
+
+- **존재 여부**: 노트가 없으면 status가 idle로 반환됩니다. AI 생성 전 상태를
+  구분하기 위한 정책입니다.
+- **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 노트
+  유출을 막기 위한 조치입니다.
+- **동기화**: generateLearningTaskNoteRoute 호출 직후에는 status가 pending일 수
+  있으므로 폴링 간격을 조정해야 합니다.`,
   request: {
     params: GenerateLearningTaskNoteParamsSchema,
   },
   responses: {
     200: {
-      description: "AI note retrieved successfully",
+      description: "AI 노트를 불러왔습니다.",
       content: {
         "application/json": {
           schema: GenerateLearningTaskNoteResponseSchema,
@@ -26,7 +32,7 @@ export const getLearningTaskNoteRoute = createRoute({
       },
     },
     401: {
-      description: "Authentication required",
+      description: "인증이 필요합니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -34,7 +40,7 @@ export const getLearningTaskNoteRoute = createRoute({
       },
     },
     403: {
-      description: "Access denied - not learningPlan owner",
+      description: "LearningPlan 소유자가 아니므로 접근할 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -42,7 +48,7 @@ export const getLearningTaskNoteRoute = createRoute({
       },
     },
     404: {
-      description: "LearningPlan or learning-task not found",
+      description: "LearningPlan 또는 LearningTask를 찾을 수 없습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -50,7 +56,7 @@ export const getLearningTaskNoteRoute = createRoute({
       },
     },
     500: {
-      description: "Internal server error",
+      description: "서버 내부 오류가 발생했습니다.",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
