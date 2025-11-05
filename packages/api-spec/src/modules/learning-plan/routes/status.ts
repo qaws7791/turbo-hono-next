@@ -8,9 +8,9 @@ import {
 } from "../../learning-plan/schema";
 
 export const learningPlanStatusRoute = createRoute({
-  tags: ["learning-plans"],
+  tags: ["plans"],
   method: "patch",
-  path: "/learning-plans/{id}/status",
+  path: "/plans/{id}/status",
   summary: "LearningPlan 상태를 변경합니다",
   description: `LearningPlan의 상태를 active 또는 archived 등으로 전환합니다.
 

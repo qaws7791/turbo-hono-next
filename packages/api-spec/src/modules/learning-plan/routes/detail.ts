@@ -7,9 +7,9 @@ import {
 } from "../../learning-plan/schema";
 
 export const learningPlanDetailRoute = createRoute({
-  tags: ["learning-plans"],
+  tags: ["plans"],
   method: "get",
-  path: "/learning-plans/{id}",
+  path: "/plans/{id}",
   summary: "LearningPlan과 하위 구조를 조회합니다",
   description: `LearningPlan과 연결된 LearningModule, LearningTask 세부 정보를
   함께 반환합니다.

@@ -8,9 +8,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const reorderLearningModuleRoute = createRoute({
-  tags: ["learning-modules"],
+  tags: ["modules"],
   method: "patch",
-  path: "/learning-modules/{id}/order",
+  path: "/modules/{id}/order",
   summary: "LearningModule 순서를 재배치합니다",
   description: `지정한 LearningModule의 표시 순서를 변경합니다.
 

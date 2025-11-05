@@ -8,9 +8,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const moveLearningTaskRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "patch",
-  path: "/learning-tasks/{id}/move",
+  path: "/tasks/{id}/move",
   summary: "LearningTask를 다른 LearningModule로 이동하거나 순서를 조정합니다",
   description: `LearningTask를 다른 LearningModule로 옮기거나 동일 모듈 내
   순서를 변경합니다.

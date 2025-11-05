@@ -10,9 +10,9 @@ import {
 } from "../../../ai/schema";
 
 export const submitLearningTaskQuizRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["quizzes"],
   method: "post",
-  path: "/learning-task-quizzes/{id}/submit",
+  path: "/quizzes/{id}/submit",
   summary: "LearningTask 퀴즈 답안을 제출합니다",
   description: `AI가 생성한 퀴즈에 대한 학습자의 답안을 제출하고 채점 결과를
   반환합니다.

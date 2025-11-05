@@ -8,9 +8,9 @@ import {
 } from "../../learning-plan/schema";
 
 export const updateLearningPlanRoute = createRoute({
-  tags: ["learning-plans"],
+  tags: ["plans"],
   method: "patch",
-  path: "/learning-plans/{id}",
+  path: "/plans/{id}",
   summary: "LearningPlan 메타데이터를 수정합니다",
   description: `LearningPlan의 제목, 설명 등 주요 속성을 갱신합니다.
 

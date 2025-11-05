@@ -7,9 +7,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const getLearningTaskRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "get",
-  path: "/learning-tasks/{id}",
+  path: "/tasks/{id}",
   summary: "LearningTask 상세 정보를 조회합니다",
   description: `LearningTask의 목표, 예상 소요 시간 등 세부 정보를 반환합니다.
 

@@ -8,9 +8,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const updateLearningModuleRoute = createRoute({
-  tags: ["learning-modules"],
+  tags: ["modules"],
   method: "put",
-  path: "/learning-modules/{id}",
+  path: "/modules/{id}",
   summary: "LearningModule 정보를 수정합니다",
   description: `LearningModule의 제목과 설명 등 핵심 속성을 갱신합니다.
 

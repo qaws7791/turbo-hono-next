@@ -7,9 +7,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const createLearningTaskRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "post",
-  path: "/learning-tasks",
+  path: "/tasks",
   summary: "LearningModule에 LearningTask를 추가합니다",
   description: `학습 모듈에 새 LearningTask를 생성해 실행 가능한 단위를
   정의합니다.

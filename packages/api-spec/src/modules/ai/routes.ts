@@ -13,7 +13,7 @@ import {
 export const generateLearningPlanRoute = createRoute({
   tags: ["ai"],
   method: "post",
-  path: "/ai/learning-plans/generate",
+  path: "/ai/plans/generate",
   summary: "AI로 맞춤 LearningPlan을 생성합니다",
   description: `사용자 목표와 선호도를 기반으로 AI가 LearningPlan을 제안합니다.
 
@@ -82,9 +82,9 @@ export const generateLearningPlanRoute = createRoute({
 });
 
 export const generateLearningTaskNoteRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "post",
-  path: "/learning-tasks/{id}/ai-notes",
+  path: "/tasks/{id}/notes",
   summary: "AI로 LearningTask 노트를 생성하거나 새로고침합니다",
   description: `LearningTask에 연결된 AI 노트를 생성하고 현재 상태를 반환합니다.
 
@@ -168,9 +168,9 @@ export const generateLearningTaskNoteRoute = createRoute({
 });
 
 export const generateLearningTaskQuizRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "post",
-  path: "/learning-tasks/{id}/ai-quizzes",
+  path: "/tasks/{id}/quizzes",
   summary: "AI로 LearningTask 퀴즈를 생성하거나 새로고침합니다",
   description: `LearningTask 내용에 맞춘 AI 퀴즈를 생성하고 상태를 반환합니다.
 

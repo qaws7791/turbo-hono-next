@@ -7,9 +7,9 @@ import {
 } from "../../learning-plan/schema";
 
 export const createLearningPlanRoute = createRoute({
-  tags: ["learning-plans"],
+  tags: ["plans"],
   method: "post",
-  path: "/learning-plans",
+  path: "/plans",
   summary: "새 LearningPlan을 생성합니다",
   description: `새 학습 계획을 만들 때 사용하는 엔드포인트입니다. 온보딩에서
 사용자가 목표와 선호도를 제출한 직후 호출하면 자연스러운 흐름을 만들 수

@@ -7,9 +7,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const deleteLearningTaskRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "delete",
-  path: "/learning-tasks/{id}",
+  path: "/tasks/{id}",
   summary: "LearningTask를 삭제합니다",
   description: `LearningModule에서 지정된 LearningTask와 관련 AI 산출물을
   제거합니다.

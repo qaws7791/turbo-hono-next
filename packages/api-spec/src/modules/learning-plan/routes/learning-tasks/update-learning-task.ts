@@ -8,9 +8,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const updateLearningTaskRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "put",
-  path: "/learning-tasks/{id}",
+  path: "/tasks/{id}",
   summary: "LearningTask 속성을 수정합니다",
   description: `LearningTask의 제목, 일정, 난이도 등을 갱신합니다.
 

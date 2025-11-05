@@ -7,9 +7,9 @@ import {
 } from "../../learning-plan/schema";
 
 export const learningPlanListRoute = createRoute({
-  tags: ["learning-plans"],
+  tags: ["plans"],
   method: "get",
-  path: "/learning-plans",
+  path: "/plans",
   summary: "LearningPlan 목록을 조회합니다",
   description: `사용자의 LearningPlan을 필터와 페이지네이션으로 조회합니다.
 

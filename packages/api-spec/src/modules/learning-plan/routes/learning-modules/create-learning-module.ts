@@ -8,9 +8,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const createLearningModuleRoute = createRoute({
-  tags: ["learning-modules"],
+  tags: ["modules"],
   method: "post",
-  path: "/learning-plans/{learningPlanId}/learning-modules",
+  path: "/plans/{id}/modules",
   summary: "LearningPlan에 LearningModule을 추가합니다",
   description: `학습 계획에 새로운 LearningModule을 생성해 학습 단위를
   구성합니다.

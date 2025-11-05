@@ -7,9 +7,9 @@ import {
 } from "../../../learning-plan/schema";
 
 export const deleteLearningModuleRoute = createRoute({
-  tags: ["learning-modules"],
+  tags: ["modules"],
   method: "delete",
-  path: "/learning-modules/{id}",
+  path: "/modules/{id}",
   summary: "LearningModule을 삭제합니다",
   description: `LearningPlan에서 지정된 LearningModule과 하위 LearningTask를
   제거합니다.

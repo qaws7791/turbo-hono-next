@@ -7,9 +7,9 @@ import {
 import { LearningTaskParamsSchema } from "../../../learning-plan/schema";
 
 export const getLearningTaskNoteRoute = createRoute({
-  tags: ["learning-tasks"],
+  tags: ["tasks"],
   method: "get",
-  path: "/learning-tasks/{id}/notes",
+  path: "/tasks/{id}/notes",
   summary: "AI가 생성한 LearningTask 노트를 조회합니다",
   description: `해당 LearningTask에 대해 생성된 AI 노트와 상태를 반환합니다.
 
