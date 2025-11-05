@@ -2,15 +2,15 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
+  LearningModuleParamsSchema,
   LearningModuleUpdateRequestSchema,
   LearningModuleUpdateResponseSchema,
-  LearningPlanLearningModuleParamsSchema,
 } from "../../../learning-plan/schema";
 
 export const updateLearningModuleRoute = createRoute({
   tags: ["learning-modules"],
   method: "put",
-  path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
+  path: "/learning-modules/{id}",
   summary: "LearningModule 정보를 수정합니다",
   description: `LearningModule의 제목과 설명 등 핵심 속성을 갱신합니다.
 
@@ -21,7 +21,7 @@ export const updateLearningModuleRoute = createRoute({
 - **동기화**: 변경 내용이 학습 일정과 연동되므로 클라이언트는 목록을
   재조회해 최신 상태를 반영해야 합니다.`,
   request: {
-    params: LearningPlanLearningModuleParamsSchema,
+    params: LearningModuleParamsSchema,
     body: {
       content: {
         "application/json": {

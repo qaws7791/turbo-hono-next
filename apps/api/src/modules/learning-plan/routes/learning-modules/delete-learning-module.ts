@@ -18,12 +18,11 @@ const deleteLearningModule = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningModuleId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
     const result = await learningModuleCommandService.deleteModule({
       userId: auth.user.id,
-      learningPlanId,
-      learningModuleId,
+      learningModuleId: id,
     });
 
     return c.json(result, status.OK);

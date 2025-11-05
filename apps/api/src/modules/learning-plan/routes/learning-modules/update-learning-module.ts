@@ -18,13 +18,12 @@ const updateLearningModule = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningModuleId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
     const module = await learningModuleCommandService.updateModule({
       userId: auth.user.id,
-      learningPlanId,
-      learningModuleId,
+      learningModuleId: id,
       title: body.title,
       description: body.description,
       isExpanded: body.isExpanded,

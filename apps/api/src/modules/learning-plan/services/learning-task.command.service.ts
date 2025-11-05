@@ -15,7 +15,6 @@ import type { LearningTask } from "@repo/database/types";
  */
 export interface CreateLearningTaskInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningModuleId: string; // publicId
   title: string;
   description?: string | null;
@@ -28,7 +27,6 @@ export interface CreateLearningTaskInput {
  */
 export interface UpdateLearningTaskInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningTaskId: string; // publicId
   title?: string;
   description?: string | null;
@@ -42,7 +40,6 @@ export interface UpdateLearningTaskInput {
  */
 export interface DeleteLearningTaskInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningTaskId: string; // publicId
 }
 
@@ -51,7 +48,6 @@ export interface DeleteLearningTaskInput {
  */
 export interface MoveLearningTaskInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningTaskId: string; // publicId
   newLearningModuleId: string; // publicId (target module)
   newOrder?: number;
@@ -86,15 +82,6 @@ export class LearningTaskCommandService {
   ): Promise<LearningTaskResponse> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find module
         const module = await learningModuleRepository.findByPublicId(
           input.learningModuleId,
@@ -106,10 +93,13 @@ export class LearningTaskCommandService {
           throw LearningPlanErrors.moduleNotFound();
         }
 
-        // Verify module belongs to plan
-        if (module.learningPlanId !== plan!.id) {
-          throw LearningPlanErrors.moduleNotFound();
-        }
+        // Find and verify plan ownership through module
+        const plan = await learningPlanRepository.findById(
+          module.learningPlanId,
+          tx,
+        );
+
+        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
 
         // Get next order value
         const nextOrder =
@@ -138,7 +128,6 @@ export class LearningTaskCommandService {
         log.info("Learning task created successfully", {
           publicId: createdTask.publicId,
           learningModuleId: input.learningModuleId,
-          learningPlanId: input.learningPlanId,
           userId: input.userId,
         });
 
@@ -161,15 +150,6 @@ export class LearningTaskCommandService {
   ): Promise<LearningTaskResponse> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find task with parent info
         const taskWithParents = await learningTaskRepository.findWithParents(
           input.learningTaskId,
@@ -180,10 +160,12 @@ export class LearningTaskCommandService {
           throw LearningPlanErrors.taskNotFound();
         }
 
-        // Verify task belongs to plan
-        if (taskWithParents.plan.id !== plan!.id) {
-          throw LearningPlanErrors.taskNotFound();
-        }
+        // Verify plan ownership
+        ownershipHelper.verifyOwnership(
+          taskWithParents.plan,
+          input.userId,
+          "Learning plan",
+        );
 
         // Prepare update data
         const updateData: Partial<LearningTask> = {};
@@ -208,7 +190,6 @@ export class LearningTaskCommandService {
 
         log.info("Learning task updated successfully", {
           publicId: input.learningTaskId,
-          learningPlanId: input.learningPlanId,
           userId: input.userId,
         });
 
@@ -231,15 +212,6 @@ export class LearningTaskCommandService {
   ): Promise<{ deletedId: string; message: string }> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find task with parent info
         const taskWithParents = await learningTaskRepository.findWithParents(
           input.learningTaskId,
@@ -250,10 +222,12 @@ export class LearningTaskCommandService {
           throw LearningPlanErrors.taskNotFound();
         }
 
-        // Verify task belongs to plan
-        if (taskWithParents.plan.id !== plan!.id) {
-          throw LearningPlanErrors.taskNotFound();
-        }
+        // Verify plan ownership
+        ownershipHelper.verifyOwnership(
+          taskWithParents.plan,
+          input.userId,
+          "Learning plan",
+        );
 
         // Delete task
         await learningTaskRepository.delete(taskWithParents.id, tx);
@@ -267,7 +241,6 @@ export class LearningTaskCommandService {
 
         log.info("Learning task deleted successfully", {
           publicId: input.learningTaskId,
-          learningPlanId: input.learningPlanId,
           userId: input.userId,
         });
 
@@ -296,15 +269,6 @@ export class LearningTaskCommandService {
   }> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find task with parent info
         const taskWithParents = await learningTaskRepository.findWithParents(
           input.learningTaskId,
@@ -315,10 +279,12 @@ export class LearningTaskCommandService {
           throw LearningPlanErrors.taskNotFound();
         }
 
-        // Verify task belongs to plan
-        if (taskWithParents.plan.id !== plan!.id) {
-          throw LearningPlanErrors.taskNotFound();
-        }
+        // Verify plan ownership
+        ownershipHelper.verifyOwnership(
+          taskWithParents.plan,
+          input.userId,
+          "Learning plan",
+        );
 
         // Find target module
         const targetModule = await learningModuleRepository.findByPublicId(
@@ -331,8 +297,8 @@ export class LearningTaskCommandService {
           throw LearningPlanErrors.moduleNotFound();
         }
 
-        // Verify target module belongs to plan
-        if (targetModule.learningPlanId !== plan!.id) {
+        // Verify target module belongs to same plan
+        if (targetModule.learningPlanId !== taskWithParents.plan.id) {
           throw LearningPlanErrors.moduleNotFound();
         }
 

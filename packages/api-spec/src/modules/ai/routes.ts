@@ -1,13 +1,11 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
   GenerateLearningPlanRequestSchema,
   GenerateLearningPlanResponseSchema,
-  GenerateLearningTaskNoteParamsSchema,
   GenerateLearningTaskNoteQuerySchema,
   GenerateLearningTaskNoteResponseSchema,
-  GenerateLearningTaskQuizParamsSchema,
   GenerateLearningTaskQuizQuerySchema,
   GenerateLearningTaskQuizResponseSchema,
 } from "./schema";
@@ -84,9 +82,9 @@ export const generateLearningPlanRoute = createRoute({
 });
 
 export const generateLearningTaskNoteRoute = createRoute({
-  tags: ["ai"],
+  tags: ["learning-tasks"],
   method: "post",
-  path: "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
+  path: "/learning-tasks/{id}/ai-notes",
   summary: "AI로 LearningTask 노트를 생성하거나 새로고침합니다",
   description: `LearningTask에 연결된 AI 노트를 생성하고 현재 상태를 반환합니다.
 
@@ -96,7 +94,12 @@ export const generateLearningTaskNoteRoute = createRoute({
 - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 노트 노출을
   막습니다.`,
   request: {
-    params: GenerateLearningTaskNoteParamsSchema,
+    params: z.object({
+      id: z.string().min(1).openapi({
+        description: "LearningTask 공개 ID",
+        example: "660e8400-e29b-41d4-a716-446655440001",
+      }),
+    }),
     query: GenerateLearningTaskNoteQuerySchema,
   },
   responses: {
@@ -165,9 +168,9 @@ export const generateLearningTaskNoteRoute = createRoute({
 });
 
 export const generateLearningTaskQuizRoute = createRoute({
-  tags: ["ai"],
+  tags: ["learning-tasks"],
   method: "post",
-  path: "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
+  path: "/learning-tasks/{id}/ai-quizzes",
   summary: "AI로 LearningTask 퀴즈를 생성하거나 새로고침합니다",
   description: `LearningTask 내용에 맞춘 AI 퀴즈를 생성하고 상태를 반환합니다.
 
@@ -177,7 +180,12 @@ export const generateLearningTaskQuizRoute = createRoute({
 - **접근 제어**: 학습자 본인이 아니면 403을 반환해 학습 데이터 유출을
   방지합니다.`,
   request: {
-    params: GenerateLearningTaskQuizParamsSchema,
+    params: z.object({
+      id: z.string().min(1).openapi({
+        description: "LearningTask 공개 ID",
+        example: "660e8400-e29b-41d4-a716-446655440001",
+      }),
+    }),
     query: GenerateLearningTaskQuizQuerySchema,
   },
   responses: {

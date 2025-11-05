@@ -30,10 +30,10 @@ const submitLearningTaskQuizHandler = new OpenAPIHono<{
         throw AuthErrors.unauthorized();
       }
 
-      const { learningPlanId, learningTaskId, quizId } = c.req.valid("param");
+      const { id } = c.req.valid("param");
       const body = c.req.valid("json");
 
-      const numericQuizId = Number(quizId);
+      const numericQuizId = Number(id);
       if (!Number.isInteger(numericQuizId)) {
         throw new BaseError(
           400,
@@ -44,8 +44,6 @@ const submitLearningTaskQuizHandler = new OpenAPIHono<{
 
       const { quiz, evaluation } = await submitLearningTaskQuiz({
         userId: auth.user.id,
-        learningPlanPublicId: learningPlanId,
-        learningTaskPublicId: learningTaskId,
         quizId: numericQuizId,
         answers: body.answers,
       });

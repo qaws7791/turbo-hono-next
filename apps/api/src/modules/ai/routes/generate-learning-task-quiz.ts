@@ -31,14 +31,13 @@ const generateLearningTaskQuiz = new OpenAPIHono<{
         throw AuthErrors.unauthorized();
       }
 
-      const { learningPlanId, learningTaskId } = c.req.valid("param");
+      const { id } = c.req.valid("param");
       const query = c.req.valid("query") ?? {};
 
       const { started, record, latestResult, job } =
         await prepareLearningTaskQuizGeneration({
           userId: auth.user.id,
-          learningPlanPublicId: learningPlanId,
-          learningTaskPublicId: learningTaskId,
+          learningTaskPublicId: id,
           force: query.force,
         });
 

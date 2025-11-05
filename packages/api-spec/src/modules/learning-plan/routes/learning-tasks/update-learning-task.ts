@@ -2,7 +2,7 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleLearningTaskParamsSchema,
+  LearningTaskParamsSchema,
   LearningTaskUpdateRequestSchema,
   LearningTaskUpdateResponseSchema,
 } from "../../../learning-plan/schema";
@@ -10,7 +10,7 @@ import {
 export const updateLearningTaskRoute = createRoute({
   tags: ["learning-tasks"],
   method: "put",
-  path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
+  path: "/learning-tasks/{id}",
   summary: "LearningTask 속성을 수정합니다",
   description: `LearningTask의 제목, 일정, 난이도 등을 갱신합니다.
 
@@ -21,7 +21,7 @@ export const updateLearningTaskRoute = createRoute({
 - **동기화**: 변경 내용이 진척도 계산에 영향을 주므로 Progress API를
   사용하는 화면은 재조회가 필요합니다.`,
   request: {
-    params: LearningPlanLearningModuleLearningTaskParamsSchema,
+    params: LearningTaskParamsSchema,
     body: {
       content: {
         "application/json": {

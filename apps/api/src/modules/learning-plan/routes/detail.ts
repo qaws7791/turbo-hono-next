@@ -18,10 +18,10 @@ const detail = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
     const response = await learningPlanQueryService.getLearningPlan({
-      publicId: learningPlanId,
+      publicId: id,
       userId: auth.user.id,
     });
 

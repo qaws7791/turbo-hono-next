@@ -2,7 +2,7 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleLearningTaskQuizParamsSchema,
+  LearningTaskQuizParamsSchema,
 } from "../../../learning-plan/schema";
 import {
   SubmitLearningTaskQuizRequestSchema,
@@ -12,7 +12,7 @@ import {
 export const submitLearningTaskQuizRoute = createRoute({
   tags: ["learning-tasks"],
   method: "post",
-  path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes/{quizId}/submissions",
+  path: "/learning-task-quizzes/{id}/submit",
   summary: "LearningTask 퀴즈 답안을 제출합니다",
   description: `AI가 생성한 퀴즈에 대한 학습자의 답안을 제출하고 채점 결과를
   반환합니다.
@@ -24,7 +24,7 @@ export const submitLearningTaskQuizRoute = createRoute({
 - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 타인 응시를
   차단합니다.`,
   request: {
-    params: LearningPlanLearningModuleLearningTaskQuizParamsSchema,
+    params: LearningTaskQuizParamsSchema,
     body: {
       content: {
         "application/json": {

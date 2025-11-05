@@ -2,14 +2,14 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleLearningTaskParamsSchema,
   LearningTaskDeletionResponseSchema,
+  LearningTaskParamsSchema,
 } from "../../../learning-plan/schema";
 
 export const deleteLearningTaskRoute = createRoute({
   tags: ["learning-tasks"],
   method: "delete",
-  path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}",
+  path: "/learning-tasks/{id}",
   summary: "LearningTask를 삭제합니다",
   description: `LearningModule에서 지정된 LearningTask와 관련 AI 산출물을
   제거합니다.
@@ -21,7 +21,7 @@ export const deleteLearningTaskRoute = createRoute({
 - **데이터 보존**: 삭제 후 복구가 불가능하므로 기록이 필요하다면 먼저
   export 기능을 활용해야 합니다.`,
   request: {
-    params: LearningPlanLearningModuleLearningTaskParamsSchema,
+    params: LearningTaskParamsSchema,
   },
   responses: {
     200: {

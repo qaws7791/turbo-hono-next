@@ -18,12 +18,11 @@ const getLearningTaskNoteHandler = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningTaskId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
     const result = await getLearningTaskNote({
       userId: auth.user.id,
-      learningPlanPublicId: learningPlanId,
-      learningTaskPublicId: learningTaskId,
+      learningTaskPublicId: id,
     });
 
     return c.json(

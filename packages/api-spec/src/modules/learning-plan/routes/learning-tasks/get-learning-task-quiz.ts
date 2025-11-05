@@ -2,14 +2,14 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  GenerateLearningTaskQuizParamsSchema,
   GenerateLearningTaskQuizResponseSchema,
 } from "../../../ai/schema";
+import { LearningTaskParamsSchema } from "../../../learning-plan/schema";
 
 export const getLearningTaskQuizRoute = createRoute({
   tags: ["learning-tasks"],
   method: "get",
-  path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
+  path: "/learning-tasks/{id}/quizzes",
   summary: "AI가 생성한 LearningTask 퀴즈를 조회합니다",
   description: `해당 LearningTask에 대해 생성된 AI 퀴즈와 상태를 반환합니다.
 
@@ -20,7 +20,7 @@ export const getLearningTaskQuizRoute = createRoute({
 - **동기화**: generateLearningTaskQuizRoute 호출 직후에는 status가 pending일 수
   있어 폴링 간격을 조정해야 합니다.`,
   request: {
-    params: GenerateLearningTaskQuizParamsSchema,
+    params: LearningTaskParamsSchema,
   },
   responses: {
     200: {

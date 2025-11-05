@@ -18,13 +18,12 @@ const reorderLearningModule = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningModuleId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const { newOrder } = c.req.valid("json");
 
     const result = await learningModuleCommandService.reorderModule({
       userId: auth.user.id,
-      learningPlanId,
-      learningModuleId,
+      learningModuleId: id,
       newOrder,
     });
 

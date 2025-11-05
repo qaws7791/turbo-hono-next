@@ -41,13 +41,12 @@ const generateLearningTaskNote = new OpenAPIHono<{
         throw AuthErrors.unauthorized();
       }
 
-      const { learningPlanId, learningTaskId } = c.req.valid("param");
+      const { id } = c.req.valid("param");
       const query = c.req.valid("query") ?? {};
 
       const { started, record, job } = await prepareLearningTaskNoteGeneration({
         userId: auth.user.id,
-        learningPlanPublicId: learningPlanId,
-        learningTaskPublicId: learningTaskId,
+        learningTaskPublicId: id,
         force: query.force,
       });
 

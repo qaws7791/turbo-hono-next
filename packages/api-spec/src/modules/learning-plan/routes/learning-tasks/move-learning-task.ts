@@ -2,15 +2,15 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleLearningTaskParamsSchema,
   LearningTaskMoveRequestSchema,
   LearningTaskMoveResponseSchema,
+  LearningTaskParamsSchema,
 } from "../../../learning-plan/schema";
 
 export const moveLearningTaskRoute = createRoute({
   tags: ["learning-tasks"],
   method: "patch",
-  path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move",
+  path: "/learning-tasks/{id}/move",
   summary: "LearningTask를 다른 LearningModule로 이동하거나 순서를 조정합니다",
   description: `LearningTask를 다른 LearningModule로 옮기거나 동일 모듈 내
   순서를 변경합니다.
@@ -22,7 +22,7 @@ export const moveLearningTaskRoute = createRoute({
 - **원자성**: 이동과 순서 조정이 단일 트랜잭션으로 처리되어 중간 상태가
   노출되지 않습니다.`,
   request: {
-    params: LearningPlanLearningModuleLearningTaskParamsSchema,
+    params: LearningTaskParamsSchema,
     body: {
       content: {
         "application/json": {

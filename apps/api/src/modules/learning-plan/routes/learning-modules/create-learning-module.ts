@@ -18,12 +18,12 @@ const createLearningModule = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
     const module = await learningModuleCommandService.createModule({
       userId: auth.user.id,
-      learningPlanId,
+      learningPlanId: id,
       title: body.title,
       description: body.description,
       isExpanded: body.isExpanded,

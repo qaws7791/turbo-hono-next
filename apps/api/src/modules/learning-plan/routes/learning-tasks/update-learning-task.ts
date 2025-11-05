@@ -18,13 +18,12 @@ const updateLearningTask = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningTaskId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const body = c.req.valid("json");
 
     const result = await learningTaskCommandService.updateTask({
       userId: auth.user.id,
-      learningPlanId,
-      learningTaskId,
+      learningTaskId: id,
       ...body,
     });
 

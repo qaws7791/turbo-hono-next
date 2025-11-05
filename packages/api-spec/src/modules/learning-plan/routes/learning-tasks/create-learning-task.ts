@@ -2,7 +2,6 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleParamsSchema,
   LearningTaskCreateRequestSchema,
   LearningTaskCreateResponseSchema,
 } from "../../../learning-plan/schema";
@@ -10,7 +9,7 @@ import {
 export const createLearningTaskRoute = createRoute({
   tags: ["learning-tasks"],
   method: "post",
-  path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks",
+  path: "/learning-tasks",
   summary: "LearningModule에 LearningTask를 추가합니다",
   description: `학습 모듈에 새 LearningTask를 생성해 실행 가능한 단위를
   정의합니다.
@@ -22,7 +21,6 @@ export const createLearningTaskRoute = createRoute({
 - **순서 정책**: 새 태스크는 모듈 마지막에 추가되며 move API로 재배치할 수
   있습니다.`,
   request: {
-    params: LearningPlanLearningModuleParamsSchema,
     body: {
       content: {
         "application/json": {

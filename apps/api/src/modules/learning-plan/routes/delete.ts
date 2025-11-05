@@ -18,10 +18,10 @@ const deleteLearningPlan = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
     const result = await learningPlanCommandService.deleteLearningPlan({
-      publicId: learningPlanId,
+      publicId: id,
       userId: auth.user.id,
     });
 

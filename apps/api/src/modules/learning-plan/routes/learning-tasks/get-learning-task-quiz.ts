@@ -21,12 +21,11 @@ const getLearningTaskQuizHandler = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId, learningTaskId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
 
     const { record, latestResult } = await getLatestLearningTaskQuiz({
       userId: auth.user.id,
-      learningPlanPublicId: learningPlanId,
-      learningTaskPublicId: learningTaskId,
+      learningTaskPublicId: id,
     });
 
     const serialized = serializeQuizRecord(record, latestResult);

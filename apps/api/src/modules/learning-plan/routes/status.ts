@@ -18,11 +18,11 @@ const changeStatus = new OpenAPIHono<{
   },
   async (c) => {
     const auth = c.get("auth");
-    const { learningPlanId } = c.req.valid("param");
+    const { id } = c.req.valid("param");
     const { status: newStatus } = c.req.valid("json");
 
     const result = await learningPlanCommandService.updateLearningPlanStatus({
-      publicId: learningPlanId,
+      publicId: id,
       userId: auth.user.id,
       status: newStatus,
     });

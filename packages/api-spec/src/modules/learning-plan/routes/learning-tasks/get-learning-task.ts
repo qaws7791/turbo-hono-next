@@ -2,14 +2,14 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  LearningPlanLearningModuleLearningTaskParamsSchema,
   LearningTaskDetailResponseSchema,
+  LearningTaskParamsSchema,
 } from "../../../learning-plan/schema";
 
 export const getLearningTaskRoute = createRoute({
   tags: ["learning-tasks"],
   method: "get",
-  path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
+  path: "/learning-tasks/{id}",
   summary: "LearningTask 상세 정보를 조회합니다",
   description: `LearningTask의 목표, 예상 소요 시간 등 세부 정보를 반환합니다.
 
@@ -20,7 +20,7 @@ export const getLearningTaskRoute = createRoute({
 - **실시간성**: 진행 상황이 자주 변하므로 캐시 만료 시간을 짧게 유지해야
   합니다.`,
   request: {
-    params: LearningPlanLearningModuleLearningTaskParamsSchema,
+    params: LearningTaskParamsSchema,
   },
   responses: {
     200: {

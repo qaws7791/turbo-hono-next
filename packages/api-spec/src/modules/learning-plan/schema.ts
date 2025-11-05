@@ -466,7 +466,7 @@ export const LearningPlanDeletionResponseSchema = z.object({
 
 // Common path parameter schema
 export const LearningPlanParamsSchema = z.object({
-  learningPlanId: z.string().min(1).openapi({
+  id: z.string().min(1).openapi({
     description: "LearningPlan 공개 ID",
     example: "abc123def456",
   }),
@@ -579,7 +579,7 @@ export const LearningModuleDeletionResponseSchema = z.object({
 
 // Path parameter schemas
 export const LearningModuleParamsSchema = z.object({
-  learningModuleId: z.string().min(1).openapi({
+  id: z.string().min(1).openapi({
     description: "LearningModule 공개 ID",
     example: "550e8400-e29b-41d4-a716-446655440000",
   }),
@@ -645,6 +645,10 @@ export const LearningTaskItemSchema = z.object({
 
 // LearningTask creation schemas
 export const LearningTaskCreateRequestSchema = z.object({
+  learningModuleId: z.string().min(1).openapi({
+    description: "상위 LearningModule 공개 ID",
+    example: "550e8400-e29b-41d4-a716-446655440000",
+  }),
   title: z.string().min(1).max(200).openapi({
     description: "LearningTask 제목",
     example: "Learn variables and data types",
@@ -780,9 +784,16 @@ export const LearningTaskDeletionResponseSchema = z.object({
 
 // Path parameter schemas
 export const LearningTaskParamsSchema = z.object({
-  learningTaskId: z.string().min(1).openapi({
+  id: z.string().min(1).openapi({
     description: "LearningTask 공개 ID",
     example: "660e8400-e29b-41d4-a716-446655440001",
+  }),
+});
+
+export const LearningTaskQuizParamsSchema = z.object({
+  id: z.string().min(1).openapi({
+    description: "LearningTask Quiz 공개 ID",
+    example: "42",
   }),
 });
 
@@ -790,6 +801,10 @@ export const LearningPlanLearningModuleLearningTaskParamsSchema = z.object({
   learningPlanId: z.string().min(1).openapi({
     description: "LearningPlan 공개 ID",
     example: "abc123def456",
+  }),
+  learningModuleId: z.string().min(1).openapi({
+    description: "LearningModule 공개 ID",
+    example: "550e8400-e29b-41d4-a716-446655440000",
   }),
   learningTaskId: z.string().min(1).openapi({
     description: "LearningTask 공개 ID",

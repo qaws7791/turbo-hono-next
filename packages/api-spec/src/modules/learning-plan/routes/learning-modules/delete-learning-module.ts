@@ -3,13 +3,13 @@ import { createRoute } from "@hono/zod-openapi";
 import {
   ErrorResponseSchema,
   LearningModuleDeletionResponseSchema,
-  LearningPlanLearningModuleParamsSchema,
+  LearningModuleParamsSchema,
 } from "../../../learning-plan/schema";
 
 export const deleteLearningModuleRoute = createRoute({
   tags: ["learning-modules"],
   method: "delete",
-  path: "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
+  path: "/learning-modules/{id}",
   summary: "LearningModule을 삭제합니다",
   description: `LearningPlan에서 지정된 LearningModule과 하위 LearningTask를
   제거합니다.
@@ -21,7 +21,7 @@ export const deleteLearningModuleRoute = createRoute({
 - **일정 영향**: 삭제 직후 Progress API에 반영되기까지 약간의 지연이 있을 수
   있습니다.`,
   request: {
-    params: LearningPlanLearningModuleParamsSchema,
+    params: LearningModuleParamsSchema,
   },
   responses: {
     200: {

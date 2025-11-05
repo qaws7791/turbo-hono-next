@@ -98,7 +98,6 @@ export interface LearningTaskQuizGenerationJob {
 
 interface PrepareLearningTaskQuizGenerationArgs {
   userId: string;
-  learningPlanPublicId: string;
   learningTaskPublicId: string;
   force?: boolean;
 }
@@ -122,8 +121,6 @@ type SerializedQuiz = z.infer<typeof GenerateLearningTaskQuizResponseSchema>;
 
 interface SubmitQuizArgs {
   userId: string;
-  learningPlanPublicId: string;
-  learningTaskPublicId: string;
   quizId: number;
   answers: Array<QuizSubmissionAnswer>;
 }
@@ -551,7 +548,6 @@ export async function loadLatestQuizForLearningTask(
 
 interface GetLearningTaskQuizArgs {
   userId: string;
-  learningPlanPublicId: string;
   learningTaskPublicId: string;
 }
 
@@ -561,7 +557,7 @@ export async function getLatestLearningTaskQuiz(
   record: LearningTaskQuizRecord;
   latestResult: LearningTaskQuizResultRecord | null;
 }> {
-  const { userId, learningPlanPublicId, learningTaskPublicId } = args;
+  const { userId, learningTaskPublicId } = args;
 
   const [learningTaskRow] = await db
     .select({
@@ -577,12 +573,7 @@ export async function getLatestLearningTaskQuiz(
       learningPlanTable,
       eq(learningModuleTable.learningPlanId, learningPlanTable.id),
     )
-    .where(
-      and(
-        eq(learningTaskTable.publicId, learningTaskPublicId),
-        eq(learningPlanTable.publicId, learningPlanPublicId),
-      ),
-    )
+    .where(and(eq(learningTaskTable.publicId, learningTaskPublicId)))
     .limit(1);
 
   if (!learningTaskRow) {
@@ -621,7 +612,7 @@ export async function getLatestLearningTaskQuiz(
 export async function prepareLearningTaskQuizGeneration(
   args: PrepareLearningTaskQuizGenerationArgs,
 ): Promise<PrepareLearningTaskQuizGenerationResult> {
-  const { userId, learningPlanPublicId, learningTaskPublicId, force } = args;
+  const { userId, learningTaskPublicId, force } = args;
 
   const [learningTaskRow] = await db
     .select({
@@ -663,12 +654,7 @@ export async function prepareLearningTaskQuizGeneration(
       eq(learningModuleTable.learningPlanId, learningPlanTable.id),
     )
     .leftJoin(aiNoteTable, eq(aiNoteTable.learningTaskId, learningTaskTable.id))
-    .where(
-      and(
-        eq(learningTaskTable.publicId, learningTaskPublicId),
-        eq(learningPlanTable.publicId, learningPlanPublicId),
-      ),
-    )
+    .where(and(eq(learningTaskTable.publicId, learningTaskPublicId)))
     .limit(1);
 
   if (!learningTaskRow) {
@@ -902,13 +888,7 @@ export async function runLearningTaskQuizGeneration(
 export async function submitLearningTaskQuiz(
   args: SubmitQuizArgs,
 ): Promise<SubmitQuizResult> {
-  const {
-    userId,
-    learningPlanPublicId,
-    learningTaskPublicId,
-    quizId,
-    answers,
-  } = args;
+  const { userId, quizId, answers } = args;
 
   if (!answers.length) {
     throw new BaseError(
@@ -943,13 +923,7 @@ export async function submitLearningTaskQuiz(
       learningPlanTable,
       eq(learningModuleTable.learningPlanId, learningPlanTable.id),
     )
-    .where(
-      and(
-        eq(aiQuizTable.id, quizId),
-        eq(learningPlanTable.publicId, learningPlanPublicId),
-        eq(learningTaskTable.publicId, learningTaskPublicId),
-      ),
-    )
+    .where(eq(aiQuizTable.id, quizId))
     .limit(1);
 
   if (!quizRow) {

@@ -10,7 +10,6 @@ import { learningTaskRepository } from "../repositories/learning-task.repository
  */
 export interface GetLearningTaskInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningTaskId: string; // publicId
 }
 
@@ -52,15 +51,7 @@ export class LearningTaskQueryService {
     input: GetLearningTaskInput,
   ): Promise<LearningTaskDetailResponse> {
     try {
-      // Find and verify plan ownership
-      const plan = await learningPlanRepository.findByPublicId(
-        input.learningPlanId,
-        input.userId,
-      );
-
-      ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
-      // Also get parent info
+      // Get task with parent info
       const taskWithParents = await learningTaskRepository.findWithParents(
         input.learningTaskId,
       );
@@ -69,14 +60,15 @@ export class LearningTaskQueryService {
         throw LearningPlanErrors.taskNotFound();
       }
 
-      // Verify task belongs to plan
-      if (taskWithParents.plan.id !== plan!.id) {
-        throw LearningPlanErrors.taskNotFound();
-      }
+      // Verify plan ownership
+      ownershipHelper.verifyOwnership(
+        taskWithParents.plan,
+        input.userId,
+        "Learning plan",
+      );
 
       log.info("Learning task retrieved successfully", {
         publicId: input.learningTaskId,
-        learningPlanId: input.learningPlanId,
         userId: input.userId,
       });
 

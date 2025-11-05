@@ -40,7 +40,6 @@ export interface LearningTaskNoteGenerationJob {
 
 interface PrepareLearningTaskNoteGenerationArgs {
   userId: string;
-  learningPlanPublicId: string;
   learningTaskPublicId: string;
   force?: boolean;
 }
@@ -144,14 +143,13 @@ async function loadNoteRecord(
 
 interface GetLearningTaskNoteArgs {
   userId: string;
-  learningPlanPublicId: string;
   learningTaskPublicId: string;
 }
 
 export async function getLearningTaskNote(
   args: GetLearningTaskNoteArgs,
 ): Promise<LearningTaskNoteRecord> {
-  const { userId, learningPlanPublicId, learningTaskPublicId } = args;
+  const { userId, learningTaskPublicId } = args;
 
   const [learningTaskRow] = await db
     .select({
@@ -173,12 +171,7 @@ export async function getLearningTaskNote(
       eq(learningModuleTable.learningPlanId, learningPlanTable.id),
     )
     .leftJoin(aiNoteTable, eq(aiNoteTable.learningTaskId, learningTaskTable.id))
-    .where(
-      and(
-        eq(learningTaskTable.publicId, learningTaskPublicId),
-        eq(learningPlanTable.publicId, learningPlanPublicId),
-      ),
-    )
+    .where(eq(learningTaskTable.publicId, learningTaskPublicId))
     .limit(1);
 
   if (!learningTaskRow) {
@@ -205,7 +198,7 @@ export async function getLearningTaskNote(
 export async function prepareLearningTaskNoteGeneration(
   args: PrepareLearningTaskNoteGenerationArgs,
 ): Promise<PrepareLearningTaskNoteGenerationResult> {
-  const { userId, learningPlanPublicId, learningTaskPublicId, force } = args;
+  const { userId, learningTaskPublicId, force } = args;
 
   const [learningTaskRow] = await db
     .select({
@@ -252,12 +245,7 @@ export async function prepareLearningTaskNoteGeneration(
       eq(learningModuleTable.learningPlanId, learningPlanTable.id),
     )
     .leftJoin(aiNoteTable, eq(aiNoteTable.learningTaskId, learningTaskTable.id))
-    .where(
-      and(
-        eq(learningTaskTable.publicId, learningTaskPublicId),
-        eq(learningPlanTable.publicId, learningPlanPublicId),
-      ),
-    )
+    .where(eq(learningTaskTable.publicId, learningTaskPublicId))
     .limit(1);
 
   if (!learningTaskRow) {

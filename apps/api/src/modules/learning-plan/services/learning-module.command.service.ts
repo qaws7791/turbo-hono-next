@@ -25,7 +25,6 @@ export interface CreateLearningModuleInput {
  */
 export interface UpdateLearningModuleInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningModuleId: string; // publicId
   title?: string;
   description?: string | null;
@@ -37,7 +36,6 @@ export interface UpdateLearningModuleInput {
  */
 export interface DeleteLearningModuleInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningModuleId: string; // publicId
 }
 
@@ -46,7 +44,6 @@ export interface DeleteLearningModuleInput {
  */
 export interface ReorderLearningModuleInput {
   userId: string;
-  learningPlanId: string; // publicId
   learningModuleId: string; // publicId
   newOrder: number;
 }
@@ -131,15 +128,6 @@ export class LearningModuleCommandService {
   ): Promise<LearningModuleResponse> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find module
         const existingModule = await learningModuleRepository.findByPublicId(
           input.learningModuleId,
@@ -151,10 +139,13 @@ export class LearningModuleCommandService {
           throw LearningPlanErrors.moduleNotFound();
         }
 
-        // Verify module belongs to plan
-        if (existingModule.learningPlanId !== plan!.id) {
-          throw LearningPlanErrors.moduleNotFound();
-        }
+        // Find and verify plan ownership through module
+        const plan = await learningPlanRepository.findById(
+          existingModule.learningPlanId,
+          tx,
+        );
+
+        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
 
         // Prepare update data
         const updateData: Partial<LearningModule> = {};
@@ -173,7 +164,6 @@ export class LearningModuleCommandService {
 
         log.info("Learning module updated successfully", {
           publicId: input.learningModuleId,
-          learningPlanId: input.learningPlanId,
           userId: input.userId,
         });
 
@@ -196,15 +186,6 @@ export class LearningModuleCommandService {
   ): Promise<{ deletedId: string; message: string }> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find module
         const existingModule = await learningModuleRepository.findByPublicId(
           input.learningModuleId,
@@ -216,24 +197,26 @@ export class LearningModuleCommandService {
           throw LearningPlanErrors.moduleNotFound();
         }
 
-        // Verify module belongs to plan
-        if (existingModule.learningPlanId !== plan!.id) {
-          throw LearningPlanErrors.moduleNotFound();
-        }
+        // Find and verify plan ownership through module
+        const plan = await learningPlanRepository.findById(
+          existingModule.learningPlanId,
+          tx,
+        );
+
+        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
 
         // Delete module (CASCADE will handle tasks)
         await learningModuleRepository.delete(existingModule.id, tx);
 
         // Adjust order of remaining modules
         await learningModuleRepository.decrementOrdersFrom(
-          plan!.id,
+          existingModule.learningPlanId,
           existingModule.order + 1,
           tx,
         );
 
         log.info("Learning module deleted successfully", {
           publicId: input.learningModuleId,
-          learningPlanId: input.learningPlanId,
           userId: input.userId,
         });
 
@@ -259,15 +242,6 @@ export class LearningModuleCommandService {
   ): Promise<LearningModuleResponse> {
     try {
       return await runInTransaction(async (tx) => {
-        // Find and verify plan ownership
-        const plan = await learningPlanRepository.findByPublicId(
-          input.learningPlanId,
-          input.userId,
-          tx,
-        );
-
-        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
-
         // Find module
         const existingModule = await learningModuleRepository.findByPublicId(
           input.learningModuleId,
@@ -279,10 +253,13 @@ export class LearningModuleCommandService {
           throw LearningPlanErrors.moduleNotFound();
         }
 
-        // Verify module belongs to plan
-        if (existingModule.learningPlanId !== plan!.id) {
-          throw LearningPlanErrors.moduleNotFound();
-        }
+        // Find and verify plan ownership through module
+        const plan = await learningPlanRepository.findById(
+          existingModule.learningPlanId,
+          tx,
+        );
+
+        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
 
         const currentOrder = existingModule.order;
         const targetOrder = input.newOrder;
@@ -296,14 +273,14 @@ export class LearningModuleCommandService {
         if (currentOrder < targetOrder) {
           // Moving down: decrement orders between current and target
           await learningModuleRepository.decrementOrdersFrom(
-            plan!.id,
+            existingModule.learningPlanId,
             currentOrder + 1,
             tx,
           );
         } else {
           // Moving up: increment orders between target and current
           await learningModuleRepository.incrementOrdersFrom(
-            plan!.id,
+            existingModule.learningPlanId,
             targetOrder,
             tx,
           );
@@ -318,7 +295,6 @@ export class LearningModuleCommandService {
 
         log.info("Learning module reordered successfully", {
           publicId: input.learningModuleId,
-          learningPlanId: input.learningPlanId,
           oldOrder: currentOrder,
           newOrder: targetOrder,
           userId: input.userId,

@@ -2,14 +2,14 @@ import { createRoute } from "@hono/zod-openapi";
 
 import {
   ErrorResponseSchema,
-  GenerateLearningTaskNoteParamsSchema,
   GenerateLearningTaskNoteResponseSchema,
 } from "../../../ai/schema";
+import { LearningTaskParamsSchema } from "../../../learning-plan/schema";
 
 export const getLearningTaskNoteRoute = createRoute({
   tags: ["learning-tasks"],
   method: "get",
-  path: "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
+  path: "/learning-tasks/{id}/notes",
   summary: "AI가 생성한 LearningTask 노트를 조회합니다",
   description: `해당 LearningTask에 대해 생성된 AI 노트와 상태를 반환합니다.
 
@@ -20,7 +20,7 @@ export const getLearningTaskNoteRoute = createRoute({
 - **동기화**: generateLearningTaskNoteRoute 호출 직후에는 status가 pending일 수
   있으므로 폴링 간격을 조정해야 합니다.`,
   request: {
-    params: GenerateLearningTaskNoteParamsSchema,
+    params: LearningTaskParamsSchema,
   },
   responses: {
     200: {
