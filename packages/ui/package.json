@@ -29,7 +29,6 @@
     "./sidebar": "./src/components/common/sidebar.tsx",
     "./slider": "./src/components/common/slider.tsx",
     "./switch": "./src/components/common/switch.tsx",
-    "./table": "./src/components/common/table.tsx",
     "./tabs": "./src/components/common/tabs.tsx",
     "./text-field": "./src/components/common/text-field.tsx",
     "./toast": "./src/components/common/toast.tsx",
