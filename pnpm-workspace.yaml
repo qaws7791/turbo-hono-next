@@ -5,15 +5,31 @@ catalog:
   "@types/react": ^19.1.0
   "@types/react-dom": ^19.1.0
 
+  # React 관련 도구
+  "@vitejs/plugin-react": ^4.3.4
+  react-aria-components: ^1.13.0
+  tailwind-variants: ^3.1.1
+
   # 개발 도구
   typescript: ^5.8.3
   eslint: ^9.26.0
   prettier: ^3.5.3
   vite: ^6.3.5
+  tsx: ^4.20.5
 
-  # 공통 라이브러리
+  # 스타일링
   zod: ^4.1.9
   tailwindcss: ^4.0.6
+  "@tailwindcss/postcss": ^4.1.11
+  "@tailwindcss/vite": ^4.0.6
+
+  # 데이터베이스
+  drizzle-orm: ^0.44.5
+  "@neondatabase/serverless": ^1.0.1
+
+  # WebSocket
+  ws: ^8.18.3
+  "@types/ws": ^8.18.1
 
 packages:
   - "apps/*"

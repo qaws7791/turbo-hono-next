@@ -41,7 +41,7 @@
     "@repo/config": "workspace:*",
     "eslint": "catalog:",
     "prettier": "catalog:",
-    "tsx": "^4.20.5",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   },
   "typesVersions": {

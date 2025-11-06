@@ -29,9 +29,9 @@
     "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.1",
-    "drizzle-orm": "^0.44.5",
-    "ws": "^8.18.3"
+    "@neondatabase/serverless": "catalog:",
+    "drizzle-orm": "catalog:",
+    "ws": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",

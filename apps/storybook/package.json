@@ -1,5 +1,5 @@
 {
-  "name": "storybook",
+  "name": "@repo/storybook",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,12 +11,12 @@
   },
   "dependencies": {
     "@repo/ui": "workspace:*",
-    "@tailwindcss/vite": "^4.0.6",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@tailwindcss/vite": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "react": "catalog:",
-    "react-aria-components": "^1.13.0",
+    "react-aria-components": "catalog:",
     "react-dom": "catalog:",
-    "tailwind-variants": "^3.1.1"
+    "tailwind-variants": "catalog:"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.2",
@@ -26,7 +26,7 @@
     "@storybook/addon-links": "^9.1.16",
     "@storybook/addon-themes": "^9.1.16",
     "@storybook/react-vite": "^9.1.16",
-    "@tailwindcss/postcss": "^4.0.6",
+    "@tailwindcss/postcss": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
