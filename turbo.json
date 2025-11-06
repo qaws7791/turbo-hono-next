@@ -24,7 +24,9 @@
     "AWS_REGION",
     "AWS_SECRET_ACCESS_KEY",
     "AWS_SESSION_TOKEN",
-    "PORT"
+    "PORT",
+    "NODE_ENV",
+    "SERVICE_NAME"
   ],
   "tasks": {
     "build": {
@@ -47,10 +49,12 @@
         "R2_ENDPOINT",
         "R2_PUBLIC_BASE_URL",
         "R2_PUBLIC_URL",
-        "PORT"
+        "PORT",
+        "NODE_ENV",
+        "SERVICE_NAME"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".sst/**", "dist/**"]
+      "outputs": [".sst/**", "dist/**", "storybook-static/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
