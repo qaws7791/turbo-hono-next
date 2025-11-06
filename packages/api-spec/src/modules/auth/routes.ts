@@ -44,24 +44,8 @@ export const loginWithEmailRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 본문이 올바르지 않습니다.",
-      content: {
-        "application/json": {
-          schema: AuthSchemas.ErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "이메일 또는 비밀번호가 올바르지 않습니다.",
-      content: {
-        "application/json": {
-          schema: AuthSchemas.ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: AuthSchemas.ErrorResponseSchema,
@@ -100,16 +84,8 @@ export const signupRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 본문이 올바르지 않습니다.",
-      content: {
-        "application/json": {
-          schema: AuthSchemas.ErrorResponseSchema,
-        },
-      },
-    },
-    409: {
-      description: "이미 가입된 사용자입니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: AuthSchemas.ErrorResponseSchema,
@@ -150,24 +126,8 @@ export const changePasswordRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 데이터가 올바르지 않습니다.",
-      content: {
-        "application/json": {
-          schema: AuthSchemas.ErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "현재 비밀번호가 일치하지 않습니다.",
-      content: {
-        "application/json": {
-          schema: AuthSchemas.ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: AuthSchemas.ErrorResponseSchema,
@@ -204,8 +164,8 @@ export const logoutRoute = createRoute({
         },
       },
     },
-    500: {
-      description: "로그아웃 처리에 실패했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: AuthSchemas.ErrorResponseSchema,
@@ -242,8 +202,8 @@ export const currentUserRoute = createRoute({
         },
       },
     },
-    401: {
-      description: "인증이 필요합니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: AuthSchemas.ErrorResponseSchema,

@@ -3,7 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import {
   LearningModuleActivityQuerySchema,
   LearningModuleActivityResponseSchema,
-  ProgressErrorResponseSchema,
+  ProgressSchemas,
 } from "./schema";
 
 export const dailyProgressRoute = createRoute({
@@ -30,27 +30,11 @@ export const dailyProgressRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "날짜 범위 또는 형식이 유효하지 않습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
-          schema: ProgressErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: ProgressErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
-      content: {
-        "application/json": {
-          schema: ProgressErrorResponseSchema,
+          schema: ProgressSchemas.ErrorResponseSchema,
         },
       },
     },

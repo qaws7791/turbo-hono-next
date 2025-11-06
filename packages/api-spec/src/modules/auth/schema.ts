@@ -2,6 +2,8 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "@hono/zod-openapi";
 import { account, session, user, verification } from "@repo/database/schema";
 
+import { ErrorResponseSchema } from "../../common/schema";
+
 const EmailSignupRequestSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1).max(100).optional(),
@@ -57,11 +59,6 @@ const SessionResponseSchema = z.object({
     id: z.string(),
     expiresAt: z.string(),
   }),
-});
-
-const ErrorResponseSchema = z.object({
-  error: z.string(),
-  code: z.string(),
 });
 
 const UserSchema = createSelectSchema(user);

@@ -42,48 +42,8 @@ export const submitLearningTaskQuizRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 본문이 유효하지 않습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    403: {
-      description: "접근 권한이 없습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    404: {
-      description: "퀴즈, LearningTask 또는 LearningPlan을 찾을 수 없습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    409: {
-      description: "퀴즈가 준비되지 않았거나 이미 제출되었습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "퀴즈 제출 중 서버 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,

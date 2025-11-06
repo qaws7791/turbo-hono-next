@@ -31,32 +31,8 @@ export const learningPlanDetailRoute = createRoute({
         },
       },
     },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    403: {
-      description: "이 LearningPlan에 접근할 수 없습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    404: {
-      description: "LearningPlan을 찾을 수 없습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,

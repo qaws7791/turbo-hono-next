@@ -1,5 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
+import { ErrorResponseSchema } from "../../common/schema";
+
 const isoDateString = z
   .string()
   .regex(
@@ -108,22 +110,9 @@ export const LearningModuleActivityResponseSchema = z.object({
   }),
 });
 
-export const ProgressErrorResponseSchema = z.object({
-  error: z.object({
-    code: z.string().openapi({
-      description: "에러 코드",
-      example: "progress:invalid_date_range",
-    }),
-    message: z.string().openapi({
-      description: "에러 메시지",
-      example: "시작 날짜는 종료 날짜보다 늦을 수 없습니다.",
-    }),
-  }),
-});
-
 export const ProgressSchemas = {
   LearningModuleActivityQuerySchema,
   LearningModuleActivityDaySchema,
   LearningModuleActivityResponseSchema,
-  ProgressErrorResponseSchema,
+  ErrorResponseSchema,
 };

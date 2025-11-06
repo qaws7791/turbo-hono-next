@@ -1,5 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
+import { ErrorResponseSchema } from "../../common/schema";
+
 export const DocumentItemSchema = z.object({
   id: z.string().openapi({
     description: "문서 공개 ID",
@@ -66,27 +68,10 @@ export const DocumentDeleteResponseSchema = z.object({
   }),
 });
 
-export const DocumentErrorResponseSchema = z.object({
-  success: z.boolean().openapi({
-    description: "요청 성공 여부",
-    example: false,
-  }),
-  error: z.object({
-    code: z.string().openapi({
-      description: "에러 코드",
-      example: "document:invalid_file_type",
-    }),
-    message: z.string().openapi({
-      description: "에러 메시지",
-      example: "PDF 파일만 업로드할 수 있습니다.",
-    }),
-  }),
-});
-
 export const DocumentSchemas = {
   DocumentItemSchema,
   DocumentListResponseSchema,
   DocumentUploadResponseSchema,
   DocumentDeleteResponseSchema,
-  DocumentErrorResponseSchema,
+  ErrorResponseSchema,
 };

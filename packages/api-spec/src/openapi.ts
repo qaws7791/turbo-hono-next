@@ -8,6 +8,7 @@ import { authRoutes } from "./modules/auth/routes";
 import { documentRoutes } from "./modules/documents/routes";
 import { learningPlanRoutes } from "./modules/learning-plan/routes";
 import { progressRoutes } from "./modules/progress/routes";
+import { ErrorResponseSchema } from "./common/schema";
 
 const registry = new OpenAPIRegistry();
 
@@ -24,6 +25,8 @@ const ensureInitialized = () => {
     name: "session",
     description: "Session cookie for user authentication",
   });
+
+  registry.registerComponent("schemas", "ErrorResponse", ErrorResponseSchema);
 
   const routes = [
     ...authRoutes,

@@ -41,24 +41,8 @@ export const createLearningPlanRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 본문이 검증을 통과하지 못했습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,

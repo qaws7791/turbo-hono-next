@@ -41,32 +41,8 @@ export const generateLearningPlanRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청 본문이 검증을 통과하지 못했습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    429: {
-      description: "요청 한도를 초과했습니다.",
-      content: {
-        "application/json": {
-          schema: ErrorResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "서버 내부 오류가 발생했습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
           schema: ErrorResponseSchema,
@@ -119,43 +95,11 @@ export const generateLearningTaskNoteRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청이 유효하지 않습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
-          schema: GenerateLearningTaskNoteResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskNoteResponseSchema,
-        },
-      },
-    },
-    403: {
-      description: "접근 권한이 없습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskNoteResponseSchema,
-        },
-      },
-    },
-    404: {
-      description: "대상 LearningPlan 또는 LearningTask를 찾을 수 없습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskNoteResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "노트 생성 중 서버 오류가 발생했습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskNoteResponseSchema,
+          schema: ErrorResponseSchema,
         },
       },
     },
@@ -205,43 +149,11 @@ export const generateLearningTaskQuizRoute = createRoute({
         },
       },
     },
-    400: {
-      description: "요청이 유효하지 않습니다.",
+    default: {
+      description: "에러 응답",
       content: {
         "application/json": {
-          schema: GenerateLearningTaskQuizResponseSchema,
-        },
-      },
-    },
-    401: {
-      description: "인증이 필요합니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskQuizResponseSchema,
-        },
-      },
-    },
-    403: {
-      description: "접근 권한이 없습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskQuizResponseSchema,
-        },
-      },
-    },
-    404: {
-      description: "대상 LearningPlan 또는 LearningTask를 찾을 수 없습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskQuizResponseSchema,
-        },
-      },
-    },
-    500: {
-      description: "퀴즈 생성 중 서버 오류가 발생했습니다.",
-      content: {
-        "application/json": {
-          schema: GenerateLearningTaskQuizResponseSchema,
+          schema: ErrorResponseSchema,
         },
       },
     },
