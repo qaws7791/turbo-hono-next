@@ -10,15 +10,11 @@ import { all, createLowlight } from "lowlight";
 import { marked } from "marked";
 import { useEffect } from "react";
 
-import type { LearningTaskDetail } from "@/features/learning-plan/model/types";
-
 import { AI_NOTE_STATUS_META } from "@/features/learning-plan/model/status-meta";
 import { formatNullableDateTime } from "@/features/learning-plan/model/date";
 import { useLearningTaskNote } from "@/features/learning-plan/hooks/use-learning-task-note";
 
 type AiNoteTabProps = {
-  detail: LearningTaskDetail;
-  learningPlanId: string;
   learningTaskId: string;
 };
 
@@ -29,23 +25,22 @@ marked.use({
   breaks: true,
 });
 
-export function AiNoteTab({
-  detail,
-  learningPlanId,
-  learningTaskId,
-}: AiNoteTabProps) {
-  const { generateNote, isProcessing, errorMessage } = useLearningTaskNote({
-    learningPlanId,
-    learningTaskId,
-    status: detail.aiNoteStatus,
-  });
+export function AiNoteTab({ learningTaskId }: AiNoteTabProps) {
+  const { noteData, generateNote, isProcessing, errorMessage } =
+    useLearningTaskNote({
+      learningTaskId,
+    });
 
-  const noteStatus = detail.aiNoteStatus;
+  const noteStatus = noteData?.status ?? "idle";
   const noteStatusMeta = AI_NOTE_STATUS_META[noteStatus];
-  const requestedAtLabel = formatNullableDateTime(detail.aiNoteRequestedAt);
-  const completedAtLabel = formatNullableDateTime(detail.aiNoteCompletedAt);
+  const requestedAtLabel = formatNullableDateTime(
+    noteData?.requestedAt ?? null,
+  );
+  const completedAtLabel = formatNullableDateTime(
+    noteData?.completedAt ?? null,
+  );
   const hasNoteContent =
-    noteStatus === "ready" && typeof detail.aiNoteMarkdown === "string";
+    noteStatus === "ready" && typeof noteData?.markdown === "string";
 
   const handleGenerateNote = async (force?: boolean) => {
     await generateNote(force);
@@ -79,9 +74,9 @@ export function AiNoteTab({
         </div>
       )}
 
-      {noteStatus === "failed" && detail.aiNoteError && (
+      {noteStatus === "failed" && noteData?.errorMessage && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {detail.aiNoteError}
+          {noteData.errorMessage}
         </div>
       )}
 
@@ -91,8 +86,8 @@ export function AiNoteTab({
         </div>
       )}
 
-      {hasNoteContent && detail.aiNoteMarkdown ? (
-        <AiNoteViewer markdown={detail.aiNoteMarkdown} />
+      {hasNoteContent && noteData?.markdown ? (
+        <AiNoteViewer markdown={noteData.markdown} />
       ) : noteStatus !== "processing" ? (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>

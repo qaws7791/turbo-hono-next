@@ -13,7 +13,17 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Login with email and password */
+    /**
+     * 이메일과 비밀번호로 로그인합니다
+     * @description 세션 쿠키를 발급해 인증된 상태를 시작합니다.
+     *
+     *     - **입력 검증**: AuthSchemas.EmailLoginRequestSchema 규격을 지키지 않으면
+     *       400을 반환합니다. 이는 잘못된 요청으로 인한 자원 낭비를 막기 위함입니다.
+     *     - **보안 정책**: 잘못된 인증 정보가 반복되면 계정 보호를 위해 제한이
+     *       적용됩니다.
+     *     - **세션 관리**: 기존 세션이 있으면 새로운 세션으로 갱신해 동시 로그인
+     *       충돌을 방지합니다.
+     */
     post: {
       parameters: {
         query?: never;
@@ -21,7 +31,7 @@ export interface paths {
         path?: never;
         cookie?: never;
       };
-      /** @description Login with email and password */
+      /** @description 이메일과 비밀번호를 전달합니다. */
       requestBody?: {
         content: {
           "application/json": {
@@ -32,10 +42,10 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Login successful */
+        /** @description 로그인에 성공했습니다. */
         200: {
           headers: {
-            /** @description Session cookie */
+            /** @description 세션 쿠키 값입니다. */
             "Set-Cookie"?: string;
             [name: string]: unknown;
           };
@@ -56,39 +66,25 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid input */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Invalid credentials */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -109,7 +105,15 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Register with email and password */
+    /**
+     * 이메일로 신규 사용자를 등록합니다
+     * @description 사용자를 생성하고 성공 시 즉시 로그인 세션을 발급합니다.
+     *
+     *     - **중복 방지**: 이미 등록된 이메일이면 409를 반환해 계정 충돌을 방지합니다.
+     *     - **입력 검증**: AuthSchemas.EmailSignupRequestSchema 요구 사항을 충족하지
+     *       않으면 400을 반환합니다. 안전한 비밀번호 정책 유지를 위한 조치입니다.
+     *     - **자동 로그인**: 가입 직후 세션을 발급해 학습 온보딩 경험을 단순화합니다.
+     */
     post: {
       parameters: {
         query?: never;
@@ -128,7 +132,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Registration successful */
+        /** @description 회원가입이 완료되었습니다. */
         201: {
           headers: {
             [name: string]: unknown;
@@ -150,27 +154,25 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid input */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description User already exists */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -191,8 +193,15 @@ export interface paths {
     };
     get?: never;
     /**
-     * Change user password
-     * @description Change the current user's password by providing current and new password
+     * 현재 비밀번호를 검증하고 새 비밀번호로 변경합니다
+     * @description 기존 자격 증명을 확인한 뒤 새 비밀번호를 저장합니다.
+     *
+     *     - **본인 확인**: 현재 비밀번호가 맞지 않으면 401을 반환해 계정 무단 변경을
+     *       차단합니다.
+     *     - **입력 검증**: AuthSchemas.ChangePasswordRequestSchema 요건을 충족하지
+     *       않으면 400을 반환합니다. 이는 비밀번호 품질을 보장하기 위한 정책입니다.
+     *     - **세션 유지**: 성공 시 기존 세션을 유지해 학습 진행이 중단되지 않도록
+     *       합니다.
      */
     put: {
       parameters: {
@@ -214,7 +223,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Password changed successfully */
+        /** @description 비밀번호를 변경했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -226,39 +235,25 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid request data */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Current password is incorrect */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: string;
-              code: string;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -280,7 +275,17 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Logout user */
+    /**
+     * 세션 쿠키를 제거해 로그아웃합니다
+     * @description 현재 세션을 만료시키고 클라이언트 쿠키를 제거합니다.
+     *
+     *     - **쿠키 정리**: 서버와 클라이언트 쿠키를 함께 제거해 잔여 세션 노출을
+     *       막습니다.
+     *     - **다중 기기**: 요청한 세션만 종료되며 다른 기기 세션은 유지됩니다. 이는
+     *       예기치 않은 세션 해제를 방지하기 위한 설계입니다.
+     *     - **보안성**: 명시적 로그아웃 요청으로 탈취된 세션을 즉시 무효화할 수
+     *       있습니다.
+     */
     post: {
       parameters: {
         query?: never;
@@ -290,7 +295,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Logout successful */
+        /** @description 로그아웃에 성공했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -302,15 +307,25 @@ export interface paths {
             };
           };
         };
-        /** @description Logout failed */
-        500: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              error: string;
-              code: string;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -329,7 +344,17 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get current user information */
+    /**
+     * 현재 로그인한 사용자의 정보를 조회합니다
+     * @description 세션 쿠키를 검사해 인증된 사용자의 프로필을 반환합니다.
+     *
+     *     - **세션 필수**: cookieAuth 보안 스키마가 없으면 401을 반환합니다. 이는
+     *       민감 정보 노출을 막기 위한 최소 조건입니다.
+     *     - **캐시 주의**: 사용자 상태가 자주 변하므로 중간 캐시를 피하고 직접
+     *       호출해야 합니다.
+     *     - **동시성**: 최신 정보를 위해 DB에서 즉시 조회하며, 지연된 복제를
+     *       사용하는 환경에서는 일시적인 지연이 있을 수 있습니다.
+     */
     get: {
       parameters: {
         query?: never;
@@ -339,7 +364,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Current user information */
+        /** @description 현재 로그인한 사용자의 정보를 반환합니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -355,15 +380,25 @@ export interface paths {
             };
           };
         };
-        /** @description Authentication required */
-        401: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              error: string;
-              code: string;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -385,22 +420,29 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Get document details
-     * @description Retrieve detailed information about a specific document
+     * 문서 상세 정보를 조회합니다
+     * @description 문서 공개 ID를 통해 저장된 DocumentItem을 확인합니다.
+     *
+     *     - **인증 필요**: cookieAuth 세션이 없으면 401을 반환합니다. 자료 외부 유출을
+     *       막기 위한 기본 조건입니다.
+     *     - **접근 제어**: 문서 소유자가 아니면 403을 반환합니다. 이는 개인화된
+     *       학습 기록을 보호하기 위함입니다.
+     *     - **처리 상태**: 텍스트 추출이 진행 중인 경우 일부 필드가 비어 있을 수
+     *       있습니다.
      */
     get: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Document public ID */
+          /** @description 문서 공개 ID */
           publicId: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Document retrieved successfully */
+        /** @description 문서를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -410,42 +452,42 @@ export interface paths {
               success: boolean;
               document: {
                 /**
-                 * @description Public ID of the document
+                 * @description 문서 공개 ID
                  * @example 550e8400-e29b-41d4-a716-446655440000
                  */
                 id: string;
                 /**
-                 * @description Original file name
+                 * @description 원본 파일 이름
                  * @example learning-guide.pdf
                  */
                 fileName: string;
                 /**
-                 * @description File size in bytes
+                 * @description 파일 크기(바이트)
                  * @example 1048576
                  */
                 fileSize: number;
                 /**
-                 * @description MIME type of the file
+                 * @description 파일 MIME 타입
                  * @example application/pdf
                  */
                 fileType: string;
                 /**
-                 * @description Public URL to access the file
+                 * @description 파일에 접근할 수 있는 공개 URL
                  * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
                  */
                 storageUrl: string;
                 /**
-                 * @description Associated learningPlan ID (null if not yet linked)
+                 * @description 연결된 LearningPlan ID(아직 연결 전이면 null)
                  * @example 123
                  */
                 learningPlanId: number | null;
                 /**
-                 * @description Upload timestamp
+                 * @description 업로드 시각
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 uploadedAt: string;
                 /**
-                 * @description Creation timestamp
+                 * @description 생성 시각
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
@@ -453,108 +495,22 @@ export interface paths {
             };
           };
         };
-        /** @description Authentication required */
-        401: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
-                 * @description Error code
-                 * @example document:invalid_file_type
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
-              error: {
-                /**
-                 * @description Error code
-                 * @example document:invalid_file_type
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Document not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
-              error: {
-                /**
-                 * @description Error code
-                 * @example document:invalid_file_type
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
-              error: {
-                /**
-                 * @description Error code
-                 * @example document:invalid_file_type
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -581,8 +537,15 @@ export interface paths {
     get?: never;
     put?: never;
     /**
-     * Upload a PDF document
-     * @description Upload a PDF file to R2 storage. The file will be validated and text extraction will begin in the background.
+     * PDF 학습 자료를 업로드합니다
+     * @description PDF 파일을 업로드하고 비동기 텍스트 추출을 시작합니다.
+     *
+     *     - **파일 제한**: 10MB 이하의 PDF만 허용합니다. R2 스토리지 사용량과
+     *       처리 시간을 제어하기 위한 정책입니다.
+     *     - **비동기 처리**: 응답은 업로드 결과만 반환하고 텍스트 추출은 백그라운드에서
+     *       수행됩니다.
+     *     - **보안 주의**: 민감 정보가 포함된 파일은 암호화 저장되며, 업로드 후에도
+     *       접근 권한 검사가 적용됩니다.
      */
     post: {
       parameters: {
@@ -596,14 +559,14 @@ export interface paths {
           "multipart/form-data": {
             /**
              * Format: binary
-             * @description PDF file to upload (max 10MB)
+             * @description 업로드할 PDF 파일(최대 10MB)
              */
             file: string;
           };
         };
       };
       responses: {
-        /** @description Document uploaded successfully */
+        /** @description 문서를 업로드했습니다. */
         201: {
           headers: {
             [name: string]: unknown;
@@ -611,49 +574,49 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Upload success status
+               * @description 업로드 성공 여부
                * @example true
                */
               success: boolean;
-              /** @description Uploaded document information */
+              /** @description 업로드된 문서 정보 */
               document: {
                 /**
-                 * @description Public ID of the document
+                 * @description 문서 공개 ID
                  * @example 550e8400-e29b-41d4-a716-446655440000
                  */
                 id: string;
                 /**
-                 * @description Original file name
+                 * @description 원본 파일 이름
                  * @example learning-guide.pdf
                  */
                 fileName: string;
                 /**
-                 * @description File size in bytes
+                 * @description 파일 크기(바이트)
                  * @example 1048576
                  */
                 fileSize: number;
                 /**
-                 * @description MIME type of the file
+                 * @description 파일 MIME 타입
                  * @example application/pdf
                  */
                 fileType: string;
                 /**
-                 * @description Public URL to access the file
+                 * @description 파일에 접근할 수 있는 공개 URL
                  * @example https://pub-xxx.r2.dev/pdfs/user123/1234567890-uuid.pdf
                  */
                 storageUrl: string;
                 /**
-                 * @description Associated learningPlan ID (null if not yet linked)
+                 * @description 연결된 LearningPlan ID(아직 연결 전이면 null)
                  * @example 123
                  */
                 learningPlanId: number | null;
                 /**
-                 * @description Upload timestamp
+                 * @description 업로드 시각
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 uploadedAt: string;
                 /**
-                 * @description Creation timestamp
+                 * @description 생성 시각
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
@@ -661,81 +624,22 @@ export interface paths {
             };
           };
         };
-        /** @description Bad request - invalid file */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
               error: {
                 /**
-                 * @description Error code
-                 * @example document:invalid_file_type
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
-              error: {
-                /**
-                 * @description Error code
-                 * @example document:invalid_file_type
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Request success status
-               * @example false
-               */
-              success: boolean;
-              error: {
-                /**
-                 * @description Error code
-                 * @example document:invalid_file_type
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Only PDF files are allowed
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -757,7 +661,16 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get daily learning module activity (due & completed) */
+    /**
+     * 일별 학습 모듈 활동량을 조회합니다
+     * @description 지정된 기간 동안 LearningModule의 예정·완료 수치를 집계합니다.
+     *
+     *     - **기간 제한**: LearningModuleActivityQuerySchema 허용 범위를 넘으면
+     *       400을 반환합니다. 이는 과도한 데이터 스캔을 방지하기 위한 정책입니다.
+     *     - **시간대 기준**: 모든 날짜는 서버 기본 타임존(UTC) 기준으로 계산됩니다.
+     *     - **인증 필수**: cookieAuth 세션 없이는 401을 반환해 타인 데이터 접근을
+     *       차단합니다.
+     */
     get: {
       parameters: {
         query?: {
@@ -772,7 +685,7 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description Daily learning module activity retrieved successfully */
+        /** @description 일별 활동 데이터를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -885,8 +798,8 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid date range or format */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -895,56 +808,12 @@ export interface paths {
               error: {
                 /**
                  * @description 에러 코드
-                 * @example progress:invalid_date_range
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
                  * @description 에러 메시지
-                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example progress:invalid_date_range
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example progress:invalid_date_range
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 시작 날짜는 종료 날짜보다 늦을 수 없습니다.
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -961,7 +830,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/learning-plans/generate": {
+  "/ai/plans/generate": {
     parameters: {
       query?: never;
       header?: never;
@@ -970,7 +839,17 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Generate a personalized learning learningPlan using AI */
+    /**
+     * AI로 맞춤 LearningPlan을 생성합니다
+     * @description 사용자 목표와 선호도를 기반으로 AI가 LearningPlan을 제안합니다.
+     *
+     *     - **입력 검증**: GenerateLearningPlanRequestSchema 요건을 충족하지 않으면
+     *       400을 반환합니다. 이는 모델 품질 저하를 막기 위한 전처리입니다.
+     *     - **요금 보호**: 요청이 과도하면 429를 반환합니다. AI 사용량을 제어하기
+     *       위한 정책입니다.
+     *     - **세션 요구**: 인증된 사용자만 호출할 수 있어 개인 데이터에 맞는 계획을
+     *       제공합니다.
+     */
     post: {
       parameters: {
         query?: never;
@@ -1045,7 +924,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description LearningPlan generated successfully */
+        /** @description LearningPlan을 생성했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -1206,8 +1085,8 @@ export interface paths {
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -1216,78 +1095,12 @@ export interface paths {
               error: {
                 /**
                  * @description 에러 코드
-                 * @example ai:generation_failed
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
                  * @description 에러 메시지
-                 * @example 로드맵 생성에 실패했습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example ai:generation_failed
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 로드맵 생성에 실패했습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Rate limit exceeded */
-        429: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example ai:generation_failed
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 로드맵 생성에 실패했습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example ai:generation_failed
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 로드맵 생성에 실패했습니다.
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -1302,34 +1115,37 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes": {
+  "/tasks/{id}/notes": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    /** Generate or refresh AI learning note for a learning-task */
-    post: {
+    /**
+     * AI가 생성한 LearningTask 노트를 조회합니다
+     * @description 해당 LearningTask에 대해 생성된 AI 노트와 상태를 반환합니다.
+     *
+     *     - **존재 여부**: 노트가 없으면 status가 idle로 반환됩니다. AI 생성 전 상태를
+     *       구분하기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 노트
+     *       유출을 막기 위한 조치입니다.
+     *     - **동기화**: generateLearningTaskNoteRoute 호출 직후에는 status가 pending일 수
+     *       있으므로 폴링 간격을 조정해야 합니다.
+     */
+    get: {
       parameters: {
-        query?: {
-          /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
-          force?: boolean | null;
-        };
+        query?: never;
         header?: never;
         path: {
-          /** @description 로드맵 공개 ID */
-          learningPlanId: string;
-          /** @description 세부 목표 공개 ID */
-          learningTaskId: string;
+          /** @description LearningTask 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Existing note status returned */
+        /** @description AI 노트를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -1367,7 +1183,95 @@ export interface paths {
             };
           };
         };
-        /** @description Note generation started */
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * AI로 LearningTask 노트를 생성하거나 새로고침합니다
+     * @description LearningTask에 연결된 AI 노트를 생성하고 현재 상태를 반환합니다.
+     *
+     *     - **비동기 처리**: 새 노트를 생성하면 202를 반환하고 백그라운드에서
+     *       텍스트를 작성합니다.
+     *     - **상태 재사용**: 이미 생성 중이라면 200으로 최신 상태를 그대로 제공합니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 노트 노출을
+     *       막습니다.
+     */
+    post: {
+      parameters: {
+        query?: {
+          /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
+          force?: boolean | null;
+        };
+        header?: never;
+        path: {
+          /** @description LearningTask 공개 ID */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 기존 노트 상태를 반환했습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description 현재 AI 노트 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              status: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
+               * @example null
+               */
+              markdown: string | null;
+              /**
+               * Format: date-time
+               * @description 가장 최근 노트 생성 요청 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              requestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description 생성 완료 혹은 실패가 기록된 시각
+               * @example 2024-06-01T10:02:30.000Z
+               */
+              completedAt: string | null;
+              /**
+               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
+               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
+               */
+              errorMessage: string | null;
+            };
+          };
+        };
+        /** @description 노트 생성을 시작했습니다. */
         202: {
           headers: {
             [name: string]: unknown;
@@ -1405,193 +1309,25 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid request */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
-               * @example null
-               */
-              markdown: string | null;
-              /**
-               * Format: date-time
-               * @description 가장 최근 노트 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 혹은 실패가 기록된 시각
-               * @example 2024-06-01T10:02:30.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
-               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
-               */
-              errorMessage: string | null;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
-               * @example null
-               */
-              markdown: string | null;
-              /**
-               * Format: date-time
-               * @description 가장 최근 노트 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 혹은 실패가 기록된 시각
-               * @example 2024-06-01T10:02:30.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
-               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
-               */
-              errorMessage: string | null;
-            };
-          };
-        };
-        /** @description Access denied */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
-               * @example null
-               */
-              markdown: string | null;
-              /**
-               * Format: date-time
-               * @description 가장 최근 노트 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 혹은 실패가 기록된 시각
-               * @example 2024-06-01T10:02:30.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
-               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
-               */
-              errorMessage: string | null;
-            };
-          };
-        };
-        /** @description Target learningPlan or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
-               * @example null
-               */
-              markdown: string | null;
-              /**
-               * Format: date-time
-               * @description 가장 최근 노트 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 혹은 실패가 기록된 시각
-               * @example 2024-06-01T10:02:30.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
-               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
-               */
-              errorMessage: string | null;
-            };
-          };
-        };
-        /** @description Server error while generating the note */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성된 마크다운 노트. 생성 중이거나 실패 시 null
-               * @example null
-               */
-              markdown: string | null;
-              /**
-               * Format: date-time
-               * @description 가장 최근 노트 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 혹은 실패가 기록된 시각
-               * @example 2024-06-01T10:02:30.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출 가능한 오류 메시지
-               * @example Gemini 호출이 실패했습니다. 잠시 후 다시 시도해주세요.
-               */
-              errorMessage: string | null;
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
             };
           };
         };
@@ -1603,34 +1339,37 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes": {
+  "/tasks/{id}/quizzes": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    /** Generate or refresh an AI quiz for a learning-task */
-    post: {
+    /**
+     * AI가 생성한 LearningTask 퀴즈를 조회합니다
+     * @description 해당 LearningTask에 대해 생성된 AI 퀴즈와 상태를 반환합니다.
+     *
+     *     - **존재 여부**: 퀴즈가 없으면 status가 idle로 반환됩니다. AI 생성 전 상태를
+     *       구분하기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 학습 평가 노출을
+     *       막습니다.
+     *     - **동기화**: generateLearningTaskQuizRoute 호출 직후에는 status가 pending일 수
+     *       있어 폴링 간격을 조정해야 합니다.
+     */
+    get: {
       parameters: {
-        query?: {
-          /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
-          force?: boolean | null;
-        };
+        query?: never;
         header?: never;
         path: {
-          /** @description 로드맵 공개 ID */
-          learningPlanId: string;
-          /** @description 세부 목표 공개 ID */
-          learningTaskId: string;
+          /** @description LearningTask 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Existing quiz status returned */
+        /** @description 최신 AI 퀴즈를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -1759,7 +1498,186 @@ export interface paths {
             };
           };
         };
-        /** @description Quiz generation started */
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * AI로 LearningTask 퀴즈를 생성하거나 새로고침합니다
+     * @description LearningTask 내용에 맞춘 AI 퀴즈를 생성하고 상태를 반환합니다.
+     *
+     *     - **비동기 처리**: 새 퀴즈를 만들면 202를 반환하고 생성이 끝날 때까지
+     *       진행 상황만 제공합니다.
+     *     - **재사용 정책**: 기존 퀴즈가 최신이면 200으로 현재 데이터를 반환합니다.
+     *     - **접근 제어**: 학습자 본인이 아니면 403을 반환해 학습 데이터 유출을
+     *       방지합니다.
+     */
+    post: {
+      parameters: {
+        query?: {
+          /** @description 기존 노트가 있더라도 재생성을 강제로 요청합니다 */
+          force?: boolean | null;
+        };
+        header?: never;
+        path: {
+          /** @description LearningTask 공개 ID */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 기존 퀴즈 상태를 반환했습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description 퀴즈 ID
+               * @example 123
+               */
+              id: string;
+              /**
+               * @description 현재 AI 퀴즈 생성 상태
+               * @example processing
+               * @enum {string}
+               */
+              status: "idle" | "processing" | "ready" | "failed";
+              /**
+               * @description 생성 요청 시 목표 문항 수
+               * @example 8
+               */
+              targetQuestionCount: number;
+              /**
+               * @description 실제 생성된 문항 수
+               * @example 8
+               */
+              totalQuestions: number | null;
+              /**
+               * Format: date-time
+               * @description 생성 요청 시각
+               * @example 2024-06-01T10:00:00.000Z
+               */
+              requestedAt: string | null;
+              /**
+               * Format: date-time
+               * @description 생성 완료 시각
+               * @example 2024-06-01T10:02:00.000Z
+               */
+              completedAt: string | null;
+              /**
+               * @description 실패 시 사용자에게 노출할 오류 메시지
+               * @example Gemini API 호출이 실패했습니다.
+               */
+              errorMessage: string | null;
+              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
+              questions:
+                | Array<{
+                    /**
+                     * @description 문항 식별자
+                     * @example q1
+                     */
+                    id: string;
+                    /**
+                     * @description 문제 본문
+                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                     */
+                    prompt: string;
+                    /** @description 객관식 보기 4개 */
+                    options: Array<string>;
+                  }>
+                | null;
+              /** @description 사용자의 가장 최근 퀴즈 결과 */
+              latestResult: {
+                /**
+                 * @description 채점된 퀴즈 ID
+                 * @example 123
+                 */
+                quizId: string;
+                /**
+                 * @description 총 문항 수
+                 * @example 8
+                 */
+                totalQuestions: number;
+                /**
+                 * @description 맞힌 문항 수
+                 * @example 6
+                 */
+                correctCount: number;
+                /**
+                 * @description 정답 비율 (퍼센트)
+                 * @example 75
+                 */
+                scorePercent: number;
+                /** @description 문항별 채점 정보 */
+                answers: Array<{
+                  /**
+                   * @description 문항 식별자
+                   * @example q1
+                   */
+                  id: string;
+                  /**
+                   * @description 문제 본문
+                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                   */
+                  prompt: string;
+                  /** @description 객관식 보기 4개 */
+                  options: Array<string>;
+                  /**
+                   * @description 사용자가 선택한 보기 인덱스
+                   * @example 1
+                   */
+                  selectedIndex: number;
+                  /**
+                   * @description 정답 보기 인덱스
+                   * @example 0
+                   */
+                  correctIndex: number;
+                  /**
+                   * @description 정답 설명
+                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
+                   */
+                  explanation: string;
+                  /**
+                   * @description 정답 여부
+                   * @example true
+                   */
+                  isCorrect: boolean;
+                }>;
+                /**
+                 * Format: date-time
+                 * @description 제출 시각
+                 * @example 2024-06-01T10:05:00.000Z
+                 */
+                submittedAt: string;
+              } | null;
+            };
+          };
+        };
+        /** @description 퀴즈 생성을 시작했습니다. */
         202: {
           headers: {
             [name: string]: unknown;
@@ -1888,648 +1806,25 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid request */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /**
-               * @description 퀴즈 ID
-               * @example 123
-               */
-              id: string;
-              /**
-               * @description 현재 AI 퀴즈 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성 요청 시 목표 문항 수
-               * @example 8
-               */
-              targetQuestionCount: number;
-              /**
-               * @description 실제 생성된 문항 수
-               * @example 8
-               */
-              totalQuestions: number | null;
-              /**
-               * Format: date-time
-               * @description 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 시각
-               * @example 2024-06-01T10:02:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출할 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              errorMessage: string | null;
-              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
-              /** @description 사용자의 가장 최근 퀴즈 결과 */
-              latestResult: {
+              error: {
                 /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
-                quizId: string;
+                code: string;
                 /**
-                 * @description 총 문항 수
-                 * @example 8
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              } | null;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 퀴즈 ID
-               * @example 123
-               */
-              id: string;
-              /**
-               * @description 현재 AI 퀴즈 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성 요청 시 목표 문항 수
-               * @example 8
-               */
-              targetQuestionCount: number;
-              /**
-               * @description 실제 생성된 문항 수
-               * @example 8
-               */
-              totalQuestions: number | null;
-              /**
-               * Format: date-time
-               * @description 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 시각
-               * @example 2024-06-01T10:02:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출할 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              errorMessage: string | null;
-              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
-              /** @description 사용자의 가장 최근 퀴즈 결과 */
-              latestResult: {
-                /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
-                 */
-                quizId: string;
-                /**
-                 * @description 총 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              } | null;
-            };
-          };
-        };
-        /** @description Access denied */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 퀴즈 ID
-               * @example 123
-               */
-              id: string;
-              /**
-               * @description 현재 AI 퀴즈 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성 요청 시 목표 문항 수
-               * @example 8
-               */
-              targetQuestionCount: number;
-              /**
-               * @description 실제 생성된 문항 수
-               * @example 8
-               */
-              totalQuestions: number | null;
-              /**
-               * Format: date-time
-               * @description 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 시각
-               * @example 2024-06-01T10:02:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출할 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              errorMessage: string | null;
-              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
-              /** @description 사용자의 가장 최근 퀴즈 결과 */
-              latestResult: {
-                /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
-                 */
-                quizId: string;
-                /**
-                 * @description 총 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              } | null;
-            };
-          };
-        };
-        /** @description Target learningPlan or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 퀴즈 ID
-               * @example 123
-               */
-              id: string;
-              /**
-               * @description 현재 AI 퀴즈 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성 요청 시 목표 문항 수
-               * @example 8
-               */
-              targetQuestionCount: number;
-              /**
-               * @description 실제 생성된 문항 수
-               * @example 8
-               */
-              totalQuestions: number | null;
-              /**
-               * Format: date-time
-               * @description 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 시각
-               * @example 2024-06-01T10:02:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출할 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              errorMessage: string | null;
-              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
-              /** @description 사용자의 가장 최근 퀴즈 결과 */
-              latestResult: {
-                /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
-                 */
-                quizId: string;
-                /**
-                 * @description 총 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              } | null;
-            };
-          };
-        };
-        /** @description Server error while generating the quiz */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description 퀴즈 ID
-               * @example 123
-               */
-              id: string;
-              /**
-               * @description 현재 AI 퀴즈 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              status: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description 생성 요청 시 목표 문항 수
-               * @example 8
-               */
-              targetQuestionCount: number;
-              /**
-               * @description 실제 생성된 문항 수
-               * @example 8
-               */
-              totalQuestions: number | null;
-              /**
-               * Format: date-time
-               * @description 생성 요청 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              requestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description 생성 완료 시각
-               * @example 2024-06-01T10:02:00.000Z
-               */
-              completedAt: string | null;
-              /**
-               * @description 실패 시 사용자에게 노출할 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              errorMessage: string | null;
-              /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
-              /** @description 사용자의 가장 최근 퀴즈 결과 */
-              latestResult: {
-                /**
-                 * @description 채점된 퀴즈 ID
-                 * @example 123
-                 */
-                quizId: string;
-                /**
-                 * @description 총 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number;
-                /**
-                 * @description 맞힌 문항 수
-                 * @example 6
-                 */
-                correctCount: number;
-                /**
-                 * @description 정답 비율 (퍼센트)
-                 * @example 75
-                 */
-                scorePercent: number;
-                /** @description 문항별 채점 정보 */
-                answers: Array<{
-                  /**
-                   * @description 문항 식별자
-                   * @example q1
-                   */
-                  id: string;
-                  /**
-                   * @description 문제 본문
-                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                   */
-                  prompt: string;
-                  /** @description 객관식 보기 4개 */
-                  options: Array<string>;
-                  /**
-                   * @description 사용자가 선택한 보기 인덱스
-                   * @example 1
-                   */
-                  selectedIndex: number;
-                  /**
-                   * @description 정답 보기 인덱스
-                   * @example 0
-                   */
-                  correctIndex: number;
-                  /**
-                   * @description 정답 설명
-                   * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                   */
-                  explanation: string;
-                  /**
-                   * @description 정답 여부
-                   * @example true
-                   */
-                  isCorrect: boolean;
-                }>;
-                /**
-                 * Format: date-time
-                 * @description 제출 시각
-                 * @example 2024-06-01T10:05:00.000Z
-                 */
-                submittedAt: string;
-              } | null;
+                message: string;
+              };
             };
           };
         };
@@ -2541,28 +1836,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/learning-plans": {
+  "/plans": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    /** Get learningPlan list with pagination and filtering */
+    /**
+     * LearningPlan 목록을 조회합니다
+     * @description 사용자의 LearningPlan을 필터와 페이지네이션으로 조회합니다.
+     *
+     *     - **필터 제한**: LearningPlanListQuerySchema 범위를 벗어나면 400을 반환합니다.
+     *       이는 과도한 페이지 크기 요청으로 인한 부하를 예방하기 위함입니다.
+     *     - **정렬 정책**: 기본 정렬은 최신 생성 순이며 추가 정렬 옵션은 추후
+     *       확장됩니다.
+     *     - **세션 요구**: 로그인한 사용자 데이터만 반환해 타 사용자 목록 노출을
+     *       차단합니다.
+     */
     get: {
       parameters: {
         query?: {
-          /** @description Cursor for pagination (encoded string) */
+          /** @description 페이지네이션 커서(인코딩된 문자열) */
           cursor?: string;
-          /** @description Number of items to return */
+          /** @description 반환할 항목 수 */
           limit?: number;
-          /** @description Search query for title or description */
+          /** @description 제목 또는 설명 검색어 */
           search?: string;
-          /** @description Filter by learningPlan status */
+          /** @description LearningPlan 상태 필터 */
           status?: "active" | "archived";
-          /** @description Sort field */
+          /** @description 정렬 기준 필드 */
           sort?: "created_at" | "updated_at" | "title";
-          /** @description Sort order */
+          /** @description 정렬 순서 */
           order?: "asc" | "desc";
         };
         header?: never;
@@ -2571,120 +1876,115 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description LearningPlan list retrieved successfully */
+        /** @description LearningPlan 목록을 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
           };
           content: {
             "application/json": {
-              /** @description List of learningPlans */
+              /** @description LearningPlan 목록 */
               items: Array<{
                 /**
-                 * @description Public ID of the learningPlan
+                 * @description LearningPlan 공개 ID
                  * @example abc123def456
                  */
                 id: string;
                 /**
-                 * @description Emoji that represents the learningPlan at a glance
+                 * @description LearningPlan을 한눈에 나타내는 이모지
                  * @example 🚀
                  */
                 emoji: string;
                 /**
-                 * @description LearningPlan title
+                 * @description LearningPlan 제목
                  * @example Full Stack JavaScript Developer
                  */
                 title: string;
                 /**
-                 * @description LearningPlan description
+                 * @description LearningPlan 설명
                  * @example Complete guide to becoming a full stack developer
                  */
                 description: string | null;
                 /**
-                 * @description Current status of the learningPlan
+                 * @description LearningPlan 현재 상태
                  * @example active
                  * @enum {string}
                  */
                 status: "active" | "archived";
                 /**
-                 * @description Percentage of completed learning-tasks (0-100)
+                 * @description 완료된 LearningTask 비율(0-100)
                  * @example 75
                  */
                 learningModuleCompletionPercent: number;
                 /**
-                 * @description Main learning topic
+                 * @description 핵심 학습 주제
                  * @example JavaScript
                  */
                 learningTopic: string;
                 /**
-                 * @description Target user level
+                 * @description 대상 학습자 수준
                  * @example beginner
                  */
                 userLevel: string;
                 /**
-                 * @description Target completion weeks
+                 * @description 목표 완료 주차
                  * @example 12
                  */
                 targetWeeks: number;
                 /**
-                 * @description Weekly study hours
+                 * @description 주간 학습 시간
                  * @example 10
                  */
                 weeklyHours: number;
                 /**
-                 * @description Preferred learning style
+                 * @description 선호 학습 방식
                  * @example 실습 중심
                  */
                 learningStyle: string;
                 /**
-                 * @description Preferred learning resources
+                 * @description 선호 학습 자료
                  * @example 온라인 강의
                  */
                 preferredResources: string;
                 /**
-                 * @description Main learning learningModule
+                 * @description 주요 학습 목표
                  * @example 웹 개발자 취업
                  */
                 mainGoal: string;
                 /**
-                 * @description Additional requirements
+                 * @description 추가 요구 사항
                  * @example React, Node.js 포함
                  */
                 additionalRequirements: string | null;
                 /**
-                 * @description Creation timestamp
+                 * @description 생성 시각
                  * @example 2024-01-01T00:00:00.000Z
                  */
                 createdAt: string;
                 /**
-                 * @description Last update timestamp
+                 * @description 마지막 수정 시각
                  * @example 2024-01-15T10:30:00.000Z
                  */
                 updatedAt: string;
               }>;
-              /** @description Pagination information */
+              /** @description 페이지네이션 정보 */
               pagination: {
                 /**
-                 * @description Whether there are more items
+                 * @description 추가 항목 존재 여부
                  * @example true
                  */
                 hasNext: boolean;
                 /**
-                 * @description Cursor for the next page
+                 * @description 다음 페이지 커서
                  * @example eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==
                  */
                 nextCursor: string | null;
-                /**
-                 * @description Total number of items (if available)
-                 * @example 150
-                 */
-                total: number;
               };
             };
           };
         };
-        /** @description Bad request - invalid parameters */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -2692,57 +1992,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -2752,7 +2008,21 @@ export interface paths {
       };
     };
     put?: never;
-    /** Create a new learningPlan */
+    /**
+     * 새 LearningPlan을 생성합니다
+     * @description 새 학습 계획을 만들 때 사용하는 엔드포인트입니다. 온보딩에서
+     *     사용자가 목표와 선호도를 제출한 직후 호출하면 자연스러운 흐름을 만들 수
+     *     있습니다.
+     *
+     *     - **입력 형식**: LearningPlanCreateRequestSchema 규격을 지키지 않으면 400을
+     *       반환합니다. 잘못된 데이터로 AI 추천 품질이 떨어지는 것을 막기 위한
+     *       방어선입니다.
+     *     - **템플릿 재사용**: 같은 템플릿으로 여러 계획을 만들 수 있지만 각
+     *       LearningPlan은 별도 레코드로 저장됩니다. 진행 상황을 개별적으로 추적하기
+     *       위한 설계입니다.
+     *     - **인증 요건**: cookieAuth 세션이 없으면 401을 반환합니다. 타인이 임의로
+     *       LearningPlan을 생성해 계정을 오염시키는 것을 예방하기 위함입니다.
+     */
     post: {
       parameters: {
         query?: never;
@@ -2764,57 +2034,57 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description LearningPlan title
+             * @description LearningPlan 제목
              * @example Full Stack JavaScript Developer
              */
             title: string;
             /**
-             * @description Emoji that will be used for the learningPlan (fallback applied when omitted)
+             * @description LearningPlan에 사용할 이모지(미입력 시 기본값 적용)
              * @example 🧠
              */
             emoji?: string;
             /**
-             * @description LearningPlan description
+             * @description LearningPlan 설명
              * @example Complete guide to becoming a full stack developer
              */
             description?: string;
             /**
-             * @description Main learning topic
+             * @description 핵심 학습 주제
              * @example JavaScript
              */
             learningTopic: string;
             /**
-             * @description Target user level
+             * @description 대상 학습자 수준
              * @example beginner
              */
             userLevel: string;
             /**
-             * @description Target completion weeks (1-24)
+             * @description 목표 완료 주차(1-24주)
              * @example 12
              */
             targetWeeks: number;
             /**
-             * @description Weekly study hours (1-60)
+             * @description 주간 학습 시간(1-60시간)
              * @example 10
              */
             weeklyHours: number;
             /**
-             * @description Preferred learning style
+             * @description 선호 학습 방식
              * @example 실습 중심
              */
             learningStyle: string;
             /**
-             * @description Preferred learning resources
+             * @description 선호 학습 자료
              * @example 온라인 강의
              */
             preferredResources: string;
             /**
-             * @description Main learning learningModule
+             * @description 주요 학습 목표
              * @example 웹 개발자 취업
              */
             mainGoal: string;
             /**
-             * @description Additional requirements
+             * @description 추가 요구 사항
              * @example React, Node.js 포함
              */
             additionalRequirements: string | null;
@@ -2822,7 +2092,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description LearningPlan created successfully */
+        /** @description LearningPlan을 생성했습니다. */
         201: {
           headers: {
             [name: string]: unknown;
@@ -2830,86 +2100,86 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the created learningPlan
+               * @description 생성된 LearningPlan 공개 ID
                * @example abc123def456
                */
               id: string;
               /**
-               * @description Emoji assigned to the learningPlan
+               * @description LearningPlan에 지정된 이모지
                * @example 🧠
                */
               emoji: string;
               /**
-               * @description LearningPlan title
+               * @description LearningPlan 제목
                * @example Full Stack JavaScript Developer
                */
               title: string;
               /**
-               * @description LearningPlan description
+               * @description LearningPlan 설명
                * @example Complete guide to becoming a full stack developer
                */
               description: string | null;
               /**
-               * @description Current status of the learningPlan
+               * @description LearningPlan 현재 상태
                * @example active
                * @enum {string}
                */
               status: "active" | "archived";
               /**
-               * @description Main learning topic
+               * @description 핵심 학습 주제
                * @example JavaScript
                */
               learningTopic: string;
               /**
-               * @description Target user level
+               * @description 대상 학습자 수준
                * @example beginner
                */
               userLevel: string;
               /**
-               * @description Target completion weeks
+               * @description 목표 완료 주차
                * @example 12
                */
               targetWeeks: number;
               /**
-               * @description Weekly study hours
+               * @description 주간 학습 시간
                * @example 10
                */
               weeklyHours: number;
               /**
-               * @description Preferred learning style
+               * @description 선호 학습 방식
                * @example 실습 중심
                */
               learningStyle: string;
               /**
-               * @description Preferred learning resources
+               * @description 선호 학습 자료
                * @example 온라인 강의
                */
               preferredResources: string;
               /**
-               * @description Main learning learningModule
+               * @description 주요 학습 목표
                * @example 웹 개발자 취업
                */
               mainGoal: string;
               /**
-               * @description Additional requirements
+               * @description 추가 요구 사항
                * @example React, Node.js 포함
                */
               additionalRequirements: string | null;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               updatedAt: string;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -2917,57 +2187,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -2982,30 +2208,37 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/learning-plans/{id}": {
+  "/plans/{id}": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a learningPlan */
-    delete: {
+    /**
+     * LearningPlan과 하위 구조를 조회합니다
+     * @description LearningPlan과 연결된 LearningModule, LearningTask 세부 정보를
+     *       함께 반환합니다.
+     *
+     *     - **권한 검증**: 소유자가 아니면 403을 반환합니다. 개인화된 진척도를
+     *       보호하기 위한 조치입니다.
+     *     - **지연 로딩**: 무거운 통계 필드는 별도 API에서 제공될 수 있습니다.
+     *     - **캐시 주의**: 학습 진행이 자주 변하므로 짧은 만료 시간으로 캐시하거나
+     *       매 호출마다 최신 데이터를 받아야 합니다.
+     */
+    get: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
+          /** @description LearningPlan 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description LearningPlan deleted successfully */
+        /** @description LearningPlan 상세 정보를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3013,20 +2246,286 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Deletion confirmation message
-               * @example LearningPlan deleted successfully
+               * @description LearningPlan 공개 ID
+               * @example abc123def456
+               */
+              id: string;
+              /**
+               * @description LearningPlan에 지정된 이모지
+               * @example 🚀
+               */
+              emoji: string;
+              /**
+               * @description LearningPlan 제목
+               * @example Full Stack JavaScript Developer
+               */
+              title: string;
+              /**
+               * @description LearningPlan 설명
+               * @example Complete guide to becoming a full stack developer
+               */
+              description: string | null;
+              /**
+               * @description LearningPlan 현재 상태
+               * @example active
+               * @enum {string}
+               */
+              status: "active" | "archived";
+              /**
+               * @description 핵심 학습 주제
+               * @example JavaScript
+               */
+              learningTopic: string;
+              /**
+               * @description 대상 학습자 수준
+               * @example beginner
+               */
+              userLevel: string;
+              /**
+               * @description 목표 완료 주차
+               * @example 12
+               */
+              targetWeeks: number;
+              /**
+               * @description 주간 학습 시간
+               * @example 10
+               */
+              weeklyHours: number;
+              /**
+               * @description 선호 학습 방식
+               * @example 실습 중심
+               */
+              learningStyle: string;
+              /**
+               * @description 선호 학습 자료
+               * @example 온라인 강의
+               */
+              preferredResources: string;
+              /**
+               * @description 주요 학습 목표
+               * @example 웹 개발자 취업
+               */
+              mainGoal: string;
+              /**
+               * @description 추가 요구 사항
+               * @example React, Node.js 포함
+               */
+              additionalRequirements: string | null;
+              /**
+               * @description 생성 시각
+               * @example 2024-01-01T00:00:00.000Z
+               */
+              createdAt: string;
+              /**
+               * @description 마지막 수정 시각
+               * @example 2024-01-15T10:30:00.000Z
+               */
+              updatedAt: string;
+              /** @description LearningModule과 포함된 LearningTask 목록 */
+              learningModules: Array<{
+                /**
+                 * @description LearningModule 공개 ID
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                id: string;
+                /**
+                 * @description LearningModule 제목
+                 * @example Learn JavaScript Fundamentals
+                 */
+                title: string;
+                /**
+                 * @description LearningModule 설명
+                 * @example Master variables, functions, loops, and basic DOM manipulation
+                 */
+                description: string | null;
+                /**
+                 * @description LearningModule 표시 순서
+                 * @example 1
+                 */
+                order: number;
+                /**
+                 * @description UI에서 LearningModule이 펼쳐져 있는지 여부
+                 * @example true
+                 */
+                isExpanded: boolean;
+                /**
+                 * @description 생성 시각
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                createdAt: string;
+                /**
+                 * @description 마지막 수정 시각
+                 * @example 2024-01-15T10:30:00.000Z
+                 */
+                updatedAt: string;
+                /** @description 이 LearningModule에 속한 LearningTask 목록 */
+                learningTasks: Array<{
+                  /**
+                   * @description LearningTask 공개 ID
+                   * @example 660e8400-e29b-41d4-a716-446655440001
+                   */
+                  id: string;
+                  /**
+                   * @description LearningTask 제목
+                   * @example Learn variables and data types
+                   */
+                  title: string;
+                  /**
+                   * @description LearningTask 설명
+                   * @example Understand different data types: string, number, boolean, array, object
+                   */
+                  description: string | null;
+                  /**
+                   * @description LearningTask 완료 여부
+                   * @example false
+                   */
+                  isCompleted: boolean;
+                  /**
+                   * Format: date-time
+                   * @description LearningTask 완료 시각
+                   * @example 2024-02-15T09:30:00.000Z
+                   */
+                  completedAt: string | null;
+                  /**
+                   * @description LearningTask 마감일
+                   * @example 2024-02-15T00:00:00.000Z
+                   */
+                  dueDate: string | null;
+                  /**
+                   * @description LearningTask 메모
+                   * @example Focus on practice with real examples
+                   */
+                  memo: string | null;
+                  /**
+                   * @description LearningTask 표시 순서
+                   * @example 1
+                   */
+                  order: number;
+                  /**
+                   * @description 생성 시각
+                   * @example 2024-01-01T00:00:00.000Z
+                   */
+                  createdAt: string;
+                  /**
+                   * @description 마지막 수정 시각
+                   * @example 2024-01-15T10:30:00.000Z
+                   */
+                  updatedAt: string;
+                }>;
+              }>;
+              /** @description LearningPlan과 연결된 문서 목록 */
+              documents: Array<{
+                /**
+                 * @description 문서 공개 ID
+                 * @example 550e8400-e29b-41d4-a716-446655440000
+                 */
+                id: string;
+                /**
+                 * @description 원본 파일 이름
+                 * @example learning-guide.pdf
+                 */
+                fileName: string;
+                /**
+                 * @description 파일 크기(바이트)
+                 * @example 1048576
+                 */
+                fileSize: number;
+                /**
+                 * @description 파일 MIME 타입
+                 * @example application/pdf
+                 */
+                fileType: string;
+                /**
+                 * @description 연결된 LearningPlan ID(아직 연결 전이면 null)
+                 * @example 123
+                 */
+                learningPlanId: number | null;
+                /**
+                 * @description 업로드 시각
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                uploadedAt: string;
+                /**
+                 * @description 생성 시각
+                 * @example 2024-01-01T00:00:00.000Z
+                 */
+                createdAt: string;
+              }>;
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /**
+     * LearningPlan을 삭제합니다
+     * @description LearningPlan과 연관된 LearningModule, LearningTask를 함께
+     *       삭제합니다.
+     *
+     *     - **권한 검증**: 소유자가 아니면 403을 반환합니다. 개인 학습 자산 보호를
+     *       위한 정책입니다.
+     *     - **연쇄 삭제**: 하위 리소스가 모두 제거되며 복구가 불가능하므로 수행 전
+     *       백업이 필요할 수 있습니다.
+     *     - **동기 처리**: 삭제 완료 후 응답을 반환해 후속 읽기 요청의 일관성을
+     *       보장합니다.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description LearningPlan 공개 ID */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description LearningPlan을 삭제했습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description 삭제 완료 메시지
+               * @example LearningPlan을 삭제했습니다.
                */
               message: string;
               /**
-               * @description Public ID of the deleted learningPlan
+               * @description 삭제된 LearningPlan 공개 ID
                * @example abc123def456
                */
               deletedId: string;
             };
           };
         };
-        /** @description Authentication required */
-        401: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -3034,79 +2533,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -3117,14 +2550,24 @@ export interface paths {
     };
     options?: never;
     head?: never;
-    /** Update a learningPlan */
+    /**
+     * LearningPlan 메타데이터를 수정합니다
+     * @description LearningPlan의 제목, 설명 등 주요 속성을 갱신합니다.
+     *
+     *     - **입력 검증**: LearningPlanUpdateRequestSchema 요구 사항을 충족하지 못하면
+     *       400을 반환합니다. 이는 불완전한 데이터 저장을 막기 위한 정책입니다.
+     *     - **동시성 관리**: 마지막 수정 시간을 사용해 클라이언트가 낙관적 업데이트를
+     *       적용해야 합니다.
+     *     - **권한 확인**: 소유자가 아니면 403을 반환합니다. 학습 계획 무단 편집을
+     *       차단합니다.
+     */
     patch: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
+          /** @description LearningPlan 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -3132,27 +2575,27 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description LearningPlan title
+             * @description LearningPlan 제목
              * @example Full Stack JavaScript Developer
              */
             title?: string;
             /**
-             * @description Emoji that represents the learningPlan
+             * @description LearningPlan을 나타내는 이모지
              * @example 🌱
              */
             emoji?: string;
             /**
-             * @description LearningPlan description
+             * @description LearningPlan 설명
              * @example Complete guide to becoming a full stack developer
              */
             description?: string;
             /**
-             * @description Main learning topic
+             * @description 핵심 학습 주제
              * @example JavaScript
              */
             learningTopic?: string;
             /**
-             * @description Target user level
+             * @description 대상 학습자 수준
              * @example beginner
              * @enum {string}
              */
@@ -3163,32 +2606,32 @@ export interface paths {
               | "advanced"
               | "expert";
             /**
-             * @description Target completion weeks (1-24)
+             * @description 목표 완료 주차(1-24주)
              * @example 12
              */
             targetWeeks?: number;
             /**
-             * @description Weekly study hours (1-60)
+             * @description 주간 학습 시간(1-60시간)
              * @example 10
              */
             weeklyHours?: number;
             /**
-             * @description Preferred learning style
+             * @description 선호 학습 방식
              * @example 실습 중심
              */
             learningStyle?: string;
             /**
-             * @description Preferred learning resources
+             * @description 선호 학습 자료
              * @example 온라인 강의
              */
             preferredResources?: string;
             /**
-             * @description Main learning learningModule
+             * @description 주요 학습 목표
              * @example 웹 개발자 취업
              */
             mainGoal?: string;
             /**
-             * @description Additional requirements
+             * @description 추가 요구 사항
              * @example React, Node.js 포함
              */
             additionalRequirements: string | null;
@@ -3196,7 +2639,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description LearningPlan updated successfully */
+        /** @description LearningPlan을 수정했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3204,86 +2647,86 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learningPlan
+               * @description LearningPlan 공개 ID
                * @example abc123def456
                */
               id: string;
               /**
-               * @description Emoji that represents the learningPlan at a glance
+               * @description LearningPlan을 한눈에 나타내는 이모지
                * @example 🚀
                */
               emoji: string;
               /**
-               * @description LearningPlan title
+               * @description LearningPlan 제목
                * @example Full Stack JavaScript Developer
                */
               title: string;
               /**
-               * @description LearningPlan description
+               * @description LearningPlan 설명
                * @example Complete guide to becoming a full stack developer
                */
               description: string | null;
               /**
-               * @description Current status of the learningPlan
+               * @description LearningPlan 현재 상태
                * @example active
                * @enum {string}
                */
               status: "active" | "archived";
               /**
-               * @description Main learning topic
+               * @description 핵심 학습 주제
                * @example JavaScript
                */
               learningTopic: string;
               /**
-               * @description Target user level
+               * @description 대상 학습자 수준
                * @example beginner
                */
               userLevel: string;
               /**
-               * @description Target completion weeks
+               * @description 목표 완료 주차
                * @example 12
                */
               targetWeeks: number;
               /**
-               * @description Weekly study hours
+               * @description 주간 학습 시간
                * @example 10
                */
               weeklyHours: number;
               /**
-               * @description Preferred learning style
+               * @description 선호 학습 방식
                * @example 실습 중심
                */
               learningStyle: string;
               /**
-               * @description Preferred learning resources
+               * @description 선호 학습 자료
                * @example 온라인 강의
                */
               preferredResources: string;
               /**
-               * @description Main learning learningModule
+               * @description 주요 학습 목표
                * @example 웹 개발자 취업
                */
               mainGoal: string;
               /**
-               * @description Additional requirements
+               * @description 추가 요구 사항
                * @example React, Node.js 포함
                */
               additionalRequirements: string | null;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -3291,101 +2734,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -3396,370 +2751,7 @@ export interface paths {
     };
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get detailed learningPlan with learningModules and learning-tasks */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description LearningPlan details retrieved successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Public ID of the learningPlan
-               * @example abc123def456
-               */
-              id: string;
-              /**
-               * @description Emoji assigned to the learningPlan
-               * @example 🚀
-               */
-              emoji: string;
-              /**
-               * @description LearningPlan title
-               * @example Full Stack JavaScript Developer
-               */
-              title: string;
-              /**
-               * @description LearningPlan description
-               * @example Complete guide to becoming a full stack developer
-               */
-              description: string | null;
-              /**
-               * @description Current status of the learningPlan
-               * @example active
-               * @enum {string}
-               */
-              status: "active" | "archived";
-              /**
-               * @description Main learning topic
-               * @example JavaScript
-               */
-              learningTopic: string;
-              /**
-               * @description Target user level
-               * @example beginner
-               */
-              userLevel: string;
-              /**
-               * @description Target completion weeks
-               * @example 12
-               */
-              targetWeeks: number;
-              /**
-               * @description Weekly study hours
-               * @example 10
-               */
-              weeklyHours: number;
-              /**
-               * @description Preferred learning style
-               * @example 실습 중심
-               */
-              learningStyle: string;
-              /**
-               * @description Preferred learning resources
-               * @example 온라인 강의
-               */
-              preferredResources: string;
-              /**
-               * @description Main learning learningModule
-               * @example 웹 개발자 취업
-               */
-              mainGoal: string;
-              /**
-               * @description Additional requirements
-               * @example React, Node.js 포함
-               */
-              additionalRequirements: string | null;
-              /**
-               * @description Creation timestamp
-               * @example 2024-01-01T00:00:00.000Z
-               */
-              createdAt: string;
-              /**
-               * @description Last update timestamp
-               * @example 2024-01-15T10:30:00.000Z
-               */
-              updatedAt: string;
-              /** @description List of learningModules with their learning-tasks */
-              learningModules: Array<{
-                /**
-                 * @description Public ID of the learningModule
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: string;
-                /**
-                 * @description Learning Module title
-                 * @example Learn JavaScript Fundamentals
-                 */
-                title: string;
-                /**
-                 * @description Learning Module description
-                 * @example Master variables, functions, loops, and basic DOM manipulation
-                 */
-                description: string | null;
-                /**
-                 * @description Display order of the learningModule
-                 * @example 1
-                 */
-                order: number;
-                /**
-                 * @description Whether the learning module is expanded in UI
-                 * @example true
-                 */
-                isExpanded: boolean;
-                /**
-                 * @description Creation timestamp
-                 * @example 2024-01-01T00:00:00.000Z
-                 */
-                createdAt: string;
-                /**
-                 * @description Last update timestamp
-                 * @example 2024-01-15T10:30:00.000Z
-                 */
-                updatedAt: string;
-                /** @description List of learning-tasks under this learningModule */
-                learningTasks: Array<{
-                  /**
-                   * @description Public ID of the learning-task
-                   * @example 660e8400-e29b-41d4-a716-446655440001
-                   */
-                  id: string;
-                  /**
-                   * @description Learning-task title
-                   * @example Learn variables and data types
-                   */
-                  title: string;
-                  /**
-                   * @description Learning-task description
-                   * @example Understand different data types: string, number, boolean, array, object
-                   */
-                  description: string | null;
-                  /**
-                   * @description Whether the learning-task is completed
-                   * @example false
-                   */
-                  isCompleted: boolean;
-                  /**
-                   * Format: date-time
-                   * @description Timestamp when the learning-task was marked as completed
-                   * @example 2024-02-15T09:30:00.000Z
-                   */
-                  completedAt: string | null;
-                  /**
-                   * @description Due date for the learning-task
-                   * @example 2024-02-15T00:00:00.000Z
-                   */
-                  dueDate: string | null;
-                  /**
-                   * @description Personal memo for the learning-task
-                   * @example Focus on practice with real examples
-                   */
-                  memo: string | null;
-                  /**
-                   * @description Display order of the learning-task
-                   * @example 1
-                   */
-                  order: number;
-                  /**
-                   * @description Creation timestamp
-                   * @example 2024-01-01T00:00:00.000Z
-                   */
-                  createdAt: string;
-                  /**
-                   * @description Last update timestamp
-                   * @example 2024-01-15T10:30:00.000Z
-                   */
-                  updatedAt: string;
-                  /**
-                   * @description 현재 AI 노트 생성 상태
-                   * @example processing
-                   * @enum {string}
-                   */
-                  aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-                  /**
-                   * @description AI가 생성한 학습 노트 (마크다운)
-                   * @example # 학습 개요
-                   *     - 목표 정리...
-                   */
-                  aiNoteMarkdown: string | null;
-                  /**
-                   * Format: date-time
-                   * @description AI 노트 생성을 요청한 시각
-                   * @example 2024-06-01T10:00:00.000Z
-                   */
-                  aiNoteRequestedAt: string | null;
-                  /**
-                   * Format: date-time
-                   * @description AI 노트 생성이 완료되거나 실패한 시각
-                   * @example 2024-06-01T10:05:12.000Z
-                   */
-                  aiNoteCompletedAt: string | null;
-                  /**
-                   * @description AI 노트 생성 실패 시 오류 메시지
-                   * @example Gemini API 호출이 실패했습니다.
-                   */
-                  aiNoteError: string | null;
-                }>;
-              }>;
-              /** @description List of documents associated with the learningPlan */
-              documents: Array<{
-                /**
-                 * @description Public ID of the document
-                 * @example 550e8400-e29b-41d4-a716-446655440000
-                 */
-                id: string;
-                /**
-                 * @description Original file name
-                 * @example learning-guide.pdf
-                 */
-                fileName: string;
-                /**
-                 * @description File size in bytes
-                 * @example 1048576
-                 */
-                fileSize: number;
-                /**
-                 * @description MIME type of the file
-                 * @example application/pdf
-                 */
-                fileType: string;
-                /**
-                 * @description Associated learningPlan ID (null if not yet linked)
-                 * @example 123
-                 */
-                learningPlanId: number | null;
-                /**
-                 * @description Upload timestamp
-                 * @example 2024-01-01T00:00:00.000Z
-                 */
-                uploadedAt: string;
-                /**
-                 * @description Creation timestamp
-                 * @example 2024-01-01T00:00:00.000Z
-                 */
-                createdAt: string;
-              }>;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied to this learningPlan */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/learning-plans/{id}/status": {
+  "/plans/{id}/status": {
     parameters: {
       query?: never;
       header?: never;
@@ -3772,14 +2764,24 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Change learningPlan status (active/archived) */
+    /**
+     * LearningPlan 상태를 변경합니다
+     * @description LearningPlan의 상태를 active 또는 archived 등으로 전환합니다.
+     *
+     *     - **상태 검증**: 이미 동일한 상태면 409를 반환합니다. 불필요한 업데이트를
+     *       막아 데이터 일관성을 유지합니다.
+     *     - **권한 확인**: 소유자가 아니면 403을 반환합니다. 이는 학습 계획 무단
+     *       변경을 방지하기 위함입니다.
+     *     - **후속 처리**: 상태 변경 후 클라이언트는 숨김 처리나 알림 재전송 등
+     *       추가 동작이 필요할 수 있습니다.
+     */
     patch: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
+          /** @description LearningPlan 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -3787,7 +2789,7 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description New status for the learningPlan
+             * @description 변경할 LearningPlan 상태
              * @example archived
              * @enum {string}
              */
@@ -3796,7 +2798,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description LearningPlan status changed successfully */
+        /** @description LearningPlan 상태를 변경했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -3804,12 +2806,12 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learningPlan
+               * @description LearningPlan 공개 ID
                * @example abc123def456
                */
               id: string;
               /**
-               * @description Updated status
+               * @description 변경된 상태
                * @example archived
                * @enum {string}
                */
@@ -3817,8 +2819,8 @@ export interface paths {
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -3826,123 +2828,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not the owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan already has the requested status */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -3953,7 +2845,7 @@ export interface paths {
     };
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules": {
+  "/plans/{id}/modules": {
     parameters: {
       query?: never;
       header?: never;
@@ -3962,14 +2854,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create a new learning module for a learning plan */
+    /**
+     * LearningPlan에 LearningModule을 추가합니다
+     * @description 학습 계획에 새로운 LearningModule을 생성해 학습 단위를
+     *       구성합니다.
+     *
+     *     - **입력 검증**: LearningModuleCreateRequestSchema를 충족하지 못하면 400을
+     *       반환합니다. 이는 불완전한 모듈 생성을 방지하기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 구조를
+     *       임의로 변경하지 못하도록 하기 위함입니다.
+     *     - **순서 정책**: 새 모듈은 기본적으로 마지막 위치에 추가되며 reorder API로
+     *       재정렬할 수 있습니다.
+     */
     post: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
+          /** @description LearningPlan 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -3977,17 +2880,17 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description Learning Module title
+             * @description LearningModule 제목
              * @example Learn JavaScript Fundamentals
              */
             title: string;
             /**
-             * @description Learning Module description
+             * @description LearningModule 설명
              * @example Master variables, functions, loops, and basic DOM manipulation
              */
             description?: string;
             /**
-             * @description Whether the learning module should be expanded by default
+             * @description 기본으로 LearningModule을 펼칠지 여부
              * @default true
              * @example true
              */
@@ -3996,7 +2899,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning module created successfully */
+        /** @description LearningModule을 생성했습니다. */
         201: {
           headers: {
             [name: string]: unknown;
@@ -4004,74 +2907,45 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learningModule
+               * @description LearningModule 공개 ID
                * @example 550e8400-e29b-41d4-a716-446655440000
                */
               id: string;
               /**
-               * @description Learning Module title
+               * @description LearningModule 제목
                * @example Learn JavaScript Fundamentals
                */
               title: string;
               /**
-               * @description Learning Module description
+               * @description LearningModule 설명
                * @example Master variables, functions, loops, and basic DOM manipulation
                */
               description: string | null;
               /**
-               * @description Display order of the learningModule
+               * @description LearningModule 표시 순서
                * @example 1
                */
               order: number;
               /**
-               * @description Whether the learning module is expanded in UI
+               * @description UI에서 LearningModule이 펼쳐져 있는지 여부
                * @example true
                */
               isExpanded: boolean;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -4079,101 +2953,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learning plan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Learning plan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -4188,7 +2974,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}": {
+  "/modules/{id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -4196,16 +2982,24 @@ export interface paths {
       cookie?: never;
     };
     get?: never;
-    /** Update a learningModule */
+    /**
+     * LearningModule 정보를 수정합니다
+     * @description LearningModule의 제목과 설명 등 핵심 속성을 갱신합니다.
+     *
+     *     - **입력 검증**: LearningModuleUpdateRequestSchema 요구 사항을 만족하지 못하면
+     *       400을 반환합니다. 불완전한 데이터 저장을 막기 위한 조치입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 모듈 무단
+     *       수정을 방지합니다.
+     *     - **동기화**: 변경 내용이 학습 일정과 연동되므로 클라이언트는 목록을
+     *       재조회해 최신 상태를 반영해야 합니다.
+     */
     put: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learningModule */
-          learningModuleId: string;
+          /** @description LearningModule 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -4213,17 +3007,17 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description Learning Module title
+             * @description LearningModule 제목
              * @example Learn JavaScript Fundamentals
              */
             title?: string;
             /**
-             * @description Learning Module description
+             * @description LearningModule 설명
              * @example Master variables, functions, loops, and basic DOM manipulation
              */
             description?: string;
             /**
-             * @description Whether the learning module is expanded in UI
+             * @description UI에서 LearningModule이 펼쳐져 있는지 여부
              * @example true
              */
             isExpanded?: boolean;
@@ -4231,7 +3025,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning Module updated successfully */
+        /** @description LearningModule을 수정했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -4239,74 +3033,45 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learningModule
+               * @description LearningModule 공개 ID
                * @example 550e8400-e29b-41d4-a716-446655440000
                */
               id: string;
               /**
-               * @description Learning Module title
+               * @description LearningModule 제목
                * @example Learn JavaScript Fundamentals
                */
               title: string;
               /**
-               * @description Learning Module description
+               * @description LearningModule 설명
                * @example Master variables, functions, loops, and basic DOM manipulation
                */
               description: string | null;
               /**
-               * @description Display order of the learningModule
+               * @description LearningModule 표시 순서
                * @example 1
                */
               order: number;
               /**
-               * @description Whether the learning module is expanded in UI
+               * @description UI에서 LearningModule이 펼쳐져 있는지 여부
                * @example true
                */
               isExpanded: boolean;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -4314,101 +3079,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Learning Module or learningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -4418,22 +3095,31 @@ export interface paths {
       };
     };
     post?: never;
-    /** Delete a learningModule */
+    /**
+     * LearningModule을 삭제합니다
+     * @description LearningPlan에서 지정된 LearningModule과 하위 LearningTask를
+     *       제거합니다.
+     *
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 구조 변경을
+     *       차단합니다.
+     *     - **연쇄 삭제**: 연결된 LearningTask가 모두 삭제되므로 필요 시 사전 백업이
+     *       요구됩니다.
+     *     - **일정 영향**: 삭제 직후 Progress API에 반영되기까지 약간의 지연이 있을 수
+     *       있습니다.
+     */
     delete: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learningModule */
-          learningModuleId: string;
+          /** @description LearningModule 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Learning Module deleted successfully */
+        /** @description LearningModule을 삭제했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -4441,20 +3127,20 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Deletion confirmation message
-               * @example Learning Module deleted successfully
+               * @description 삭제 완료 메시지
+               * @example LearningModule을 삭제했습니다.
                */
               message: string;
               /**
-               * @description Public ID of the deleted learningModule
+               * @description 삭제된 LearningModule 공개 ID
                * @example 550e8400-e29b-41d4-a716-446655440000
                */
               deletedId: string;
             };
           };
         };
-        /** @description Authentication required */
-        401: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -4462,79 +3148,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Learning Module or learningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -4548,7 +3168,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/order": {
+  "/modules/{id}/order": {
     parameters: {
       query?: never;
       header?: never;
@@ -4561,16 +3181,24 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Reorder a learning module position */
+    /**
+     * LearningModule 순서를 재배치합니다
+     * @description 지정한 LearningModule의 표시 순서를 변경합니다.
+     *
+     *     - **입력 검증**: LearningModuleReorderRequestSchema 범위를 벗어나면 400을
+     *       반환합니다. 모듈 간 순서 일관성을 지키기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 무단 정렬
+     *       변경을 막기 위한 조치입니다.
+     *     - **원자성**: 순서 변경은 트랜잭션으로 처리되어 중간 상태가 노출되지
+     *       않습니다.
+     */
     patch: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learningModule */
-          learningModuleId: string;
+          /** @description LearningModule 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -4578,7 +3206,7 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description New order position for the learning module (1-based)
+             * @description LearningModule의 새로운 순서(1부터 시작)
              * @example 3
              */
             newOrder: number;
@@ -4586,7 +3214,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning Module reordered successfully */
+        /** @description LearningModule 순서를 재배치했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -4594,25 +3222,25 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the reordered learningModule
+               * @description 순서가 변경된 LearningModule 공개 ID
                * @example 550e8400-e29b-41d4-a716-446655440000
                */
               id: string;
               /**
-               * @description Updated order position
+               * @description 변경된 순서
                * @example 3
                */
               order: number;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
             };
           };
         };
-        /** @description Bad request - invalid order position */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -4620,101 +3248,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Learning Module or learningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -4725,7 +3265,7 @@ export interface paths {
     };
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks": {
+  "/tasks": {
     parameters: {
       query?: never;
       header?: never;
@@ -4734,40 +3274,51 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Create a new learning-task for a learningModule */
+    /**
+     * LearningModule에 LearningTask를 추가합니다
+     * @description 학습 모듈에 새 LearningTask를 생성해 실행 가능한 단위를
+     *       정의합니다.
+     *
+     *     - **입력 검증**: LearningTaskCreateRequestSchema를 만족하지 않으면 400을
+     *       반환합니다. 이는 잘못된 태스크 구성을 방지하기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니라면 403을 반환해 무단 추가를
+     *       막습니다.
+     *     - **순서 정책**: 새 태스크는 모듈 마지막에 추가되며 move API로 재배치할 수
+     *       있습니다.
+     */
     post: {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learningModule */
-          learningModuleId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: {
         content: {
           "application/json": {
             /**
-             * @description Learning-task title
+             * @description 상위 LearningModule 공개 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            learningModuleId: string;
+            /**
+             * @description LearningTask 제목
              * @example Learn variables and data types
              */
             title: string;
             /**
-             * @description Learning-task description
+             * @description LearningTask 설명
              * @example Understand different data types: string, number, boolean, array, object
              */
             description?: string;
             /**
              * Format: date-time
-             * @description Due date for the learning-task (ISO 8601 format)
+             * @description LearningTask 마감일(ISO 8601 형식)
              * @example 2024-02-15T00:00:00.000Z
              */
             dueDate?: string;
             /**
-             * @description Personal memo for the learning-task
+             * @description LearningTask 메모
              * @example Focus on practice with real examples
              */
             memo?: string;
@@ -4775,7 +3326,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning-task created successfully */
+        /** @description LearningTask를 생성했습니다. */
         201: {
           headers: {
             [name: string]: unknown;
@@ -4783,90 +3334,61 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learning-task
+               * @description LearningTask 공개 ID
                * @example 660e8400-e29b-41d4-a716-446655440001
                */
               id: string;
               /**
-               * @description Learning-task title
+               * @description LearningTask 제목
                * @example Learn variables and data types
                */
               title: string;
               /**
-               * @description Learning-task description
+               * @description LearningTask 설명
                * @example Understand different data types: string, number, boolean, array, object
                */
               description: string | null;
               /**
-               * @description Whether the learning-task is completed
+               * @description LearningTask 완료 여부
                * @example false
                */
               isCompleted: boolean;
               /**
                * Format: date-time
-               * @description Timestamp when the learning-task was marked as completed
+               * @description LearningTask 완료 시각
                * @example 2024-02-15T09:30:00.000Z
                */
               completedAt: string | null;
               /**
-               * @description Due date for the learning-task
+               * @description LearningTask 마감일
                * @example 2024-02-15T00:00:00.000Z
                */
               dueDate: string | null;
               /**
-               * @description Personal memo for the learning-task
+               * @description LearningTask 메모
                * @example Focus on practice with real examples
                */
               memo: string | null;
               /**
-               * @description Display order of the learning-task
+               * @description LearningTask 표시 순서
                * @example 1
                */
               order: number;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -4874,101 +3396,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan or learning module not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -4983,169 +3417,37 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}": {
+  "/tasks/{id}": {
     parameters: {
       query?: never;
       header?: never;
       path?: never;
       cookie?: never;
     };
-    get?: never;
-    put?: never;
-    post?: never;
-    /** Delete a learning-task */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learning-task */
-          learningTaskId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Learning-task deleted successfully */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              /**
-               * @description Deletion confirmation message
-               * @example Learning-task deleted successfully
-               */
-              message: string;
-              /**
-               * @description Public ID of the deleted learning-task
-               * @example 660e8400-e29b-41d4-a716-446655440001
-               */
-              deletedId: string;
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan, learningModule, or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get detailed information about a learning-task */
+    /**
+     * LearningTask 상세 정보를 조회합니다
+     * @description LearningTask의 목표, 예상 소요 시간 등 세부 정보를 반환합니다.
+     *
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 민감한 진척도를
+     *       보호합니다.
+     *     - **연관 데이터**: 학습 기록과 노트는 별도 API에서 제공되므로 필요한 경우
+     *       추가 호출이 필요합니다.
+     *     - **실시간성**: 진행 상황이 자주 변하므로 캐시 만료 시간을 짧게 유지해야
+     *       합니다.
+     */
     get: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learning-task */
-          learningTaskId: string;
+          /** @description LearningTask 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description Learning-task detail retrieved successfully */
+        /** @description LearningTask 상세 정보를 불러왔습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -5153,248 +3455,97 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learning-task
+               * @description LearningTask 공개 ID
                * @example 660e8400-e29b-41d4-a716-446655440001
                */
               id: string;
               /**
-               * @description Learning-task title
+               * @description LearningTask 제목
                * @example Learn variables and data types
                */
               title: string;
               /**
-               * @description Learning-task description
+               * @description LearningTask 설명
                * @example Understand different data types: string, number, boolean, array, object
                */
               description: string | null;
               /**
-               * @description Whether the learning-task is completed
+               * @description LearningTask 완료 여부
                * @example false
                */
               isCompleted: boolean;
               /**
                * Format: date-time
-               * @description Timestamp when the learning-task was marked as completed
+               * @description LearningTask 완료 시각
                * @example 2024-02-15T09:30:00.000Z
                */
               completedAt: string | null;
               /**
-               * @description Due date for the learning-task
+               * @description LearningTask 마감일
                * @example 2024-02-15T00:00:00.000Z
                */
               dueDate: string | null;
               /**
-               * @description Personal memo for the learning-task
+               * @description LearningTask 메모
                * @example Focus on practice with real examples
                */
               memo: string | null;
               /**
-               * @description Display order of the learning-task
+               * @description LearningTask 표시 순서
                * @example 1
                */
               order: number;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
-              /** @description Parent learning module metadata */
+              /** @description 상위 LearningModule 메타데이터 */
               learningModule: {
                 /**
-                 * @description Public ID of the parent learningModule
+                 * @description 상위 LearningModule 공개 ID
                  * @example 550e8400-e29b-41d4-a716-446655440000
                  */
                 id: string;
                 /**
-                 * @description Title of the parent learningModule
+                 * @description 상위 LearningModule 제목
                  * @example Master JavaScript fundamentals
                  */
                 title: string;
                 /**
-                 * @description Description of the parent learningModule
+                 * @description 상위 LearningModule 설명
                  * @example Focus on core JavaScript knowledge before diving into frameworks
                  */
                 description: string | null;
                 /**
-                 * @description Display order of the learningModule
+                 * @description LearningModule 표시 순서
                  * @example 1
                  */
                 order: number;
               };
-              /** @description Parent learningPlan metadata */
+              /** @description 상위 LearningPlan 메타데이터 */
               learningPlan: {
                 /**
-                 * @description Public ID of the learningPlan
+                 * @description LearningPlan 공개 ID
                  * @example abc123def456
                  */
                 id: string;
                 /**
-                 * @description Title of the learningPlan
+                 * @description LearningPlan 제목
                  * @example Full-stack Development LearningPlan
                  */
                 title: string;
               };
-              /** @description 가장 최근의 AI 학습 퀴즈 정보 */
-              aiQuiz: {
-                /**
-                 * @description 퀴즈 ID
-                 * @example 123
-                 */
-                id: string;
-                /**
-                 * @description 현재 AI 퀴즈 생성 상태
-                 * @example processing
-                 * @enum {string}
-                 */
-                status: "idle" | "processing" | "ready" | "failed";
-                /**
-                 * @description 생성 요청 시 목표 문항 수
-                 * @example 8
-                 */
-                targetQuestionCount: number;
-                /**
-                 * @description 실제 생성된 문항 수
-                 * @example 8
-                 */
-                totalQuestions: number | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 요청 시각
-                 * @example 2024-06-01T10:00:00.000Z
-                 */
-                requestedAt: string | null;
-                /**
-                 * Format: date-time
-                 * @description 생성 완료 시각
-                 * @example 2024-06-01T10:02:00.000Z
-                 */
-                completedAt: string | null;
-                /**
-                 * @description 실패 시 사용자에게 노출할 오류 메시지
-                 * @example Gemini API 호출이 실패했습니다.
-                 */
-                errorMessage: string | null;
-                /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-                questions:
-                  | Array<{
-                      /**
-                       * @description 문항 식별자
-                       * @example q1
-                       */
-                      id: string;
-                      /**
-                       * @description 문제 본문
-                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                       */
-                      prompt: string;
-                      /** @description 객관식 보기 4개 */
-                      options: Array<string>;
-                    }>
-                  | null;
-                /** @description 사용자의 가장 최근 퀴즈 결과 */
-                latestResult: {
-                  /**
-                   * @description 채점된 퀴즈 ID
-                   * @example 123
-                   */
-                  quizId: string;
-                  /**
-                   * @description 총 문항 수
-                   * @example 8
-                   */
-                  totalQuestions: number;
-                  /**
-                   * @description 맞힌 문항 수
-                   * @example 6
-                   */
-                  correctCount: number;
-                  /**
-                   * @description 정답 비율 (퍼센트)
-                   * @example 75
-                   */
-                  scorePercent: number;
-                  /** @description 문항별 채점 정보 */
-                  answers: Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                    /**
-                     * @description 사용자가 선택한 보기 인덱스
-                     * @example 1
-                     */
-                    selectedIndex: number;
-                    /**
-                     * @description 정답 보기 인덱스
-                     * @example 0
-                     */
-                    correctIndex: number;
-                    /**
-                     * @description 정답 설명
-                     * @example 이 선택지가 정답인 이유를 상세히 설명합니다.
-                     */
-                    explanation: string;
-                    /**
-                     * @description 정답 여부
-                     * @example true
-                     */
-                    isCorrect: boolean;
-                  }>;
-                  /**
-                   * Format: date-time
-                   * @description 제출 시각
-                   * @example 2024-06-01T10:05:00.000Z
-                   */
-                  submittedAt: string;
-                } | null;
-              } | null;
             };
           };
         };
-        /** @description Authentication required */
-        401: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -5402,79 +3553,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan, learningModule, or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -5483,16 +3568,24 @@ export interface paths {
         };
       };
     };
-    /** Update a learning-task */
+    /**
+     * LearningTask 속성을 수정합니다
+     * @description LearningTask의 제목, 일정, 난이도 등을 갱신합니다.
+     *
+     *     - **입력 검증**: LearningTaskUpdateRequestSchema 요구 조건을 충족하지 못하면
+     *       400을 반환합니다. 이는 데이터 무결성을 유지하기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 무단 수정을
+     *       막습니다.
+     *     - **동기화**: 변경 내용이 진척도 계산에 영향을 주므로 Progress API를
+     *       사용하는 화면은 재조회가 필요합니다.
+     */
     put: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learning-task */
-          learningTaskId: string;
+          /** @description LearningTask 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -5500,28 +3593,28 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description Learning-task title
+             * @description LearningTask 제목
              * @example Learn variables and data types
              */
             title?: string;
             /**
-             * @description Learning-task description
+             * @description LearningTask 설명
              * @example Understand different data types: string, number, boolean, array, object
              */
             description?: string;
             /**
-             * @description Whether the learning-task is completed
+             * @description LearningTask 완료 여부
              * @example true
              */
             isCompleted?: boolean;
             /**
              * Format: date-time
-             * @description Due date for the learning-task (ISO 8601 format)
+             * @description LearningTask 마감일(ISO 8601 형식)
              * @example 2024-02-15T00:00:00.000Z
              */
             dueDate?: string | null;
             /**
-             * @description Personal memo for the learning-task
+             * @description LearningTask 메모
              * @example Focus on practice with real examples
              */
             memo?: string;
@@ -5529,7 +3622,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning-task updated successfully */
+        /** @description LearningTask를 수정했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -5537,90 +3630,61 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the learning-task
+               * @description LearningTask 공개 ID
                * @example 660e8400-e29b-41d4-a716-446655440001
                */
               id: string;
               /**
-               * @description Learning-task title
+               * @description LearningTask 제목
                * @example Learn variables and data types
                */
               title: string;
               /**
-               * @description Learning-task description
+               * @description LearningTask 설명
                * @example Understand different data types: string, number, boolean, array, object
                */
               description: string | null;
               /**
-               * @description Whether the learning-task is completed
+               * @description LearningTask 완료 여부
                * @example false
                */
               isCompleted: boolean;
               /**
                * Format: date-time
-               * @description Timestamp when the learning-task was marked as completed
+               * @description LearningTask 완료 시각
                * @example 2024-02-15T09:30:00.000Z
                */
               completedAt: string | null;
               /**
-               * @description Due date for the learning-task
+               * @description LearningTask 마감일
                * @example 2024-02-15T00:00:00.000Z
                */
               dueDate: string | null;
               /**
-               * @description Personal memo for the learning-task
+               * @description LearningTask 메모
                * @example Focus on practice with real examples
                */
               memo: string | null;
               /**
-               * @description Display order of the learning-task
+               * @description LearningTask 표시 순서
                * @example 1
                */
               order: number;
               /**
-               * @description Creation timestamp
+               * @description 생성 시각
                * @example 2024-01-01T00:00:00.000Z
                */
               createdAt: string;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
-              /**
-               * @description 현재 AI 노트 생성 상태
-               * @example processing
-               * @enum {string}
-               */
-              aiNoteStatus: "idle" | "processing" | "ready" | "failed";
-              /**
-               * @description AI가 생성한 학습 노트 (마크다운)
-               * @example # 학습 개요
-               *     - 목표 정리...
-               */
-              aiNoteMarkdown: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성을 요청한 시각
-               * @example 2024-06-01T10:00:00.000Z
-               */
-              aiNoteRequestedAt: string | null;
-              /**
-               * Format: date-time
-               * @description AI 노트 생성이 완료되거나 실패한 시각
-               * @example 2024-06-01T10:05:12.000Z
-               */
-              aiNoteCompletedAt: string | null;
-              /**
-               * @description AI 노트 생성 실패 시 오류 메시지
-               * @example Gemini API 호출이 실패했습니다.
-               */
-              aiNoteError: string | null;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -5628,101 +3692,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan, learningModule, or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -5732,13 +3708,80 @@ export interface paths {
       };
     };
     post?: never;
-    delete?: never;
+    /**
+     * LearningTask를 삭제합니다
+     * @description LearningModule에서 지정된 LearningTask와 관련 AI 산출물을
+     *       제거합니다.
+     *
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 데이터
+     *       무단 삭제를 막기 위한 정책입니다.
+     *     - **연쇄 삭제**: 관련 노트와 퀴즈 결과가 함께 제거되므로 필요 시 사전
+     *       백업이 필요합니다.
+     *     - **데이터 보존**: 삭제 후 복구가 불가능하므로 기록이 필요하다면 먼저
+     *       export 기능을 활용해야 합니다.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description LearningTask 공개 ID */
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description LearningTask를 삭제했습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description 삭제 완료 메시지
+               * @example LearningTask를 삭제했습니다.
+               */
+              message: string;
+              /**
+               * @description 삭제된 LearningTask 공개 ID
+               * @example 660e8400-e29b-41d4-a716-446655440001
+               */
+              deletedId: string;
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
     options?: never;
     head?: never;
     patch?: never;
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move": {
+  "/tasks/{id}/move": {
     parameters: {
       query?: never;
       header?: never;
@@ -5751,16 +3794,25 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    /** Move a learning-task to another learning module or reorder within the same learningModule */
+    /**
+     * LearningTask를 다른 LearningModule로 이동하거나 순서를 조정합니다
+     * @description LearningTask를 다른 LearningModule로 옮기거나 동일 모듈 내
+     *       순서를 변경합니다.
+     *
+     *     - **입력 검증**: LearningTaskMoveRequestSchema 범위를 벗어나면 400을
+     *       반환합니다. 이는 잘못된 이동으로 인한 순서 꼬임을 막기 위한 정책입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환합니다. 학습 계획
+     *       무단 수정을 방지합니다.
+     *     - **원자성**: 이동과 순서 조정이 단일 트랜잭션으로 처리되어 중간 상태가
+     *       노출되지 않습니다.
+     */
     patch: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learning-task */
-          learningTaskId: string;
+          /** @description LearningTask 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -5768,12 +3820,12 @@ export interface paths {
         content: {
           "application/json": {
             /**
-             * @description Public ID of the target learning module to move learning-task to
+             * @description LearningTask를 이동할 대상 LearningModule 공개 ID
              * @example 550e8400-e29b-41d4-a716-446655440000
              */
             newLearningModuleId: string;
             /**
-             * @description New order position for the learning-task (1-based). If not provided, will be placed at the end.
+             * @description LearningTask의 새로운 순서(1부터 시작). 값을 생략하면 마지막에 배치됩니다.
              * @example 2
              */
             newOrder?: number;
@@ -5781,7 +3833,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Learning-task moved successfully */
+        /** @description LearningTask를 이동했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -5789,30 +3841,30 @@ export interface paths {
           content: {
             "application/json": {
               /**
-               * @description Public ID of the moved learning-task
+               * @description 이동된 LearningTask 공개 ID
                * @example 660e8400-e29b-41d4-a716-446655440001
                */
               id: string;
               /**
-               * @description Public ID of the learning module the learning-task was moved to
+               * @description LearningTask가 이동된 LearningModule 공개 ID
                * @example 550e8400-e29b-41d4-a716-446655440000
                */
               learningModuleId: string;
               /**
-               * @description Updated order position
+               * @description 변경된 순서
                * @example 2
                */
               order: number;
               /**
-               * @description Last update timestamp
+               * @description 마지막 수정 시각
                * @example 2024-01-15T10:30:00.000Z
                */
               updatedAt: string;
             };
           };
         };
-        /** @description Bad request - validation failed */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -5820,101 +3872,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied - not learningPlan owner */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description LearningPlan, learningModule, or learning-task not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Internal server error */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -5925,7 +3889,7 @@ export interface paths {
     };
     trace?: never;
   };
-  "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes/{quizId}/submissions": {
+  "/quizzes/{id}/submit": {
     parameters: {
       query?: never;
       header?: never;
@@ -5934,18 +3898,25 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Submit answers for an AI-generated learning-task quiz */
+    /**
+     * LearningTask 퀴즈 답안을 제출합니다
+     * @description AI가 생성한 퀴즈에 대한 학습자의 답안을 제출하고 채점 결과를
+     *       반환합니다.
+     *
+     *     - **입력 검증**: SubmitLearningTaskQuizRequestSchema 요구 사항을 충족하지
+     *       않으면 400을 반환합니다. 이는 채점 오류를 방지하기 위한 정책입니다.
+     *     - **상태 제한**: 퀴즈가 ready 상태가 아니면 409를 반환합니다. 평가 중복을
+     *       막기 위한 조치입니다.
+     *     - **권한 확인**: LearningPlan 소유자가 아니면 403을 반환해 타인 응시를
+     *       차단합니다.
+     */
     post: {
       parameters: {
         query?: never;
         header?: never;
         path: {
-          /** @description Public ID of the learningPlan */
-          learningPlanId: string;
-          /** @description Public ID of the learning-task */
-          learningTaskId: string;
-          /** @description AI 퀴즈 ID */
-          quizId: string;
+          /** @description LearningTask Quiz 공개 ID */
+          id: string;
         };
         cookie?: never;
       };
@@ -5969,7 +3940,7 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Quiz submitted and evaluated successfully */
+        /** @description 퀴즈를 제출하고 채점을 완료했습니다. */
         200: {
           headers: {
             [name: string]: unknown;
@@ -6165,8 +4136,8 @@ export interface paths {
             };
           };
         };
-        /** @description Invalid request payload */
-        400: {
+        /** @description 에러 응답 */
+        default: {
           headers: {
             [name: string]: unknown;
           };
@@ -6174,123 +4145,13 @@ export interface paths {
             "application/json": {
               error: {
                 /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
                  */
                 code: string;
                 /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Authentication required */
-        401: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Access denied */
-        403: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Quiz, learning-task, or learningPlan not found */
-        404: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Quiz is not ready or already submitted */
-        409: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-        /** @description Server error while submitting the quiz */
-        500: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description Error code
-                 * @example learningPlan:invalid_pagination_cursor
-                 */
-                code: string;
-                /**
-                 * @description Error message
-                 * @example Invalid pagination cursor provided
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
                  */
                 message: string;
               };
@@ -6308,7 +4169,9 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: never;
+  schemas: {
+    ErrorResponse: Record<string, never>;
+  };
   responses: never;
   parameters: never;
   requestBodies: never;

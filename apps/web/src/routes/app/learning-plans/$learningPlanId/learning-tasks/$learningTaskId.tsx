@@ -26,7 +26,7 @@ const learningTaskTabParser = parseAsStringLiteral(
 
 function RouteComponent() {
   const { learningPlanId, learningTaskId } = Route.useParams();
-  const learningTask = useLearningTaskDetail(learningPlanId, learningTaskId);
+  const learningTask = useLearningTaskDetail(learningTaskId);
 
   const [selectedTab, setSelectedTab] = useQueryState<LearningTaskTab>(
     "tab",
@@ -165,22 +165,14 @@ function RouteComponent() {
             id="ai-note"
             className="space-y-4"
           >
-            <AiNoteTab
-              detail={detail}
-              learningPlanId={learningPlanId}
-              learningTaskId={learningTaskId}
-            />
+            <AiNoteTab learningTaskId={learningTaskId} />
           </TabPanel>
 
           <TabPanel
             id="ai-quiz"
             className="space-y-4"
           >
-            <AiQuizTab
-              detail={detail}
-              learningPlanId={learningPlanId}
-              learningTaskId={learningTaskId}
-            />
+            <AiQuizTab learningTaskId={learningTaskId} />
           </TabPanel>
         </Tabs>
       </div>

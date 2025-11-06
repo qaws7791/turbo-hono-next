@@ -1,11 +1,14 @@
 import { useCallback } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   generateLearningTaskQuiz,
   submitLearningTaskQuiz,
 } from "@/features/learning-plan/api/learning-plan-service";
+import { learningTaskQuizQueryOptions } from "@/features/learning-plan/api/learning-plan-queries";
 import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
+
+const QUIZ_REFETCH_INTERVAL_MS = 4000;
 
 interface SubmitQuizVariables {
   quizId: string;
@@ -13,15 +16,21 @@ interface SubmitQuizVariables {
 }
 
 interface UseLearningTaskQuizParams {
-  learningPlanId: string;
   learningTaskId: string;
 }
 
 export function useLearningTaskQuiz({
-  learningPlanId,
   learningTaskId,
 }: UseLearningTaskQuizParams) {
   const queryClient = useQueryClient();
+
+  const quizQuery = useQuery({
+    ...learningTaskQuizQueryOptions(learningTaskId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.data?.status ?? "idle";
+      return status === "processing" ? QUIZ_REFETCH_INTERVAL_MS : false;
+    },
+  });
 
   const {
     mutateAsync: generateQuizMutation,
@@ -29,10 +38,10 @@ export function useLearningTaskQuiz({
     error: generateQuizError,
   } = useMutation({
     mutationFn: (options?: { force?: boolean }) =>
-      generateLearningTaskQuiz(learningPlanId, learningTaskId, options),
+      generateLearningTaskQuiz(learningTaskId, options),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: learningPlanKeys.learningTask(learningPlanId, learningTaskId),
+        queryKey: learningPlanKeys.learningTaskQuiz(learningTaskId),
       });
     },
   });
@@ -43,10 +52,10 @@ export function useLearningTaskQuiz({
     error: submitQuizError,
   } = useMutation({
     mutationFn: ({ quizId, answers }: SubmitQuizVariables) =>
-      submitLearningTaskQuiz(learningPlanId, learningTaskId, quizId, answers),
+      submitLearningTaskQuiz(quizId, answers),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: learningPlanKeys.learningTask(learningPlanId, learningTaskId),
+        queryKey: learningPlanKeys.learningTaskQuiz(learningTaskId),
       });
     },
   });
@@ -71,6 +80,8 @@ export function useLearningTaskQuiz({
     submitQuizError instanceof Error ? submitQuizError.message : null;
 
   return {
+    quizData: quizQuery.data?.data,
+    isLoading: quizQuery.isLoading,
     generateQuiz,
     isGeneratePending,
     generateErrorMessage,

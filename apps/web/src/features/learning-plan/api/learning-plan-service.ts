@@ -23,10 +23,10 @@ export type LearningTaskDetailResponse = Awaited<
 
 export type LearningModuleUpdateInput = Parameters<
   typeof api.learningModules.update
->[2];
+>[1];
 export type LearningTaskUpdateInput = Parameters<
   typeof api.learningTasks.update
->[2];
+>[1];
 
 export function listLearningPlans(params?: LearningPlanListParams) {
   return api.learningPlans.list(params);
@@ -36,65 +36,51 @@ export function getLearningPlanDetail(learningPlanId: string) {
   return api.learningPlans.detail(learningPlanId);
 }
 
-export function getLearningTaskDetail(
-  learningPlanId: string,
-  learningTaskId: string,
-) {
-  return api.learningTasks.detail(learningPlanId, learningTaskId);
+export function getLearningTaskDetail(learningTaskId: string) {
+  return api.learningTasks.detail(learningTaskId);
+}
+
+export function getLearningTaskNote(learningTaskId: string) {
+  return api.learningTasks.getNote(learningTaskId);
+}
+
+export function getLearningTaskQuiz(learningTaskId: string) {
+  return api.learningTasks.getQuiz(learningTaskId);
 }
 
 export function updateLearningModule(
-  learningPlanId: string,
   learningModuleId: string,
   data: LearningModuleUpdateInput,
 ) {
-  return api.learningModules.update(learningPlanId, learningModuleId, data);
+  return api.learningModules.update(learningModuleId, data);
 }
 
 export function updateLearningTask(
-  learningPlanId: string,
   learningTaskId: string,
   data: LearningTaskUpdateInput,
 ) {
-  return api.learningTasks.update(learningPlanId, learningTaskId, data);
+  return api.learningTasks.update(learningTaskId, data);
 }
 
 export function generateLearningTaskNote(
-  learningPlanId: string,
   learningTaskId: string,
   options?: { force?: boolean },
 ) {
-  return api.ai.generateLearningTaskNote(
-    learningPlanId,
-    learningTaskId,
-    options,
-  );
+  return api.ai.generateLearningTaskNote(learningTaskId, options);
 }
 
 export function generateLearningTaskQuiz(
-  learningPlanId: string,
   learningTaskId: string,
   options?: { force?: boolean },
 ) {
-  return api.ai.generateLearningTaskQuiz(
-    learningPlanId,
-    learningTaskId,
-    options,
-  );
+  return api.ai.generateLearningTaskQuiz(learningTaskId, options);
 }
 
 export function submitLearningTaskQuiz(
-  learningPlanId: string,
-  learningTaskId: string,
   quizId: string,
   answers: Array<{ questionId: string; selectedIndex: number }>,
 ) {
-  return api.learningTasks.submitQuiz(
-    learningPlanId,
-    learningTaskId,
-    quizId,
-    answers,
-  );
+  return api.learningTasks.submitQuiz(quizId, answers);
 }
 
 export function uploadDocument(file: File) {

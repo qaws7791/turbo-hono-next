@@ -25,7 +25,7 @@ export function useLearningModuleItem({
 
   const toggleExpansionMutation = useMutation({
     mutationFn: (newIsExpanded: boolean) =>
-      updateLearningModule(learningPlanId, learningModule.id, {
+      updateLearningModule(learningModule.id, {
         isExpanded: newIsExpanded,
       }),
     onMutate: async (newIsExpanded: boolean) => {
@@ -78,7 +78,7 @@ export function useLearningModuleItem({
       learningTaskId: string;
       isCompleted: boolean;
     }) =>
-      updateLearningTask(learningPlanId, learningTaskId, {
+      updateLearningTask(learningTaskId, {
         isCompleted,
       }),
     onMutate: async ({ learningTaskId, isCompleted }) => {
@@ -163,7 +163,7 @@ export function useLearningModuleItem({
       learningTaskId: string;
       dueDate: string | null;
     }) =>
-      updateLearningTask(learningPlanId, learningTaskId, {
+      updateLearningTask(learningTaskId, {
         dueDate,
       }),
     onMutate: async ({ learningTaskId, dueDate }) => {

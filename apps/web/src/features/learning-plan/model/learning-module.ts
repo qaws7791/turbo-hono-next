@@ -2,7 +2,7 @@ import type { paths } from "@/api/schema";
 import type { LearningModule } from "@/features/learning-plan/model/types";
 
 type ApiLearningModule =
-  paths["/learning-plans/{learningPlanId}"]["get"]["responses"][200]["content"]["application/json"]["learningModules"][number];
+  paths["/plans/{id}"]["get"]["responses"][200]["content"]["application/json"]["learningModules"][number];
 type ApiLearningTask =
   ApiLearningModule["learningTasks"] extends Array<infer T> ? T : never;
 

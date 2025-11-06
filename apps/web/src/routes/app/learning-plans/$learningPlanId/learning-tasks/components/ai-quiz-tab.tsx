@@ -5,7 +5,6 @@ import { Icon } from "@repo/ui/icon";
 import { useEffect, useState } from "react";
 
 import type {
-  LearningTaskDetail,
   LearningTaskQuizAnswerReview,
   LearningTaskQuizStatus,
 } from "@/features/learning-plan/model/types";
@@ -18,37 +17,35 @@ import {
 import { useLearningTaskQuiz } from "@/features/learning-plan/hooks/use-learning-task-quiz";
 
 type AiQuizTabProps = {
-  detail: LearningTaskDetail;
-  learningPlanId: string;
   learningTaskId: string;
 };
 
-export function AiQuizTab({
-  detail,
-  learningPlanId,
-  learningTaskId,
-}: AiQuizTabProps) {
+export function AiQuizTab({ learningTaskId }: AiQuizTabProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<
     Record<string, number>
   >({});
 
   const {
+    quizData,
     generateQuiz,
     isGeneratePending,
     generateErrorMessage,
     submitQuiz,
     isSubmitPending,
     submitErrorMessage,
-  } = useLearningTaskQuiz({ learningPlanId, learningTaskId });
+  } = useLearningTaskQuiz({ learningTaskId });
 
-  const quizData = detail.aiQuiz;
   const quizStatus: LearningTaskQuizStatus = quizData?.status ?? "idle";
   const quizStatusMeta = AI_QUIZ_STATUS_META[quizStatus];
   const isQuizProcessing = quizStatus === "processing" || isGeneratePending;
   const quizQuestions = quizData?.questions ?? [];
   const latestQuizResult = quizData?.latestResult ?? null;
-  const quizRequestedAtLabel = formatNullableDateTime(quizData?.requestedAt);
-  const quizCompletedAtLabel = formatNullableDateTime(quizData?.completedAt);
+  const quizRequestedAtLabel = formatNullableDateTime(
+    quizData?.requestedAt ?? null,
+  );
+  const quizCompletedAtLabel = formatNullableDateTime(
+    quizData?.completedAt ?? null,
+  );
 
   const quizResultMap: Map<string, LearningTaskQuizAnswerReview> | null =
     latestQuizResult
@@ -57,14 +54,17 @@ export function AiQuizTab({
   const latestQuizSubmittedLabel = latestQuizResult
     ? formatDateTime(latestQuizResult.submittedAt)
     : null;
-  const answeredCount = quizQuestions.reduce((count, question) => {
-    return selectedAnswers[question.id] !== undefined ? count + 1 : count;
-  }, 0);
+  const answeredCount = quizQuestions.reduce(
+    (count: number, question: { id: string }) => {
+      return selectedAnswers[question.id] !== undefined ? count + 1 : count;
+    },
+    0,
+  );
 
   const allQuestionsAnswered =
     quizQuestions.length > 0 &&
     quizQuestions.every(
-      (question) => selectedAnswers[question.id] !== undefined,
+      (question: { id: string }) => selectedAnswers[question.id] !== undefined,
     );
   const canSubmitQuiz =
     Boolean(
@@ -89,10 +89,16 @@ export function AiQuizTab({
     if (quizData.latestResult) {
       const nextSelections = quizData.latestResult.answers.reduce<
         Record<string, number>
-      >((accumulator, answer) => {
-        accumulator[answer.id] = answer.selectedIndex;
-        return accumulator;
-      }, {});
+      >(
+        (
+          accumulator: Record<string, number>,
+          answer: { id: string; selectedIndex: number },
+        ) => {
+          accumulator[answer.id] = answer.selectedIndex;
+          return accumulator;
+        },
+        {},
+      );
       setSelectedAnswers(nextSelections);
       return;
     }
@@ -125,7 +131,7 @@ export function AiQuizTab({
       return;
     }
 
-    const answersPayload = quizQuestions.map((question) => {
+    const answersPayload = quizQuestions.map((question: { id: string }) => {
       const selectedIndex = selectedAnswers[question.id];
       if (selectedIndex === undefined) {
         throw new Error("모든 문항에 답변한 후에만 제출할 수 있습니다.");
@@ -145,10 +151,16 @@ export function AiQuizTab({
     if (payload?.evaluation) {
       const nextSelections = payload.evaluation.answers.reduce<
         Record<string, number>
-      >((accumulator, answer) => {
-        accumulator[answer.id] = answer.selectedIndex;
-        return accumulator;
-      }, {});
+      >(
+        (
+          accumulator: Record<string, number>,
+          answer: { id: string; selectedIndex: number },
+        ) => {
+          accumulator[answer.id] = answer.selectedIndex;
+          return accumulator;
+        },
+        {},
+      );
       setSelectedAnswers(nextSelections);
     }
   };
@@ -291,83 +303,96 @@ export function AiQuizTab({
           )}
 
           <div className="space-y-4">
-            {quizQuestions.map((question, questionIndex) => {
-              const evaluation = quizResultMap?.get(question.id);
-              return (
-                <div
-                  key={question.id}
-                  className="space-y-3 rounded-md border border-muted bg-background p-4"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="mt-0.5 text-sm font-semibold text-primary">
-                      Q{questionIndex + 1}
-                    </span>
-                    <p className="text-sm text-foreground">{question.prompt}</p>
-                  </div>
-                  <div className="grid gap-2">
-                    {question.options.map((option, optionIndex) => {
-                      const isSelected =
-                        selectedAnswers[question.id] === optionIndex;
-                      const isCorrect =
-                        evaluation?.correctIndex === optionIndex;
-                      const isUserChoice =
-                        evaluation?.selectedIndex === optionIndex;
-                      const baseClasses =
-                        "w-full rounded-md border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40";
-                      const interactiveClasses =
-                        " border-muted bg-background text-foreground hover:border-primary/40 hover:bg-primary/5";
-                      const selectedClasses =
-                        " border-primary bg-primary/10 text-primary";
-                      const correctClasses =
-                        " border-green-500 bg-green-50 text-green-900";
-                      const incorrectClasses =
-                        " border-destructive bg-destructive/10 text-destructive";
-
-                      const optionClasses =
-                        baseClasses +
-                        (evaluation
-                          ? isCorrect
-                            ? correctClasses
-                            : isUserChoice
-                              ? incorrectClasses
-                              : " border-muted bg-background text-foreground"
-                          : isSelected
-                            ? selectedClasses
-                            : interactiveClasses) +
-                        (isQuizOptionDisabled && !evaluation
-                          ? " opacity-60"
-                          : "");
-
-                      return (
-                        <button
-                          key={optionIndex}
-                          type="button"
-                          onClick={() =>
-                            handleSelectAnswer(question.id, optionIndex)
-                          }
-                          className={optionClasses}
-                          disabled={isQuizOptionDisabled}
-                        >
-                          <span className="mr-2 font-medium">
-                            {String.fromCharCode(65 + optionIndex)}.
-                          </span>
-                          <span>{option}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {evaluation && (
-                    <div className="rounded-md border border-primary/40 px-4 py-3 text-sm ">
-                      <div className="font-semibold text-primary">
-                        정답은{" "}
-                        {String.fromCharCode(65 + evaluation.correctIndex)}
-                      </div>
-                      <p className="mt-1">{evaluation.explanation}</p>
+            {quizQuestions.map(
+              (
+                question: {
+                  id: string;
+                  prompt: string;
+                  options: Array<string>;
+                },
+                questionIndex: number,
+              ) => {
+                const evaluation = quizResultMap?.get(question.id);
+                return (
+                  <div
+                    key={question.id}
+                    className="space-y-3 rounded-md border border-muted bg-background p-4"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 text-sm font-semibold text-primary">
+                        Q{questionIndex + 1}
+                      </span>
+                      <p className="text-sm text-foreground">
+                        {question.prompt}
+                      </p>
                     </div>
-                  )}
-                </div>
-              );
-            })}
+                    <div className="grid gap-2">
+                      {question.options.map(
+                        (option: string, optionIndex: number) => {
+                          const isSelected =
+                            selectedAnswers[question.id] === optionIndex;
+                          const isCorrect =
+                            evaluation?.correctIndex === optionIndex;
+                          const isUserChoice =
+                            evaluation?.selectedIndex === optionIndex;
+                          const baseClasses =
+                            "w-full rounded-md border px-3 py-2 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-primary/40";
+                          const interactiveClasses =
+                            " border-muted bg-background text-foreground hover:border-primary/40 hover:bg-primary/5";
+                          const selectedClasses =
+                            " border-primary bg-primary/10 text-primary";
+                          const correctClasses =
+                            " border-green-500 bg-green-50 text-green-900";
+                          const incorrectClasses =
+                            " border-destructive bg-destructive/10 text-destructive";
+
+                          const optionClasses =
+                            baseClasses +
+                            (evaluation
+                              ? isCorrect
+                                ? correctClasses
+                                : isUserChoice
+                                  ? incorrectClasses
+                                  : " border-muted bg-background text-foreground"
+                              : isSelected
+                                ? selectedClasses
+                                : interactiveClasses) +
+                            (isQuizOptionDisabled && !evaluation
+                              ? " opacity-60"
+                              : "");
+
+                          return (
+                            <button
+                              key={optionIndex}
+                              type="button"
+                              onClick={() =>
+                                handleSelectAnswer(question.id, optionIndex)
+                              }
+                              className={optionClasses}
+                              disabled={isQuizOptionDisabled}
+                            >
+                              <span className="mr-2 font-medium">
+                                {String.fromCharCode(65 + optionIndex)}.
+                              </span>
+                              <span>{option}</span>
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                    {evaluation && (
+                      <div className="rounded-md border border-primary/40 px-4 py-3 text-sm ">
+                        <div className="font-semibold text-primary">
+                          정답은{" "}
+                          {String.fromCharCode(65 + evaluation.correctIndex)}
+                        </div>
+                        <p className="mt-1">{evaluation.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+            )}
           </div>
 
           {!latestQuizResult && (

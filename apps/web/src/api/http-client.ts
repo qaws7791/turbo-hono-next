@@ -3,10 +3,10 @@ import createClient from "openapi-fetch";
 import type { paths } from "./schema";
 
 type LearningPlanCreateBody = NonNullable<
-  paths["/learning-plans"]["post"]["requestBody"]
+  paths["/plans"]["post"]["requestBody"]
 >["content"]["application/json"];
 type LearningPlanUpdateBody = NonNullable<
-  paths["/learning-plans/{id}"]["patch"]["requestBody"]
+  paths["/plans/{id}"]["patch"]["requestBody"]
 >["content"]["application/json"];
 type DocumentUploadBody = NonNullable<
   paths["/documents/upload"]["post"]["requestBody"]
@@ -54,14 +54,14 @@ const learningPlans = {
     sort?: "created_at" | "updated_at" | "title";
     order?: "asc" | "desc";
   }) => {
-    return client.GET("/learning-plans", {
+    return client.GET("/plans", {
       params: { query: params },
     });
   },
 
-  detail: async (learningPlanId: string) => {
-    return client.GET("/learning-plans/{learningPlanId}", {
-      params: { path: { learningPlanId } },
+  detail: async (id: string) => {
+    return client.GET("/plans/{id}", {
+      params: { path: { id } },
     });
   },
 
@@ -83,13 +83,13 @@ const learningPlans = {
       additionalRequirements: data.additionalRequirements ?? null,
     };
 
-    return client.POST("/learning-plans", {
+    return client.POST("/plans", {
       body,
     });
   },
 
   update: async (
-    learningPlanId: string,
+    id: string,
     data: {
       title?: string;
       emoji?: string;
@@ -112,24 +112,21 @@ const learningPlans = {
           }
         : data;
 
-    return client.PATCH("/learning-plans/{id}", {
-      params: { path: { learningPlanId } },
+    return client.PATCH("/plans/{id}", {
+      params: { path: { id } },
       body: body as LearningPlanUpdateBody,
     });
   },
 
-  delete: async (learningPlanId: string) => {
-    return client.DELETE("/learning-plans/{id}", {
-      params: { path: { learningPlanId } },
+  delete: async (id: string) => {
+    return client.DELETE("/plans/{id}", {
+      params: { path: { id } },
     });
   },
 
-  updateStatus: async (
-    learningPlanId: string,
-    status: "active" | "archived",
-  ) => {
-    return client.PATCH("/learning-plans/{id}/status", {
-      params: { path: { learningPlanId } },
+  updateStatus: async (id: string, status: "active" | "archived") => {
+    return client.PATCH("/plans/{id}/status", {
+      params: { path: { id } },
       body: { status },
     });
   },
@@ -137,64 +134,49 @@ const learningPlans = {
 
 const learningModules = {
   create: async (
-    learningPlanId: string,
+    planId: string,
     data: {
       title: string;
       description?: string;
       isExpanded?: boolean;
     },
   ) => {
-    return client.POST("/learning-plans/{learningPlanId}/learning-modules", {
-      params: { path: { learningPlanId } },
+    return client.POST("/plans/{id}/modules", {
+      params: { path: { id: planId } },
       body: data,
     });
   },
 
   update: async (
-    learningPlanId: string,
-    learningModuleId: string,
+    id: string,
     data: {
       title?: string;
       description?: string;
       isExpanded?: boolean;
     },
   ) => {
-    return client.PUT(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
-      {
-        params: { path: { learningPlanId, learningModuleId } },
-        body: data,
-      },
-    );
+    return client.PUT("/modules/{id}", {
+      params: { path: { id } },
+      body: data,
+    });
   },
 
-  delete: async (learningPlanId: string, learningModuleId: string) => {
-    return client.DELETE(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}",
-      {
-        params: { path: { learningPlanId, learningModuleId } },
-      },
-    );
+  delete: async (id: string) => {
+    return client.DELETE("/modules/{id}", {
+      params: { path: { id } },
+    });
   },
 
-  reorder: async (
-    learningPlanId: string,
-    learningModuleId: string,
-    newOrder: number,
-  ) => {
-    return client.PATCH(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/order",
-      {
-        params: { path: { learningPlanId, learningModuleId } },
-        body: { newOrder },
-      },
-    );
+  reorder: async (id: string, newOrder: number) => {
+    return client.PATCH("/modules/{id}/order", {
+      params: { path: { id } },
+      body: { newOrder },
+    });
   },
 };
 
 const learningTasks = {
   create: async (
-    learningPlanId: string,
     learningModuleId: string,
     data: {
       title: string;
@@ -203,27 +185,22 @@ const learningTasks = {
       memo?: string;
     },
   ) => {
-    return client.POST(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks",
-      {
-        params: { path: { learningPlanId, learningModuleId } },
-        body: data,
+    return client.POST("/tasks", {
+      body: {
+        learningModuleId,
+        ...data,
       },
-    );
+    });
   },
 
-  detail: async (learningPlanId: string, learningTaskId: string) => {
-    return client.GET(
-      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
-      {
-        params: { path: { learningPlanId, learningTaskId } },
-      },
-    );
+  detail: async (id: string) => {
+    return client.GET("/tasks/{id}", {
+      params: { path: { id } },
+    });
   },
 
   update: async (
-    learningPlanId: string,
-    learningTaskId: string,
+    id: string,
     data: {
       title?: string;
       description?: string;
@@ -232,59 +209,51 @@ const learningTasks = {
       memo?: string;
     },
   ) => {
-    return client.PUT(
-      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}",
-      {
-        params: { path: { learningPlanId, learningTaskId } },
-        body: data,
-      },
-    );
+    return client.PUT("/tasks/{id}", {
+      params: { path: { id } },
+      body: data,
+    });
   },
 
-  delete: async (
-    learningPlanId: string,
-    learningModuleId: string,
-    learningTaskId: string,
-  ) => {
-    return client.DELETE(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}",
-      {
-        params: { path: { learningPlanId, learningModuleId, learningTaskId } },
-      },
-    );
+  delete: async (id: string) => {
+    return client.DELETE("/tasks/{id}", {
+      params: { path: { id } },
+    });
   },
 
   move: async (
-    learningPlanId: string,
-    learningModuleId: string,
-    learningTaskId: string,
+    id: string,
     data: {
       newLearningModuleId: string;
       newOrder?: number;
     },
   ) => {
-    return client.PATCH(
-      "/learning-plans/{learningPlanId}/learning-modules/{learningModuleId}/learning-tasks/{learningTaskId}/move",
-      {
-        params: { path: { learningPlanId, learningModuleId, learningTaskId } },
-        body: data,
-      },
-    );
+    return client.PATCH("/tasks/{id}/move", {
+      params: { path: { id } },
+      body: data,
+    });
+  },
+
+  getNote: async (id: string) => {
+    return client.GET("/tasks/{id}/notes", {
+      params: { path: { id } },
+    });
+  },
+
+  getQuiz: async (id: string) => {
+    return client.GET("/tasks/{id}/quizzes", {
+      params: { path: { id } },
+    });
   },
 
   submitQuiz: async (
-    learningPlanId: string,
-    learningTaskId: string,
     quizId: string,
     answers: Array<{ questionId: string; selectedIndex: number }>,
   ) => {
-    return client.POST(
-      "/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes/{quizId}/submissions",
-      {
-        params: { path: { learningPlanId, learningTaskId, quizId } },
-        body: { answers },
-      },
-    );
+    return client.POST("/quizzes/{id}/submit", {
+      params: { path: { id: quizId } },
+      body: { answers },
+    });
   },
 };
 
@@ -340,55 +309,47 @@ const ai = {
     mainGoal: string;
     additionalRequirements?: string | undefined;
   }) => {
-    return client.POST("/ai/learning-plans/generate", {
+    return client.POST("/ai/plans/generate", {
       body: data,
     });
   },
 
   generateLearningTaskNote: async (
-    learningPlanId: string,
-    learningTaskId: string,
+    taskId: string,
     options?: {
       force?: boolean;
     },
   ) => {
-    return client.POST(
-      "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/notes",
-      {
-        params: {
-          path: { learningPlanId, learningTaskId },
-          query:
-            options?.force !== undefined
-              ? {
-                  force: options.force,
-                }
-              : undefined,
-        },
+    return client.POST("/tasks/{id}/notes", {
+      params: {
+        path: { id: taskId },
+        query:
+          options?.force !== undefined
+            ? {
+                force: options.force,
+              }
+            : undefined,
       },
-    );
+    });
   },
 
   generateLearningTaskQuiz: async (
-    learningPlanId: string,
-    learningTaskId: string,
+    taskId: string,
     options?: {
       force?: boolean;
     },
   ) => {
-    return client.POST(
-      "/ai/learning-plans/{learningPlanId}/learning-tasks/{learningTaskId}/quizzes",
-      {
-        params: {
-          path: { learningPlanId, learningTaskId },
-          query:
-            options?.force !== undefined
-              ? {
-                  force: options.force,
-                }
-              : undefined,
-        },
+    return client.POST("/tasks/{id}/quizzes", {
+      params: {
+        path: { id: taskId },
+        query:
+          options?.force !== undefined
+            ? {
+                force: options.force,
+              }
+            : undefined,
       },
-    );
+    });
   },
 };
 

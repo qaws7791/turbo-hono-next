@@ -58,11 +58,6 @@ export interface LearningTask {
   memo?: string | null;
   createdAt: string;
   updatedAt: string;
-  aiNoteStatus: LearningTaskNoteStatus;
-  aiNoteMarkdown: string | null;
-  aiNoteRequestedAt: string | null;
-  aiNoteCompletedAt: string | null;
-  aiNoteError: string | null;
 }
 
 export interface LearningTaskDetail extends LearningTask {
@@ -76,7 +71,6 @@ export interface LearningTaskDetail extends LearningTask {
     id: string;
     title: string;
   };
-  aiQuiz: LearningTaskQuiz | null;
 }
 
 export interface LearningModule {

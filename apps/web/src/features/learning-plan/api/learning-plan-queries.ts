@@ -5,6 +5,8 @@ import type { LearningPlanListParams } from "@/features/learning-plan/api/learni
 import {
   getLearningPlanDetail,
   getLearningTaskDetail,
+  getLearningTaskNote,
+  getLearningTaskQuiz,
   listLearningPlans,
 } from "@/features/learning-plan/api/learning-plan-service";
 import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
@@ -21,11 +23,20 @@ export const learningPlanQueryOptions = (learningPlanId: string) =>
     queryFn: () => getLearningPlanDetail(learningPlanId),
   });
 
-export const learningTaskDetailQueryOptions = (
-  learningPlanId: string,
-  learningTaskId: string,
-) =>
+export const learningTaskDetailQueryOptions = (learningTaskId: string) =>
   queryOptions({
-    queryKey: learningPlanKeys.learningTask(learningPlanId, learningTaskId),
-    queryFn: () => getLearningTaskDetail(learningPlanId, learningTaskId),
+    queryKey: learningPlanKeys.learningTask(learningTaskId),
+    queryFn: () => getLearningTaskDetail(learningTaskId),
+  });
+
+export const learningTaskNoteQueryOptions = (learningTaskId: string) =>
+  queryOptions({
+    queryKey: learningPlanKeys.learningTaskNote(learningTaskId),
+    queryFn: () => getLearningTaskNote(learningTaskId),
+  });
+
+export const learningTaskQuizQueryOptions = (learningTaskId: string) =>
+  queryOptions({
+    queryKey: learningPlanKeys.learningTaskQuiz(learningTaskId),
+    queryFn: () => getLearningTaskQuiz(learningTaskId),
   });

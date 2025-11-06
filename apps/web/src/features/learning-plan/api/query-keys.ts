@@ -7,10 +7,20 @@ export const learningPlanKeys = {
       : ([...learningPlanKeys.lists(), params] as const),
   detail: (learningPlanId: string) =>
     [...learningPlanKeys.root, "detail", learningPlanId] as const,
-  learningTask: (learningPlanId: string, learningTaskId: string) =>
+  learningTask: (learningTaskId: string) =>
+    [...learningPlanKeys.root, "learning-task", learningTaskId] as const,
+  learningTaskNote: (learningTaskId: string) =>
     [
-      ...learningPlanKeys.detail(learningPlanId),
+      ...learningPlanKeys.root,
       "learning-task",
       learningTaskId,
+      "note",
+    ] as const,
+  learningTaskQuiz: (learningTaskId: string) =>
+    [
+      ...learningPlanKeys.root,
+      "learning-task",
+      learningTaskId,
+      "quiz",
     ] as const,
 };
