@@ -71,10 +71,13 @@ export const generateLearningTaskNoteRoute = createRoute({
   막습니다.`,
   request: {
     params: z.object({
-      id: z.string().min(1).openapi({
-        description: "LearningTask 공개 ID",
-        example: "660e8400-e29b-41d4-a716-446655440001",
-      }),
+      id: z
+        .string()
+        .min(1)
+        .openapi({
+          description: "LearningTask 공개 ID",
+          examples: ["660e8400-e29b-41d4-a716-446655440001"],
+        }),
     }),
     query: GenerateLearningTaskNoteQuerySchema,
   },
@@ -125,10 +128,13 @@ export const generateLearningTaskQuizRoute = createRoute({
   방지합니다.`,
   request: {
     params: z.object({
-      id: z.string().min(1).openapi({
-        description: "LearningTask 공개 ID",
-        example: "660e8400-e29b-41d4-a716-446655440001",
-      }),
+      id: z
+        .string()
+        .min(1)
+        .openapi({
+          description: "LearningTask 공개 ID",
+          examples: ["660e8400-e29b-41d4-a716-446655440001"],
+        }),
     }),
     query: GenerateLearningTaskQuizQuerySchema,
   },

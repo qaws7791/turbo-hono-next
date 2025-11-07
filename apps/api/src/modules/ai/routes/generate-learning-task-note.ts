@@ -1,12 +1,11 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { generateLearningTaskNoteRoute } from "@repo/api-spec/modules/ai/routes";
+import status from "http-status";
 
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { AIError } from "../errors";
 import {
-  LEARNING_TASK_NOTE_STATUS,
   prepareLearningTaskNoteGeneration,
   runLearningTaskNoteGeneration,
 } from "../services/learning-task-note-service";
@@ -65,12 +64,11 @@ const generateLearningTaskNote = new OpenAPIHono<{
 
       return c.json(
         {
-          status: LEARNING_TASK_NOTE_STATUS.failed,
-          markdown: null,
-          requestedAt: null,
-          completedAt: null,
-          errorMessage:
-            "예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          error: {
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              "예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+          },
         },
         status.INTERNAL_SERVER_ERROR,
       );

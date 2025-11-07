@@ -17,6 +17,10 @@
     "./modules/*": {
       "types": "./src/modules/*.ts",
       "default": "./src/modules/*.ts"
+    },
+    "./common/*": {
+      "types": "./src/common/*.ts",
+      "default": "./src/common/*.ts"
     }
   },
   "files": [
@@ -51,6 +55,9 @@
       ],
       "modules/*": [
         "src/modules/*.ts"
+      ],
+      "common/*": [
+        "src/common/*.ts"
       ]
     }
   }

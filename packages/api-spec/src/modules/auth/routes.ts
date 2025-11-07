@@ -38,8 +38,9 @@ export const loginWithEmailRoute = createRoute({
           description: "세션 쿠키 값입니다.",
           schema: {
             type: "string",
-            example:
+            examples: [
               "session=sessionTokenValue; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=604800",
+            ],
           },
         },
       },

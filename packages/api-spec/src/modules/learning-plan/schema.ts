@@ -16,100 +16,135 @@ const emojiSchema = z
 
 // Request schemas
 export const LearningPlanListQuerySchema = z.object({
-  cursor: z.string().optional().openapi({
-    description: "페이지네이션 커서(인코딩된 문자열)",
-    example: "eyJpZCI6MTIsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDEifQ==",
-  }),
-  limit: z.coerce.number().int().min(1).max(100).default(20).openapi({
-    description: "반환할 항목 수",
-    example: 20,
-  }),
-  search: z.string().optional().openapi({
-    description: "제목 또는 설명 검색어",
-    example: "JavaScript learning",
-  }),
-  status: z.enum(["active", "archived"]).optional().openapi({
-    description: "LearningPlan 상태 필터",
-    example: "active",
-  }),
+  cursor: z
+    .string()
+    .optional()
+    .openapi({
+      description: "페이지네이션 커서(인코딩된 문자열)",
+      examples: ["eyJpZCI6MTIsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDEifQ=="],
+    }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .default(20)
+    .openapi({
+      description: "반환할 항목 수",
+      examples: [20],
+    }),
+  search: z
+    .string()
+    .optional()
+    .openapi({
+      description: "제목 또는 설명 검색어",
+      examples: ["JavaScript learning"],
+    }),
+  status: z
+    .enum(["active", "archived"])
+    .optional()
+    .openapi({
+      description: "LearningPlan 상태 필터",
+      examples: ["active"],
+    }),
   sort: z
     .enum(["created_at", "updated_at", "title"])
     .default("created_at")
     .openapi({
       description: "정렬 기준 필드",
-      example: "created_at",
+      examples: ["created_at"],
     }),
-  order: z.enum(["asc", "desc"]).default("desc").openapi({
-    description: "정렬 순서",
-    example: "desc",
-  }),
+  order: z
+    .enum(["asc", "desc"])
+    .default("desc")
+    .openapi({
+      description: "정렬 순서",
+      examples: ["desc"],
+    }),
 });
 
 // Response schemas
 export const LearningPlanItemSchema = z.object({
   id: z.string().openapi({
     description: "LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
   emoji: emojiSchema.openapi({
     description: "LearningPlan을 한눈에 나타내는 이모지",
-    example: "🚀",
+    examples: ["🚀"],
   }),
   title: z.string().openapi({
     description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
+    examples: ["Full Stack JavaScript Developer"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
   status: z.enum(["active", "archived"]).openapi({
     description: "LearningPlan 현재 상태",
-    example: "active",
+    examples: ["active"],
   }),
-  learningModuleCompletionPercent: z.number().int().min(0).max(100).openapi({
-    description: "완료된 LearningTask 비율(0-100)",
-    example: 75,
-  }),
+  learningModuleCompletionPercent: z
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .openapi({
+      description: "완료된 LearningTask 비율(0-100)",
+      examples: [75],
+    }),
   learningTopic: z.string().openapi({
     description: "핵심 학습 주제",
-    example: "JavaScript",
+    examples: ["JavaScript"],
   }),
   userLevel: z.string().openapi({
     description: "대상 학습자 수준",
-    example: "beginner",
+    examples: ["beginner"],
   }),
-  targetWeeks: z.number().int().openapi({
-    description: "목표 완료 주차",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().openapi({
-    description: "주간 학습 시간",
-    example: 10,
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .openapi({
+      description: "목표 완료 주차",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .openapi({
+      description: "주간 학습 시간",
+      examples: [10],
+    }),
   learningStyle: z.string().openapi({
     description: "선호 학습 방식",
-    example: "실습 중심",
+    examples: ["실습 중심"],
   }),
   preferredResources: z.string().openapi({
     description: "선호 학습 자료",
-    example: "온라인 강의",
+    examples: ["온라인 강의"],
   }),
   mainGoal: z.string().openapi({
     description: "주요 학습 목표",
-    example: "웹 개발자 취업",
+    examples: ["웹 개발자 취업"],
   }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
@@ -119,24 +154,27 @@ export const LearningPlanListResponseSchema = z.object({
       z.object({
         id: z.string().openapi({
           description: "LearningPlan 공개 ID",
-          example: "abc123def456",
+          examples: ["abc123def456"],
         }),
 
         emoji: emojiSchema.openapi({
           description: "LearningPlan을 한눈에 나타내는 이모지",
-          example: "🚀",
+          examples: ["🚀"],
         }),
         title: z.string().openapi({
           description: "LearningPlan 제목",
-          example: "Full Stack JavaScript Developer",
+          examples: ["Full Stack JavaScript Developer"],
         }),
-        description: z.string().nullable().openapi({
-          description: "LearningPlan 설명",
-          example: "Complete guide to becoming a full stack developer",
-        }),
+        description: z
+          .string()
+          .nullable()
+          .openapi({
+            description: "LearningPlan 설명",
+            examples: ["Complete guide to becoming a full stack developer"],
+          }),
         status: z.enum(["active", "archived"]).openapi({
           description: "LearningPlan 현재 상태",
-          example: "active",
+          examples: ["active"],
         }),
         learningModuleCompletionPercent: z
           .number()
@@ -145,47 +183,56 @@ export const LearningPlanListResponseSchema = z.object({
           .max(100)
           .openapi({
             description: "완료된 LearningTask 비율(0-100)",
-            example: 75,
+            examples: [75],
           }),
         learningTopic: z.string().openapi({
           description: "핵심 학습 주제",
-          example: "JavaScript",
+          examples: ["JavaScript"],
         }),
         userLevel: z.string().openapi({
           description: "대상 학습자 수준",
-          example: "beginner",
+          examples: ["beginner"],
         }),
-        targetWeeks: z.number().int().openapi({
-          description: "목표 완료 주차",
-          example: 12,
-        }),
-        weeklyHours: z.number().int().openapi({
-          description: "주간 학습 시간",
-          example: 10,
-        }),
+        targetWeeks: z
+          .number()
+          .int()
+          .openapi({
+            description: "목표 완료 주차",
+            examples: [12],
+          }),
+        weeklyHours: z
+          .number()
+          .int()
+          .openapi({
+            description: "주간 학습 시간",
+            examples: [10],
+          }),
         learningStyle: z.string().openapi({
           description: "선호 학습 방식",
-          example: "실습 중심",
+          examples: ["실습 중심"],
         }),
         preferredResources: z.string().openapi({
           description: "선호 학습 자료",
-          example: "온라인 강의",
+          examples: ["온라인 강의"],
         }),
         mainGoal: z.string().openapi({
           description: "주요 학습 목표",
-          example: "웹 개발자 취업",
+          examples: ["웹 개발자 취업"],
         }),
-        additionalRequirements: z.string().nullable().openapi({
-          description: "추가 요구 사항",
-          example: "React, Node.js 포함",
-        }),
+        additionalRequirements: z
+          .string()
+          .nullable()
+          .openapi({
+            description: "추가 요구 사항",
+            examples: ["React, Node.js 포함"],
+          }),
         createdAt: z.string().openapi({
           description: "생성 시각",
-          example: "2024-01-01T00:00:00.000Z",
+          examples: ["2024-01-01T00:00:00.000Z"],
         }),
         updatedAt: z.string().openapi({
           description: "마지막 수정 시각",
-          example: "2024-01-15T10:30:00.000Z",
+          examples: ["2024-01-15T10:30:00.000Z"],
         }),
       }),
     )
@@ -196,12 +243,15 @@ export const LearningPlanListResponseSchema = z.object({
     .object({
       hasNext: z.boolean().openapi({
         description: "추가 항목 존재 여부",
-        example: true,
+        examples: [true],
       }),
-      nextCursor: z.string().nullable().openapi({
-        description: "다음 페이지 커서",
-        example: "eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ==",
-      }),
+      nextCursor: z
+        .string()
+        .nullable()
+        .openapi({
+          description: "다음 페이지 커서",
+          examples: ["eyJpZCI6MjAsImNyZWF0ZWRBdCI6IjIwMjQtMDEtMDIifQ=="],
+        }),
     })
     .openapi({
       description: "페이지네이션 정보",
@@ -210,226 +260,329 @@ export const LearningPlanListResponseSchema = z.object({
 
 // LearningPlan creation schemas
 export const LearningPlanCreateRequestSchema = z.object({
-  title: z.string().min(1).max(200).openapi({
-    description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
-  }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .openapi({
+      description: "LearningPlan 제목",
+      examples: ["Full Stack JavaScript Developer"],
+    }),
   emoji: emojiSchema.optional().openapi({
     description: "LearningPlan에 사용할 이모지(미입력 시 기본값 적용)",
-    example: "🧠",
+    examples: ["🧠"],
   }),
-  description: z.string().optional().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
-  learningTopic: z.string().min(1).max(100).openapi({
-    description: "핵심 학습 주제",
-    example: "JavaScript",
-  }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
+  learningTopic: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({
+      description: "핵심 학습 주제",
+      examples: ["JavaScript"],
+    }),
   userLevel: z.string().openapi({
     description: "대상 학습자 수준",
-    example: "beginner",
+    examples: ["beginner"],
   }),
-  targetWeeks: z.number().int().min(1).max(24).openapi({
-    description: "목표 완료 주차(1-24주)",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().min(1).max(60).openapi({
-    description: "주간 학습 시간(1-60시간)",
-    example: 10,
-  }),
-  learningStyle: z.string().min(1).max(100).openapi({
-    description: "선호 학습 방식",
-    example: "실습 중심",
-  }),
-  preferredResources: z.string().min(1).max(100).openapi({
-    description: "선호 학습 자료",
-    example: "온라인 강의",
-  }),
-  mainGoal: z.string().min(1).max(200).openapi({
-    description: "주요 학습 목표",
-    example: "웹 개발자 취업",
-  }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .min(1)
+    .max(24)
+    .openapi({
+      description: "목표 완료 주차(1-24주)",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .min(1)
+    .max(60)
+    .openapi({
+      description: "주간 학습 시간(1-60시간)",
+      examples: [10],
+    }),
+  learningStyle: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({
+      description: "선호 학습 방식",
+      examples: ["실습 중심"],
+    }),
+  preferredResources: z
+    .string()
+    .min(1)
+    .max(100)
+    .openapi({
+      description: "선호 학습 자료",
+      examples: ["온라인 강의"],
+    }),
+  mainGoal: z
+    .string()
+    .min(1)
+    .max(200)
+    .openapi({
+      description: "주요 학습 목표",
+      examples: ["웹 개발자 취업"],
+    }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
 });
 
 export const LearningPlanCreateResponseSchema = z.object({
   id: z.string().openapi({
     description: "생성된 LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
   emoji: emojiSchema.openapi({
     description: "LearningPlan에 지정된 이모지",
-    example: "🧠",
+    examples: ["🧠"],
   }),
   title: z.string().openapi({
     description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
+    examples: ["Full Stack JavaScript Developer"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
   status: z.enum(["active", "archived"]).openapi({
     description: "LearningPlan 현재 상태",
-    example: "active",
+    examples: ["active"],
   }),
   learningTopic: z.string().openapi({
     description: "핵심 학습 주제",
-    example: "JavaScript",
+    examples: ["JavaScript"],
   }),
   userLevel: z.string().openapi({
     description: "대상 학습자 수준",
-    example: "beginner",
+    examples: ["beginner"],
   }),
-  targetWeeks: z.number().int().openapi({
-    description: "목표 완료 주차",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().openapi({
-    description: "주간 학습 시간",
-    example: 10,
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .openapi({
+      description: "목표 완료 주차",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .openapi({
+      description: "주간 학습 시간",
+      examples: [10],
+    }),
   learningStyle: z.string().openapi({
     description: "선호 학습 방식",
-    example: "실습 중심",
+    examples: ["실습 중심"],
   }),
   preferredResources: z.string().openapi({
     description: "선호 학습 자료",
-    example: "온라인 강의",
+    examples: ["온라인 강의"],
   }),
   mainGoal: z.string().openapi({
     description: "주요 학습 목표",
-    example: "웹 개발자 취업",
+    examples: ["웹 개발자 취업"],
   }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
 });
 
 // LearningPlan update schemas
 export const LearningPlanUpdateRequestSchema = z.object({
-  title: z.string().min(1).max(200).optional().openapi({
-    description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
-  }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .openapi({
+      description: "LearningPlan 제목",
+      examples: ["Full Stack JavaScript Developer"],
+    }),
   emoji: emojiSchema.optional().openapi({
     description: "LearningPlan을 나타내는 이모지",
-    example: "🌱",
+    examples: ["🌱"],
   }),
-  description: z.string().optional().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
-  learningTopic: z.string().min(1).max(100).optional().openapi({
-    description: "핵심 학습 주제",
-    example: "JavaScript",
-  }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
+  learningTopic: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .openapi({
+      description: "핵심 학습 주제",
+      examples: ["JavaScript"],
+    }),
   userLevel: z
     .enum(["beginner", "basic", "intermediate", "advanced", "expert"])
     .optional()
     .openapi({
       description: "대상 학습자 수준",
-      example: "beginner",
+      examples: ["beginner"],
     }),
-  targetWeeks: z.number().int().min(1).max(24).optional().openapi({
-    description: "목표 완료 주차(1-24주)",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().min(1).max(60).optional().openapi({
-    description: "주간 학습 시간(1-60시간)",
-    example: 10,
-  }),
-  learningStyle: z.string().min(1).max(100).optional().openapi({
-    description: "선호 학습 방식",
-    example: "실습 중심",
-  }),
-  preferredResources: z.string().min(1).max(100).optional().openapi({
-    description: "선호 학습 자료",
-    example: "온라인 강의",
-  }),
-  mainGoal: z.string().min(1).max(200).optional().openapi({
-    description: "주요 학습 목표",
-    example: "웹 개발자 취업",
-  }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .min(1)
+    .max(24)
+    .optional()
+    .openapi({
+      description: "목표 완료 주차(1-24주)",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .min(1)
+    .max(60)
+    .optional()
+    .openapi({
+      description: "주간 학습 시간(1-60시간)",
+      examples: [10],
+    }),
+  learningStyle: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .openapi({
+      description: "선호 학습 방식",
+      examples: ["실습 중심"],
+    }),
+  preferredResources: z
+    .string()
+    .min(1)
+    .max(100)
+    .optional()
+    .openapi({
+      description: "선호 학습 자료",
+      examples: ["온라인 강의"],
+    }),
+  mainGoal: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .openapi({
+      description: "주요 학습 목표",
+      examples: ["웹 개발자 취업"],
+    }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
 });
 
 export const LearningPlanUpdateResponseSchema = z.object({
   id: z.string().openapi({
     description: "LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
   emoji: emojiSchema.openapi({
     description: "LearningPlan을 한눈에 나타내는 이모지",
-    example: "🚀",
+    examples: ["🚀"],
   }),
   title: z.string().openapi({
     description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
+    examples: ["Full Stack JavaScript Developer"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
   status: z.enum(["active", "archived"]).openapi({
     description: "LearningPlan 현재 상태",
-    example: "active",
+    examples: ["active"],
   }),
   learningTopic: z.string().openapi({
     description: "핵심 학습 주제",
-    example: "JavaScript",
+    examples: ["JavaScript"],
   }),
   userLevel: z.string().openapi({
     description: "대상 학습자 수준",
-    example: "beginner",
+    examples: ["beginner"],
   }),
-  targetWeeks: z.number().int().openapi({
-    description: "목표 완료 주차",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().openapi({
-    description: "주간 학습 시간",
-    example: 10,
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .openapi({
+      description: "목표 완료 주차",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .openapi({
+      description: "주간 학습 시간",
+      examples: [10],
+    }),
   learningStyle: z.string().openapi({
     description: "선호 학습 방식",
-    example: "실습 중심",
+    examples: ["실습 중심"],
   }),
   preferredResources: z.string().openapi({
     description: "선호 학습 자료",
-    example: "온라인 강의",
+    examples: ["온라인 강의"],
   }),
   mainGoal: z.string().openapi({
     description: "주요 학습 목표",
-    example: "웹 개발자 취업",
+    examples: ["웹 개발자 취업"],
   }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
@@ -437,18 +590,18 @@ export const LearningPlanUpdateResponseSchema = z.object({
 export const LearningPlanStatusChangeRequestSchema = z.object({
   status: z.enum(["active", "archived"]).openapi({
     description: "변경할 LearningPlan 상태",
-    example: "archived",
+    examples: ["archived"],
   }),
 });
 
 export const LearningPlanStatusChangeResponseSchema = z.object({
   id: z.string().openapi({
     description: "LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
   status: z.enum(["active", "archived"]).openapi({
     description: "변경된 상태",
-    example: "archived",
+    examples: ["archived"],
   }),
 });
 
@@ -456,20 +609,23 @@ export const LearningPlanStatusChangeResponseSchema = z.object({
 export const LearningPlanDeletionResponseSchema = z.object({
   message: z.string().openapi({
     description: "삭제 완료 메시지",
-    example: "LearningPlan을 삭제했습니다.",
+    examples: ["LearningPlan을 삭제했습니다."],
   }),
   deletedId: z.string().openapi({
     description: "삭제된 LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
 });
 
 // Common path parameter schema
 export const LearningPlanParamsSchema = z.object({
-  id: z.string().min(1).openapi({
-    description: "LearningPlan 공개 ID",
-    example: "abc123def456",
-  }),
+  id: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningPlan 공개 ID",
+      examples: ["abc123def456"],
+    }),
 });
 
 // ========== Learning Module Schemas ==========
@@ -478,90 +634,130 @@ export const LearningPlanParamsSchema = z.object({
 export const LearningModuleItemSchema = z.object({
   id: z.string().openapi({
     description: "LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    examples: ["550e8400-e29b-41d4-a716-446655440000"],
   }),
   title: z.string().openapi({
     description: "LearningModule 제목",
-    example: "Learn JavaScript Fundamentals",
+    examples: ["Learn JavaScript Fundamentals"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningModule 설명",
-    example: "Master variables, functions, loops, and basic DOM manipulation",
-  }),
-  order: z.number().int().openapi({
-    description: "LearningModule 표시 순서",
-    example: 1,
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningModule 설명",
+      examples: [
+        "Master variables, functions, loops, and basic DOM manipulation",
+      ],
+    }),
+  order: z
+    .number()
+    .int()
+    .openapi({
+      description: "LearningModule 표시 순서",
+      examples: [1],
+    }),
   isExpanded: z.boolean().openapi({
     description: "UI에서 LearningModule이 펼쳐져 있는지 여부",
-    example: true,
+    examples: [true],
   }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
 // Learning Module creation schemas
 export const LearningModuleCreateRequestSchema = z.object({
-  title: z.string().min(1).max(200).openapi({
-    description: "LearningModule 제목",
-    example: "Learn JavaScript Fundamentals",
-  }),
-  description: z.string().optional().openapi({
-    description: "LearningModule 설명",
-    example: "Master variables, functions, loops, and basic DOM manipulation",
-  }),
-  isExpanded: z.boolean().default(true).openapi({
-    description: "기본으로 LearningModule을 펼칠지 여부",
-    example: true,
-  }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .openapi({
+      description: "LearningModule 제목",
+      examples: ["Learn JavaScript Fundamentals"],
+    }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningModule 설명",
+      examples: [
+        "Master variables, functions, loops, and basic DOM manipulation",
+      ],
+    }),
+  isExpanded: z
+    .boolean()
+    .default(true)
+    .openapi({
+      description: "기본으로 LearningModule을 펼칠지 여부",
+      examples: [true],
+    }),
 });
 
 export const LearningModuleCreateResponseSchema = LearningModuleItemSchema;
 
 // Learning Module update schemas
 export const LearningModuleUpdateRequestSchema = z.object({
-  title: z.string().min(1).max(200).optional().openapi({
-    description: "LearningModule 제목",
-    example: "Learn JavaScript Fundamentals",
-  }),
-  description: z.string().optional().openapi({
-    description: "LearningModule 설명",
-    example: "Master variables, functions, loops, and basic DOM manipulation",
-  }),
-  isExpanded: z.boolean().optional().openapi({
-    description: "UI에서 LearningModule이 펼쳐져 있는지 여부",
-    example: true,
-  }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .openapi({
+      description: "LearningModule 제목",
+      examples: ["Learn JavaScript Fundamentals"],
+    }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningModule 설명",
+      examples: [
+        "Master variables, functions, loops, and basic DOM manipulation",
+      ],
+    }),
+  isExpanded: z
+    .boolean()
+    .optional()
+    .openapi({
+      description: "UI에서 LearningModule이 펼쳐져 있는지 여부",
+      examples: [true],
+    }),
 });
 
 export const LearningModuleUpdateResponseSchema = LearningModuleItemSchema;
 
 // Learning Module reorder schema
 export const LearningModuleReorderRequestSchema = z.object({
-  newOrder: z.number().int().min(1).openapi({
-    description: "LearningModule의 새로운 순서(1부터 시작)",
-    example: 3,
-  }),
+  newOrder: z
+    .number()
+    .int()
+    .min(1)
+    .openapi({
+      description: "LearningModule의 새로운 순서(1부터 시작)",
+      examples: [3],
+    }),
 });
 
 export const LearningModuleReorderResponseSchema = z.object({
   id: z.string().openapi({
     description: "순서가 변경된 LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    examples: ["550e8400-e29b-41d4-a716-446655440000"],
   }),
-  order: z.number().int().openapi({
-    description: "변경된 순서",
-    example: 3,
-  }),
+  order: z
+    .number()
+    .int()
+    .openapi({
+      description: "변경된 순서",
+      examples: [3],
+    }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
@@ -569,31 +765,40 @@ export const LearningModuleReorderResponseSchema = z.object({
 export const LearningModuleDeletionResponseSchema = z.object({
   message: z.string().openapi({
     description: "삭제 완료 메시지",
-    example: "LearningModule을 삭제했습니다.",
+    examples: ["LearningModule을 삭제했습니다."],
   }),
   deletedId: z.string().openapi({
     description: "삭제된 LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    examples: ["550e8400-e29b-41d4-a716-446655440000"],
   }),
 });
 
 // Path parameter schemas
 export const LearningModuleParamsSchema = z.object({
-  id: z.string().min(1).openapi({
-    description: "LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
+  id: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningModule 공개 ID",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
 });
 
 export const LearningPlanLearningModuleParamsSchema = z.object({
-  learningPlanId: z.string().min(1).openapi({
-    description: "LearningPlan 공개 ID",
-    example: "abc123def456",
-  }),
-  learningModuleId: z.string().min(1).openapi({
-    description: "LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
+  learningPlanId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningPlan 공개 ID",
+      examples: ["abc123def456"],
+    }),
+  learningModuleId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningModule 공개 ID",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
 });
 
 // ========== LearningTask Schemas ==========
@@ -602,97 +807,151 @@ export const LearningPlanLearningModuleParamsSchema = z.object({
 export const LearningTaskItemSchema = z.object({
   id: z.string().openapi({
     description: "LearningTask 공개 ID",
-    example: "660e8400-e29b-41d4-a716-446655440001",
+    examples: ["660e8400-e29b-41d4-a716-446655440001"],
   }),
   title: z.string().openapi({
     description: "LearningTask 제목",
-    example: "Learn variables and data types",
+    examples: ["Learn variables and data types"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningTask 설명",
-    example:
-      "Understand different data types: string, number, boolean, array, object",
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningTask 설명",
+      examples: [
+        "Understand different data types: string, number, boolean, array, object",
+      ],
+    }),
   isCompleted: z.boolean().openapi({
     description: "LearningTask 완료 여부",
-    example: false,
+    examples: [false],
   }),
-  completedAt: z.iso.datetime().nullable().openapi({
-    description: "LearningTask 완료 시각",
-    example: "2024-02-15T09:30:00.000Z",
-  }),
-  dueDate: z.string().nullable().openapi({
-    description: "LearningTask 마감일",
-    example: "2024-02-15T00:00:00.000Z",
-  }),
-  memo: z.string().nullable().openapi({
-    description: "LearningTask 메모",
-    example: "Focus on practice with real examples",
-  }),
-  order: z.number().int().openapi({
-    description: "LearningTask 표시 순서",
-    example: 1,
-  }),
+  completedAt: z.iso
+    .datetime()
+    .nullable()
+    .openapi({
+      description: "LearningTask 완료 시각",
+      examples: ["2024-02-15T09:30:00.000Z"],
+    }),
+  dueDate: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningTask 마감일",
+      examples: ["2024-02-15T00:00:00.000Z"],
+    }),
+  memo: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningTask 메모",
+      examples: ["Focus on practice with real examples"],
+    }),
+  order: z
+    .number()
+    .int()
+    .openapi({
+      description: "LearningTask 표시 순서",
+      examples: [1],
+    }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
 // LearningTask creation schemas
 export const LearningTaskCreateRequestSchema = z.object({
-  learningModuleId: z.string().min(1).openapi({
-    description: "상위 LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
-  title: z.string().min(1).max(200).openapi({
-    description: "LearningTask 제목",
-    example: "Learn variables and data types",
-  }),
-  description: z.string().optional().openapi({
-    description: "LearningTask 설명",
-    example:
-      "Understand different data types: string, number, boolean, array, object",
-  }),
-  dueDate: z.string().datetime().optional().openapi({
-    description: "LearningTask 마감일(ISO 8601 형식)",
-    example: "2024-02-15T00:00:00.000Z",
-  }),
-  memo: z.string().optional().openapi({
-    description: "LearningTask 메모",
-    example: "Focus on practice with real examples",
-  }),
+  learningModuleId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "상위 LearningModule 공개 ID",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .openapi({
+      description: "LearningTask 제목",
+      examples: ["Learn variables and data types"],
+    }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningTask 설명",
+      examples: [
+        "Understand different data types: string, number, boolean, array, object",
+      ],
+    }),
+  dueDate: z
+    .string()
+    .datetime()
+    .optional()
+    .openapi({
+      description: "LearningTask 마감일(ISO 8601 형식)",
+      examples: ["2024-02-15T00:00:00.000Z"],
+    }),
+  memo: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningTask 메모",
+      examples: ["Focus on practice with real examples"],
+    }),
 });
 
 export const LearningTaskCreateResponseSchema = LearningTaskItemSchema;
 
 // LearningTask update schemas
 export const LearningTaskUpdateRequestSchema = z.object({
-  title: z.string().min(1).max(200).optional().openapi({
-    description: "LearningTask 제목",
-    example: "Learn variables and data types",
-  }),
-  description: z.string().optional().openapi({
-    description: "LearningTask 설명",
-    example:
-      "Understand different data types: string, number, boolean, array, object",
-  }),
-  isCompleted: z.boolean().optional().openapi({
-    description: "LearningTask 완료 여부",
-    example: true,
-  }),
-  dueDate: z.string().datetime().nullable().optional().openapi({
-    description: "LearningTask 마감일(ISO 8601 형식)",
-    example: "2024-02-15T00:00:00.000Z",
-  }),
-  memo: z.string().optional().openapi({
-    description: "LearningTask 메모",
-    example: "Focus on practice with real examples",
-  }),
+  title: z
+    .string()
+    .min(1)
+    .max(200)
+    .optional()
+    .openapi({
+      description: "LearningTask 제목",
+      examples: ["Learn variables and data types"],
+    }),
+  description: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningTask 설명",
+      examples: [
+        "Understand different data types: string, number, boolean, array, object",
+      ],
+    }),
+  isCompleted: z
+    .boolean()
+    .optional()
+    .openapi({
+      description: "LearningTask 완료 여부",
+      examples: [true],
+    }),
+  dueDate: z
+    .string()
+    .datetime()
+    .nullable()
+    .optional()
+    .openapi({
+      description: "LearningTask 마감일(ISO 8601 형식)",
+      examples: ["2024-02-15T00:00:00.000Z"],
+    }),
+  memo: z
+    .string()
+    .optional()
+    .openapi({
+      description: "LearningTask 메모",
+      examples: ["Focus on practice with real examples"],
+    }),
 });
 
 export const LearningTaskUpdateResponseSchema = LearningTaskItemSchema;
@@ -703,21 +962,28 @@ export const LearningTaskDetailResponseSchema = LearningTaskItemSchema.extend({
     .object({
       id: z.string().openapi({
         description: "상위 LearningModule 공개 ID",
-        example: "550e8400-e29b-41d4-a716-446655440000",
+        examples: ["550e8400-e29b-41d4-a716-446655440000"],
       }),
       title: z.string().openapi({
         description: "상위 LearningModule 제목",
-        example: "Master JavaScript fundamentals",
+        examples: ["Master JavaScript fundamentals"],
       }),
-      description: z.string().nullable().openapi({
-        description: "상위 LearningModule 설명",
-        example:
-          "Focus on core JavaScript knowledge before diving into frameworks",
-      }),
-      order: z.number().int().openapi({
-        description: "LearningModule 표시 순서",
-        example: 1,
-      }),
+      description: z
+        .string()
+        .nullable()
+        .openapi({
+          description: "상위 LearningModule 설명",
+          examples: [
+            "Focus on core JavaScript knowledge before diving into frameworks",
+          ],
+        }),
+      order: z
+        .number()
+        .int()
+        .openapi({
+          description: "LearningModule 표시 순서",
+          examples: [1],
+        }),
     })
     .openapi({
       description: "상위 LearningModule 메타데이터",
@@ -726,11 +992,11 @@ export const LearningTaskDetailResponseSchema = LearningTaskItemSchema.extend({
     .object({
       id: z.string().openapi({
         description: "LearningPlan 공개 ID",
-        example: "abc123def456",
+        examples: ["abc123def456"],
       }),
       title: z.string().openapi({
         description: "LearningPlan 제목",
-        example: "Full-stack Development LearningPlan",
+        examples: ["Full-stack Development LearningPlan"],
       }),
     })
     .openapi({
@@ -740,33 +1006,44 @@ export const LearningTaskDetailResponseSchema = LearningTaskItemSchema.extend({
 
 // LearningTask move schema
 export const LearningTaskMoveRequestSchema = z.object({
-  newLearningModuleId: z.string().min(1).openapi({
-    description: "LearningTask를 이동할 대상 LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
-  newOrder: z.number().int().min(1).optional().openapi({
-    description:
-      "LearningTask의 새로운 순서(1부터 시작). 값을 생략하면 마지막에 배치됩니다.",
-    example: 2,
-  }),
+  newLearningModuleId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningTask를 이동할 대상 LearningModule 공개 ID",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
+  newOrder: z
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .openapi({
+      description:
+        "LearningTask의 새로운 순서(1부터 시작). 값을 생략하면 마지막에 배치됩니다.",
+      examples: [2],
+    }),
 });
 
 export const LearningTaskMoveResponseSchema = z.object({
   id: z.string().openapi({
     description: "이동된 LearningTask 공개 ID",
-    example: "660e8400-e29b-41d4-a716-446655440001",
+    examples: ["660e8400-e29b-41d4-a716-446655440001"],
   }),
   learningModuleId: z.string().openapi({
     description: "LearningTask가 이동된 LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    examples: ["550e8400-e29b-41d4-a716-446655440000"],
   }),
-  order: z.number().int().openapi({
-    description: "변경된 순서",
-    example: 2,
-  }),
+  order: z
+    .number()
+    .int()
+    .openapi({
+      description: "변경된 순서",
+      examples: [2],
+    }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
 });
 
@@ -774,50 +1051,68 @@ export const LearningTaskMoveResponseSchema = z.object({
 export const LearningTaskDeletionResponseSchema = z.object({
   message: z.string().openapi({
     description: "삭제 완료 메시지",
-    example: "LearningTask를 삭제했습니다.",
+    examples: ["LearningTask를 삭제했습니다."],
   }),
   deletedId: z.string().openapi({
     description: "삭제된 LearningTask 공개 ID",
-    example: "660e8400-e29b-41d4-a716-446655440001",
+    examples: ["660e8400-e29b-41d4-a716-446655440001"],
   }),
 });
 
 // Path parameter schemas
 export const LearningTaskParamsSchema = z.object({
-  id: z.string().min(1).openapi({
-    description: "LearningTask 공개 ID",
-    example: "660e8400-e29b-41d4-a716-446655440001",
-  }),
+  id: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningTask 공개 ID",
+      examples: ["660e8400-e29b-41d4-a716-446655440001"],
+    }),
 });
 
 export const LearningTaskQuizParamsSchema = z.object({
-  id: z.string().min(1).openapi({
-    description: "LearningTask Quiz 공개 ID",
-    example: "42",
-  }),
+  id: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningTask Quiz 공개 ID",
+      examples: ["42"],
+    }),
 });
 
 export const LearningPlanLearningModuleLearningTaskParamsSchema = z.object({
-  learningPlanId: z.string().min(1).openapi({
-    description: "LearningPlan 공개 ID",
-    example: "abc123def456",
-  }),
-  learningModuleId: z.string().min(1).openapi({
-    description: "LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
-  }),
-  learningTaskId: z.string().min(1).openapi({
-    description: "LearningTask 공개 ID",
-    example: "660e8400-e29b-41d4-a716-446655440001",
-  }),
+  learningPlanId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningPlan 공개 ID",
+      examples: ["abc123def456"],
+    }),
+  learningModuleId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningModule 공개 ID",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
+  learningTaskId: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "LearningTask 공개 ID",
+      examples: ["660e8400-e29b-41d4-a716-446655440001"],
+    }),
 });
 
 export const LearningPlanLearningModuleLearningTaskQuizParamsSchema =
   LearningPlanLearningModuleLearningTaskParamsSchema.extend({
-    quizId: z.string().min(1).openapi({
-      description: "AI 퀴즈 ID",
-      example: "42",
-    }),
+    quizId: z
+      .string()
+      .min(1)
+      .openapi({
+        description: "AI 퀴즈 ID",
+        examples: ["42"],
+      }),
   });
 
 // ========== LearningPlan Detail Schema ==========
@@ -826,31 +1121,39 @@ export const LearningPlanLearningModuleLearningTaskQuizParamsSchema =
 export const LearningModuleWithLearningTasksSchema = z.object({
   id: z.string().openapi({
     description: "LearningModule 공개 ID",
-    example: "550e8400-e29b-41d4-a716-446655440000",
+    examples: ["550e8400-e29b-41d4-a716-446655440000"],
   }),
   title: z.string().openapi({
     description: "LearningModule 제목",
-    example: "Learn JavaScript Fundamentals",
+    examples: ["Learn JavaScript Fundamentals"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningModule 설명",
-    example: "Master variables, functions, loops, and basic DOM manipulation",
-  }),
-  order: z.number().int().openapi({
-    description: "LearningModule 표시 순서",
-    example: 1,
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningModule 설명",
+      examples: [
+        "Master variables, functions, loops, and basic DOM manipulation",
+      ],
+    }),
+  order: z
+    .number()
+    .int()
+    .openapi({
+      description: "LearningModule 표시 순서",
+      examples: [1],
+    }),
   isExpanded: z.boolean().openapi({
     description: "UI에서 LearningModule이 펼쳐져 있는지 여부",
-    example: true,
+    examples: [true],
   }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
   learningTasks: z.array(LearningTaskItemSchema).openapi({
     description: "이 LearningModule에 속한 LearningTask 목록",
@@ -860,63 +1163,75 @@ export const LearningModuleWithLearningTasksSchema = z.object({
 export const LearningPlanDetailResponseSchema = z.object({
   id: z.string().openapi({
     description: "LearningPlan 공개 ID",
-    example: "abc123def456",
+    examples: ["abc123def456"],
   }),
   emoji: emojiSchema.openapi({
     description: "LearningPlan에 지정된 이모지",
-    example: "🚀",
+    examples: ["🚀"],
   }),
   title: z.string().openapi({
     description: "LearningPlan 제목",
-    example: "Full Stack JavaScript Developer",
+    examples: ["Full Stack JavaScript Developer"],
   }),
-  description: z.string().nullable().openapi({
-    description: "LearningPlan 설명",
-    example: "Complete guide to becoming a full stack developer",
-  }),
+  description: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "LearningPlan 설명",
+      examples: ["Complete guide to becoming a full stack developer"],
+    }),
   status: z.enum(["active", "archived"]).openapi({
     description: "LearningPlan 현재 상태",
-    example: "active",
+    examples: ["active"],
   }),
   learningTopic: z.string().openapi({
     description: "핵심 학습 주제",
-    example: "JavaScript",
+    examples: ["JavaScript"],
   }),
   userLevel: z.string().openapi({
     description: "대상 학습자 수준",
-    example: "beginner",
+    examples: ["beginner"],
   }),
-  targetWeeks: z.number().int().openapi({
-    description: "목표 완료 주차",
-    example: 12,
-  }),
-  weeklyHours: z.number().int().openapi({
-    description: "주간 학습 시간",
-    example: 10,
-  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .openapi({
+      description: "목표 완료 주차",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .openapi({
+      description: "주간 학습 시간",
+      examples: [10],
+    }),
   learningStyle: z.string().openapi({
     description: "선호 학습 방식",
-    example: "실습 중심",
+    examples: ["실습 중심"],
   }),
   preferredResources: z.string().openapi({
     description: "선호 학습 자료",
-    example: "온라인 강의",
+    examples: ["온라인 강의"],
   }),
   mainGoal: z.string().openapi({
     description: "주요 학습 목표",
-    example: "웹 개발자 취업",
+    examples: ["웹 개발자 취업"],
   }),
-  additionalRequirements: z.string().nullable().openapi({
-    description: "추가 요구 사항",
-    example: "React, Node.js 포함",
-  }),
+  additionalRequirements: z
+    .string()
+    .nullable()
+    .openapi({
+      description: "추가 요구 사항",
+      examples: ["React, Node.js 포함"],
+    }),
   createdAt: z.string().openapi({
     description: "생성 시각",
-    example: "2024-01-01T00:00:00.000Z",
+    examples: ["2024-01-01T00:00:00.000Z"],
   }),
   updatedAt: z.string().openapi({
     description: "마지막 수정 시각",
-    example: "2024-01-15T10:30:00.000Z",
+    examples: ["2024-01-15T10:30:00.000Z"],
   }),
   learningModules: z.array(LearningModuleWithLearningTasksSchema).openapi({
     description: "LearningModule과 포함된 LearningTask 목록",

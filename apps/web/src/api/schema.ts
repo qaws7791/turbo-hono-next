@@ -559,7 +559,7 @@ export interface paths {
           "multipart/form-data": {
             /**
              * Format: binary
-             * @description 업로드할 PDF 파일(최대 10MB)
+             * @description 업로드할 PDF 파일 (field: file, 10MB 이하, application/pdf)
              */
             file: string;
           };
@@ -4170,7 +4170,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    ErrorResponse: Record<string, never>;
+    ErrorResponse: {
+      error: {
+        /**
+         * @description 에러 코드
+         * @example VALIDATION_ERROR
+         */
+        code: string;
+        /**
+         * @description 에러 메시지
+         * @example 요청 데이터가 유효하지 않습니다.
+         */
+        message: string;
+      };
+    };
   };
   responses: never;
   parameters: never;

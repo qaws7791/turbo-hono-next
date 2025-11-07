@@ -2,5 +2,6 @@ export {
   LearningModuleActivityQuerySchema,
   LearningModuleActivityDaySchema,
   LearningModuleActivityResponseSchema,
-  ProgressErrorResponseSchema,
 } from "@repo/api-spec/modules/progress/schema";
+
+export { ErrorResponseSchema } from "@repo/api-spec/common/schema";

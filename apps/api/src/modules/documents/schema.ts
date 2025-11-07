@@ -4,5 +4,6 @@ export {
   DocumentListResponseSchema,
   DocumentUploadResponseSchema,
   DocumentDeleteResponseSchema,
-  DocumentErrorResponseSchema as ErrorResponseSchema,
 } from "@repo/api-spec/modules/documents/schema";
+
+export { ErrorResponseSchema } from "@repo/api-spec/common/schema";

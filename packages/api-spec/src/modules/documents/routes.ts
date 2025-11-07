@@ -23,7 +23,7 @@ export const documentDetailRoute = createRoute({
     params: z.object({
       publicId: z.string().openapi({
         description: "문서 공개 ID",
-        example: "550e8400-e29b-41d4-a716-446655440000",
+        examples: ["550e8400-e29b-41d4-a716-446655440000"],
       }),
     }),
   },
@@ -78,10 +78,16 @@ export const documentUploadRoute = createRoute({
               file: {
                 type: "string",
                 format: "binary",
-                description: "업로드할 PDF 파일(최대 10MB)",
+                description:
+                  "업로드할 PDF 파일 (field: file, 10MB 이하, application/pdf)",
               },
             },
             required: ["file"],
+          },
+          encoding: {
+            file: {
+              contentType: "application/pdf",
+            },
           },
         },
       },

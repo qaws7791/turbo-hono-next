@@ -13,11 +13,11 @@ export const LearningModuleActivityQuerySchema = z
   .object({
     start: isoDateString.optional().openapi({
       description: "조회 시작 날짜 (YYYY-MM-DD)",
-      example: "2024-05-01",
+      examples: ["2024-05-01"],
     }),
     end: isoDateString.optional().openapi({
       description: "조회 종료 날짜 (YYYY-MM-DD)",
-      example: "2024-05-31",
+      examples: ["2024-05-31"],
     }),
   })
   .refine(
@@ -34,53 +34,77 @@ export const LearningModuleActivityQuerySchema = z
   );
 
 const LearningModuleActivityBaseSchema = z.object({
-  learningPlanId: z.string().length(16).openapi({
-    description: "로드맵 공개 ID (16자 NanoID)",
-    example: "abcdEfghijklmnop",
-  }),
-  learningPlanTitle: z.string().min(1).openapi({
-    description: "로드맵 제목",
-    example: "프론트엔드 전환 로드맵",
-  }),
-  learningModuleId: z.string().uuid().openapi({
-    description: "목표 공개 ID (UUID)",
-    example: "30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d",
-  }),
-  learningModuleTitle: z.string().min(1).openapi({
-    description: "목표 제목",
-    example: "React 기본기 다지기",
-  }),
-  learningTaskId: z.string().uuid().openapi({
-    description: "세부 목표 공개 ID (UUID)",
-    example: "f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7",
-  }),
-  learningTaskTitle: z.string().min(1).openapi({
-    description: "세부 목표 제목",
-    example: "Hooks 패턴 정리하기",
-  }),
+  learningPlanId: z
+    .string()
+    .length(16)
+    .openapi({
+      description: "로드맵 공개 ID (16자 NanoID)",
+      examples: ["abcdEfghijklmnop"],
+    }),
+  learningPlanTitle: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "로드맵 제목",
+      examples: ["프론트엔드 전환 로드맵"],
+    }),
+  learningModuleId: z
+    .string()
+    .uuid()
+    .openapi({
+      description: "목표 공개 ID (UUID)",
+      examples: ["30aa53ce-93e7-4f90-9f69-6c4de2fb1c5d"],
+    }),
+  learningModuleTitle: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "목표 제목",
+      examples: ["React 기본기 다지기"],
+    }),
+  learningTaskId: z
+    .string()
+    .uuid()
+    .openapi({
+      description: "세부 목표 공개 ID (UUID)",
+      examples: ["f28c26fa-40f8-4f56-9fba-9b8f3d3e2ea7"],
+    }),
+  learningTaskTitle: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "세부 목표 제목",
+      examples: ["Hooks 패턴 정리하기"],
+    }),
 });
 
 const LearningModuleActivityDueSchema = LearningModuleActivityBaseSchema.extend(
   {
-    dueDate: z.string().datetime().openapi({
-      description: "세부 목표 마감일 (ISO 8601)",
-      example: "2024-05-12T00:00:00.000Z",
-    }),
+    dueDate: z
+      .string()
+      .datetime()
+      .openapi({
+        description: "세부 목표 마감일 (ISO 8601)",
+        examples: ["2024-05-12T00:00:00.000Z"],
+      }),
   },
 );
 
 const LearningModuleActivityCompletedSchema =
   LearningModuleActivityBaseSchema.extend({
-    completedAt: z.string().datetime().openapi({
-      description: "세부 목표 완료 시각 (ISO 8601)",
-      example: "2024-05-14T10:23:45.000Z",
-    }),
+    completedAt: z
+      .string()
+      .datetime()
+      .openapi({
+        description: "세부 목표 완료 시각 (ISO 8601)",
+        examples: ["2024-05-14T10:23:45.000Z"],
+      }),
   });
 
 export const LearningModuleActivityDaySchema = z.object({
   date: isoDateString.openapi({
     description: "활동이 기록된 날짜 (YYYY-MM-DD)",
-    example: "2024-05-12",
+    examples: ["2024-05-12"],
   }),
   due: z.array(LearningModuleActivityDueSchema).openapi({
     description: "해당 날짜에 마감일이 도래한 세부 목표",
@@ -95,11 +119,11 @@ export const LearningModuleActivityResponseSchema = z.object({
     .object({
       start: isoDateString.openapi({
         description: "응답 데이터의 시작 날짜",
-        example: "2024-05-01",
+        examples: ["2024-05-01"],
       }),
       end: isoDateString.openapi({
         description: "응답 데이터의 종료 날짜",
-        example: "2024-05-31",
+        examples: ["2024-05-31"],
       }),
     })
     .openapi({

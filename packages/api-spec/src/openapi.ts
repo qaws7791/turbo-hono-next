@@ -1,14 +1,14 @@
 import {
   OpenAPIRegistry,
-  OpenApiGeneratorV3,
+  OpenApiGeneratorV31,
 } from "@asteasolutions/zod-to-openapi";
 
+import { ErrorResponseSchema } from "./common/schema";
 import { aiRoutes } from "./modules/ai/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { documentRoutes } from "./modules/documents/routes";
 import { learningPlanRoutes } from "./modules/learning-plan/routes";
 import { progressRoutes } from "./modules/progress/routes";
-import { ErrorResponseSchema } from "./common/schema";
 
 const registry = new OpenAPIRegistry();
 
@@ -26,7 +26,8 @@ const ensureInitialized = () => {
     description: "Session cookie for user authentication",
   });
 
-  registry.registerComponent("schemas", "ErrorResponse", ErrorResponseSchema);
+  // Register error response schema as a reusable component
+  registry.register("ErrorResponse", ErrorResponseSchema);
 
   const routes = [
     ...authRoutes,
@@ -50,9 +51,9 @@ export const getRegistry = () => {
 
 export const generateOpenApiDocument = () => {
   ensureInitialized();
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const generator = new OpenApiGeneratorV31(registry.definitions);
   return generator.generateDocument({
-    openapi: "3.0.0",
+    openapi: "3.1.0",
     info: {
       title: "Learning Plan API",
       version: "1.0.0",
