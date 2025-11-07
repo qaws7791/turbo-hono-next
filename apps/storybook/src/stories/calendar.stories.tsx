@@ -2,7 +2,7 @@ import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 import { FormCalendar, FormRangeCalendar } from "@repo/ui/calendar";
 import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { DateValue } from "react-aria-components";
 
 /**
@@ -181,7 +181,7 @@ export const BookingCalendar: Story = {
 
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border p-6">
+        <div className="rounded-lg border border-border p-6">
           <h3 className="mb-4 text-lg font-semibold">
             Select Appointment Date
           </h3>
@@ -212,7 +212,7 @@ export const EventRangeSelector: Story = {
     } | null>(null);
 
     return (
-      <div className="w-[400px] space-y-4 rounded-lg border p-6">
+      <div className="space-y-4 rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold">Select Event Duration</h3>
         <FormRangeCalendar
           value={range}
@@ -247,7 +247,7 @@ export const VacationPlanner: Story = {
     };
 
     return (
-      <div className="w-[400px] space-y-4 rounded-lg border p-6">
+      <div className="space-y-4 rounded-lg border border-border p-6">
         <h3 className="text-lg font-semibold">Plan Your Vacation</h3>
         <FormRangeCalendar
           value={range}

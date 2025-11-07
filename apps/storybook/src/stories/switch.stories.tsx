@@ -1,7 +1,7 @@
-import * as React from "react";
 import { Switch } from "@repo/ui/switch";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Switch component based on React Aria Components

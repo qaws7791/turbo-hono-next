@@ -11,8 +11,7 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { focusVisibleRing } from "../../utils";
-
+import { focusVisibleRing } from "./utils";
 import { labelStyles } from "./form";
 
 import type {

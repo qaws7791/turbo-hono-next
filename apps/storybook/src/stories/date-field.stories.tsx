@@ -1,7 +1,7 @@
 import { Time, parseDate } from "@internationalized/date";
 import { FormDateField, FormTimeField } from "@repo/ui/date-field";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * DateField and TimeField components based on React Aria Components

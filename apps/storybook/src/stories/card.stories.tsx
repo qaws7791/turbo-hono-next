@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@repo/ui/card";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Card component for displaying grouped content
@@ -41,6 +41,14 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
+  subcomponents: {
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardAction,
+    CardContent,
+    CardFooter,
+  },
 } satisfies Meta<typeof Card>;
 
 export default meta;

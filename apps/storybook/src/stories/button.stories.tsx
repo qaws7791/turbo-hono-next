@@ -1,6 +1,6 @@
 import { Button } from "@repo/ui/button";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Button component based on React Aria Components
@@ -21,42 +21,6 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
-  argTypes: {
-    variant: {
-      control: "select",
-      options: [
-        "primary",
-        "secondary",
-        "outline",
-        "destructive",
-        "ghost",
-        "link",
-      ],
-      description: "Visual style variant of the button",
-      table: {
-        defaultValue: { summary: "primary" },
-      },
-    },
-    size: {
-      control: "select",
-      options: ["sm", "md", "lg", "icon"],
-      description: "Size of the button",
-      table: {
-        defaultValue: { summary: "md" },
-      },
-    },
-    isDisabled: {
-      control: "boolean",
-      description: "Whether the button is disabled",
-      table: {
-        defaultValue: { summary: "false" },
-      },
-    },
-    children: {
-      control: "text",
-      description: "Content to render inside the button",
-    },
-  },
 } satisfies Meta<typeof Button>;
 
 export default meta;

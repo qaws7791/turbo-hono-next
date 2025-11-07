@@ -1,6 +1,6 @@
 import LoadingSpinner from "@repo/ui/loading-spinner";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * LoadingSpinner component for indicating loading states

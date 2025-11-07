@@ -1,6 +1,6 @@
 import { Badge } from "@repo/ui/badge";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Badge component for displaying labels, tags, or status indicators

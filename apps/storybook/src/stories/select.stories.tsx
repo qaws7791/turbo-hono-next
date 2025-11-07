@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   FormSelect,
   Select,
@@ -9,8 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/select";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Select component based on React Aria Components

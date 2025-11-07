@@ -1,7 +1,7 @@
 import { Button } from "@repo/ui/button";
 import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Popover component based on React Aria Components

@@ -2,7 +2,7 @@ import { Label } from "@repo/ui/form";
 import { FormTextField, Input, TextArea, TextField } from "@repo/ui/text-field";
 import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * TextField components based on React Aria Components

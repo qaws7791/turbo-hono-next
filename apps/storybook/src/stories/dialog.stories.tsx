@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button } from "@repo/ui/button";
 import {
   Dialog,
@@ -11,7 +10,7 @@ import {
   DialogTrigger,
 } from "@repo/ui/dialog";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Dialog component based on React Aria Components
@@ -41,6 +40,15 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
+  subcomponents: {
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogOverlay,
+    DialogTitle,
+    DialogTrigger,
+  },
 } satisfies Meta<typeof Dialog>;
 
 export default meta;

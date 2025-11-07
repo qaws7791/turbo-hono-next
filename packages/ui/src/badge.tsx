@@ -3,7 +3,7 @@
 import * as React from "react";
 import { tv } from "tailwind-variants";
 
-import { focusRing } from "../../utils";
+import { focusRing } from "./utils";
 
 import type { VariantProps } from "tailwind-variants";
 
@@ -33,7 +33,7 @@ const badgeStyles = tv({
         /* Hover */
         "data-[hovered]:bg-destructive/80",
       ],
-      outline: "text-foreground",
+      outline: "text-foreground border border-border",
     },
   },
   defaultVariants: {

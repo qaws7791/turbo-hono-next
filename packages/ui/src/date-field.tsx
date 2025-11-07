@@ -9,8 +9,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../utils";
-
+import { twMerge } from "./utils";
 import { FieldError, Label, fieldGroupStyles } from "./form";
 
 import type {

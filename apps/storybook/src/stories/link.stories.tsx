@@ -1,6 +1,6 @@
 import { Link } from "@repo/ui/link";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Link component based on React Aria Components

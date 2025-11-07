@@ -1,7 +1,7 @@
 import { Button } from "@repo/ui/button";
 import { Toast, toast } from "@repo/ui/toast";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Toast component based on React Aria Components

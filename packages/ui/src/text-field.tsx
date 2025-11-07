@@ -10,8 +10,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { tv } from "tailwind-variants";
 
-import { focusRing } from "../../utils";
-
+import { focusRing } from "./utils";
 import { FieldError, Label } from "./form";
 
 import type {

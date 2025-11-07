@@ -4,5 +4,5 @@
     "baseUrl": ".",
     "skipLibCheck": true
   },
-  "include": ["src", ".storybook", "eslint.config.js"]
+  "include": ["src", ".storybook"]
 }

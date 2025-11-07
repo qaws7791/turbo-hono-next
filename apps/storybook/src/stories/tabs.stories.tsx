@@ -1,6 +1,6 @@
 import { Tab, TabList, TabPanel, Tabs } from "@repo/ui/tabs";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Tabs component based on React Aria Components

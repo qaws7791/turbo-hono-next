@@ -6,10 +6,10 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { focusVisibleRing } from "../../utils";
+import { focusVisibleRing } from "./utils";
 
-import type { VariantProps } from "tailwind-variants";
 import type { ButtonProps as AriaButtonProps } from "react-aria-components";
+import type { VariantProps } from "tailwind-variants";
 
 const buttonStyles = tv({
   extend: focusVisibleRing,

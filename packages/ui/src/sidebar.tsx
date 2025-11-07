@@ -13,7 +13,7 @@ import {
 } from "react-aria-components";
 import { tv } from "tailwind-variants";
 
-import { focusVisibleRing } from "../../utils";
+import { focusVisibleRing } from "./utils";
 
 import type { LinkProps as AriaLinkProps } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
@@ -503,27 +503,27 @@ const LegacySidebar: React.FC<{
 
 // Exports
 export {
-  Sidebar,
-  LegacySidebar,
-  sidebarVariants,
-  useSidebarContext,
   DEFAULT_NAV_ITEMS,
   DEFAULT_USER_MENU_ITEMS,
+  LegacySidebar,
+  Sidebar,
+  sidebarVariants,
+  useSidebarContext,
 };
 export type {
   NavItem,
   NavItemVariantProps,
+  SidebarCloseButtonProps,
   SidebarContentProps,
   SidebarFooterProps,
   SidebarHeaderProps,
   SidebarLogoProps,
-  SidebarCloseButtonProps,
-  SidebarNavProps,
   SidebarNavItemProps,
-  SidebarUserMenuProps,
+  SidebarNavProps,
   SidebarProps,
+  SidebarUserMenuProps,
   SidebarVariantProps,
+  UserMenuItem,
   UserMenuVariantProps,
   UserProfile,
-  UserMenuItem,
 };

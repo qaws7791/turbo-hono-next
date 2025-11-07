@@ -5,7 +5,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../utils";
+import { twMerge } from "./utils";
 
 import type { TooltipProps as AriaTooltipProps } from "react-aria-components";
 

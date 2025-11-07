@@ -1,7 +1,7 @@
-import * as React from "react";
 import { FormProgressBar, Progress } from "@repo/ui/progress-bar";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * ProgressBar component based on React Aria Components

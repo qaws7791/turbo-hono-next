@@ -8,7 +8,7 @@ import {
 } from "@repo/ui/slider";
 import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Slider component based on React Aria Components

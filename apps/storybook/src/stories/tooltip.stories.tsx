@@ -1,7 +1,7 @@
 import { Button } from "@repo/ui/button";
 import { Tooltip, TooltipTrigger } from "@repo/ui/tooltip";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * Tooltip component based on React Aria Components

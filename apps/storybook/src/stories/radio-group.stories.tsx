@@ -1,7 +1,7 @@
-import * as React from "react";
 import { FormRadioGroup, Radio, RadioGroup } from "@repo/ui/radio-group";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * RadioGroup component based on React Aria Components

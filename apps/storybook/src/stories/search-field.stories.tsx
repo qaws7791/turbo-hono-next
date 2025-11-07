@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   FormSearchField,
   SearchField,
@@ -7,8 +6,9 @@ import {
   SearchFieldInput,
 } from "@repo/ui/search-field";
 import { SearchIcon, XIcon } from "lucide-react";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * SearchField component based on React Aria Components

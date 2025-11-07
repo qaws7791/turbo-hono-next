@@ -1,7 +1,7 @@
-import * as React from "react";
 import { FormNumberField } from "@repo/ui/number-field";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * NumberField component based on React Aria Components

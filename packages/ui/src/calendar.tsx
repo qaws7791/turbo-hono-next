@@ -19,8 +19,7 @@ import {
   useLocale,
 } from "react-aria-components";
 
-import { twMerge } from "../../utils";
-
+import { twMerge } from "./utils";
 import { buttonStyles } from "./button";
 
 import type {

@@ -9,7 +9,7 @@ import { Popover, PopoverTrigger } from "@repo/ui/popover";
 import * as React from "react";
 import { useListData } from "react-stately";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { Selection } from "react-aria-components";
 
 /**

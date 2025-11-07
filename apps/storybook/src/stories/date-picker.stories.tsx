@@ -1,8 +1,8 @@
 import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
-import * as React from "react";
 import { JollyDatePicker, JollyDateRangePicker } from "@repo/ui/date-picker";
+import * as React from "react";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 /**
  * DatePicker components based on React Aria Components
