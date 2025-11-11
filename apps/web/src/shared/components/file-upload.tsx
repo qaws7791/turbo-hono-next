@@ -1,5 +1,6 @@
+import { Button } from "@repo/ui/button";
 import { useState } from "react";
-import { Button, FileTrigger } from "react-aria-components";
+import { FileTrigger } from "react-aria-components";
 
 import type { Document } from "@/features/learning-plan/model/types";
 
@@ -119,9 +120,7 @@ export function FileUpload({
               acceptedFileTypes={["application/pdf"]}
               onSelect={handleFiles}
             >
-              <Button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                파일 선택
-              </Button>
+              <Button variant="secondary">파일 선택</Button>
             </FileTrigger>
           </div>
         </div>
@@ -187,7 +186,7 @@ export function FileUpload({
       {/* Upload Limit Message */}
       {documents.length >= maxFiles && (
         <p className="text-sm text-gray-500 text-center">
-          최대 {maxFiles}개의 파일이 업로드되었습니다.
+          {documents.length}개의 파일이 업로드되었습니다.
         </p>
       )}
     </div>
