@@ -88,7 +88,7 @@ const SelectTrigger = ({ className, children, ...props }: AriaButtonProps) => (
 const SelectPopover = ({ className, ...props }: AriaPopoverProps) => (
   <Popover
     className={composeRenderProps(className, (className) =>
-      twMerge("w-[--trigger-width]", className),
+      twMerge("min-w-(--trigger-width)", className),
     )}
     {...props}
   />
