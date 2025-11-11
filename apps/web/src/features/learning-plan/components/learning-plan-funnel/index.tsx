@@ -2,12 +2,10 @@
 import { useFunnel } from "@use-funnel/browser";
 import React from "react";
 
-import { ProgressHeader } from "./progress-header";
-import { DocumentUploadStep } from "./steps/document-upload-step";
-import { LearningModulesStep } from "./steps/learning-modules-step";
-import { LearningStyleStep } from "./steps/learning-style-step";
-import { ResourceTypesStep } from "./steps/resource-types-step";
-import { TopicSelectionStep } from "./steps/topic-selection-step";
+import { AiRecommendationsStep } from "./steps/ai-recommendations-step";
+import { FlowSelectionStep } from "./steps/flow-selection-step";
+import { ManualInputStep } from "./steps/manual-input-step";
+import { PdfInputStep } from "./steps/pdf-input-step";
 import { transformFunnelDataToApiFormat } from "./utils";
 
 import type {
@@ -23,14 +21,8 @@ const LearningPlanFunnel = ({ onSubmit }: LearningPlanFunnelProps) => {
   const funnel = useFunnel<FunnelSteps>({
     id: "learning-plan-funnel",
     initial: {
-      step: "DocumentUpload",
-      context: {
-        documentId: undefined,
-        learningTopic: "",
-        currentLevel: 1,
-        targetWeeks: 4,
-        weeklyHours: 10,
-      },
+      step: "FlowSelection",
+      context: {},
     },
   });
 
@@ -54,105 +46,101 @@ const LearningPlanFunnel = ({ onSubmit }: LearningPlanFunnelProps) => {
 
   return (
     <div className="h-full max-w-2xl mx-auto w-full flex flex-col justify-between">
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mx-8 mt-4">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
+
       <funnel.Render
-        DocumentUpload={({ context, history }) => (
-          <>
-            <ProgressHeader currentStep="DocumentUpload" />
-            <DocumentUploadStep
-              documentId={context.documentId}
-              onNext={(data) =>
-                history.push("TopicSelection", {
-                  documentId: data.documentId,
-                })
-              }
-            />
-          </>
+        FlowSelection={() => (
+          <FlowSelectionStep
+            onSelectPdfFlow={() => funnel.history.push("PdfInput", {})}
+            onSelectManualFlow={() => funnel.history.push("ManualInput", {})}
+          />
         )}
-        TopicSelection={({ context, history }) => (
-          <>
-            <ProgressHeader currentStep="TopicSelection" />
-            <TopicSelectionStep
-              learningTopic={context.learningTopic}
-              currentLevel={context.currentLevel}
-              targetWeeks={context.targetWeeks}
-              weeklyHours={context.weeklyHours}
-              onNext={(data) =>
-                history.push("LearningStyle", {
-                  documentId: context.documentId,
-                  learningTopic: data.learningTopic,
-                  currentLevel: data.currentLevel,
-                  targetWeeks: data.targetWeeks,
-                  weeklyHours: data.weeklyHours,
-                })
-              }
-            />
-          </>
+        PdfInput={({ context, history }) => (
+          <PdfInputStep
+            documentId={context.documentId}
+            learningTopic={context.learningTopic}
+            mainGoal={context.mainGoal}
+            onBack={() => history.push("FlowSelection", {})}
+            onNext={(data) =>
+              history.push("AiRecommendations", {
+                documentId: data.documentId,
+                learningTopic: data.learningTopic,
+                mainGoal: data.mainGoal,
+              })
+            }
+          />
         )}
-        LearningStyle={({ context, history }) => (
-          <>
-            <ProgressHeader currentStep="LearningStyle" />
-            <LearningStyleStep
-              learningStyle={context.learningStyle}
-              onBack={() => history.push("TopicSelection")}
-              onNext={(data) =>
-                history.push("ResourceTypes", {
-                  documentId: context.documentId,
-                  learningStyle: data.learningStyle,
-                })
-              }
-            />
-          </>
-        )}
-        ResourceTypes={({ context, history }) => (
-          <>
-            <ProgressHeader currentStep="ResourceTypes" />
-            <ResourceTypesStep
-              preferredResources={context.preferredResources}
-              onBack={() => history.push("LearningStyle")}
-              onNext={(data) =>
-                history.push("LearningModules", {
-                  documentId: context.documentId,
-                  preferredResources: data.preferredResources,
-                })
-              }
-            />
-          </>
-        )}
-        LearningModules={({ context, history }) => {
-          const funnelData: FunnelData = {
-            documentId: context.documentId,
-            learningTopic: context.learningTopic,
-            currentLevel: context.currentLevel,
-            targetWeeks: context.targetWeeks,
-            weeklyHours: context.weeklyHours,
-            learningStyle: context.learningStyle,
-            preferredResources: context.preferredResources,
-            mainGoal: context.mainGoal || "",
-            additionalRequirements: context.additionalRequirements,
-          };
+        AiRecommendations={({ context, history }) => {
+          if (
+            !context.documentId ||
+            !context.learningTopic ||
+            !context.mainGoal
+          ) {
+            // If required data is missing, go back to PdfInput
+            history.push("PdfInput", {});
+            return null;
+          }
 
           return (
-            <>
-              <ProgressHeader currentStep="LearningModules" />
-              <LearningModulesStep
-                mainGoal={context.mainGoal}
-                additionalRequirements={context.additionalRequirements}
-                isCreating={isCreating}
-                error={error}
-                onBack={() => history.push("ResourceTypes")}
-                onNext={(data) => {
-                  const completeFunnelData = {
-                    ...funnelData,
-                    mainGoal: data.mainGoal,
-                    additionalRequirements: data.additionalRequirements,
-                  };
-                  handleCreateLearningPlan(completeFunnelData);
-                }}
-              />
-            </>
+            <AiRecommendationsStep
+              documentId={context.documentId}
+              learningTopic={context.learningTopic}
+              mainGoal={context.mainGoal}
+              onBack={() =>
+                history.push("PdfInput", {
+                  documentId: context.documentId,
+                  learningTopic: context.learningTopic,
+                  mainGoal: context.mainGoal,
+                })
+              }
+              onNext={(data) => {
+                const funnelData: FunnelData = {
+                  documentId: context.documentId,
+                  learningTopic: context.learningTopic,
+                  mainGoal: context.mainGoal,
+                  userLevel: data.userLevel,
+                  targetWeeks: data.targetWeeks,
+                  weeklyHours: data.weeklyHours,
+                  learningStyle: data.learningStyle,
+                  preferredResources: data.preferredResources,
+                };
+                handleCreateLearningPlan(funnelData);
+              }}
+            />
           );
         }}
+        ManualInput={({ history }) => (
+          <ManualInputStep
+            onBack={() => history.push("FlowSelection", {})}
+            onNext={(data) => {
+              const funnelData: FunnelData = {
+                learningTopic: data.learningTopic,
+                mainGoal: data.mainGoal,
+                userLevel: data.userLevel,
+                targetWeeks: data.targetWeeks,
+                weeklyHours: data.weeklyHours,
+                learningStyle: data.learningStyle,
+                preferredResources: data.preferredResources,
+                additionalRequirements: data.additionalRequirements,
+              };
+              handleCreateLearningPlan(funnelData);
+            }}
+          />
+        )}
       />
+
+      {isCreating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-700">학습 계획을 생성하는 중...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

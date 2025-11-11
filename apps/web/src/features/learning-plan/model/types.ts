@@ -108,61 +108,23 @@ export interface LearningPlan {
 
 // Funnel Types
 export type FunnelSteps = {
-  DocumentUpload: {
+  FlowSelection: Record<string, never>;
+  PdfInput: {
     documentId?: string;
     learningTopic?: string;
-    currentLevel?: number;
+    mainGoal?: string;
+  };
+  AiRecommendations: {
+    documentId: string;
+    learningTopic: string;
+    mainGoal: string;
+    userLevel?: string;
     targetWeeks?: number;
     weeklyHours?: number;
     learningStyle?: string;
     preferredResources?: string;
-    mainGoal?: string;
-    additionalRequirements?: string;
   };
-  TopicSelection: {
-    documentId?: string;
-    learningTopic?: string;
-    currentLevel?: number;
-    targetWeeks?: number;
-    weeklyHours?: number;
-    learningStyle?: string;
-    preferredResources?: string;
-    mainGoal?: string;
-    additionalRequirements?: string;
-  };
-  LearningStyle: {
-    documentId?: string;
-    learningTopic: string;
-    currentLevel: number;
-    targetWeeks: number;
-    weeklyHours: number;
-    learningStyle?: string;
-    preferredResources?: string;
-    mainGoal?: string;
-    additionalRequirements?: string;
-  };
-  ResourceTypes: {
-    documentId?: string;
-    learningTopic: string;
-    currentLevel: number;
-    targetWeeks: number;
-    weeklyHours: number;
-    learningStyle: string;
-    preferredResources?: string;
-    mainGoal?: string;
-    additionalRequirements?: string;
-  };
-  LearningModules: {
-    documentId?: string;
-    learningTopic: string;
-    currentLevel: number;
-    targetWeeks: number;
-    weeklyHours: number;
-    learningStyle: string;
-    preferredResources: string;
-    mainGoal?: string;
-    additionalRequirements?: string;
-  };
+  ManualInput: Record<string, never>;
 };
 
 export type StepKeys = keyof FunnelSteps;
@@ -170,7 +132,7 @@ export type StepKeys = keyof FunnelSteps;
 export interface FunnelData {
   documentId?: string;
   learningTopic: string;
-  currentLevel: number;
+  userLevel: string;
   targetWeeks: number;
   weeklyHours: number;
   learningStyle: string;

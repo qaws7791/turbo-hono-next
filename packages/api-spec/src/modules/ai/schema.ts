@@ -2,6 +2,90 @@ import { z } from "@hono/zod-openapi";
 
 import { ErrorResponseSchema } from "../../common/schema";
 
+export const PlanRecommendationsRequestSchema = z.object({
+  learningTopic: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "학습하고자 하는 주제",
+      examples: ["React 프론트엔드 개발"],
+    }),
+  mainGoal: z
+    .string()
+    .min(1)
+    .openapi({
+      description: "주요 학습 목표",
+      examples: ["3개월 내 프론트엔드 개발자로 취업하기"],
+    }),
+  documentId: z
+    .string()
+    .optional()
+    .openapi({
+      description: "업로드된 PDF 문서의 Public ID (선택사항)",
+      examples: ["550e8400-e29b-41d4-a716-446655440000"],
+    }),
+});
+
+export const PlanRecommendationsResponseSchema = z.object({
+  userLevel: z.enum(["초보자", "기초", "중급", "고급", "전문가"]).openapi({
+    description: "AI가 추천하는 현재 사용자 수준",
+    examples: ["기초"],
+  }),
+  targetWeeks: z
+    .number()
+    .int()
+    .min(1)
+    .max(24)
+    .openapi({
+      description: "AI가 추천하는 목표 학습 기간 (주)",
+      examples: [12],
+    }),
+  weeklyHours: z
+    .number()
+    .int()
+    .min(1)
+    .max(60)
+    .openapi({
+      description: "AI가 추천하는 주당 학습 시간",
+      examples: [10],
+    }),
+  learningStyle: z
+    .enum([
+      "시각적 학습",
+      "실습 중심",
+      "문서 읽기",
+      "동영상 강의",
+      "대화형 학습",
+      "프로젝트 기반",
+    ])
+    .openapi({
+      description: "AI가 추천하는 학습 스타일",
+      examples: ["실습 중심"],
+    }),
+  preferredResources: z
+    .enum([
+      "온라인 강의",
+      "책/전자책",
+      "튜토리얼",
+      "유튜브 영상",
+      "공식 문서",
+      "실습 사이트",
+    ])
+    .openapi({
+      description: "AI가 추천하는 선호 학습 자료",
+      examples: ["공식 문서"],
+    }),
+  reasoning: z
+    .string()
+    .optional()
+    .openapi({
+      description: "AI의 추천 이유 (선택적으로 사용자에게 표시 가능)",
+      examples: [
+        "프론트엔드 개발은 실습이 중요하며, 공식 문서로 최신 정보를 학습하는 것이 효과적입니다.",
+      ],
+    }),
+});
+
 // Request schemas
 export const GenerateLearningPlanRequestSchema = z.object({
   learningTopic: z

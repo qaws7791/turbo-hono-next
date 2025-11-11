@@ -4,11 +4,10 @@ export const STEP_INFO: Record<
   StepKeys,
   { order: number; label: string; nextLabel?: string }
 > = {
-  DocumentUpload: { order: 1, label: "문서 업로드" },
-  TopicSelection: { order: 2, label: "주제 선택" },
-  LearningStyle: { order: 3, label: "학습 스타일" },
-  ResourceTypes: { order: 4, label: "자료 유형" },
-  LearningModules: { order: 5, label: "목표 설정", nextLabel: "완료" },
+  FlowSelection: { order: 1, label: "방법 선택" },
+  PdfInput: { order: 2, label: "자료 입력" },
+  AiRecommendations: { order: 3, label: "AI 추천", nextLabel: "완료" },
+  ManualInput: { order: 2, label: "상세 설정", nextLabel: "완료" },
 };
 
 export const TOTAL_STEPS = Object.keys(STEP_INFO).length;

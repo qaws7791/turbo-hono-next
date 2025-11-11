@@ -8,6 +8,8 @@ import {
   GenerateLearningTaskNoteResponseSchema,
   GenerateLearningTaskQuizQuerySchema,
   GenerateLearningTaskQuizResponseSchema,
+  PlanRecommendationsRequestSchema,
+  PlanRecommendationsResponseSchema,
 } from "./schema";
 
 export const generateLearningPlanRoute = createRoute({
@@ -171,8 +173,54 @@ export const generateLearningTaskQuizRoute = createRoute({
   ],
 });
 
+export const getPlanRecommendationsRoute = createRoute({
+  tags: ["ai"],
+  method: "post",
+  path: "/ai/plans/recommendations",
+  summary: "AI가 학습 계획 생성을 위한 설정값을 추천합니다",
+  description: `사용자가 입력한 학습 주제, 목표, 그리고 선택적으로 업로드한 PDF 문서를 분석하여
+최적의 학습 설정값을 AI가 추천합니다.
+- **컨텍스트 분석**: 학습 주제와 목표를 기반으로 적절한 수준, 기간, 스타일을 추론합니다.
+- **문서 활용**: PDF가 제공되면 문서 내용과 난이도를 분석하여 더 정확한 추천을 제공합니다.
+- **빠른 응답**: 가벼운 AI 호출로 1-2초 내에 추천값을 반환합니다.
+- **사용자 제어**: 추천값은 참고용이며, 사용자가 언제든지 수정 가능합니다.`,
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: PlanRecommendationsRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "AI가 추천한 학습 계획 설정값을 반환했습니다.",
+      content: {
+        "application/json": {
+          schema: PlanRecommendationsResponseSchema,
+        },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+  security: [
+    {
+      cookieAuth: [],
+    },
+  ],
+});
+
 export const aiRoutes = [
   generateLearningPlanRoute,
   generateLearningTaskNoteRoute,
   generateLearningTaskQuizRoute,
+  getPlanRecommendationsRoute,
 ] as const;

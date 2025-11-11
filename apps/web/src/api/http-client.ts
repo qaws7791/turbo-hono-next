@@ -286,8 +286,18 @@ const documents = {
 };
 
 const ai = {
+  getPlanRecommendations: async (data: {
+    learningTopic: string;
+    mainGoal: string;
+    documentId?: string;
+  }) => {
+    return client.POST("/ai/plans/recommendations", {
+      body: data,
+    });
+  },
+
   generateLearningPlan: async (data: {
-    documentIds?: Array<string>;
+    documentId?: string;
     learningTopic: string;
     userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
     targetWeeks: number;

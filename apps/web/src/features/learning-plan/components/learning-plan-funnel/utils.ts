@@ -29,7 +29,7 @@ export const transformFunnelDataToApiFormat = (
   return {
     documentId: funnelData.documentId,
     learningTopic: funnelData.learningTopic,
-    userLevel: getCurrentLevelLabel(funnelData.currentLevel) as
+    userLevel: funnelData.userLevel as
       | "초보자"
       | "기초"
       | "중급"

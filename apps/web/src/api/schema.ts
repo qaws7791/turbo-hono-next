@@ -1415,22 +1415,20 @@ export interface paths {
                */
               errorMessage: string | null;
               /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
+              questions: Array<{
+                /**
+                 * @description 문항 식별자
+                 * @example q1
+                 */
+                id: string;
+                /**
+                 * @description 문제 본문
+                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                 */
+                prompt: string;
+                /** @description 객관식 보기 4개 */
+                options: Array<string>;
+              }> | null;
               /** @description 사용자의 가장 최근 퀴즈 결과 */
               latestResult: {
                 /**
@@ -1594,22 +1592,20 @@ export interface paths {
                */
               errorMessage: string | null;
               /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
+              questions: Array<{
+                /**
+                 * @description 문항 식별자
+                 * @example q1
+                 */
+                id: string;
+                /**
+                 * @description 문제 본문
+                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                 */
+                prompt: string;
+                /** @description 객관식 보기 4개 */
+                options: Array<string>;
+              }> | null;
               /** @description 사용자의 가장 최근 퀴즈 결과 */
               latestResult: {
                 /**
@@ -1723,22 +1719,20 @@ export interface paths {
                */
               errorMessage: string | null;
               /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-              questions:
-                | Array<{
-                    /**
-                     * @description 문항 식별자
-                     * @example q1
-                     */
-                    id: string;
-                    /**
-                     * @description 문제 본문
-                     * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                     */
-                    prompt: string;
-                    /** @description 객관식 보기 4개 */
-                    options: Array<string>;
-                  }>
-                | null;
+              questions: Array<{
+                /**
+                 * @description 문항 식별자
+                 * @example q1
+                 */
+                id: string;
+                /**
+                 * @description 문제 본문
+                 * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                 */
+                prompt: string;
+                /** @description 객관식 보기 4개 */
+                options: Array<string>;
+              }> | null;
               /** @description 사용자의 가장 최근 퀴즈 결과 */
               latestResult: {
                 /**
@@ -1803,6 +1797,138 @@ export interface paths {
                  */
                 submittedAt: string;
               } | null;
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/ai/plans/recommendations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * AI가 학습 계획 생성을 위한 설정값을 추천합니다
+     * @description 사용자가 입력한 학습 주제, 목표, 그리고 선택적으로 업로드한 PDF 문서를 분석하여
+     *     최적의 학습 설정값을 AI가 추천합니다.
+     *     - **컨텍스트 분석**: 학습 주제와 목표를 기반으로 적절한 수준, 기간, 스타일을 추론합니다.
+     *     - **문서 활용**: PDF가 제공되면 문서 내용과 난이도를 분석하여 더 정확한 추천을 제공합니다.
+     *     - **빠른 응답**: 가벼운 AI 호출로 1-2초 내에 추천값을 반환합니다.
+     *     - **사용자 제어**: 추천값은 참고용이며, 사용자가 언제든지 수정 가능합니다.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /**
+             * @description 학습하고자 하는 주제
+             * @example React 프론트엔드 개발
+             */
+            learningTopic: string;
+            /**
+             * @description 주요 학습 목표
+             * @example 3개월 내 프론트엔드 개발자로 취업하기
+             */
+            mainGoal: string;
+            /**
+             * @description 업로드된 PDF 문서의 Public ID (선택사항)
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            documentId?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description AI가 추천한 학습 계획 설정값을 반환했습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              /**
+               * @description AI가 추천하는 현재 사용자 수준
+               * @example 기초
+               * @enum {string}
+               */
+              userLevel: "초보자" | "기초" | "중급" | "고급" | "전문가";
+              /**
+               * @description AI가 추천하는 목표 학습 기간 (주)
+               * @example 12
+               */
+              targetWeeks: number;
+              /**
+               * @description AI가 추천하는 주당 학습 시간
+               * @example 10
+               */
+              weeklyHours: number;
+              /**
+               * @description AI가 추천하는 학습 스타일
+               * @example 실습 중심
+               * @enum {string}
+               */
+              learningStyle:
+                | "시각적 학습"
+                | "실습 중심"
+                | "문서 읽기"
+                | "동영상 강의"
+                | "대화형 학습"
+                | "프로젝트 기반";
+              /**
+               * @description AI가 추천하는 선호 학습 자료
+               * @example 공식 문서
+               * @enum {string}
+               */
+              preferredResources:
+                | "온라인 강의"
+                | "책/전자책"
+                | "튜토리얼"
+                | "유튜브 영상"
+                | "공식 문서"
+                | "실습 사이트";
+              /**
+               * @description AI의 추천 이유 (선택적으로 사용자에게 표시 가능)
+               * @example 프론트엔드 개발은 실습이 중요하며, 공식 문서로 최신 정보를 학습하는 것이 효과적입니다.
+               */
+              reasoning?: string;
             };
           };
         };
@@ -3988,22 +4114,20 @@ export interface paths {
                  */
                 errorMessage: string | null;
                 /** @description 사용자에게 노출할 문제 목록 (생성 완료 시 제공) */
-                questions:
-                  | Array<{
-                      /**
-                       * @description 문항 식별자
-                       * @example q1
-                       */
-                      id: string;
-                      /**
-                       * @description 문제 본문
-                       * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
-                       */
-                      prompt: string;
-                      /** @description 객관식 보기 4개 */
-                      options: Array<string>;
-                    }>
-                  | null;
+                questions: Array<{
+                  /**
+                   * @description 문항 식별자
+                   * @example q1
+                   */
+                  id: string;
+                  /**
+                   * @description 문제 본문
+                   * @example React 상태 관리를 위해 가장 적절한 훅은 무엇인가요?
+                   */
+                  prompt: string;
+                  /** @description 객관식 보기 4개 */
+                  options: Array<string>;
+                }> | null;
                 /** @description 사용자의 가장 최근 퀴즈 결과 */
                 latestResult: {
                   /**

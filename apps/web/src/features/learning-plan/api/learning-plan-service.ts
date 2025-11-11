@@ -87,6 +87,12 @@ export function uploadDocument(file: File) {
   return api.documents.upload(file);
 }
 
+export function getPlanRecommendations(
+  data: Parameters<typeof api.ai.getPlanRecommendations>[0],
+) {
+  return api.ai.getPlanRecommendations(data);
+}
+
 export function generateLearningPlan(
   data: Parameters<typeof api.ai.generateLearningPlan>[0],
 ) {
