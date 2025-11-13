@@ -1,38 +1,41 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { streamText } from "ai";
-import status from "http-status";
 import { streamMessageRoute } from "@repo/api-spec";
+import { stepCountIs, streamText } from "ai";
+import status from "http-status";
 
-import { authMiddleware } from "../../../middleware/auth";
-import { log } from "../../../lib/logger";
 import { geminiModel } from "../../../external/ai/provider";
+import { log } from "../../../lib/logger";
+import { authMiddleware } from "../../../middleware/auth";
+import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
+import { learningModuleQueryService } from "../../learning-plan/services/learning-module.query.service";
+import { learningPlanQueryService } from "../../learning-plan/services/learning-plan.query.service";
+import { AIChatErrors } from "../errors";
 import { conversationCommandService } from "../services/conversation-command.service";
 import { conversationQueryService } from "../services/conversation-query.service";
 import { messageCommandService } from "../services/message-command.service";
 import { messageQueryService } from "../services/message-query.service";
-import { learningPlanQueryService } from "../../learning-plan/services/learning-plan.query.service";
-import { learningModuleQueryService } from "../../learning-plan/services/learning-module.query.service";
 import {
-  createModuleTool,
-  deleteModuleTool,
-  listModulesTool,
-  updateModuleTool,
+  createCreateModuleTool,
+  createDeleteModuleTool,
+  createListModulesTool,
+  createUpdateModuleTool,
 } from "../tools/learning-module.tool";
 import {
-  completeTasksTool,
-  createTaskTool,
-  deleteTaskTool,
-  listTasksTool,
-  updateTaskTool,
+  createBulkUpdateTasksTool,
+  createCompleteTasksTool,
+  createCreateTaskTool,
+  createDeleteTaskTool,
+  createListTasksTool,
+  createUpdateTaskTool,
 } from "../tools/learning-task.tool";
 import {
-  getModuleDetailsTool,
-  getPlanDetailsTool,
-  getProgressTool,
+  createGetModuleDetailsTool,
+  createGetPlanDetailsTool,
+  createGetProgressTool,
 } from "../tools/query-info.tool";
 
-import type { StoredToolInvocation } from "../types";
 import type { AuthContext } from "../../../middleware/auth";
+import type { StoredToolInvocation } from "../types";
 
 const streamMessage = new OpenAPIHono<{
   Variables: {
@@ -47,7 +50,7 @@ const streamMessage = new OpenAPIHono<{
     const auth = c.get("auth");
     const body = c.req.valid("json");
     const { conversationId, message, learningPlanId } = body;
-
+    log.info("streamMessage", { auth, body });
     try {
       // Get or create conversation
       let conversation;
@@ -66,22 +69,42 @@ const streamMessage = new OpenAPIHono<{
             status.BAD_REQUEST,
           );
         }
-        conversation = await conversationCommandService.createConversation({
+
+        // Convert public ID to internal ID
+        const learningPlan = await learningPlanRepository.findByPublicId(
           learningPlanId,
+          auth.user.id,
+        );
+
+        if (!learningPlan) {
+          throw AIChatErrors.learningPlanNotFound();
+        }
+
+        conversation = await conversationCommandService.createConversation({
+          learningPlanId: learningPlan.id,
           userId: auth.user.id,
           title: message.substring(0, 100), // Use first 100 chars as title
         });
       }
 
+      // Get learning plan by internal ID to get public ID
+      const learningPlanData = await learningPlanRepository.findById(
+        conversation.learningPlanId,
+      );
+
+      if (!learningPlanData) {
+        throw AIChatErrors.learningPlanNotFound();
+      }
+
       // Get learning plan details for context
       const learningPlan = await learningPlanQueryService.getLearningPlan({
-        publicId: String(conversation.learningPlanId),
+        publicId: learningPlanData.publicId,
         userId: auth.user.id,
       });
 
       // Get modules for context
       const modules = await learningModuleQueryService.listModulesByPlan(
-        String(conversation.learningPlanId),
+        learningPlanData.publicId,
         auth.user.id,
       );
 
@@ -103,7 +126,18 @@ ${modules
   .join("\n")}
 `;
 
+      // 현재 날짜를 한국 로케일로 포맷
+      const currentDate = new Date().toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long",
+        timeZone: "Asia/Seoul",
+      });
+
       const systemPrompt = `당신은 학습 계획을 관리하고 학습자를 돕는 AI 튜터입니다.
+
+오늘 날짜: ${currentDate}
 
 현재 학습자의 학습 계획:
 ${planContext}
@@ -138,6 +172,9 @@ ${planContext}
         userId: auth.user.id,
       });
 
+      // Create tools with userId bound
+      const userId = auth.user.id;
+
       // Stream the AI response
       const result = streamText({
         model: geminiModel,
@@ -158,20 +195,23 @@ ${planContext}
             content: message,
           },
         ],
+        temperature: 0,
         tools: {
-          createModule: createModuleTool,
-          updateModule: updateModuleTool,
-          deleteModule: deleteModuleTool,
-          listModules: listModulesTool,
-          createTask: createTaskTool,
-          updateTask: updateTaskTool,
-          deleteTask: deleteTaskTool,
-          completeTasks: completeTasksTool,
-          listTasks: listTasksTool,
-          getProgress: getProgressTool,
-          getPlanDetails: getPlanDetailsTool,
-          getModuleDetails: getModuleDetailsTool,
+          createModule: createCreateModuleTool(userId),
+          updateModule: createUpdateModuleTool(userId),
+          deleteModule: createDeleteModuleTool(userId),
+          listModules: createListModulesTool(userId),
+          createTask: createCreateTaskTool(userId),
+          updateTask: createUpdateTaskTool(userId),
+          deleteTask: createDeleteTaskTool(userId),
+          completeTasks: createCompleteTasksTool(userId),
+          bulkUpdateTasks: createBulkUpdateTasksTool(userId),
+          listTasks: createListTasksTool(userId),
+          getProgress: createGetProgressTool(userId),
+          getPlanDetails: createGetPlanDetailsTool(userId),
+          getModuleDetails: createGetModuleDetailsTool(userId),
         },
+        stopWhen: stepCountIs(10),
         async onFinish({ text, toolCalls, toolResults }) {
           // Save assistant message
           await messageCommandService.saveMessage({
