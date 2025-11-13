@@ -3,6 +3,33 @@ import { z } from "@hono/zod-openapi";
 import { ErrorResponseSchema } from "../../common/schema";
 
 /**
+ * Stored Tool Invocation 스키마
+ * Tool call과 result를 결합한 저장 형식
+ */
+export const StoredToolInvocationSchema = z.object({
+  toolCallId: z.string().openapi({
+    description: "Tool call 고유 ID",
+    examples: ["call_1234567890"],
+  }),
+  toolName: z.string().openapi({
+    description: "호출된 tool 이름",
+    examples: ["getLearningModule"],
+  }),
+  arguments: z.record(z.string(), z.unknown()).openapi({
+    description: "Tool에 전달된 인자",
+  }),
+  result: z.unknown().optional().openapi({
+    description: "Tool 실행 결과",
+  }),
+  providerExecuted: z.boolean().optional().openapi({
+    description: "Provider에 의해 실행되었는지 여부",
+  }),
+  error: z.unknown().optional().openapi({
+    description: "Tool 실행 중 발생한 에러",
+  }),
+});
+
+/**
  * 메시지 스키마
  */
 export const MessageSchema = z
@@ -23,8 +50,8 @@ export const MessageSchema = z
       description: "메시지 내용",
       examples: ["React Hooks 모듈을 추가해줘"],
     }),
-    toolInvocations: z.array(z.any()).optional().openapi({
-      description: "Tool 호출 정보 (Vercel AI SDK ToolInvocation 타입)",
+    toolInvocations: z.array(StoredToolInvocationSchema).optional().openapi({
+      description: "Tool 호출 정보 (call과 result를 결합한 저장 형식)",
     }),
     createdAt: z.string().openapi({
       description: "생성 시간 (ISO 8601)",

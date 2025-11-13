@@ -7,6 +7,7 @@ import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
 import { loggerMiddleware } from "./middleware/logger";
 import aiApp from "./modules/ai";
+import aiChatApp from "./modules/ai-chat";
 import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
 import progressApp from "./modules/progress";
@@ -48,6 +49,7 @@ const routes = [
   learningPlanApp,
   progressApp,
   aiApp,
+  aiChatApp,
   documentsApp,
 ] as const;
 
