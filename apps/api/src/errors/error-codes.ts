@@ -41,6 +41,7 @@ export const ErrorCodes = {
   NOT_FOUND_LEARNING_MODULE: "NF_004",
   NOT_FOUND_LEARNING_TASK: "NF_005",
   NOT_FOUND_DOCUMENT: "NF_006",
+  NOT_FOUND_CONVERSATION: "NF_007",
 
   // Learning Plan (LEARNING_PLAN)
   LEARNING_PLAN_CREATION_FAILED: "LP_001",
@@ -120,6 +121,7 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCodes.NOT_FOUND_LEARNING_MODULE]: "Learning module not found",
   [ErrorCodes.NOT_FOUND_LEARNING_TASK]: "Learning task not found",
   [ErrorCodes.NOT_FOUND_DOCUMENT]: "Document not found",
+  [ErrorCodes.NOT_FOUND_CONVERSATION]: "Conversation not found",
 
   // Learning Plan
   [ErrorCodes.LEARNING_PLAN_CREATION_FAILED]: "Failed to create learning plan",
