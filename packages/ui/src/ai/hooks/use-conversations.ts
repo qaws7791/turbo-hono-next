@@ -29,10 +29,10 @@ export interface UseConversationsResult {
   /**
    * 새 대화 세션 생성
    */
-  createConversation: (
-    learningPlanId: string,
-    title?: string,
-  ) => Promise<Conversation>;
+  createConversation: (data: {
+    learningPlanId: string;
+    title?: string;
+  }) => Promise<Conversation>;
 
   /**
    * 대화 세션 삭제

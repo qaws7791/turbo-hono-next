@@ -2,7 +2,6 @@
  * 대화 세션 아이템 컴포넌트
  */
 
-import React from "react";
 import { Button } from "react-aria-components";
 
 import type { Conversation } from "./types";

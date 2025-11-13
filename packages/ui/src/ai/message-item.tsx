@@ -2,8 +2,6 @@
  * 개별 메시지 컴포넌트
  */
 
-import React from "react";
-
 import { ToolInvocation } from "./tool-invocation";
 
 import type { Message } from "./types";

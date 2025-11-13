@@ -2,7 +2,7 @@
  * Tool 호출 표시 컴포넌트
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 import type { ToolInvocation as ToolInvocationType } from "./types";
 
@@ -32,12 +32,12 @@ export function ToolInvocation({
           <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             🛠️ {toolNameDisplay}
           </span>
-          {invocation.state === "call" && (
+          {invocation.result === undefined && (
             <span className="text-xs text-yellow-600 dark:text-yellow-400">
               실행 중...
             </span>
           )}
-          {invocation.state === "result" && (
+          {invocation.result !== undefined && (
             <span className="text-xs text-green-600 dark:text-green-400">
               완료
             </span>
@@ -63,7 +63,7 @@ export function ToolInvocation({
               파라미터:
             </div>
             <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded overflow-x-auto">
-              {JSON.stringify(invocation.args, null, 2)}
+              {JSON.stringify(invocation.arguments, null, 2)}
             </pre>
           </div>
 

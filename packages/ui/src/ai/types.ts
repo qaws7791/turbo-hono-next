@@ -13,9 +13,10 @@ export type MessageRole = "user" | "assistant" | "tool";
 export interface ToolInvocation {
   toolCallId: string;
   toolName: string;
-  args: Record<string, unknown>;
+  arguments: Record<string, unknown>;
   result?: unknown;
-  state: "call" | "result";
+  providerExecuted?: boolean;
+  error?: unknown;
 }
 
 /**

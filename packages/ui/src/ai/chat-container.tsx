@@ -2,8 +2,6 @@
  * 채팅 컨테이너 컴포넌트
  */
 
-import React from "react";
-
 import { MessageList } from "./message-list";
 import { MessageInput } from "./message-input";
 

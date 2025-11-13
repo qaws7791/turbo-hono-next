@@ -2,7 +2,7 @@
  * 메시지 목록 컴포넌트
  */
 
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { MessageItem } from "./message-item";
 
