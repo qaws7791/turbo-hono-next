@@ -54,6 +54,34 @@ export interface MoveLearningTaskInput {
 }
 
 /**
+ * Input type for bulk updating learning tasks
+ */
+export interface BulkUpdateTasksInput {
+  userId: string;
+  learningPlanId: string; // publicId - for ownership verification
+  taskIds: Array<string>; // publicIds of tasks to update
+  updates?: {
+    // Apply same values to all tasks
+    title?: string;
+    description?: string | null;
+    isCompleted?: boolean;
+    dueDate?: string | null;
+    memo?: string | null;
+  };
+  individualUpdates?: Array<{
+    // Apply different values to each task
+    taskId: string; // publicId
+    updates: {
+      title?: string;
+      description?: string | null;
+      isCompleted?: boolean;
+      dueDate?: string | null;
+      memo?: string | null;
+    };
+  }>;
+}
+
+/**
  * Response type for learning task operations
  */
 export interface LearningTaskResponse {
@@ -412,6 +440,160 @@ export class LearningTaskCommandService {
         userId: input.userId,
       });
       throw LearningPlanErrors.taskMoveFailed();
+    }
+  }
+
+  /**
+   * Bulk updates multiple learning tasks
+   */
+  async bulkUpdateTasks(input: BulkUpdateTasksInput): Promise<{
+    updatedTasks: Array<LearningTaskResponse>;
+    successCount: number;
+    totalCount: number;
+  }> {
+    try {
+      return await runInTransaction(async (tx) => {
+        // Verify learning plan ownership
+        const plan = await learningPlanRepository.findByPublicId(
+          input.learningPlanId,
+          input.userId,
+          tx,
+        );
+
+        if (!plan) {
+          throw LearningPlanErrors.notFound();
+        }
+
+        ownershipHelper.verifyOwnership(plan, input.userId, "Learning plan");
+
+        // Validate task IDs
+        if (input.taskIds.length === 0) {
+          throw LearningPlanErrors.taskUpdateFailed();
+        }
+
+        // Limit batch size to prevent performance issues
+        const MAX_BATCH_SIZE = 100;
+        if (input.taskIds.length > MAX_BATCH_SIZE) {
+          throw LearningPlanErrors.taskUpdateFailed();
+        }
+
+        const updatedTasks: Array<LearningTaskResponse> = [];
+
+        // Process each task
+        for (const taskId of input.taskIds) {
+          try {
+            // Find task with parent info
+            const taskWithParents =
+              await learningTaskRepository.findWithParents(taskId, tx);
+
+            if (!taskWithParents) {
+              log.warn("Task not found during bulk update, skipping", {
+                taskId,
+                userId: input.userId,
+              });
+              continue;
+            }
+
+            // Verify task belongs to the same plan
+            if (taskWithParents.plan.id !== plan.id) {
+              log.warn("Task does not belong to specified plan, skipping", {
+                taskId,
+                userId: input.userId,
+              });
+              continue;
+            }
+
+            // Prepare update data
+            const updateData: Partial<LearningTask> = {};
+
+            // Check for individual updates first
+            const individualUpdate = input.individualUpdates?.find(
+              (u) => u.taskId === taskId,
+            );
+
+            if (individualUpdate) {
+              // Apply individual updates
+              if (individualUpdate.updates.title !== undefined)
+                updateData.title = individualUpdate.updates.title;
+              if (individualUpdate.updates.description !== undefined)
+                updateData.description = individualUpdate.updates.description;
+              if (individualUpdate.updates.memo !== undefined)
+                updateData.memo = individualUpdate.updates.memo;
+              if (individualUpdate.updates.dueDate !== undefined) {
+                updateData.dueDate = individualUpdate.updates.dueDate
+                  ? new Date(individualUpdate.updates.dueDate)
+                  : null;
+              }
+              if (individualUpdate.updates.isCompleted !== undefined) {
+                updateData.isCompleted = individualUpdate.updates.isCompleted;
+                updateData.completedAt = individualUpdate.updates.isCompleted
+                  ? new Date()
+                  : null;
+              }
+            } else if (input.updates) {
+              // Apply common updates
+              if (input.updates.title !== undefined)
+                updateData.title = input.updates.title;
+              if (input.updates.description !== undefined)
+                updateData.description = input.updates.description;
+              if (input.updates.memo !== undefined)
+                updateData.memo = input.updates.memo;
+              if (input.updates.dueDate !== undefined) {
+                updateData.dueDate = input.updates.dueDate
+                  ? new Date(input.updates.dueDate)
+                  : null;
+              }
+              if (input.updates.isCompleted !== undefined) {
+                updateData.isCompleted = input.updates.isCompleted;
+                updateData.completedAt = input.updates.isCompleted
+                  ? new Date()
+                  : null;
+              }
+            }
+
+            // Skip if no updates to apply
+            if (Object.keys(updateData).length === 0) {
+              continue;
+            }
+
+            // Update task
+            const updatedTask = await learningTaskRepository.update(
+              taskWithParents.id,
+              updateData,
+              tx,
+            );
+
+            updatedTasks.push(this.formatTaskResponse(updatedTask));
+          } catch (error) {
+            log.error("Failed to update task in bulk operation", {
+              error: error instanceof Error ? error.message : "Unknown error",
+              taskId,
+              userId: input.userId,
+            });
+            // Continue with other tasks instead of failing entire batch
+          }
+        }
+
+        log.info("Bulk task update completed", {
+          totalRequested: input.taskIds.length,
+          successCount: updatedTasks.length,
+          userId: input.userId,
+          learningPlanId: input.learningPlanId,
+        });
+
+        return {
+          updatedTasks,
+          successCount: updatedTasks.length,
+          totalCount: input.taskIds.length,
+        };
+      });
+    } catch (error) {
+      log.error("Bulk task update failed", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        userId: input.userId,
+        learningPlanId: input.learningPlanId,
+      });
+      throw LearningPlanErrors.taskUpdateFailed();
     }
   }
 
