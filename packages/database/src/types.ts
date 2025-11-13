@@ -1,5 +1,7 @@
 import type {
   account,
+  aiConversation,
+  aiMessage,
   aiNote,
   aiQuiz,
   aiQuizResult,
@@ -62,3 +64,11 @@ export type LearningPlanDocumentInsert =
 export type LearningPlanDocumentUpdate = Partial<
   typeof learningPlanDocument.$inferInsert
 >;
+
+export type AIConversation = typeof aiConversation.$inferSelect;
+export type NewAIConversation = typeof aiConversation.$inferInsert;
+export type UpdateAIConversation = Partial<typeof aiConversation.$inferInsert>;
+
+export type AIMessage = typeof aiMessage.$inferSelect;
+export type NewAIMessage = typeof aiMessage.$inferInsert;
+export type UpdateAIMessage = Partial<typeof aiMessage.$inferInsert>;

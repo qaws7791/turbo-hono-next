@@ -269,3 +269,51 @@ export const learningPlanDocument = pgTable("learning_plan_document", {
     .$defaultFn(() => new Date())
     .notNull(),
 });
+
+/* ========== AI Chat: AI 튜터 채팅 ========== */
+
+export const aiConversation = pgTable(
+  "ai_conversation",
+  {
+    id: text("id").primaryKey(),
+    learningPlanId: integer("learning_plan_id")
+      .notNull()
+      .references(() => learningPlan.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    title: text("title"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+    updatedAt: timestamp("updated_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ai_conversation_learning_plan_id_idx").on(table.learningPlanId),
+    index("ai_conversation_user_id_idx").on(table.userId),
+  ],
+);
+
+export const aiMessage = pgTable(
+  "ai_message",
+  {
+    id: text("id").primaryKey(),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => aiConversation.id, { onDelete: "cascade" }),
+    role: text("role").notNull(), // 'user' | 'assistant' | 'tool'
+    content: text("content").notNull(),
+    toolInvocations: jsonb("tool_invocations"),
+    createdAt: timestamp("created_at")
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("ai_message_conversation_id_created_at_idx").on(
+      table.conversationId,
+      table.createdAt.desc(),
+    ),
+  ],
+);
