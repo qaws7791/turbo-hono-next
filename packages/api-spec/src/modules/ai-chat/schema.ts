@@ -69,13 +69,10 @@ export const ConversationSchema = z
       description: "대화 세션 고유 ID",
       examples: ["conv_1234567890"],
     }),
-    learningPlanId: z
-      .number()
-      .int()
-      .openapi({
-        description: "학습 계획 ID",
-        examples: [1],
-      }),
+    learningPlanId: z.string().openapi({
+      description: "학습 계획 Public ID",
+      examples: ["plan_abc123"],
+    }),
     userId: z.string().openapi({
       description: "사용자 ID",
       examples: ["user_1234567890"],
@@ -128,13 +125,10 @@ export const SendMessageRequestSchema = z
         description: "대화 세션 ID (없으면 새 대화 세션 생성)",
         examples: ["conv_1234567890"],
       }),
-    learningPlanId: z
-      .number()
-      .int()
-      .openapi({
-        description: "학습 계획 ID (conversationId가 없을 때 필수)",
-        examples: [1],
-      }),
+    learningPlanId: z.string().openapi({
+      description: "학습 계획 Public ID (conversationId가 없을 때 필수)",
+      examples: ["plan_abc123"],
+    }),
     message: z
       .string()
       .min(1)
@@ -169,13 +163,10 @@ export const MessageListResponseSchema = z
  */
 export const CreateConversationRequestSchema = z
   .object({
-    learningPlanId: z
-      .number()
-      .int()
-      .openapi({
-        description: "학습 계획 ID",
-        examples: [1],
-      }),
+    learningPlanId: z.string().openapi({
+      description: "학습 계획 Public ID",
+      examples: ["plan_abc123"],
+    }),
     title: z
       .string()
       .optional()

@@ -71,13 +71,10 @@ export const getConversationsRoute = createRoute({
 - **권한 확인**: 학습 계획 소유자만 조회할 수 있습니다.`,
   request: {
     query: z.object({
-      learningPlanId: z.coerce
-        .number()
-        .int()
-        .openapi({
-          description: "학습 계획 ID",
-          examples: [1],
-        }),
+      learningPlanId: z.string().openapi({
+        description: "학습 계획 Public ID",
+        examples: ["plan_abc123"],
+      }),
     }),
   },
   responses: {
@@ -242,3 +239,11 @@ export const deleteConversationRoute = createRoute({
     },
   ],
 });
+
+export const aiChatRoutes = [
+  streamMessageRoute,
+  getConversationsRoute,
+  getMessagesRoute,
+  createConversationRoute,
+  deleteConversationRoute,
+] as const;
