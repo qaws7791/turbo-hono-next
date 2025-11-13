@@ -1,11 +1,12 @@
 import { Icon } from "@repo/ui/icon";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { AppPageLayout } from "@/shared/components/app-page-layout";
-import { Link } from "@/shared/components/link";
+import { AIChatSection } from "@/features/ai-chat/components/ai-chat-section";
 import { LearningModuleList } from "@/features/learning-plan/components/learning-module-list";
 import LearningPlanInfo from "@/features/learning-plan/components/learning-plan-info";
 import { useLearningPlanDetail } from "@/features/learning-plan/hooks/use-learning-plan-detail";
+import { AppPageLayout } from "@/shared/components/app-page-layout";
+import { Link } from "@/shared/components/link";
 
 export const Route = createFileRoute("/app/learning-plans/$learningPlanId/")({
   component: RouteComponent,
@@ -115,7 +116,7 @@ function RouteComponent() {
         {/* 메인 콘텐츠 - 좌우 분할 */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* 좌측 패널 - 학습 계획 콘텐츠 */}
-          <div className="col-span-3 space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* 목표 목록 */}
             <LearningModuleList
               learningModules={learningModules}
@@ -123,7 +124,10 @@ function RouteComponent() {
             />
           </div>
 
-          {/* 우측 패널 - AI 채팅과 메타데이터 (X: 추후 API 구현 후 추가)*/}
+          {/* 우측 패널 - AI 채팅 */}
+          <div className="lg:col-span-1">
+            <AIChatSection learningPlanId={learningPlanId} />
+          </div>
         </div>
       </div>
     </AppPageLayout>
