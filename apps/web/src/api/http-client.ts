@@ -363,6 +363,68 @@ const ai = {
   },
 };
 
+const aiChat = {
+  /**
+   * 학습 계획의 대화 세션 목록 조회
+   */
+  getConversations: async (learningPlanId: string) => {
+    return client.GET("/chat/conversations", {
+      params: {
+        query: { learningPlanId },
+      },
+    });
+  },
+
+  /**
+   * 대화 세션의 메시지 목록 조회
+   */
+  getMessages: async (conversationId: string) => {
+    return client.GET("/chat/conversations/{conversationId}/messages", {
+      params: { path: { conversationId } },
+    });
+  },
+
+  /**
+   * 새 대화 세션 생성
+   */
+  createConversation: async (data: {
+    learningPlanId: string;
+    title?: string;
+  }) => {
+    return client.POST("/chat/conversations", {
+      body: data,
+    });
+  },
+
+  /**
+   * 대화 세션 삭제
+   */
+  deleteConversation: async (conversationId: string) => {
+    return client.DELETE("/chat/conversations/{conversationId}", {
+      params: { path: { conversationId } },
+    });
+  },
+
+  /**
+   * 스트리밍 메시지 전송
+   * SSE를 사용하므로 직접 fetch를 사용합니다
+   */
+  streamMessage: async (data: {
+    conversationId?: string;
+    learningPlanId: string;
+    message: string;
+  }) => {
+    return fetch("http://localhost:3001/chat/stream", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 export const api = {
   auth,
   learningPlans,
@@ -371,4 +433,5 @@ export const api = {
   progress,
   documents,
   ai,
+  aiChat,
 } as const;

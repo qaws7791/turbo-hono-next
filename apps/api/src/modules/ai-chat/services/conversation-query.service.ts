@@ -9,6 +9,7 @@ import type { DatabaseTransaction } from "../../../lib/transaction.helper";
  */
 export interface GetConversationsByPlanInput {
   learningPlanId: number;
+  learningPlanPublicId: string;
   userId: string;
   limit?: number;
 }
@@ -19,7 +20,7 @@ export interface GetConversationsByPlanInput {
 export interface ConversationListResponse {
   conversations: Array<{
     id: string;
-    learningPlanId: number;
+    learningPlanId: string;
     userId: string;
     title: string | null;
     createdAt: string;
@@ -64,7 +65,7 @@ export class ConversationQueryService {
     input: GetConversationsByPlanInput,
     tx?: DatabaseTransaction,
   ): Promise<ConversationListResponse> {
-    const { learningPlanId, userId, limit = 50 } = input;
+    const { learningPlanId, learningPlanPublicId, userId, limit = 50 } = input;
 
     // Verify user owns the learning plan
     const isOwner = await conversationRepository.verifyLearningPlanOwnership(
@@ -101,7 +102,7 @@ export class ConversationQueryService {
     return {
       conversations: conversations.map((conv) => ({
         id: conv.id,
-        learningPlanId: conv.learningPlanId,
+        learningPlanId: learningPlanPublicId,
         userId: conv.userId,
         title: conv.title,
         createdAt: conv.createdAt.toISOString(),

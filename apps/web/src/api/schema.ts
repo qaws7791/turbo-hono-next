@@ -4290,6 +4290,328 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/chat/stream": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * AI 튜터에게 메시지를 전송하고 스트리밍 응답을 받습니다
+     * @description 사용자가 AI 튜터와 대화하며 학습 계획을 관리할 수 있는 스트리밍 API입니다.
+     *
+     *     - **스트리밍 응답**: SSE(Server-Sent Events)를 사용하여 실시간으로 AI 응답을 받습니다.
+     *     - **Tool Calling**: AI가 필요시 학습 모듈, 태스크 등을 생성/수정/삭제할 수 있습니다.
+     *     - **컨텍스트 인식**: 현재 학습 계획의 모든 정보를 컨텍스트로 제공합니다.
+     *     - **대화 세션 자동 생성**: conversationId가 없으면 새 대화 세션을 자동으로 생성합니다.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["SendMessageRequest"];
+        };
+      };
+      responses: {
+        /** @description 스트리밍 응답 (SSE) */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "text/event-stream": unknown;
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chat/conversations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 학습 계획의 대화 세션 목록을 조회합니다
+     * @description 특정 학습 계획에 속한 모든 대화 세션을 조회합니다.
+     *
+     *     - **최신순 정렬**: updatedAt 기준으로 최신 대화가 먼저 표시됩니다.
+     *     - **권한 확인**: 학습 계획 소유자만 조회할 수 있습니다.
+     */
+    get: {
+      parameters: {
+        query: {
+          /** @description 학습 계획 Public ID */
+          learningPlanId: string;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 대화 세션 목록 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ConversationListResponse"];
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    /**
+     * 새 대화 세션을 생성합니다
+     * @description 학습 계획에 새로운 대화 세션을 생성합니다.
+     *
+     *     - **자동 ID 생성**: 고유한 대화 세션 ID가 자동으로 생성됩니다.
+     *     - **권한 확인**: 학습 계획 소유자만 대화 세션을 생성할 수 있습니다.
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["CreateConversationRequest"];
+        };
+      };
+      responses: {
+        /** @description 생성된 대화 세션 */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["Conversation"];
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chat/conversations/{conversationId}/messages": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 대화 세션의 메시지 목록을 조회합니다
+     * @description 특정 대화 세션의 모든 메시지를 조회합니다.
+     *
+     *     - **시간순 정렬**: createdAt 기준으로 오래된 메시지부터 표시됩니다.
+     *     - **권한 확인**: 대화 세션 소유자만 조회할 수 있습니다.
+     *     - **Tool 호출 정보 포함**: 각 메시지에 Tool 호출 정보가 포함됩니다.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 대화 세션 ID */
+          conversationId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 메시지 목록 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["MessageListResponse"];
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/chat/conversations/{conversationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * 대화 세션을 삭제합니다
+     * @description 대화 세션과 관련된 모든 메시지를 삭제합니다.
+     *
+     *     - **CASCADE 삭제**: 대화 세션에 속한 모든 메시지가 함께 삭제됩니다.
+     *     - **권한 확인**: 대화 세션 소유자만 삭제할 수 있습니다.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 대화 세션 ID */
+          conversationId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 삭제 완료 */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4307,6 +4629,136 @@ export interface components {
          */
         message: string;
       };
+    };
+    SendMessageRequest: {
+      /**
+       * @description 대화 세션 ID (없으면 새 대화 세션 생성)
+       * @example conv_1234567890
+       */
+      conversationId?: string;
+      /**
+       * @description 학습 계획 Public ID (conversationId가 없을 때 필수)
+       * @example plan_abc123
+       */
+      learningPlanId: string;
+      /**
+       * @description 사용자 메시지
+       * @example React Hooks 모듈을 추가해줘
+       */
+      message: string;
+    };
+    Conversation: {
+      /**
+       * @description 대화 세션 고유 ID
+       * @example conv_1234567890
+       */
+      id: string;
+      /**
+       * @description 학습 계획 Public ID
+       * @example plan_abc123
+       */
+      learningPlanId: string;
+      /**
+       * @description 사용자 ID
+       * @example user_1234567890
+       */
+      userId: string;
+      /**
+       * @description 대화 제목 (선택사항)
+       * @example React Hooks 학습 계획
+       */
+      title: string | null;
+      /**
+       * @description 생성 시간 (ISO 8601)
+       * @example 2025-11-13T10:00:00.000Z
+       */
+      createdAt: string;
+      /**
+       * @description 수정 시간 (ISO 8601)
+       * @example 2025-11-13T10:00:00.000Z
+       */
+      updatedAt: string;
+    };
+    ConversationListResponse: {
+      /** @description 대화 세션 목록 */
+      conversations: Array<components["schemas"]["Conversation"]>;
+      /**
+       * @description 전체 대화 세션 개수
+       * @example 5
+       */
+      totalCount: number;
+    };
+    Message: {
+      /**
+       * @description 메시지 고유 ID
+       * @example msg_1234567890
+       */
+      id: string;
+      /**
+       * @description 대화 세션 ID
+       * @example conv_1234567890
+       */
+      conversationId: string;
+      /**
+       * @description 메시지 역할
+       * @example user
+       * @enum {string}
+       */
+      role: "user" | "assistant" | "tool";
+      /**
+       * @description 메시지 내용
+       * @example React Hooks 모듈을 추가해줘
+       */
+      content: string;
+      /** @description Tool 호출 정보 (call과 result를 결합한 저장 형식) */
+      toolInvocations?: Array<{
+        /**
+         * @description Tool call 고유 ID
+         * @example call_1234567890
+         */
+        toolCallId: string;
+        /**
+         * @description 호출된 tool 이름
+         * @example getLearningModule
+         */
+        toolName: string;
+        /** @description Tool에 전달된 인자 */
+        arguments: {
+          [key: string]: unknown;
+        };
+        /** @description Tool 실행 결과 */
+        result?: unknown;
+        /** @description Provider에 의해 실행되었는지 여부 */
+        providerExecuted?: boolean;
+        /** @description Tool 실행 중 발생한 에러 */
+        error?: unknown;
+      }>;
+      /**
+       * @description 생성 시간 (ISO 8601)
+       * @example 2025-11-13T10:00:00.000Z
+       */
+      createdAt: string;
+    };
+    MessageListResponse: {
+      /** @description 메시지 목록 */
+      messages: Array<components["schemas"]["Message"]>;
+      /**
+       * @description 전체 메시지 개수
+       * @example 10
+       */
+      totalCount: number;
+    };
+    CreateConversationRequest: {
+      /**
+       * @description 학습 계획 Public ID
+       * @example plan_abc123
+       */
+      learningPlanId: string;
+      /**
+       * @description 대화 제목 (선택사항)
+       * @example React Hooks 학습 계획
+       */
+      title?: string;
     };
   };
   responses: never;

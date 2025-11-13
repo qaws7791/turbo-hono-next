@@ -3,7 +3,9 @@ import status from "http-status";
 import { createConversationRoute } from "@repo/api-spec";
 
 import { authMiddleware } from "../../../middleware/auth";
+import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
 import { conversationCommandService } from "../services/conversation-command.service";
+import { AIChatErrors } from "../errors";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -20,8 +22,18 @@ const createConversation = new OpenAPIHono<{
     const auth = c.get("auth");
     const body = c.req.valid("json");
 
+    // Public ID → Internal ID 변환
+    const learningPlan = await learningPlanRepository.findByPublicId(
+      body.learningPlanId,
+      auth.user.id,
+    );
+
+    if (!learningPlan) {
+      throw AIChatErrors.learningPlanNotFound();
+    }
+
     const conversation = await conversationCommandService.createConversation({
-      learningPlanId: body.learningPlanId,
+      learningPlanId: learningPlan.id,
       userId: auth.user.id,
       title: body.title,
     });
@@ -29,7 +41,7 @@ const createConversation = new OpenAPIHono<{
     return c.json(
       {
         id: conversation.id,
-        learningPlanId: conversation.learningPlanId,
+        learningPlanId: body.learningPlanId, // Public ID 반환
         userId: conversation.userId,
         title: conversation.title,
         createdAt: conversation.createdAt.toISOString(),

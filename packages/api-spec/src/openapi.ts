@@ -5,6 +5,7 @@ import {
 
 import { ErrorResponseSchema } from "./common/schema";
 import { aiRoutes } from "./modules/ai/routes";
+import { aiChatRoutes } from "./modules/ai-chat/routes";
 import { authRoutes } from "./modules/auth/routes";
 import { documentRoutes } from "./modules/documents/routes";
 import { learningPlanRoutes } from "./modules/learning-plan/routes";
@@ -35,6 +36,7 @@ const ensureInitialized = () => {
     ...progressRoutes,
     ...aiRoutes,
     ...learningPlanRoutes,
+    ...aiChatRoutes,
   ];
 
   routes.forEach((route) => {
@@ -85,6 +87,11 @@ export const generateOpenApiDocument = () => {
         name: "ai",
         description:
           "AI 모델을 활용해 LearningPlan, LearningTask에 필요한 콘텐츠를 생성하거나 갱신합니다.",
+      },
+      {
+        name: "ai-chat",
+        description:
+          "AI 튜터와의 대화를 통해 학습 계획을 관리하고 실시간 피드백을 받습니다.",
       },
       {
         name: "documents",
