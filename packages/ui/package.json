@@ -33,7 +33,8 @@
     "./text-field": "./src/text-field.tsx",
     "./toast": "./src/toast.tsx",
     "./tooltip": "./src/tooltip.tsx",
-    "./icon": "./src/icon.tsx"
+    "./icon": "./src/icon.tsx",
+    "./ai": "./src/ai/index.ts"
   },
   "files": [
     "dist"
