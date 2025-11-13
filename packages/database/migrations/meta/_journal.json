@@ -8,6 +8,13 @@
       "when": 1761737425356,
       "tag": "0000_conscious_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763016230506,
+      "tag": "0001_fluffy_nova",
+      "breakpoints": true
     }
   ]
 }
