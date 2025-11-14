@@ -8,7 +8,7 @@ import { learningTaskQueryService } from "../../learning-plan/services/learning-
 /**
  * Factory for creating a learning task tool
  */
-export const createCreateTaskTool = (userId: string) =>
+export const createCreateTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description:
       "학습 태스크를 생성합니다. 모듈 내에 구체적인 학습 활동이나 과제를 추가할 때 사용합니다.",
@@ -37,6 +37,7 @@ export const createCreateTaskTool = (userId: string) =>
         log.info("Task created via AI tool", {
           taskId: result.id,
           moduleId,
+          learningPlanId,
           userId,
         });
 
@@ -48,6 +49,7 @@ export const createCreateTaskTool = (userId: string) =>
         log.error("Failed to create task via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           moduleId,
+          learningPlanId,
           userId,
         });
         return {
@@ -61,7 +63,7 @@ export const createCreateTaskTool = (userId: string) =>
 /**
  * Factory for updating a learning task tool
  */
-export const createUpdateTaskTool = (userId: string) =>
+export const createUpdateTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description:
       "학습 태스크를 수정합니다. 제목, 설명, 완료 상태, 마감일 등을 변경할 수 있습니다.",
@@ -97,6 +99,7 @@ export const createUpdateTaskTool = (userId: string) =>
 
         log.info("Task updated via AI tool", {
           taskId,
+          learningPlanId,
           userId,
         });
 
@@ -108,6 +111,7 @@ export const createUpdateTaskTool = (userId: string) =>
         log.error("Failed to update task via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           taskId,
+          learningPlanId,
           userId,
         });
         return {
@@ -121,7 +125,7 @@ export const createUpdateTaskTool = (userId: string) =>
 /**
  * Factory for deleting a learning task tool
  */
-export const createDeleteTaskTool = (userId: string) =>
+export const createDeleteTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "학습 태스크를 삭제합니다.",
     inputSchema: z.object({
@@ -136,6 +140,7 @@ export const createDeleteTaskTool = (userId: string) =>
 
         log.info("Task deleted via AI tool", {
           taskId,
+          learningPlanId,
           userId,
         });
 
@@ -147,6 +152,7 @@ export const createDeleteTaskTool = (userId: string) =>
         log.error("Failed to delete task via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           taskId,
+          learningPlanId,
           userId,
         });
         return {
@@ -160,7 +166,10 @@ export const createDeleteTaskTool = (userId: string) =>
 /**
  * Factory for marking multiple tasks as completed tool
  */
-export const createCompleteTasksTool = (userId: string) =>
+export const createCompleteTasksTool = (
+  userId: string,
+  learningPlanId: string,
+) =>
   tool({
     description: "여러 태스크를 한 번에 완료 처리합니다.",
     inputSchema: z.object({
@@ -181,6 +190,7 @@ export const createCompleteTasksTool = (userId: string) =>
               log.error("Failed to complete task", {
                 error: error instanceof Error ? error.message : "Unknown error",
                 taskId,
+                learningPlanId,
                 userId,
               });
               return null;
@@ -193,6 +203,7 @@ export const createCompleteTasksTool = (userId: string) =>
         log.info("Tasks completed via AI tool", {
           totalTasks: taskIds.length,
           successCount,
+          learningPlanId,
           userId,
         });
 
@@ -208,6 +219,7 @@ export const createCompleteTasksTool = (userId: string) =>
         log.error("Failed to complete tasks via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           taskIds,
+          learningPlanId,
           userId,
         });
         return {
@@ -221,16 +233,13 @@ export const createCompleteTasksTool = (userId: string) =>
 /**
  * Factory for listing tasks in a module tool
  */
-export const createListTasksTool = (userId: string) =>
+export const createListTasksTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "특정 모듈의 모든 태스크 목록을 조회합니다.",
     inputSchema: z.object({
       moduleId: z.string().describe("모듈 Public ID"),
-      learningPlanId: z
-        .string()
-        .describe("학습 계획의 Public ID (ownership verification)"),
     }),
-    execute: async ({ moduleId, learningPlanId }) => {
+    execute: async ({ moduleId }) => {
       try {
         const tasks = await learningTaskQueryService.listTasksByModule(
           learningPlanId,
@@ -240,6 +249,7 @@ export const createListTasksTool = (userId: string) =>
 
         log.info("Tasks listed via AI tool", {
           moduleId,
+          learningPlanId,
           userId,
           count: tasks.length,
         });
@@ -252,6 +262,7 @@ export const createListTasksTool = (userId: string) =>
         log.error("Failed to list tasks via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           moduleId,
+          learningPlanId,
           userId,
         });
         return {
@@ -265,14 +276,14 @@ export const createListTasksTool = (userId: string) =>
 /**
  * Factory for bulk updating learning tasks tool
  */
-export const createBulkUpdateTasksTool = (userId: string) =>
+export const createBulkUpdateTasksTool = (
+  userId: string,
+  learningPlanId: string,
+) =>
   tool({
     description:
       "여러 학습 태스크를 한 번에 수정합니다. 마감일 일괄 설정, 완료 상태 변경 등 대량 작업에 사용합니다. 모든 태스크에 같은 값을 적용하거나, 각 태스크마다 다른 값을 적용할 수 있습니다.",
     inputSchema: z.object({
-      learningPlanId: z
-        .string()
-        .describe("학습 계획의 Public ID (ownership verification)"),
       taskIds: z
         .array(z.string())
         .describe("수정할 태스크 Public ID 배열 (최대 100개)"),
@@ -313,12 +324,7 @@ export const createBulkUpdateTasksTool = (userId: string) =>
         .optional()
         .describe("각 태스크별로 다르게 적용할 값들 (예: 순차적 마감일 설정)"),
     }),
-    execute: async ({
-      learningPlanId,
-      taskIds,
-      updates,
-      individualUpdates,
-    }) => {
+    execute: async ({ taskIds, updates, individualUpdates }) => {
       try {
         // Validate input
         if (!updates && !individualUpdates) {

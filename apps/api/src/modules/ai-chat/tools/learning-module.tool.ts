@@ -8,21 +8,21 @@ import { learningModuleQueryService } from "../../learning-plan/services/learnin
 /**
  * Factory for creating a learning module tool
  */
-export const createCreateModuleTool = (userId: string) =>
+export const createCreateModuleTool = (
+  userId: string,
+  learningPlanId: string,
+) =>
   tool({
     description:
       "학습 모듈을 생성합니다. 학습 계획에 새로운 주제나 단원을 추가할 때 사용합니다.",
     inputSchema: z.object({
-      learningPlanId: z
-        .string()
-        .describe("학습 계획의 Public ID (예: 'abc123')"),
       title: z.string().describe("모듈 제목 (예: 'React Hooks 기초')"),
       description: z
         .string()
         .optional()
         .describe("모듈 설명 (예: 'useState, useEffect 학습')"),
     }),
-    execute: async ({ learningPlanId, title, description }) => {
+    execute: async ({ title, description }) => {
       try {
         const result = await learningModuleCommandService.createModule({
           userId,
@@ -58,7 +58,10 @@ export const createCreateModuleTool = (userId: string) =>
 /**
  * Factory for updating a learning module tool
  */
-export const createUpdateModuleTool = (userId: string) =>
+export const createUpdateModuleTool = (
+  userId: string,
+  learningPlanId: string,
+) =>
   tool({
     description: "학습 모듈의 제목이나 설명을 수정합니다.",
     inputSchema: z.object({
@@ -77,6 +80,7 @@ export const createUpdateModuleTool = (userId: string) =>
 
         log.info("Module updated via AI tool", {
           moduleId,
+          learningPlanId,
           userId,
         });
 
@@ -88,6 +92,7 @@ export const createUpdateModuleTool = (userId: string) =>
         log.error("Failed to update module via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           moduleId,
+          learningPlanId,
           userId,
         });
         return {
@@ -101,7 +106,10 @@ export const createUpdateModuleTool = (userId: string) =>
 /**
  * Factory for deleting a learning module tool
  */
-export const createDeleteModuleTool = (userId: string) =>
+export const createDeleteModuleTool = (
+  userId: string,
+  learningPlanId: string,
+) =>
   tool({
     description:
       "학습 모듈을 삭제합니다. 모듈에 속한 모든 태스크도 함께 삭제됩니다.",
@@ -117,6 +125,7 @@ export const createDeleteModuleTool = (userId: string) =>
 
         log.info("Module deleted via AI tool", {
           moduleId,
+          learningPlanId,
           userId,
         });
 
@@ -128,6 +137,7 @@ export const createDeleteModuleTool = (userId: string) =>
         log.error("Failed to delete module via AI tool", {
           error: error instanceof Error ? error.message : "Unknown error",
           moduleId,
+          learningPlanId,
           userId,
         });
         return {
@@ -141,13 +151,11 @@ export const createDeleteModuleTool = (userId: string) =>
 /**
  * Factory for listing learning modules tool
  */
-export const createListModulesTool = (userId: string) =>
+export const createListModulesTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "학습 계획의 모든 모듈 목록을 조회합니다.",
-    inputSchema: z.object({
-      learningPlanId: z.string().describe("학습 계획의 Public ID"),
-    }),
-    execute: async ({ learningPlanId }) => {
+    inputSchema: z.object({}),
+    execute: async () => {
       try {
         const modules = await learningModuleQueryService.listModulesByPlan(
           learningPlanId,
