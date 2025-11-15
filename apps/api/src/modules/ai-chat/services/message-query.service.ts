@@ -128,31 +128,6 @@ export class MessageQueryService {
 
     return messages;
   }
-
-  /**
-   * Format messages for AI SDK
-   */
-  formatMessagesForAI(messages: Array<AIMessage>): Array<{
-    role: "user" | "assistant" | "tool";
-    content: string;
-    toolInvocations?: Array<StoredToolInvocation>;
-  }> {
-    return messages.map((msg) => {
-      const base = {
-        role: msg.role as "user" | "assistant" | "tool",
-        content: msg.content,
-      };
-
-      if (msg.toolInvocations) {
-        return {
-          ...base,
-          toolInvocations: msg.toolInvocations as Array<StoredToolInvocation>,
-        };
-      }
-
-      return base;
-    });
-  }
 }
 
 export const messageQueryService = new MessageQueryService();

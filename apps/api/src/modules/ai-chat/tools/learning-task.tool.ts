@@ -1,5 +1,18 @@
+import {
+  bulkUpdateTasksInputSchema,
+  bulkUpdateTasksOutputSchema,
+  completeTasksInputSchema,
+  completeTasksOutputSchema,
+  createTaskInputSchema,
+  createTaskOutputSchema,
+  deleteTaskInputSchema,
+  deleteTaskOutputSchema,
+  listTasksInputSchema,
+  listTasksOutputSchema,
+  updateTaskInputSchema,
+  updateTaskOutputSchema,
+} from "@repo/ai-types";
 import { tool } from "ai";
-import { z } from "zod";
 
 import { log } from "../../../lib/logger";
 import { learningTaskCommandService } from "../../learning-plan/services/learning-task.command.service";
@@ -12,18 +25,8 @@ export const createCreateTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description:
       "학습 태스크를 생성합니다. 모듈 내에 구체적인 학습 활동이나 과제를 추가할 때 사용합니다.",
-    inputSchema: z.object({
-      moduleId: z.string().describe("모듈 Public ID"),
-      title: z.string().describe("태스크 제목 (예: 'useState 공식 문서 읽기')"),
-      description: z
-        .string()
-        .optional()
-        .describe("태스크 설명 (예: '기본 사용법과 주의사항 파악')"),
-      dueDate: z
-        .string()
-        .optional()
-        .describe("마감일 (ISO 8601 형식, 예: '2025-11-20T09:00:00Z')"),
-    }),
+    inputSchema: createTaskInputSchema,
+    outputSchema: createTaskOutputSchema,
     execute: async ({ moduleId, title, description, dueDate }) => {
       try {
         const result = await learningTaskCommandService.createTask({
@@ -67,17 +70,8 @@ export const createUpdateTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description:
       "학습 태스크를 수정합니다. 제목, 설명, 완료 상태, 마감일 등을 변경할 수 있습니다.",
-    inputSchema: z.object({
-      taskId: z.string().describe("태스크 Public ID"),
-      title: z.string().optional().describe("새 제목"),
-      description: z.string().optional().describe("새 설명"),
-      isCompleted: z.boolean().optional().describe("완료 여부"),
-      dueDate: z
-        .string()
-        .optional()
-        .describe("마감일 (ISO 8601 형식, 예: '2025-11-20T09:00:00Z')"),
-      memo: z.string().optional().describe("메모"),
-    }),
+    inputSchema: updateTaskInputSchema,
+    outputSchema: updateTaskOutputSchema,
     execute: async ({
       taskId,
       title,
@@ -128,9 +122,8 @@ export const createUpdateTaskTool = (userId: string, learningPlanId: string) =>
 export const createDeleteTaskTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "학습 태스크를 삭제합니다.",
-    inputSchema: z.object({
-      taskId: z.string().describe("삭제할 태스크의 Public ID"),
-    }),
+    inputSchema: deleteTaskInputSchema,
+    outputSchema: deleteTaskOutputSchema,
     execute: async ({ taskId }) => {
       try {
         const result = await learningTaskCommandService.deleteTask({
@@ -172,9 +165,8 @@ export const createCompleteTasksTool = (
 ) =>
   tool({
     description: "여러 태스크를 한 번에 완료 처리합니다.",
-    inputSchema: z.object({
-      taskIds: z.array(z.string()).describe("완료 처리할 태스크 ID 배열"),
-    }),
+    inputSchema: completeTasksInputSchema,
+    outputSchema: completeTasksOutputSchema,
     execute: async ({ taskIds }) => {
       try {
         // Update each task to mark as completed
@@ -236,9 +228,8 @@ export const createCompleteTasksTool = (
 export const createListTasksTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "특정 모듈의 모든 태스크 목록을 조회합니다.",
-    inputSchema: z.object({
-      moduleId: z.string().describe("모듈 Public ID"),
-    }),
+    inputSchema: listTasksInputSchema,
+    outputSchema: listTasksOutputSchema,
     execute: async ({ moduleId }) => {
       try {
         const tasks = await learningTaskQueryService.listTasksByModule(
@@ -283,47 +274,8 @@ export const createBulkUpdateTasksTool = (
   tool({
     description:
       "여러 학습 태스크를 한 번에 수정합니다. 마감일 일괄 설정, 완료 상태 변경 등 대량 작업에 사용합니다. 모든 태스크에 같은 값을 적용하거나, 각 태스크마다 다른 값을 적용할 수 있습니다.",
-    inputSchema: z.object({
-      taskIds: z
-        .array(z.string())
-        .describe("수정할 태스크 Public ID 배열 (최대 100개)"),
-      updates: z
-        .object({
-          title: z.string().optional().describe("모든 태스크에 적용할 새 제목"),
-          description: z
-            .string()
-            .optional()
-            .describe("모든 태스크에 적용할 새 설명"),
-          isCompleted: z
-            .boolean()
-            .optional()
-            .describe("모든 태스크에 적용할 완료 여부"),
-          dueDate: z
-            .string()
-            .optional()
-            .describe(
-              "모든 태스크에 적용할 마감일 (ISO 8601 형식, 예: '2025-11-20T09:00:00Z')",
-            ),
-          memo: z.string().optional().describe("모든 태스크에 적용할 메모"),
-        })
-        .optional()
-        .describe("모든 태스크에 동일하게 적용할 값들"),
-      individualUpdates: z
-        .array(
-          z.object({
-            taskId: z.string().describe("태스크 Public ID"),
-            updates: z.object({
-              title: z.string().optional().describe("새 제목"),
-              description: z.string().optional().describe("새 설명"),
-              isCompleted: z.boolean().optional().describe("완료 여부"),
-              dueDate: z.string().optional().describe("마감일 (ISO 8601 형식)"),
-              memo: z.string().optional().describe("메모"),
-            }),
-          }),
-        )
-        .optional()
-        .describe("각 태스크별로 다르게 적용할 값들 (예: 순차적 마감일 설정)"),
-    }),
+    inputSchema: bulkUpdateTasksInputSchema,
+    outputSchema: bulkUpdateTasksOutputSchema,
     execute: async ({ taskIds, updates, individualUpdates }) => {
       try {
         // Validate input

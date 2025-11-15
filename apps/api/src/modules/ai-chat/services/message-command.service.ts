@@ -4,19 +4,19 @@ import { log } from "../../../lib/logger";
 import { conversationRepository } from "../repositories/conversation.repository";
 import { messageRepository } from "../repositories/message.repository";
 
-import type { AIMessage } from "@repo/database/types";
+import type { AIMessage, NewAIMessage } from "@repo/database/types";
 import type { DatabaseTransaction } from "../../../lib/transaction.helper";
-import type { StoredToolInvocation } from "../types";
 
 /**
  * Input for saving a single message
  */
 export interface SaveMessageInput {
-  conversationId: string;
-  role: "user" | "assistant" | "tool";
-  content: string;
-  toolInvocations?: Array<StoredToolInvocation>;
   userId: string;
+  conversationId: string;
+  role: "user" | "assistant" | "system";
+  parts: unknown;
+  attachments?: unknown;
+  createdAt?: Date;
 }
 
 /**
@@ -25,9 +25,11 @@ export interface SaveMessageInput {
 export interface SaveMessagesInput {
   conversationId: string;
   messages: Array<{
-    role: "user" | "assistant" | "tool";
-    content: string;
-    toolInvocations?: Array<StoredToolInvocation>;
+    id: string;
+    role: "user" | "assistant" | "system";
+    parts: unknown;
+    attachments?: unknown;
+    createdAt?: Date;
   }>;
   userId: string;
 }
@@ -43,19 +45,17 @@ export class MessageCommandService {
     input: SaveMessageInput,
     tx?: DatabaseTransaction,
   ): Promise<AIMessage> {
-    const { conversationId, role, content, toolInvocations, userId } = input;
+    const { conversationId, role, parts, attachments, createdAt } = input;
 
     // Verify user owns the conversation
-    const conversation = await conversationRepository.findByIdAndUserId(
+    const conversation = await conversationRepository.findById(
       conversationId,
-      userId,
       tx,
     );
 
     if (!conversation) {
-      log.warn("Conversation not found or unauthorized", {
+      log.warn("Conversation not found", {
         conversationId,
-        userId,
       });
       throw new Error("Conversation not found");
     }
@@ -68,9 +68,9 @@ export class MessageCommandService {
         id: messageId,
         conversationId,
         role,
-        content,
-        toolInvocations: toolInvocations ?? null,
-        createdAt: new Date(),
+        parts,
+        attachments,
+        createdAt,
       },
       tx,
     );
@@ -108,13 +108,13 @@ export class MessageCommandService {
       throw new Error("Conversation not found");
     }
 
-    const messagesToCreate = messages.map((msg) => ({
+    const messagesToCreate: Array<NewAIMessage> = messages.map((msg) => ({
       id: `msg_${nanoid(16)}`,
       conversationId,
       role: msg.role,
-      content: msg.content,
-      toolInvocations: msg.toolInvocations ?? null,
-      createdAt: new Date(),
+      parts: msg.parts,
+      attachments: msg.attachments,
+      createdAt: msg.createdAt || new Date(),
     }));
 
     const savedMessages = await messageRepository.createMany(

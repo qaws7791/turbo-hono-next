@@ -6,7 +6,6 @@ import {
   CreateConversationRequestSchema,
   ErrorResponseSchema,
   MessageListResponseSchema,
-  SendMessageRequestSchema,
 } from "./schema";
 
 /**
@@ -27,7 +26,7 @@ export const streamMessageRoute = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: SendMessageRequestSchema,
+          schema: z.looseObject({}),
         },
       },
     },

@@ -1,5 +1,14 @@
+import {
+  createModuleInputSchema,
+  createModuleOutputSchema,
+  deleteModuleInputSchema,
+  deleteModuleOutputSchema,
+  listModulesInputSchema,
+  listModulesOutputSchema,
+  updateModuleInputSchema,
+  updateModuleOutputSchema,
+} from "@repo/ai-types";
 import { tool } from "ai";
-import { z } from "zod";
 
 import { log } from "../../../lib/logger";
 import { learningModuleCommandService } from "../../learning-plan/services/learning-module.command.service";
@@ -15,13 +24,8 @@ export const createCreateModuleTool = (
   tool({
     description:
       "학습 모듈을 생성합니다. 학습 계획에 새로운 주제나 단원을 추가할 때 사용합니다.",
-    inputSchema: z.object({
-      title: z.string().describe("모듈 제목 (예: 'React Hooks 기초')"),
-      description: z
-        .string()
-        .optional()
-        .describe("모듈 설명 (예: 'useState, useEffect 학습')"),
-    }),
+    inputSchema: createModuleInputSchema,
+    outputSchema: createModuleOutputSchema,
     execute: async ({ title, description }) => {
       try {
         const result = await learningModuleCommandService.createModule({
@@ -64,11 +68,8 @@ export const createUpdateModuleTool = (
 ) =>
   tool({
     description: "학습 모듈의 제목이나 설명을 수정합니다.",
-    inputSchema: z.object({
-      moduleId: z.string().describe("모듈 Public ID"),
-      title: z.string().optional().describe("새 제목"),
-      description: z.string().optional().describe("새 설명"),
-    }),
+    inputSchema: updateModuleInputSchema,
+    outputSchema: updateModuleOutputSchema,
     execute: async ({ moduleId, title, description }) => {
       try {
         const result = await learningModuleCommandService.updateModule({
@@ -113,9 +114,8 @@ export const createDeleteModuleTool = (
   tool({
     description:
       "학습 모듈을 삭제합니다. 모듈에 속한 모든 태스크도 함께 삭제됩니다.",
-    inputSchema: z.object({
-      moduleId: z.string().describe("삭제할 모듈의 Public ID"),
-    }),
+    inputSchema: deleteModuleInputSchema,
+    outputSchema: deleteModuleOutputSchema,
     execute: async ({ moduleId }) => {
       try {
         const result = await learningModuleCommandService.deleteModule({
@@ -154,7 +154,8 @@ export const createDeleteModuleTool = (
 export const createListModulesTool = (userId: string, learningPlanId: string) =>
   tool({
     description: "학습 계획의 모든 모듈 목록을 조회합니다.",
-    inputSchema: z.object({}),
+    inputSchema: listModulesInputSchema,
+    outputSchema: listModulesOutputSchema,
     execute: async () => {
       try {
         const modules = await learningModuleQueryService.listModulesByPlan(

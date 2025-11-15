@@ -1,6 +1,14 @@
+import { randomUUID } from "crypto";
+
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { streamMessageRoute } from "@repo/api-spec";
-import { stepCountIs, streamText } from "ai";
+import {
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  stepCountIs,
+  streamText,
+} from "ai";
 import status from "http-status";
 
 import { geminiModel } from "../../../external/ai/provider";
@@ -10,7 +18,6 @@ import { learningPlanRepository } from "../../learning-plan/repositories/learnin
 import { learningModuleQueryService } from "../../learning-plan/services/learning-module.query.service";
 import { learningPlanQueryService } from "../../learning-plan/services/learning-plan.query.service";
 import { AIChatErrors } from "../errors";
-import { conversationCommandService } from "../services/conversation-command.service";
 import { conversationQueryService } from "../services/conversation-query.service";
 import { messageCommandService } from "../services/message-command.service";
 import { messageQueryService } from "../services/message-query.service";
@@ -34,17 +41,10 @@ import {
   createGetProgressTool,
 } from "../tools/query-info.tool";
 
-import type { StreamTextOnFinishCallback, ToolSet } from "ai";
+import type { AppUIMessage } from "@repo/ai-types";
+import type { AIMessage } from "@repo/database";
 import type { AuthContext } from "../../../middleware/auth";
 import type { LearningPlanDetailResponse } from "../../learning-plan/services/learning-plan.query.service";
-import type { StoredToolInvocation } from "../types";
-
-type ConversationEntity = Awaited<
-  ReturnType<typeof conversationQueryService.getConversation>
->;
-type FormattedMessage = ReturnType<
-  typeof messageQueryService.formatMessagesForAI
->[number];
 
 const streamMessage = new OpenAPIHono<{
   Variables: {
@@ -58,67 +58,108 @@ const streamMessage = new OpenAPIHono<{
   async (c) => {
     const auth = c.get("auth");
     const body = c.req.valid("json");
-    const { conversationId, message, learningPlanId } = body;
+    const conversationId = body.conversationId as string;
+    const messages = body.messages as Array<AppUIMessage>;
+
     const userId = auth.user.id;
     log.info("streamMessage", { auth, body });
 
-    if (!conversationId && !learningPlanId) {
+    if (!conversationId) {
       return c.json(
-        { error: "learningPlanId is required for new conversations" },
+        { error: "conversationId is required for new conversations" },
         status.BAD_REQUEST,
       );
     }
 
     try {
-      const conversation = await ensureConversation({
+      // Get conversation
+      const conversation = await conversationQueryService.getConversation(
         conversationId,
-        learningPlanId,
-        message,
         userId,
-      });
+      );
 
+      // Get learning plan context
       const planContext = await buildLearningPlanContext(
         conversation.learningPlanId,
         userId,
       );
 
-      const systemPrompt = composeSystemPrompt(planContext);
+      const systemPrompt = composeSystemPrompt(planContext.planContext);
 
       // Get message history (last 20 messages)
-      const messageHistory = await messageQueryService.getLatestMessages(
+      const messagesFromDB = await messageQueryService.getLatestMessages(
         conversation.id,
         userId,
         20,
       );
 
-      const formattedHistory =
-        messageQueryService.formatMessagesForAI(messageHistory);
-
-      // Save user message
-      await messageCommandService.saveMessage({
+      const savedMessages = await messageCommandService.saveMessages({
         conversationId: conversation.id,
-        role: "user",
-        content: message,
         userId,
+        messages: messages.map((msg) => ({
+          id: msg.id,
+          conversationId: conversationId,
+          role: msg.role,
+          parts: msg.parts,
+          attachments: [],
+          createdAt: new Date(),
+        })),
       });
 
-      // Stream the AI response
-      const result = streamText({
-        model: geminiModel,
-        system: systemPrompt,
-        messages: createAiMessages(formattedHistory, message),
-        temperature: 0,
-        tools: createTools(userId, learningPlanId),
-        stopWhen: stepCountIs(10),
-        onFinish: createOnFinishHandler({
-          conversation,
-          message,
-          userId,
-        }),
+      const uiMessages: Array<AppUIMessage> = [
+        ...convertToUIMessages(messagesFromDB),
+        ...savedMessages.map((msg) => ({
+          id: msg.id,
+          role: msg.role as AppUIMessage["role"],
+          parts: msg.parts as AppUIMessage["parts"],
+          attachments: [],
+          createdAt: msg.createdAt,
+        })),
+      ];
+
+      const stream = createUIMessageStream({
+        execute: ({ writer: dataStream }) => {
+          const result = streamText({
+            model: geminiModel,
+            system: systemPrompt,
+            messages: convertToModelMessages(uiMessages),
+            stopWhen: stepCountIs(5),
+            tools: createTools(userId, planContext.learningPlan.id),
+          });
+
+          result.consumeStream();
+
+          dataStream.merge(
+            result.toUIMessageStream({
+              sendReasoning: true,
+            }),
+          );
+        },
+        generateId: randomUUID,
+        onFinish: async ({ messages }) => {
+          await messageCommandService.saveMessages({
+            conversationId: conversation.id,
+            userId,
+            messages: messages.map((currentMessage) => ({
+              id: currentMessage.id,
+              conversationId: conversation.id,
+              role: currentMessage.role,
+              parts: currentMessage.parts,
+              createdAt: new Date(),
+              attachments: [],
+            })),
+          });
+        },
+        onError: () => {
+          return "Oops, an error occurred!";
+        },
       });
 
-      // Return SSE stream
-      return result.toTextStreamResponse();
+      // Return UI Message Stream Response (AI SDK v5 표준)
+      // toUIMessageStreamResponse()는 텍스트, 도구 호출, 메타데이터를 모두 포함
+      return createUIMessageStreamResponse({
+        stream,
+      });
     } catch (error) {
       log.error("Failed to stream message", {
         error: error instanceof Error ? error.message : "Unknown error",
@@ -136,13 +177,6 @@ const streamMessage = new OpenAPIHono<{
     }
   },
 );
-
-interface EnsureConversationParams {
-  conversationId?: string | null;
-  learningPlanId?: string | null;
-  message: string;
-  userId: string;
-}
 
 function createTools(userId: string, learningPlanId: string) {
   return {
@@ -165,39 +199,14 @@ function createTools(userId: string, learningPlanId: string) {
   } as const;
 }
 
-async function ensureConversation(
-  params: EnsureConversationParams,
-): Promise<ConversationEntity> {
-  const { conversationId, learningPlanId, message, userId } = params;
-
-  if (conversationId) {
-    return conversationQueryService.getConversation(conversationId, userId);
-  }
-
-  if (!learningPlanId) {
-    throw new Error("learningPlanId is required");
-  }
-
-  const learningPlan = await learningPlanRepository.findByPublicId(
-    learningPlanId,
-    userId,
-  );
-
-  if (!learningPlan) {
-    throw AIChatErrors.learningPlanNotFound();
-  }
-
-  return conversationCommandService.createConversation({
-    learningPlanId: learningPlan.id,
-    userId,
-    title: message.substring(0, 100),
-  });
-}
-
 async function buildLearningPlanContext(
   learningPlanId: number,
   userId: string,
-): Promise<string> {
+): Promise<{
+  learningPlan: LearningPlanDetailResponse;
+  modules: Array<ModuleSummary>;
+  planContext: string;
+}> {
   const learningPlanData =
     await learningPlanRepository.findById(learningPlanId);
 
@@ -216,7 +225,11 @@ async function buildLearningPlanContext(
     ),
   ]);
 
-  return formatPlanContext(learningPlan, modules);
+  return {
+    learningPlan,
+    modules,
+    planContext: formatPlanContext(learningPlan, modules),
+  };
 }
 
 function composeSystemPrompt(planContext: string): string {
@@ -277,87 +290,12 @@ function formatPlanContext(
 ${moduleDescription}`;
 }
 
-function createAiMessages(
-  formattedHistory: Array<FormattedMessage>,
-  userMessage: string,
-) {
-  const history = formattedHistory
-    .filter((msg) => msg.role !== "tool")
-    .map((msg) => {
-      if (msg.role === "user") {
-        return { role: "user" as const, content: msg.content };
-      }
-
-      return { role: "assistant" as const, content: msg.content };
-    });
-
-  return [
-    ...history,
-    {
-      role: "user" as const,
-      content: userMessage,
-    },
-  ];
-}
-
-interface FinishHandlerParams {
-  conversation: ConversationEntity;
-  message: string;
-  userId: string;
-}
-
-function createOnFinishHandler<TToolSet extends ToolSet>(
-  params: FinishHandlerParams,
-): StreamTextOnFinishCallback<TToolSet> {
-  const { conversation, message, userId } = params;
-
-  return async ({ text, toolCalls, toolResults }) => {
-    await messageCommandService.saveMessage({
-      conversationId: conversation.id,
-      role: "assistant",
-      content: text,
-      userId,
-      toolInvocations: formatToolInvocations(toolCalls, toolResults),
-    });
-
-    await conversationCommandService.updateConversationTitle(
-      conversation.id,
-      userId,
-      conversation.title || message.substring(0, 100),
-    );
-
-    log.info("AI message completed", {
-      conversationId: conversation.id,
-      userId,
-      messageLength: text.length,
-      toolCallsCount: toolCalls?.length ?? 0,
-    });
-  };
-}
-
-function formatToolInvocations(
-  toolCalls?: Array<{
-    toolCallId: string;
-    toolName: string;
-  }>,
-  toolResults?: Array<unknown>,
-): Array<StoredToolInvocation> | undefined {
-  if (!toolCalls || toolCalls.length === 0) {
-    return undefined;
-  }
-
-  return toolCalls.map((call, index) => {
-    const callWithArgs = call as typeof call & {
-      args?: Record<string, unknown>;
-    };
-
-    return {
-      toolCallId: call.toolCallId,
-      toolName: call.toolName,
-      arguments: callWithArgs.args || {},
-      result: toolResults?.[index],
-    };
-  }) as Array<StoredToolInvocation>;
+function convertToUIMessages(messages: Array<AIMessage>): Array<AppUIMessage> {
+  return messages.map((message) => ({
+    id: message.id,
+    role: message.role as "user" | "assistant" | "system",
+    parts: message.parts as AppUIMessage["parts"],
+  }));
 }
 
 export default streamMessage;

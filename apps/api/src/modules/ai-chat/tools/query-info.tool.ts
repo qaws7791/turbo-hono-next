@@ -1,9 +1,18 @@
+import {
+  getModuleDetailsInputSchema,
+  getModuleDetailsOutputSchema,
+  getPlanDetailsInputSchema,
+  getPlanDetailsOutputSchema,
+  getProgressInputSchema,
+  getProgressOutputSchema,
+} from "@repo/ai-types";
 import { tool } from "ai";
-import { z } from "zod";
 
 import { log } from "../../../lib/logger";
 import { learningModuleRepository } from "../../learning-plan/repositories/learning-module.repository";
 import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
+
+import type z from "zod";
 
 /**
  * Factory for getting learning progress tool
@@ -12,7 +21,8 @@ export const createGetProgressTool = (userId: string, learningPlanId: string) =>
   tool({
     description:
       "학습 진도 통계를 조회합니다. 전체 태스크 수, 완료한 태스크 수, 진행률 등을 확인할 수 있습니다.",
-    inputSchema: z.object({}),
+    inputSchema: getProgressInputSchema,
+    outputSchema: getProgressOutputSchema,
     execute: async () => {
       try {
         // Find and verify plan ownership
@@ -76,7 +86,8 @@ export const createGetPlanDetailsTool = (
   tool({
     description:
       "학습 계획의 상세 정보를 조회합니다. 주제, 목표 기간, 주간 학습 시간, 모듈 및 태스크 전체 구조를 확인할 수 있습니다.",
-    inputSchema: z.object({}),
+    inputSchema: getPlanDetailsInputSchema,
+    outputSchema: getPlanDetailsOutputSchema,
     execute: async () => {
       try {
         // Find and verify plan with all modules and tasks
@@ -97,8 +108,7 @@ export const createGetPlanDetailsTool = (
           userId,
           modulesCount: plan.modules.length,
         });
-
-        return {
+        const result: z.infer<typeof getPlanDetailsOutputSchema> = {
           success: true,
           data: {
             id: plan.publicId,
@@ -131,6 +141,7 @@ export const createGetPlanDetailsTool = (
             })),
           },
         };
+        return result;
       } catch (error) {
         log.error("Failed to get plan details", {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -154,9 +165,8 @@ export const createGetModuleDetailsTool = (
 ) =>
   tool({
     description: "특정 모듈의 상세 정보와 포함된 모든 태스크를 조회합니다.",
-    inputSchema: z.object({
-      moduleId: z.string().describe("모듈 Public ID"),
-    }),
+    inputSchema: getModuleDetailsInputSchema,
+    outputSchema: getModuleDetailsOutputSchema,
     execute: async ({ moduleId }) => {
       try {
         // Find module with tasks
