@@ -4,4 +4,4 @@
 
 export * from "./use-conversations";
 export * from "./use-messages";
-export * from "./use-stream-message";
+export * from "./use-ai-chat";
