@@ -71,6 +71,7 @@
     "typescript": "catalog:"
   },
   "dependencies": {
+    "@repo/ai-types": "workspace:*",
     "@tailwindcss/cli": "^4.1.13",
     "lucide-react": "^0.525.0",
     "postcss": "^8.5.6",

@@ -1,12 +1,17 @@
 import { z } from "@hono/zod-openapi";
+import {
+  conversationSchema,
+  storedMessageSchema,
+  storedToolInvocationSchema,
+} from "@repo/ai-types";
 
 import { ErrorResponseSchema } from "../../common/schema";
 
 /**
- * Stored Tool Invocation 스키마
+ * Stored Tool Invocation 스키마 (OpenAPI 메타데이터 추가)
  * Tool call과 result를 결합한 저장 형식
  */
-export const StoredToolInvocationSchema = z.object({
+export const StoredToolInvocationSchema = storedToolInvocationSchema.extend({
   toolCallId: z.string().openapi({
     description: "Tool call 고유 ID",
     examples: ["call_1234567890"],
@@ -30,10 +35,10 @@ export const StoredToolInvocationSchema = z.object({
 });
 
 /**
- * 메시지 스키마
+ * 메시지 스키마 (OpenAPI 메타데이터 추가)
  */
-export const MessageSchema = z
-  .object({
+export const MessageSchema = storedMessageSchema
+  .extend({
     id: z.string().openapi({
       description: "메시지 고유 ID",
       examples: ["msg_1234567890"],
@@ -42,7 +47,7 @@ export const MessageSchema = z
       description: "대화 세션 ID",
       examples: ["conv_1234567890"],
     }),
-    role: z.enum(["user", "assistant", "tool"]).openapi({
+    role: z.enum(["user", "assistant", "tool", "system"]).openapi({
       description: "메시지 역할",
       examples: ["user"],
     }),
@@ -61,10 +66,10 @@ export const MessageSchema = z
   .openapi("Message");
 
 /**
- * 대화 세션 스키마
+ * 대화 세션 스키마 (OpenAPI 메타데이터 추가)
  */
-export const ConversationSchema = z
-  .object({
+export const ConversationSchema = conversationSchema
+  .extend({
     id: z.string().openapi({
       description: "대화 세션 고유 ID",
       examples: ["conv_1234567890"],

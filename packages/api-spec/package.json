@@ -37,6 +37,7 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@hono/zod-openapi": "^1.1.0",
+    "@repo/ai-types": "workspace:*",
     "@repo/database": "workspace:*",
     "drizzle-zod": "^0.8.3",
     "zod": "catalog:"
