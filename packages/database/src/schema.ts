@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  json,
   jsonb,
   pgTable,
   serial,
@@ -304,11 +305,9 @@ export const aiMessage = pgTable(
       .notNull()
       .references(() => aiConversation.id, { onDelete: "cascade" }),
     role: text("role").notNull(), // 'user' | 'assistant' | 'tool'
-    content: text("content").notNull(),
-    toolInvocations: jsonb("tool_invocations"),
-    createdAt: timestamp("created_at")
-      .$defaultFn(() => new Date())
-      .notNull(),
+    parts: json("parts").notNull(),
+    attachments: json("attachments").notNull(),
+    createdAt: timestamp("created_at"),
   },
   (table) => [
     index("ai_message_conversation_id_created_at_idx").on(
