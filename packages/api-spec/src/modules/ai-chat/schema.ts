@@ -1,41 +1,15 @@
 import { z } from "@hono/zod-openapi";
-import {
-  conversationSchema,
-  storedMessageSchema,
-  storedToolInvocationSchema,
-} from "@repo/ai-types";
+import { conversationSchema, storedMessageSchema } from "@repo/ai-types";
 
 import { ErrorResponseSchema } from "../../common/schema";
 
 /**
- * Stored Tool Invocation 스키마 (OpenAPI 메타데이터 추가)
- * Tool call과 result를 결합한 저장 형식
- */
-export const StoredToolInvocationSchema = storedToolInvocationSchema.extend({
-  toolCallId: z.string().openapi({
-    description: "Tool call 고유 ID",
-    examples: ["call_1234567890"],
-  }),
-  toolName: z.string().openapi({
-    description: "호출된 tool 이름",
-    examples: ["getLearningModule"],
-  }),
-  arguments: z.record(z.string(), z.unknown()).openapi({
-    description: "Tool에 전달된 인자",
-  }),
-  result: z.unknown().optional().openapi({
-    description: "Tool 실행 결과",
-  }),
-  providerExecuted: z.boolean().optional().openapi({
-    description: "Provider에 의해 실행되었는지 여부",
-  }),
-  error: z.unknown().optional().openapi({
-    description: "Tool 실행 중 발생한 에러",
-  }),
-});
-
-/**
  * 메시지 스키마 (OpenAPI 메타데이터 추가)
+ *
+ * @remarks
+ * AI SDK v5의 메시지 구조 사용:
+ * - parts: 모든 메시지 내용 (text, tool 호출/결과, file 등)
+ * - attachments: 파일 첨부 (선택적)
  */
 export const MessageSchema = storedMessageSchema
   .extend({
@@ -51,12 +25,23 @@ export const MessageSchema = storedMessageSchema
       description: "메시지 역할",
       examples: ["user"],
     }),
-    content: z.string().openapi({
-      description: "메시지 내용",
-      examples: ["React Hooks 모듈을 추가해줘"],
+    parts: z.array(z.unknown()).openapi({
+      description:
+        "메시지 parts (AI SDK v5 구조): text, tool 호출/결과, file 등 모든 메시지 내용 포함",
+      examples: [
+        [
+          { type: "text", text: "React Hooks 모듈을 추가해줘" },
+          {
+            type: "tool-createModule",
+            toolCallId: "call_123",
+            state: "input-available",
+            input: { title: "React Hooks" },
+          },
+        ],
+      ],
     }),
-    toolInvocations: z.array(StoredToolInvocationSchema).optional().openapi({
-      description: "Tool 호출 정보 (call과 result를 결합한 저장 형식)",
+    attachments: z.array(z.unknown()).optional().openapi({
+      description: "파일 첨부 (AI SDK v5 구조, 선택적)",
     }),
     createdAt: z.string().openapi({
       description: "생성 시간 (ISO 8601)",

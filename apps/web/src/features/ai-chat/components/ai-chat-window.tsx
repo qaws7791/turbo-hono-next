@@ -3,14 +3,146 @@
  */
 
 import { useState } from "react";
+import {
+  BulkUpdateTasksResult,
+  CompleteTasksResult,
+  CreateModuleResult,
+  CreateTaskResult,
+  DeleteModuleResult,
+  DeleteTaskResult,
+  GetModuleDetailsResult,
+  GetPlanDetailsResult,
+  GetProgressResult,
+  ListModulesResult,
+  ListTasksResult,
+  ToolExecutionCard,
+  UpdateModuleResult,
+  UpdateTaskResult,
+  extractToolName,
+  isToolPart,
+} from "@repo/ui/ai";
 
 import { useAIChat } from "../hooks/use-ai-chat";
 
-import type { FormEvent } from "react";
+import type { FormEvent, ReactNode } from "react";
+import type {
+  BulkUpdateTasksOutput,
+  CompleteTasksOutput,
+  CreateModuleOutput,
+  CreateTaskOutput,
+  DeleteModuleOutput,
+  DeleteTaskOutput,
+  GetModuleDetailsOutput,
+  GetPlanDetailsOutput,
+  GetProgressOutput,
+  ListModulesOutput,
+  ListTasksOutput,
+  UpdateModuleOutput,
+  UpdateTaskOutput,
+} from "@repo/ai-types";
+import type { ToolPart } from "@repo/ui/ai";
 
 interface AIChatWindowProps {
   conversationId: string;
   learningPlanId: string;
+}
+
+/**
+ * Tool part 렌더링 헬퍼 함수
+ */
+function renderToolPart(part: ToolPart, partIndex: number): ReactNode {
+  const toolName = extractToolName(part.type);
+
+  // 실행 중 상태 공통 처리
+  if (part.state === "input-streaming" || part.state === "input-available") {
+    return (
+      <ToolExecutionCard
+        key={partIndex}
+        toolName={toolName}
+        state={part.state}
+      >
+        <p className="text-gray-600">실행 중...</p>
+      </ToolExecutionCard>
+    );
+  }
+
+  // 에러 상태 공통 처리
+  if (part.state === "output-error") {
+    return (
+      <ToolExecutionCard
+        key={partIndex}
+        toolName={toolName}
+        state={part.state}
+      >
+        <p className="text-red-700">
+          에러: {part.errorText || "알 수 없는 오류"}
+        </p>
+      </ToolExecutionCard>
+    );
+  }
+
+  // 결과 상태 - Tool별 커스텀 렌더링
+  if (part.state === "output-available" && part.result) {
+    return (
+      <ToolExecutionCard
+        key={partIndex}
+        toolName={toolName}
+        state={part.state}
+      >
+        {renderToolResult(toolName, part.result)}
+      </ToolExecutionCard>
+    );
+  }
+
+  return null;
+}
+
+/**
+ * Tool 결과 렌더링 (Tool 타입별 분기)
+ */
+function renderToolResult(toolName: string, result: unknown): ReactNode {
+  switch (toolName) {
+    case "createModule":
+      return <CreateModuleResult result={result as CreateModuleOutput} />;
+    case "updateModule":
+      return <UpdateModuleResult result={result as UpdateModuleOutput} />;
+    case "deleteModule":
+      return <DeleteModuleResult result={result as DeleteModuleOutput} />;
+    case "listModules":
+      return <ListModulesResult result={result as ListModulesOutput} />;
+
+    case "createTask":
+      return <CreateTaskResult result={result as CreateTaskOutput} />;
+    case "updateTask":
+      return <UpdateTaskResult result={result as UpdateTaskOutput} />;
+    case "deleteTask":
+      return <DeleteTaskResult result={result as DeleteTaskOutput} />;
+    case "completeTasks":
+      return <CompleteTasksResult result={result as CompleteTasksOutput} />;
+    case "listTasks":
+      return <ListTasksResult result={result as ListTasksOutput} />;
+    case "bulkUpdateTasks":
+      return <BulkUpdateTasksResult result={result as BulkUpdateTasksOutput} />;
+
+    case "getProgress":
+      return <GetProgressResult result={result as GetProgressOutput} />;
+    case "getPlanDetails":
+      return <GetPlanDetailsResult result={result as GetPlanDetailsOutput} />;
+    case "getModuleDetails":
+      return (
+        <GetModuleDetailsResult result={result as GetModuleDetailsOutput} />
+      );
+
+    default:
+      return (
+        <div className="text-sm text-gray-600">
+          <p>Tool: {toolName}</p>
+          <pre className="mt-2 text-xs overflow-auto">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </div>
+      );
+  }
 }
 
 /**
@@ -82,39 +214,13 @@ export function AIChatWindow({
                       </div>
                     ) : null;
 
-                  // 동적 도구 처리
-                  case "dynamic-tool":
-                    return (
-                      <div
-                        key={partIndex}
-                        className="flex justify-start"
-                      >
-                        <div className="max-w-[70%] rounded-lg px-4 py-2 bg-gray-50 border border-gray-200">
-                          <p className="text-xs font-semibold text-gray-700 mb-1">
-                            도구: {part.toolName}
-                          </p>
-                          {part.state === "input-streaming" && (
-                            <p className="text-xs text-gray-500">실행 중...</p>
-                          )}
-                          {part.state === "input-available" && (
-                            <p className="text-xs text-gray-500">
-                              입력 준비 완료
-                            </p>
-                          )}
-                          {part.state === "output-available" && (
-                            <p className="text-xs text-gray-600">완료</p>
-                          )}
-                          {part.state === "output-error" && (
-                            <p className="text-xs text-red-600">
-                              에러: {part.errorText}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-
-                  default:
+                  default: {
+                    // Tool parts 처리 (AI SDK v5)
+                    if (isToolPart(part)) {
+                      return renderToolPart(part, partIndex);
+                    }
                     return null;
+                  }
                 }
               })}
             </div>

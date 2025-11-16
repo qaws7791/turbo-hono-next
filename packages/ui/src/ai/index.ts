@@ -8,7 +8,18 @@ export type {
   MessageRole,
   Conversation,
   ToolInvocation,
+  ToolInvocationDisplay,
 } from "./types";
+
+// Utilities
+export { extractTextFromParts, extractToolInvocationsFromParts } from "./types";
+export {
+  isToolPart,
+  extractToolName,
+  isSpecificTool,
+  type ToolPart,
+  type ToolPartState,
+} from "./utils";
 
 // Components
 export * from "./chat-container";
@@ -18,6 +29,8 @@ export * from "./message-list";
 export * from "./message-item";
 export * from "./message-input";
 export { ToolInvocation as ToolInvocationComponent } from "./tool-invocation";
+export * from "./tool-execution-card";
+export * from "./tool-results";
 
 // Hooks
 export * from "./hooks/use-conversations";

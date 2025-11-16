@@ -28,7 +28,7 @@ const userMessage: Message = {
   id: "1",
   conversationId: "conv1",
   role: "user",
-  content: "React Hooks 모듈을 추가해줘",
+  parts: [{ type: "text", text: "React Hooks 모듈을 추가해줘" }],
   createdAt: new Date().toISOString(),
 };
 
@@ -36,8 +36,12 @@ const assistantMessage: Message = {
   id: "2",
   conversationId: "conv1",
   role: "assistant",
-  content:
-    "React Hooks 모듈을 추가했습니다. 이 모듈에서는 useState, useEffect, useContext 등의 핵심 훅들을 학습하게 됩니다.",
+  parts: [
+    {
+      type: "text",
+      text: "React Hooks 모듈을 추가했습니다. 이 모듈에서는 useState, useEffect, useContext 등의 핵심 훅들을 학습하게 됩니다.",
+    },
+  ],
   createdAt: new Date().toISOString(),
 };
 
@@ -45,12 +49,13 @@ const messageWithTool: Message = {
   id: "3",
   conversationId: "conv1",
   role: "assistant",
-  content: "React Hooks 모듈을 생성했습니다.",
-  toolInvocations: [
+  parts: [
+    { type: "text", text: "React Hooks 모듈을 생성했습니다." },
     {
+      type: "tool-createModule",
       toolCallId: "tool1",
-      toolName: "createModule",
-      args: {
+      state: "result",
+      input: {
         learningPlanId: "plan1",
         title: "React Hooks",
         description: "React Hooks 핵심 개념 학습",
@@ -60,7 +65,6 @@ const messageWithTool: Message = {
         moduleId: "module1",
         message: "React Hooks 모듈을 생성했습니다.",
       },
-      state: "result",
     },
   ],
   createdAt: new Date().toISOString(),
@@ -100,7 +104,10 @@ export const LongMessage: Story = {
   args: {
     message: {
       ...assistantMessage,
-      content: `React Hooks는 React 16.8에서 도입된 기능으로, 함수 컴포넌트에서 상태와 생명주기 기능을 사용할 수 있게 해줍니다.
+      parts: [
+        {
+          type: "text",
+          text: `React Hooks는 React 16.8에서 도입된 기능으로, 함수 컴포넌트에서 상태와 생명주기 기능을 사용할 수 있게 해줍니다.
 
 주요 Hooks:
 1. useState - 상태 관리
@@ -112,6 +119,8 @@ export const LongMessage: Story = {
 7. useRef - 참조 저장
 
 이러한 Hooks를 활용하면 클래스 컴포넌트 없이도 강력한 기능을 구현할 수 있습니다.`,
+        },
+      ],
     },
   },
 };
@@ -123,20 +132,21 @@ export const MultipleToolInvocations: Story = {
   args: {
     message: {
       ...messageWithTool,
-      toolInvocations: [
+      parts: [
+        { type: "text", text: "여러 작업을 수행했습니다." },
         {
+          type: "tool-createModule",
           toolCallId: "tool1",
-          toolName: "createModule",
-          args: { title: "React Hooks" },
-          result: { success: true },
           state: "result",
+          input: { title: "React Hooks" },
+          result: { success: true },
         },
         {
+          type: "tool-createTask",
           toolCallId: "tool2",
-          toolName: "createTask",
-          args: { title: "useState 학습" },
-          result: { success: true },
           state: "result",
+          input: { title: "useState 학습" },
+          result: { success: true },
         },
       ],
     },
@@ -150,13 +160,13 @@ export const ToolInProgress: Story = {
   args: {
     message: {
       ...messageWithTool,
-      content: "모듈을 생성하고 있습니다...",
-      toolInvocations: [
+      parts: [
+        { type: "text", text: "모듈을 생성하고 있습니다..." },
         {
+          type: "tool-createModule",
           toolCallId: "tool1",
-          toolName: "createModule",
-          args: { title: "React Hooks" },
           state: "call",
+          input: { title: "React Hooks" },
         },
       ],
     },
@@ -175,7 +185,7 @@ export const ConversationView: Story = {
         message={{
           ...userMessage,
           id: "3",
-          content: "각 훅에 대한 실습 과제도 추가해줘",
+          parts: [{ type: "text", text: "각 훅에 대한 실습 과제도 추가해줘" }],
         }}
       />
       <MessageItem message={messageWithTool} />

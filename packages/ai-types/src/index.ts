@@ -5,13 +5,27 @@
  * 백엔드와 프론트엔드 간 타입 안전성을 보장하기 위한 공통 타입 정의
  */
 
+// Tool Definitions (AI SDK v5 타입 추론 기반)
+export type {
+  AppToolSet,
+  ToolName,
+  ToolInputs,
+  ToolOutputs,
+} from "./tool-definitions";
+export { toolDefinitions } from "./tool-definitions";
+
 // Message types
 export type {
   AppUIMessage,
+  InferredAppTools,
   StoredMessage,
   Message,
   MessageRole,
   Conversation,
+  AppToolPart,
+  AppToolCallInputAvailable,
+  AppToolResultOutputAvailable,
+  AppToolResultOutputError,
 } from "./message";
 export { storedMessageSchema, conversationSchema } from "./message";
 

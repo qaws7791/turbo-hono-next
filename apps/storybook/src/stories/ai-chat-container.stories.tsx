@@ -37,34 +37,39 @@ const sampleMessages: Array<Message> = [
     id: "1",
     conversationId: "conv1",
     role: "user",
-    content: "React를 학습하고 싶어요",
+    parts: [{ type: "text", text: "React를 학습하고 싶어요" }],
     createdAt: new Date(Date.now() - 300000).toISOString(),
   },
   {
     id: "2",
     conversationId: "conv1",
     role: "assistant",
-    content:
-      "React 학습을 시작하시는군요! 기본적인 학습 계획을 세워드리겠습니다.",
+    parts: [
+      {
+        type: "text",
+        text: "React 학습을 시작하시는군요! 기본적인 학습 계획을 세워드리겠습니다.",
+      },
+    ],
     createdAt: new Date(Date.now() - 240000).toISOString(),
   },
   {
     id: "3",
     conversationId: "conv1",
     role: "user",
-    content: "React Hooks 모듈을 추가해줘",
+    parts: [{ type: "text", text: "React Hooks 모듈을 추가해줘" }],
     createdAt: new Date(Date.now() - 180000).toISOString(),
   },
   {
     id: "4",
     conversationId: "conv1",
     role: "assistant",
-    content: "React Hooks 모듈을 추가했습니다.",
-    toolInvocations: [
+    parts: [
+      { type: "text", text: "React Hooks 모듈을 추가했습니다." },
       {
+        type: "tool-createModule",
         toolCallId: "tool1",
-        toolName: "createModule",
-        args: {
+        state: "result",
+        input: {
           learningPlanId: "plan1",
           title: "React Hooks",
           description: "React Hooks 핵심 개념",
@@ -73,7 +78,6 @@ const sampleMessages: Array<Message> = [
           success: true,
           moduleId: "module1",
         },
-        state: "result",
       },
     ],
     createdAt: new Date(Date.now() - 120000).toISOString(),
@@ -133,7 +137,7 @@ export const Streaming: Story = {
         id: "5",
         conversationId: "conv1",
         role: "user",
-        content: "각 훅에 대한 실습 과제도 추가해줘",
+        parts: [{ type: "text", text: "각 훅에 대한 실습 과제도 추가해줘" }],
         createdAt: new Date().toISOString(),
       },
     ],
@@ -152,13 +156,16 @@ export const LongConversation: Story = {
   args: {
     messages: [
       ...sampleMessages,
-      ...Array.from({ length: 5 }, (_, i) => ({
-        id: `${i + 5}`,
-        conversationId: "conv1",
-        role: (i % 2 === 0 ? "user" : "assistant") as const,
-        content: `메시지 ${i + 5}`,
-        createdAt: new Date(Date.now() - (5 - i) * 60000).toISOString(),
-      })),
+      ...Array.from(
+        { length: 5 },
+        (_, i): Message => ({
+          id: `${i + 5}`,
+          conversationId: "conv1",
+          role: i % 2 === 0 ? "user" : "assistant",
+          parts: [{ type: "text", text: `메시지 ${i + 5}` }],
+          createdAt: new Date(Date.now() - (5 - i) * 60000).toISOString(),
+        }),
+      ),
     ],
     isLoading: false,
     isStreaming: false,
@@ -172,6 +179,14 @@ export const LongConversation: Story = {
  * Interactive example
  */
 export const Interactive: Story = {
+  args: {
+    messages: sampleMessages,
+    isLoading: false,
+    isStreaming: false,
+    onSendMessage: () => {},
+    conversationId: "conv1",
+    learningPlanId: "plan1",
+  },
   render: () => {
     const [messages, setMessages] = useState<Array<Message>>(sampleMessages);
     const [isStreaming, setIsStreaming] = useState(false);
@@ -182,7 +197,7 @@ export const Interactive: Story = {
         id: `user-${Date.now()}`,
         conversationId: "conv1",
         role: "user",
-        content,
+        parts: [{ type: "text", text: content }],
         createdAt: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, userMessage]);
@@ -194,7 +209,7 @@ export const Interactive: Story = {
           id: `assistant-${Date.now()}`,
           conversationId: "conv1",
           role: "assistant",
-          content: `응답: ${content}`,
+          parts: [{ type: "text", text: `응답: ${content}` }],
           createdAt: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, assistantMessage]);
@@ -225,35 +240,40 @@ export const WithToolInvocations: Story = {
         id: "1",
         conversationId: "conv1",
         role: "user",
-        content: "React, TypeScript, Next.js 모듈을 모두 추가해줘",
+        parts: [
+          {
+            type: "text",
+            text: "React, TypeScript, Next.js 모듈을 모두 추가해줘",
+          },
+        ],
         createdAt: new Date(Date.now() - 120000).toISOString(),
       },
       {
         id: "2",
         conversationId: "conv1",
         role: "assistant",
-        content: "세 개의 모듈을 모두 추가했습니다.",
-        toolInvocations: [
+        parts: [
+          { type: "text", text: "세 개의 모듈을 모두 추가했습니다." },
           {
+            type: "tool-createModule",
             toolCallId: "tool1",
-            toolName: "createModule",
-            args: { title: "React" },
+            state: "result",
+            input: { title: "React" },
             result: { success: true, moduleId: "m1" },
-            state: "result",
           },
           {
+            type: "tool-createModule",
             toolCallId: "tool2",
-            toolName: "createModule",
-            args: { title: "TypeScript" },
-            result: { success: true, moduleId: "m2" },
             state: "result",
+            input: { title: "TypeScript" },
+            result: { success: true, moduleId: "m2" },
           },
           {
+            type: "tool-createModule",
             toolCallId: "tool3",
-            toolName: "createModule",
-            args: { title: "Next.js" },
-            result: { success: true, moduleId: "m3" },
             state: "result",
+            input: { title: "Next.js" },
+            result: { success: true, moduleId: "m3" },
           },
         ],
         createdAt: new Date(Date.now() - 60000).toISOString(),

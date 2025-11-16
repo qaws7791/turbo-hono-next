@@ -4,7 +4,6 @@ import { messageRepository } from "../repositories/message.repository";
 
 import type { AIMessage } from "@repo/database/types";
 import type { DatabaseTransaction } from "../../../lib/transaction.helper";
-import type { StoredToolInvocation } from "../types";
 
 /**
  * Input for getting messages
@@ -24,8 +23,8 @@ export interface MessageListResponse {
     id: string;
     conversationId: string;
     role: "user" | "assistant" | "tool";
-    content: string;
-    toolInvocations?: Array<StoredToolInvocation>;
+    parts: Array<unknown>;
+    attachments?: Array<unknown>;
     createdAt: string;
   }>;
   totalCount: number;
@@ -74,24 +73,14 @@ export class MessageQueryService {
     );
 
     return {
-      messages: messages.map((msg) => {
-        const base = {
-          id: msg.id,
-          conversationId: msg.conversationId,
-          role: msg.role as "user" | "assistant" | "tool",
-          content: msg.content,
-          createdAt: msg.createdAt.toISOString(),
-        };
-
-        if (msg.toolInvocations) {
-          return {
-            ...base,
-            toolInvocations: msg.toolInvocations as Array<StoredToolInvocation>,
-          };
-        }
-
-        return base;
-      }),
+      messages: messages.map((msg) => ({
+        id: msg.id,
+        conversationId: msg.conversationId,
+        role: msg.role as "user" | "assistant" | "tool",
+        parts: (msg.parts ?? []) as Array<unknown>,
+        attachments: (msg.attachments ?? []) as Array<unknown>,
+        createdAt: msg.createdAt?.toISOString() ?? new Date().toISOString(),
+      })),
       totalCount,
     };
   }

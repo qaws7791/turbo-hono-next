@@ -4317,7 +4317,9 @@ export interface paths {
       };
       requestBody?: {
         content: {
-          "application/json": components["schemas"]["SendMessageRequest"];
+          "application/json": {
+            [key: string]: unknown;
+          };
         };
       };
       responses: {
@@ -4630,23 +4632,6 @@ export interface components {
         message: string;
       };
     };
-    SendMessageRequest: {
-      /**
-       * @description 대화 세션 ID (없으면 새 대화 세션 생성)
-       * @example conv_1234567890
-       */
-      conversationId?: string;
-      /**
-       * @description 학습 계획 Public ID (conversationId가 없을 때 필수)
-       * @example plan_abc123
-       */
-      learningPlanId: string;
-      /**
-       * @description 사용자 메시지
-       * @example React Hooks 모듈을 추가해줘
-       */
-      message: string;
-    };
     Conversation: {
       /**
        * @description 대화 세션 고유 ID
@@ -4704,35 +4689,27 @@ export interface components {
        * @example user
        * @enum {string}
        */
-      role: "user" | "assistant" | "tool";
+      role: "user" | "assistant" | "tool" | "system";
       /**
-       * @description 메시지 내용
-       * @example React Hooks 모듈을 추가해줘
+       * @description 메시지 parts (AI SDK v5 구조): text, tool 호출/결과, file 등 모든 메시지 내용 포함
+       * @example [
+       *       {
+       *         "type": "text",
+       *         "text": "React Hooks 모듈을 추가해줘"
+       *       },
+       *       {
+       *         "type": "tool-createModule",
+       *         "toolCallId": "call_123",
+       *         "state": "input-available",
+       *         "input": {
+       *           "title": "React Hooks"
+       *         }
+       *       }
+       *     ]
        */
-      content: string;
-      /** @description Tool 호출 정보 (call과 result를 결합한 저장 형식) */
-      toolInvocations?: Array<{
-        /**
-         * @description Tool call 고유 ID
-         * @example call_1234567890
-         */
-        toolCallId: string;
-        /**
-         * @description 호출된 tool 이름
-         * @example getLearningModule
-         */
-        toolName: string;
-        /** @description Tool에 전달된 인자 */
-        arguments: {
-          [key: string]: unknown;
-        };
-        /** @description Tool 실행 결과 */
-        result?: unknown;
-        /** @description Provider에 의해 실행되었는지 여부 */
-        providerExecuted?: boolean;
-        /** @description Tool 실행 중 발생한 에러 */
-        error?: unknown;
-      }>;
+      parts: Array<unknown>;
+      /** @description 파일 첨부 (AI SDK v5 구조, 선택적) */
+      attachments?: Array<unknown>;
       /**
        * @description 생성 시간 (ISO 8601)
        * @example 2025-11-13T10:00:00.000Z

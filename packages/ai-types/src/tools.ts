@@ -7,6 +7,10 @@ import { z } from "zod";
 
 /**
  * Stored Tool Invocation 스키마
+ *
+ * @deprecated 레거시 타입. AI SDK v5에서는 parts 배열에 tool이 포함됨.
+ * 하위 호환성을 위해 유지되며, 새 코드에서는 사용하지 마세요.
+ *
  * Tool call과 result를 결합한 저장 형식
  * 데이터베이스 저장 및 API 전송에 사용됨
  */
@@ -21,6 +25,9 @@ export const storedToolInvocationSchema = z.object({
 
 /**
  * Stored Tool Invocation 타입
+ *
+ * @deprecated 레거시 타입. AI SDK v5에서는 parts 배열에 tool이 포함됨.
+ * 하위 호환성을 위해 유지되며, 새 코드에서는 사용하지 마세요.
  */
 export type StoredToolInvocation = z.infer<typeof storedToolInvocationSchema>;
 

@@ -21,25 +21,7 @@ import { AIChatErrors } from "../errors";
 import { conversationQueryService } from "../services/conversation-query.service";
 import { messageCommandService } from "../services/message-command.service";
 import { messageQueryService } from "../services/message-query.service";
-import {
-  createCreateModuleTool,
-  createDeleteModuleTool,
-  createListModulesTool,
-  createUpdateModuleTool,
-} from "../tools/learning-module.tool";
-import {
-  createBulkUpdateTasksTool,
-  createCompleteTasksTool,
-  createCreateTaskTool,
-  createDeleteTaskTool,
-  createListTasksTool,
-  createUpdateTaskTool,
-} from "../tools/learning-task.tool";
-import {
-  createGetModuleDetailsTool,
-  createGetPlanDetailsTool,
-  createGetProgressTool,
-} from "../tools/query-info.tool";
+import { createTools } from "../tools/create-tools";
 
 import type { AppUIMessage } from "@repo/ai-types";
 import type { AIMessage } from "@repo/database";
@@ -177,27 +159,6 @@ const streamMessage = new OpenAPIHono<{
     }
   },
 );
-
-function createTools(userId: string, learningPlanId: string) {
-  return {
-    createModule: createCreateModuleTool(userId, learningPlanId),
-    updateModule: createUpdateModuleTool(userId, learningPlanId),
-    deleteModule: createDeleteModuleTool(userId, learningPlanId),
-    listModules: createListModulesTool(userId, learningPlanId),
-    createTask: createCreateTaskTool(userId, learningPlanId),
-    updateTask: createUpdateTaskTool(userId, learningPlanId),
-    deleteTask: createDeleteTaskTool(userId, learningPlanId),
-    completeTasks: createCompleteTasksTool(userId, learningPlanId),
-    bulkUpdateTasks: createBulkUpdateTasksTool(userId, learningPlanId),
-    listTasks: createListTasksTool(userId, learningPlanId),
-    getProgress: createGetProgressTool(userId, learningPlanId),
-    getPlanDetails: createGetPlanDetailsTool(userId, learningPlanId),
-    getModuleDetails: createGetModuleDetailsTool(
-      userId,
-      String(learningPlanId),
-    ),
-  } as const;
-}
 
 async function buildLearningPlanContext(
   learningPlanId: number,

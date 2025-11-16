@@ -3,6 +3,7 @@
  */
 
 import { ToolInvocation } from "./tool-invocation";
+import { extractTextFromParts, extractToolInvocationsFromParts } from "./utils";
 
 import type { Message } from "./types";
 
@@ -18,6 +19,10 @@ export function MessageItem({ message, className = "" }: MessageItemProps) {
   const isUser = message.role === "user";
   const isAssistant = message.role === "assistant";
 
+  // parts에서 텍스트와 tool invocation 추출
+  const textContent = extractTextFromParts(message.parts);
+  const toolInvocations = extractToolInvocationsFromParts(message.parts);
+
   return (
     <div
       className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4 ${className}`}
@@ -32,12 +37,14 @@ export function MessageItem({ message, className = "" }: MessageItemProps) {
         }`}
       >
         {/* 메시지 내용 */}
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        {textContent && (
+          <div className="whitespace-pre-wrap break-words">{textContent}</div>
+        )}
 
         {/* Tool 호출 정보 */}
-        {message.toolInvocations && message.toolInvocations.length > 0 && (
+        {toolInvocations.length > 0 && (
           <div className="mt-3 space-y-2">
-            {message.toolInvocations.map((invocation) => (
+            {toolInvocations.map((invocation) => (
               <ToolInvocation
                 key={invocation.toolCallId}
                 invocation={invocation}
