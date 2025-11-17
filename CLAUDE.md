@@ -15,7 +15,8 @@ This is a **learning roadmap service** built as a **Turborepo monorepo** using *
 - **`apps/storybook`**: Component development environment for `@repo/ui`
 - **`packages/database`**: Shared Drizzle ORM schema and database client (Neon DB)
 - **`packages/api-spec`**: Single source of truth for API specifications using Zod schemas and Hono OpenAPI routes
-- **`packages/ui`**: Shared React component library
+- **`packages/ui`**: Shared React component library with AI chat components
+- **`packages/ai-types`**: Shared AI SDK v5 type definitions (message, tools, metadata)
 - **`packages/config`**: Shared ESLint, Prettier, TypeScript configurations
 
 ## Key Commands
@@ -30,7 +31,7 @@ pnpm install
 pnpm dev
 
 # Start specific workspace
-pnpm --filter web dev     # Frontend on port 3000
+pnpm --filter web dev     # Frontend on port 4000
 pnpm --filter api dev     # Backend API
 pnpm --filter storybook dev
 
@@ -107,7 +108,11 @@ pnpm deploy:api
 - **Framework**: Hono.js with `@hono/zod-openapi` for type-safe routing
 - **Database**: Neon DB (serverless Postgres) via Drizzle ORM
 - **Authentication**: Cookie-based sessions stored in database
-- **AI Integration**: Vercel AI SDK with Google Gemini for roadmap generation
+- **AI Integration**: Vercel AI SDK v5 with Google Gemini (@ai-sdk/google) for:
+  - Learning plan generation
+  - Learning task notes and quizzes
+  - AI tutor chat with tool calling (learning module/task management)
+  - Streaming responses with structured outputs
 - **File Storage**: AWS S3 (or Cloudflare R2) for document uploads
 - **API Documentation**: Auto-generated via Scalar UI from OpenAPI spec (Korean language)
 - **Logging**: Pino logger with structured logging
@@ -120,29 +125,40 @@ Key directories:
   - `services/`: Business logic separated into command and query services
   - `repositories/`: Data access layer
   - `errors.ts`: Module-specific errors
+  - Key modules: `ai`, `ai-chat`, `auth`, `learning-plan`, `documents`, `progress`
+- `src/modules/ai-chat`: AI tutor chat implementation
+  - `tools/`: AI agent tools for learning plan context (query-info, learning-module, learning-task)
+  - `helpers/`: Message and prompt formatting helpers
+  - Implements CQRS: conversation and message command/query services
 - `src/middleware`: Authentication, error handling, logging
 - `src/database`: Re-exports from `@repo/database`
 - `src/config`: Environment variables and app config
 - `src/lib`: Shared utilities (pagination, authorization, transaction helpers)
 - `src/errors`: Centralized error handling system
-- `src/external`: External service integrations (email, etc.)
+- `src/external`: External service integrations (email, AI providers)
 
 ### Frontend (`apps/web`)
 
 - **Router**: TanStack Router with file-based routing in `src/routes/`
 - **State Management**:
-  - Server state: TanStack Query
+  - Server state: TanStack Query v5 with Query Key Factory pattern
   - Client state: Zustand
   - Form state: React Aria Form components (simple), React Hook Form + Zod (complex)
+  - URL state: nuqs (type-safe query string management)
 - **UI Components**: React Aria Components (accessible by default)
 - **Styling**: Tailwind CSS v4
+- **AI Integration**: @ai-sdk/react for streaming chat UI
+- **API Client**: openapi-fetch for type-safe API calls (auto-generated from OpenAPI spec)
+- **Multi-step Forms**: @use-funnel/browser for funnel-based UI flows
 
 Key directories:
 
 - `src/routes/`: File-based routes
 - `src/features/`: Feature-specific logic and components
+  - Each feature follows: `api/`, `hooks/`, `components/`, `model/` structure
+  - Query Key Factory pattern in `api/query-keys.ts` for cache management
 - `src/components/`: Reusable components
-- `src/api/`: Generated OpenAPI client types
+- `src/api/`: Generated OpenAPI client types and HTTP client
 
 ### Database Schema (`packages/database`)
 
@@ -150,16 +166,79 @@ The database schema is defined in `packages/database/src/schema.ts` using Drizzl
 
 Key tables include:
 
-- **Users & Auth**: `user`, `session`, `oauthAccount`
+- **Users & Auth**: `user`, `session`, `account`, `verification`
 - **Learning Entities**: `learningPlan`, `learningModule`, `learningTask`
-- **AI Features**: `aiNote`, `aiNoteJob`, `aiQuiz`, `aiQuizJob`, `aiQuizSubmission`, `aiChatHistory`
-- **Documents**: `document`, `learningPlanDocument`
+- **AI Features**:
+  - Notes & Quizzes: `aiNote`, `aiQuiz`, `aiQuizResult`
+  - Chat: `aiConversation`, `aiMessage` (with support for tool calls and attachments)
+- **Documents**: `learningPlanDocument`
 
 **Database operations:**
 
 - All table names follow `camelCase` convention
 - Transactions are managed via `runInTransaction()` helper
 - Repository pattern abstracts data access logic
+
+### Shared Packages
+
+#### packages/ui
+
+Shared React component library built with React Aria Components and Tailwind CSS v4.
+
+**Key Features:**
+- **AI Chat Components** (`src/ai/`):
+  - `conversation.tsx`: Chat conversation container with message display
+  - `message.tsx`: Message component with markdown rendering and tool results
+  - `prompt-input.tsx`: Rich text input with attachments and suggestions
+  - `tool-execution-card.tsx`, `tool-invocation.tsx`, `tool-results.tsx`: Tool calling visualization
+  - Hooks: `use-conversations`, `use-messages`, `use-stream-message`
+- **Core UI Components** (30+ components):
+  - Form controls: button, text-field, select, checkbox, switch, radio-group, etc.
+  - Data display: card, badge, tooltip, progress-bar, tabs, etc.
+  - Overlays: dialog, popover, menu, etc.
+  - Layout: disclosure, scroll-area, separator, sidebar
+- **Accessibility**: All components built with React Aria Components for WCAG compliance
+- **Styling**: Tailwind CSS v4 with `tailwind-variants` for component variations
+- **Markdown**: `react-markdown` with syntax highlighting (`rehype-highlight`)
+- **Streaming Support**: `streamdown` for real-time markdown streaming
+
+**Key Dependencies:**
+- `@repo/ai-types`: Shared AI SDK v5 types
+- `react-aria-components`: Accessible component primitives
+- `lucide-react`: Icon library
+- `motion`: Animation library
+- `use-stick-to-bottom`: Auto-scroll for chat interfaces
+
+#### packages/ai-types
+
+Central type definitions for Vercel AI SDK v5, shared across backend and frontend.
+
+**Exports:**
+- `message.ts`: Message types (CoreMessage, CoreAssistantMessage, etc.)
+- `metadata.ts`: Metadata and annotation types
+- `data-parts.ts`: Data stream part types
+- `tools.ts`: Tool definition and execution types (ToolInvocation, ToolResult, etc.)
+
+**Purpose:**
+- Ensures type consistency between `apps/api`, `apps/web`, and `packages/ui`
+- Centralizes AI SDK v5 type definitions for easy updates
+- Supports advanced features: tool calling, streaming, structured outputs
+
+#### packages/api-spec
+
+API specification as the single source of truth using Zod schemas and Hono OpenAPI routes.
+
+**Structure:**
+- `src/modules/*/schema.ts`: Zod validation schemas
+- `src/modules/*/routes.ts`: OpenAPI route definitions with `createRoute`
+- `scripts/generate-doc.ts`: Generates `dist/openapi.json`
+- Frontend types auto-generated via `openapi-typescript`
+
+**Benefits:**
+- Type-safe API contracts between frontend and backend
+- Auto-generated API documentation (Scalar UI)
+- Runtime validation with Zod
+- Version control for API changes
 
 ## Development Guidelines
 
@@ -193,8 +272,11 @@ Key tables include:
 ### State Management Patterns
 
 - **Server data**: Always use TanStack Query (cache, refetch, optimistic updates)
+  - Use Query Key Factory pattern in `features/*/api/query-keys.ts` for consistent cache key management
+  - Example: `learningPlanKeys.detail(planId)` for hierarchical cache invalidation
 - **Client UI state**: Zustand stores (modals, theme, user preferences)
 - **Form validation**: React Hook Form + Zod for complex forms, React Aria Form for simple forms
+- **URL state**: nuqs for type-safe query string parameters
 
 ### Backend Architecture Patterns
 
