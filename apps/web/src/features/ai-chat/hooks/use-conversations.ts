@@ -7,6 +7,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Conversation, UseConversationsResult } from "@repo/ui/ai";
 
 import { api } from "@/api/http-client";
+import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
+import { conversationsQueryOptions } from "@/features/ai-chat/api/queries";
 
 /**
  * 대화 세션 목록 조회 및 관리 훅
@@ -25,22 +27,7 @@ export function useConversations(
     isLoading,
     error,
     refetch: refetchQuery,
-  } = useQuery({
-    queryKey: ["conversations", learningPlanId],
-    queryFn: async () => {
-      const response = await api.aiChat.getConversations(learningPlanId);
-
-      if (response.error) {
-        throw new Error(
-          (response.error as { error: { message: string } }).error.message ||
-            "대화 세션 조회 실패",
-        );
-      }
-
-      return response.data;
-    },
-    enabled: !!learningPlanId,
-  });
+  } = useQuery(conversationsQueryOptions(learningPlanId));
 
   // 대화 세션 생성 mutation
   const createMutation = useMutation({
@@ -59,7 +46,7 @@ export function useConversations(
     onSuccess: () => {
       // 대화 세션 목록 새로고침
       queryClient.invalidateQueries({
-        queryKey: ["conversations", learningPlanId],
+        queryKey: aiChatKeys.conversationsList(learningPlanId),
       });
     },
   });
@@ -79,7 +66,7 @@ export function useConversations(
     onSuccess: () => {
       // 대화 세션 목록 새로고침
       queryClient.invalidateQueries({
-        queryKey: ["conversations", learningPlanId],
+        queryKey: aiChatKeys.conversationsList(learningPlanId),
       });
     },
   });

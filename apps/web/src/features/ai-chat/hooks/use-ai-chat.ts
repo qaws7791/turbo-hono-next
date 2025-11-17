@@ -8,6 +8,9 @@ import { DefaultChatTransport } from "ai";
 
 import type { AppUIMessage } from "@repo/ai-types";
 
+import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
+import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
+
 interface UseAIChatProps {
   conversationId: string;
   learningPlanId: string;
@@ -34,14 +37,14 @@ export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
       // 스트리밍 완료 후 쿼리 무효화
       if (conversationId) {
         queryClient.invalidateQueries({
-          queryKey: ["messages", conversationId],
+          queryKey: aiChatKeys.messagesList(conversationId),
         });
       }
       queryClient.invalidateQueries({
-        queryKey: ["conversations", learningPlanId],
+        queryKey: aiChatKeys.conversationsList(learningPlanId),
       });
       queryClient.invalidateQueries({
-        queryKey: ["learningPlan", learningPlanId],
+        queryKey: learningPlanKeys.detail(learningPlanId),
       });
     },
     onError: (error: Error) => {

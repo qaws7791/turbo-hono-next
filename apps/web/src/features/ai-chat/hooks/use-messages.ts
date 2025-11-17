@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { UseMessagesResult } from "@repo/ui/ai";
 
-import { api } from "@/api/http-client";
+import { messagesQueryOptions } from "@/features/ai-chat/api/queries";
 
 /**
  * 대화 세션의 메시지 목록 조회 훅
@@ -20,26 +20,7 @@ export function useMessages(conversationId: string | null): UseMessagesResult {
     isLoading,
     error,
     refetch: refetchQuery,
-  } = useQuery({
-    queryKey: ["messages", conversationId],
-    queryFn: async () => {
-      if (!conversationId) {
-        return { messages: [], totalCount: 0 };
-      }
-
-      const response = await api.aiChat.getMessages(conversationId);
-
-      if (response.error) {
-        throw new Error(
-          (response.error as { error: { message: string } }).error.message ||
-            "메시지 조회 실패",
-        );
-      }
-
-      return response.data;
-    },
-    enabled: !!conversationId,
-  });
+  } = useQuery(messagesQueryOptions(conversationId));
 
   // refetch 함수 래핑
   const refetch = async () => {
