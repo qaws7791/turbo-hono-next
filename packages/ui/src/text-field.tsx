@@ -1,5 +1,6 @@
 "use client";
 
+import { forwardRef } from "react";
 import {
   Input as AriaInput,
   TextArea as AriaTextArea,
@@ -10,8 +11,8 @@ import {
 import { twMerge } from "tailwind-merge";
 import { tv } from "tailwind-variants";
 
-import { focusRing } from "./utils";
 import { FieldError, Label } from "./form";
+import { focusRing } from "./utils";
 
 import type {
   InputProps as AriaInputProps,
@@ -57,16 +58,21 @@ const textAreaStyles = tv({
   ],
 });
 
-const TextArea = ({ className, ...props }: AriaTextAreaProps) => {
-  return (
-    <AriaTextArea
-      className={composeRenderProps(className, (className, renderProps) =>
-        textAreaStyles({ ...renderProps, className }),
-      )}
-      {...props}
-    />
-  );
-};
+const TextArea = forwardRef<HTMLTextAreaElement, AriaTextAreaProps>(
+  ({ className, ...props }, ref) => {
+    return (
+      <AriaTextArea
+        ref={ref}
+        className={composeRenderProps(className, (className, renderProps) =>
+          textAreaStyles({ ...renderProps, className }),
+        )}
+        {...props}
+      />
+    );
+  },
+);
+
+TextArea.displayName = "TextArea";
 
 interface FormTextFieldProps extends AriaTextFieldProps {
   label?: string;

@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import { useConversations } from "../hooks/use-conversations";
 
-import { AIChatWindow } from "./ai-chat-window";
+import ChatBot from "@/features/ai-chat/components/chatbot";
 
 export interface AIChatSectionProps {
   learningPlanId: string;
@@ -114,10 +114,7 @@ export function AIChatSection({
       {/* 채팅 컨테이너 */}
       <div className="border border-gray-200 rounded-lg flex flex-col h-[600px]">
         {selectedConversationId ? (
-          <AIChatWindow
-            conversationId={selectedConversationId}
-            learningPlanId={learningPlanId}
-          />
+          <ChatBot conversationId={selectedConversationId} />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-500">
             <div className="text-center space-y-4">

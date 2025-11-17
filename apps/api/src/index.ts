@@ -9,7 +9,7 @@ export type { AppType } from "./app";
 serve(
   {
     fetch: app.fetch,
-    port: 3001,
+    port: 3999,
   },
   (info) => {
     log.info(`Server is running on http://localhost:${info.port}/ui`, {

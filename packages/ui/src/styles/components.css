@@ -1,6 +1,7 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 @import "./theme.css";
+@source "../../node_modules/streamdown/dist/index.js";
 
 /* Dark theme variant */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -11,14 +12,16 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
   body {
     @apply bg-background text-foreground;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
+  }
+}
+
+@layer utilities {
+  * {
+    @apply border-border;
   }
 }

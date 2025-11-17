@@ -1,7 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
-import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 
 import { CONFIG } from "./config";
 import { handleError } from "./errors/error-handler";
@@ -10,8 +10,8 @@ import aiApp from "./modules/ai";
 import aiChatApp from "./modules/ai-chat";
 import authApp from "./modules/auth";
 import documentsApp from "./modules/documents";
-import progressApp from "./modules/progress";
 import learningPlanApp from "./modules/learning-plan";
+import progressApp from "./modules/progress";
 
 function createApp() {
   const app = new OpenAPIHono();
@@ -23,7 +23,7 @@ function createApp() {
       origin: [
         CONFIG.BASE_URL,
         "http://localhost:8787",
-        "http://localhost:3000",
+        "http://localhost:4000",
       ],
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
