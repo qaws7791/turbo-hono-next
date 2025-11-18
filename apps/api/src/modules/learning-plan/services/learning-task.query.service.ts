@@ -40,6 +40,22 @@ export interface LearningTaskDetailResponse {
 }
 
 /**
+ * Response type for learning task list item
+ */
+export interface LearningTaskListItemResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  order: number;
+  isCompleted: boolean;
+  completedAt: string | null;
+  dueDate: string | null;
+  memo: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
  * Query service for learning task operations
  * Handles read operations (queries with AI data)
  */
@@ -111,20 +127,7 @@ export class LearningTaskQueryService {
     learningPlanId: string,
     learningModuleId: string,
     userId: string,
-  ): Promise<
-    Array<{
-      id: string;
-      title: string;
-      description: string | null;
-      order: number;
-      isCompleted: boolean;
-      completedAt: string | null;
-      dueDate: string | null;
-      memo: string | null;
-      createdAt: string;
-      updatedAt: string;
-    }>
-  > {
+  ): Promise<Array<LearningTaskListItemResponse>> {
     try {
       // Find and verify plan ownership
       const plan = await learningPlanRepository.findByPublicId(

@@ -13,7 +13,7 @@ type DocumentUploadBody = NonNullable<
 >["content"]["multipart/form-data"];
 
 const client = createClient<paths>({
-  baseUrl: "http://localhost:3999",
+  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3999",
   credentials: "include",
 });
 
@@ -414,7 +414,9 @@ const aiChat = {
     learningPlanId: string;
     message: string;
   }) => {
-    return fetch("http://localhost:3001/chat/stream", {
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:3999";
+    return fetch(`${baseUrl}/chat/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

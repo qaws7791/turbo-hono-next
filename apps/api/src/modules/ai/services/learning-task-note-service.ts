@@ -502,15 +502,13 @@ export async function prepareLearningTaskNoteGeneration(
     documentFiles,
   };
 
-  const recordToReturn =
-    persistedRecord ??
-    ({
-      status: LEARNING_TASK_NOTE_STATUS.processing,
-      markdown: null,
-      requestedAt: requestTimestamp,
-      completedAt: null,
-      errorMessage: null,
-    } as LearningTaskNoteRecord);
+  const recordToReturn: LearningTaskNoteRecord = persistedRecord ?? {
+    status: LEARNING_TASK_NOTE_STATUS.processing,
+    markdown: null,
+    requestedAt: requestTimestamp,
+    completedAt: null,
+    errorMessage: null,
+  };
 
   return {
     started: true,

@@ -190,6 +190,14 @@ function parseStoredQuestions(
   return normalizeQuestions(parsed.data);
 }
 
+function isLearningTaskQuizStatus(
+  value: unknown,
+): value is LearningTaskQuizStatus {
+  return Object.values(LEARNING_TASK_QUIZ_STATUS).includes(
+    value as LearningTaskQuizStatus,
+  );
+}
+
 function mapQuizRow(row: {
   id: number;
   learningTaskId: number;
@@ -201,10 +209,8 @@ function mapQuizRow(row: {
   errorMessage: string | null;
   questions: unknown | null;
 }): LearningTaskQuizRecord {
-  const status = Object.values(LEARNING_TASK_QUIZ_STATUS).includes(
-    (row.status ?? "") as LearningTaskQuizStatus,
-  )
-    ? ((row.status as LearningTaskQuizStatus) ?? LEARNING_TASK_QUIZ_STATUS.idle)
+  const status = isLearningTaskQuizStatus(row.status)
+    ? row.status
     : LEARNING_TASK_QUIZ_STATUS.idle;
 
   return {

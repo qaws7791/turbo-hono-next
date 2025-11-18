@@ -38,10 +38,9 @@ const ChatBot = ({ conversationId }: { conversationId: string }) => {
   const [input, setInput] = useState("");
   const { messages, sendMessage, status, regenerate } = useChat<AppUIMessage>({
     transport: new DefaultChatTransport({
-      api: "http://localhost:3999/chat/stream",
+      api: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3999"}/chat/stream`,
       credentials: "include",
       body: {
-        a: "b",
         conversationId: conversationId ?? undefined,
       },
     }),
