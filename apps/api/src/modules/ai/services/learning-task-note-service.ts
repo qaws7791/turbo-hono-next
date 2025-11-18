@@ -10,6 +10,7 @@ import {
 import { db } from "../../../database/client";
 import { generateLearningTaskNote } from "../../../external/ai/features/learning-task-note/generator";
 import { AIErrors } from "../errors";
+import { log } from "../../../lib/logger";
 
 import type { DocumentFile } from "../../../external/ai/features/learning-task-note/generator";
 import type { LearningTaskNotePromptInput } from "../../../external/ai/features/learning-task-note/prompt";
@@ -444,10 +445,9 @@ export async function prepareLearningTaskNoteGeneration(
     try {
       const response = await fetch(document.storageUrl);
       if (!response.ok) {
-        console.warn(
-          "Failed to fetch learningPlan document for AI note:",
-          response.statusText,
-        );
+        log.warn("Failed to fetch learningPlan document for AI note", {
+          statusText: response.statusText,
+        });
         continue;
       }
 
@@ -458,7 +458,7 @@ export async function prepareLearningTaskNoteGeneration(
         buffer: Buffer.from(arrayBuffer),
       });
     } catch (error) {
-      console.error("Document fetch error during AI note generation:", error);
+      log.error("Document fetch error during AI note generation", error);
     }
   }
 
@@ -574,7 +574,7 @@ export async function runLearningTaskNoteGeneration(
       })
       .where(eq(learningTaskTable.id, job.learningTaskDbId));
   } catch (error) {
-    console.error("Learning-task AI note generation failed:", error);
+    log.error("Learning-task AI note generation failed", error);
 
     const failureTimestamp = new Date();
     const errorMessage = sanitizeErrorMessage(error);

@@ -8,6 +8,7 @@ import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
 import { AIErrors } from "../errors";
 import { saveLearningPlanToDatabase } from "../services/learning-plan-service";
+import { log } from "../../../lib/logger";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -76,10 +77,6 @@ const generateLearningPlanRoute = new OpenAPIHono<{
       });
 
       // Save the generated learningPlan to the database with transaction
-      console.log(
-        "Generated learningPlan:",
-        JSON.stringify(generatedLearningPlan, null, 2),
-      );
       const savedLearningPlan = await saveLearningPlanToDatabase({
         userId: auth.user.id,
         generatedLearningPlan,
@@ -204,7 +201,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
         }
       }
 
-      console.error("AI learningPlan generation error:", error);
+      log.error("AI learningPlan generation error", error);
       throw AIErrors.generationFailed({
         message: "Failed to generate learningPlan due to internal error",
       });

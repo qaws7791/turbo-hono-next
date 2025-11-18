@@ -5,6 +5,7 @@ import status from "http-status";
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { AIError } from "../errors";
+import { log } from "../../../lib/logger";
 import {
   prepareLearningTaskQuizGeneration,
   runLearningTaskQuizGeneration,
@@ -53,7 +54,7 @@ const generateLearningTaskQuiz = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("AI learning-task quiz generation error:", error);
+      log.error("AI learning-task quiz generation error", error);
 
       return c.json(
         {

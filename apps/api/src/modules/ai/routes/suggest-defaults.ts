@@ -7,6 +7,7 @@ import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
 import { AIErrors } from "../errors";
+import { log } from "../../../lib/logger";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -104,7 +105,7 @@ const getPlanRecommendationsRoute = new OpenAPIHono<{
         }
       }
 
-      console.error("AI plan recommendations error:", error);
+      log.error("AI plan recommendations error", error);
       throw AIErrors.generationFailed({
         message:
           "Failed to generate plan recommendations due to internal error",

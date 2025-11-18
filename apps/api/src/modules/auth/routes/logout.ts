@@ -6,6 +6,7 @@ import { logoutRoute } from "@repo/api-spec/modules/auth/routes";
 import { authConfig } from "../../../config/auth";
 import { sessionService } from "../services/session.service";
 import { AuthErrors } from "../errors";
+import { log } from "../../../lib/logger";
 
 const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
   try {
@@ -30,7 +31,7 @@ const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
       status.OK,
     );
   } catch (error) {
-    console.error("Logout error:", error);
+    log.error("Logout error", error);
     throw AuthErrors.forbidden({ message: "Logout failed" });
   }
 });

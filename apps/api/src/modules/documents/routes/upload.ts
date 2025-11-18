@@ -10,6 +10,7 @@ import {
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
 import { documentService } from "../services/document.service";
 import { DocumentErrors } from "../errors";
+import { log } from "../../../lib/logger";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -62,7 +63,7 @@ const upload = new OpenAPIHono<{
       try {
         storageUrl = await uploadToR2(storageKey, buffer, "application/pdf");
       } catch (error) {
-        console.error("R2 upload failed:", error);
+        log.error("R2 upload failed", error);
         throw DocumentErrors.uploadFailed({
           message: "Failed to upload file to storage",
         });
@@ -92,7 +93,7 @@ const upload = new OpenAPIHono<{
       }
 
       // Handle unexpected errors
-      console.error("Document upload error:", error);
+      log.error("Document upload error", error);
       throw DocumentErrors.uploadFailed({
         message: "An unexpected error occurred during upload",
       });

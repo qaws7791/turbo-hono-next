@@ -5,6 +5,7 @@ import { changePasswordRoute } from "@repo/api-spec/modules/auth/routes";
 import { authService } from "../services/auth.service";
 import { AuthErrors } from "../errors";
 import { authMiddleware } from "../../../middleware/auth";
+import { log } from "../../../lib/logger";
 
 import type { ChangePasswordRequest } from "../schema";
 
@@ -43,7 +44,7 @@ const changePassword = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Change password error:", error);
+      log.error("Change password error", error);
       throw AuthErrors.forbidden({
         message: "Internal server error",
       });

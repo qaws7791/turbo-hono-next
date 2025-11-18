@@ -7,6 +7,7 @@ import { AuthErrors } from "../../../auth/errors";
 import { BaseError } from "../../../../errors/base.error";
 import { ErrorCodes } from "../../../../errors/error-codes";
 import { AIErrors } from "../../../ai/errors";
+import { log } from "../../../../lib/logger";
 import {
   serializeQuizRecord,
   submitLearningTaskQuiz,
@@ -69,7 +70,7 @@ const submitLearningTaskQuizHandler = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Submit learning-task quiz error:", error);
+      log.error("Submit learning-task quiz error", error);
 
       return c.json(
         {

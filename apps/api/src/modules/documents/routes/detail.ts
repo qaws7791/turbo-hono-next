@@ -4,6 +4,7 @@ import { documentDetailRoute } from "@repo/api-spec/modules/documents/routes";
 import { authMiddleware } from "../../../middleware/auth";
 import { documentService } from "../services/document.service";
 import { DocumentErrors } from "../errors";
+import { log } from "../../../lib/logger";
 
 import type { AuthContext } from "../../../middleware/auth";
 
@@ -40,7 +41,7 @@ const detail = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Document detail error:", error);
+      log.error("Document detail error", error);
       throw DocumentErrors.storageError({
         message: "An unexpected error occurred",
       });
