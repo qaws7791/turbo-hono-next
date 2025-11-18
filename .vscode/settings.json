@@ -15,6 +15,7 @@
   "tailwindCSS.experimental.configFile": {
     "apps/web/src/styles.css": "apps/web/src/**",
     "packages/ui/src/styles/components.css": "packages/ui/src/**",
+    "apps/storybook/src/styles/globals.css": "apps/storybook/**"
   },
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

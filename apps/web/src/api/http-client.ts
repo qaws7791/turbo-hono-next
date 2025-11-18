@@ -2,6 +2,9 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "./schema";
 
+import { API_BASE_URL } from "@/env";
+
+
 type LearningPlanCreateBody = NonNullable<
   paths["/plans"]["post"]["requestBody"]
 >["content"]["application/json"];
@@ -13,7 +16,7 @@ type DocumentUploadBody = NonNullable<
 >["content"]["multipart/form-data"];
 
 const client = createClient<paths>({
-  baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:3999",
+  baseUrl: API_BASE_URL,
   credentials: "include",
 });
 
@@ -414,9 +417,7 @@ const aiChat = {
     learningPlanId: string;
     message: string;
   }) => {
-    const baseUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:3999";
-    return fetch(`${baseUrl}/chat/stream`, {
+    return fetch(`${API_BASE_URL}/chat/stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

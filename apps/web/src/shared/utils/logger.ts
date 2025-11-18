@@ -1,3 +1,5 @@
+import { isDevelopment } from "@/env";
+
 /**
  * Central logger utility for frontend application
  *
@@ -34,7 +36,7 @@ class Logger {
   };
 
   constructor() {
-    this.isDevelopment = import.meta.env.DEV;
+    this.isDevelopment = isDevelopment;
     // In production, only log warnings and errors
     this.minLevel = this.isDevelopment ? "debug" : "warn";
   }
