@@ -30,6 +30,7 @@ packages/ui/src/
 ### 현재 컴포넌트 목록 (32개)
 
 **폼 관련 (9개)**
+
 - text-field.tsx
 - number-field.tsx
 - search-field.tsx
@@ -41,43 +42,52 @@ packages/ui/src/
 - switch.tsx
 
 **입력 컨테이너 (2개)**
+
 - form.tsx
 - input-group.tsx
 
 **네비게이션 (3개)**
+
 - link.tsx
 - menu.tsx
 - tabs.tsx
 
 **오버레이 (4개)**
+
 - dialog.tsx
 - popover.tsx
 - tooltip.tsx
 - toast.tsx
 
 **날짜 관련 (2개)**
+
 - calendar.tsx
 - date-picker.tsx
 
 **레이아웃 (4개)**
+
 - card.tsx
 - sidebar.tsx
 - scroll-area.tsx
 - separator.tsx
 
 **버튼 (2개)**
+
 - button.tsx
 - button-group.tsx
 
 **피드백 (2개)**
+
 - loading-spinner.tsx
 - progress-bar.tsx
 
 **디스플레이 (2개)**
+
 - badge.tsx
 - icon.tsx
 
 **인터랙션 (2개)**
+
 - disclosure.tsx
 - list-box.tsx
 
@@ -87,9 +97,8 @@ packages/ui/src/
 2. **카테고리 부재**: 관련 컴포넌트를 그룹화할 명확한 체계 없음
 3. **공통 로직 분산**: 스타일, 타입, 유틸리티가 일부만 분리됨
 4. **문서화 부족**: 컴포넌트 사용법 및 API 문서 부재
-5. **테스트 부재**: 단위 테스트 및 통합 테스트 없음
-6. **타입 일관성**: 일부 컴포넌트만 타입 export
-7. **패턴 불일치**: 컴포넌트마다 다른 export 패턴 사용
+5. **타입 일관성**: 일부 컴포넌트만 타입 export
+6. **패턴 불일치**: 컴포넌트마다 다른 export 패턴 사용
 
 ## 리팩토링 목표
 
@@ -100,15 +109,13 @@ packages/ui/src/
 3. **재사용성 향상**: 공통 로직과 스타일을 체계적으로 분리
 4. **타입 안전성**: 모든 컴포넌트의 타입 정의 명확화
 5. **문서화**: JSDoc 및 컴포넌트 API 문서 추가
-6. **테스트 가능성**: 테스트 작성이 쉬운 구조
-7. **하위 호환성 유지**: 기존 코드 영향 최소화
+6. **하위 호환성 유지**: 기존 코드 영향 최소화
 
 ### 성공 지표
 
 - [ ] 컴포넌트 카테고리별 그룹화 완료
 - [ ] 100% 타입 커버리지
 - [ ] 모든 컴포넌트 JSDoc 작성
-- [ ] 핵심 컴포넌트 단위 테스트 작성
 - [ ] Storybook 스토리 완성도 80% 이상
 - [ ] 기존 코드 빌드 에러 0건
 
@@ -243,14 +250,14 @@ components/form/text-field/
 ├── text-field.tsx              # 컴포넌트 구현
 ├── text-field.types.ts         # 타입 정의
 ├── text-field.styles.ts        # 스타일 정의 (선택적)
-├── text-field.test.tsx         # 테스트 (향후)
 └── index.ts                    # exports
 ```
 
 **index.ts 예시:**
+
 ```typescript
-export { TextField } from './text-field';
-export type { TextFieldProps } from './text-field.types';
+export { TextField } from "./text-field";
+export type { TextFieldProps } from "./text-field.types";
 ```
 
 ## 마이그레이션 전략
@@ -273,12 +280,6 @@ mkdir -p packages/ui/src/styles/{tokens,variants}
 - `utils/index.ts`를 확장하여 모든 공통 유틸리티 포함
 - `focus-ring`, `cn` 등 재사용 가능한 유틸리티 분리
 - 공통 타입 정의 정리
-
-#### 1.3 테스트 환경 설정
-
-- Vitest 설정
-- React Testing Library 설정
-- 테스트 유틸리티 작성
 
 ### Phase 2: 컴포넌트 마이그레이션 (3-5일)
 
@@ -305,12 +306,11 @@ mkdir -p packages/ui/src/styles/{tokens,variants}
 - [ ] index.ts 작성
 - [ ] 카테고리 index.ts에 re-export 추가
 - [ ] 기존 파일 유지 (하위 호환성)
-- [ ] 단위 테스트 작성 (선택적)
 ```
 
 **컴포넌트 템플릿:**
 
-```typescript
+````typescript
 // text-field.tsx
 "use client";
 
@@ -340,7 +340,7 @@ import type { VariantProps } from "tailwind-variants";
 export interface TextFieldProps extends AriaTextFieldProps {
   // 추가 props
 }
-```
+````
 
 ### Phase 3: package.json 업데이트 (1일)
 
@@ -380,7 +380,7 @@ export interface TextFieldProps extends AriaTextFieldProps {
 
 모든 공개 컴포넌트 및 함수에 JSDoc 추가:
 
-```typescript
+````typescript
 /**
  * 버튼 컴포넌트
  *
@@ -404,7 +404,7 @@ export interface TextFieldProps extends AriaTextFieldProps {
  * </Button>
  * ```
  */
-```
+````
 
 #### 4.2 README 작성
 
@@ -459,7 +459,7 @@ AI 컴포넌트에서 사용되는 훅 중 범용적인 것들 추출:
 export interface BaseComponentProps {
   className?: string;
   id?: string;
-  'data-testid'?: string;
+  "data-testid"?: string;
 }
 
 /**
@@ -470,8 +470,13 @@ export interface VariantComponentProps<T> {
 }
 
 // types/variants.ts
-export type Size = 'sm' | 'md' | 'lg';
-export type Variant = 'primary' | 'secondary' | 'destructive' | 'outline' | 'ghost';
+export type Size = "sm" | "md" | "lg";
+export type Variant =
+  | "primary"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "ghost";
 ```
 
 #### 5.4 성능 최적화
@@ -481,63 +486,7 @@ export type Variant = 'primary' | 'secondary' | 'destructive' | 'outline' | 'gho
 - Tree-shaking 확인
 - Lazy loading 고려
 
-### Phase 6: 테스트 및 검증 (2-3일)
-
-#### 6.1 단위 테스트 작성
-
-핵심 컴포넌트부터 테스트 작성:
-
-```typescript
-// components/button/button/button.test.tsx
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Button } from './button';
-
-describe('Button', () => {
-  it('renders correctly', () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole('button')).toBeInTheDocument();
-  });
-
-  it('handles click events', async () => {
-    const handlePress = vi.fn();
-    render(<Button onPress={handlePress}>Click me</Button>);
-
-    await userEvent.click(screen.getByRole('button'));
-    expect(handlePress).toHaveBeenCalledTimes(1);
-  });
-
-  it('applies variant styles', () => {
-    render(<Button variant="destructive">Delete</Button>);
-    // 스타일 검증
-  });
-});
-```
-
-#### 6.2 통합 테스트
-
-- 컴포넌트 간 상호작용 테스트
-- 폼 제출 플로우 테스트
-- 오버레이 컴포넌트 테스트
-
-#### 6.3 접근성 테스트
-
-```bash
-# axe-core를 사용한 자동 접근성 테스트
-pnpm add -D @axe-core/react vitest-axe
-```
-
-```typescript
-import { axe } from 'vitest-axe';
-
-it('should not have accessibility violations', async () => {
-  const { container } = render(<Button>Click me</Button>);
-  const results = await axe(container);
-  expect(results).toHaveNoViolations();
-});
-```
-
-#### 6.4 Storybook 스토리 작성
+#### 5.5 Storybook 스토리 작성
 
 각 컴포넌트의 모든 variant, state 스토리 작성:
 
@@ -574,7 +523,7 @@ export const Variants: Story = {
 };
 ```
 
-#### 6.5 빌드 및 타입 체크
+#### 5.6 빌드 및 타입 체크
 
 ```bash
 # 모든 워크스페이스 타입 체크
@@ -587,11 +536,11 @@ pnpm --filter @repo/ui build
 pnpm --filter web dev
 ```
 
-### Phase 7: 기존 코드 제거 및 정리 (1일)
+### Phase 6: 기존 코드 제거 및 정리 (1일)
 
-⚠️ **주의**: 충분한 테스트 후에만 진행
+⚠️ **주의**: 충분한 검증 후에만 진행
 
-#### 7.1 Deprecation 표시
+#### 6.1 Deprecation 표시
 
 기존 파일에 deprecation 주석 추가:
 
@@ -601,10 +550,10 @@ pnpm --filter web dev
  * @deprecated Use `import { Button } from '@repo/ui/components/button'` instead
  * This export will be removed in the next major version.
  */
-export * from './components/button/button';
+export * from "./components/button/button";
 ```
 
-#### 7.2 점진적 제거
+#### 6.2 점진적 제거
 
 1. 1-2주간 deprecation 경고 유지
 2. web 앱의 모든 import 경로 업데이트
@@ -673,8 +622,8 @@ import type { AriaLabelingProps, DOMProps } from "react-aria";
 export interface BaseComponentProps extends DOMProps, AriaLabelingProps {
   /** 추가 CSS 클래스 */
   className?: string;
-  /** 테스트를 위한 ID */
-  'data-testid'?: string;
+  /** 자동화나 디버깅을 위한 ID */
+  "data-testid"?: string;
 }
 
 /**
@@ -682,7 +631,7 @@ export interface BaseComponentProps extends DOMProps, AriaLabelingProps {
  */
 export interface SizeProps {
   /** 컴포넌트 크기 */
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
 /**
@@ -698,16 +647,16 @@ export interface VariantProps<T extends string = string> {
  * 공통 variant 타입
  */
 export type ButtonVariant =
-  | 'primary'
-  | 'secondary'
-  | 'destructive'
-  | 'outline'
-  | 'ghost'
-  | 'link';
+  | "primary"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "ghost"
+  | "link";
 
-export type InputVariant = 'default' | 'ghost';
+export type InputVariant = "default" | "ghost";
 
-export type Size = 'sm' | 'md' | 'lg';
+export type Size = "sm" | "md" | "lg";
 ```
 
 ### 3. 공통 스타일 Variants
@@ -729,10 +678,14 @@ export const buttonVariants = tv({
   ],
   variants: {
     variant: {
-      primary: "bg-primary text-primary-foreground data-[hovered]:bg-primary/90",
-      destructive: "bg-destructive text-destructive-foreground data-[hovered]:bg-destructive/90",
-      outline: "border border-input bg-background data-[hovered]:bg-accent data-[hovered]:text-accent-foreground",
-      secondary: "bg-secondary text-secondary-foreground data-[hovered]:bg-secondary/80",
+      primary:
+        "bg-primary text-primary-foreground data-[hovered]:bg-primary/90",
+      destructive:
+        "bg-destructive text-destructive-foreground data-[hovered]:bg-destructive/90",
+      outline:
+        "border border-input bg-background data-[hovered]:bg-accent data-[hovered]:text-accent-foreground",
+      secondary:
+        "bg-secondary text-secondary-foreground data-[hovered]:bg-secondary/80",
       ghost: "data-[hovered]:bg-accent data-[hovered]:text-accent-foreground",
       link: "text-primary underline-offset-4 data-[hovered]:underline",
     },
@@ -776,7 +729,7 @@ export const inputGroupVariants = tv({
 
 ### 4. 컴포넌트 구현 예시
 
-```typescript
+````typescript
 // components/button/button/button.tsx
 "use client";
 
@@ -860,7 +813,7 @@ export interface ButtonProps extends AriaButtonProps, ButtonVariantProps {
 export { Button } from './button';
 export { buttonVariants } from '../../../styles/variants/button-variants';
 export type { ButtonProps, ButtonVariantProps } from './button.types';
-```
+````
 
 ### 5. 카테고리별 Index 파일
 
@@ -869,24 +822,24 @@ export type { ButtonProps, ButtonVariantProps } from './button.types';
 /**
  * 버튼 컴포넌트 모듈
  */
-export * from './button';
-export * from './button-group';
+export * from "./button";
+export * from "./button-group";
 
 // components/form/index.ts
 /**
  * 폼 관련 컴포넌트 모듈
  */
-export * from './text-field';
-export * from './number-field';
-export * from './search-field';
-export * from './date-field';
-export * from './checkbox';
-export * from './radio-group';
-export * from './select';
-export * from './slider';
-export * from './switch';
-export * from './form';
-export * from './input-group';
+export * from "./text-field";
+export * from "./number-field";
+export * from "./search-field";
+export * from "./date-field";
+export * from "./checkbox";
+export * from "./radio-group";
+export * from "./select";
+export * from "./slider";
+export * from "./switch";
+export * from "./form";
+export * from "./input-group";
 
 // components/index.ts
 /**
@@ -897,16 +850,16 @@ export * from './input-group';
  */
 
 // Re-export all component categories
-export * from './button';
-export * from './form';
-export * from './navigation';
-export * from './overlay';
-export * from './date';
-export * from './layout';
-export * from './feedback';
-export * from './display';
-export * from './interaction';
-export * from './ai';
+export * from "./button";
+export * from "./form";
+export * from "./navigation";
+export * from "./overlay";
+export * from "./date";
+export * from "./layout";
+export * from "./feedback";
+export * from "./display";
+export * from "./interaction";
+export * from "./ai";
 ```
 
 ## 타입 안전성 강화
@@ -973,7 +926,7 @@ export type ControllableProps<T> = ControlledProps<T> | UncontrolledProps<T>;
  * @template T - 선택 가능한 아이템의 타입
  */
 export interface SelectProps<T extends object>
-  extends Omit<AriaSelectProps<T>, 'children'> {
+  extends Omit<AriaSelectProps<T>, "children"> {
   /** 선택 가능한 아이템 목록 */
   items?: Iterable<T>;
   /** 아이템을 렌더링하는 함수 */
@@ -989,15 +942,15 @@ export interface SelectProps<T extends object>
 // components/index.ts
 
 // 자주 사용되는 컴포넌트는 직접 export
-export { Button } from './button';
-export { TextField } from './form/text-field';
+export { Button } from "./button";
+export { TextField } from "./form/text-field";
 
 // 덜 사용되는 컴포넌트는 lazy loading
 export const Calendar = lazy(() =>
-  import('./date/calendar').then(m => ({ default: m.Calendar }))
+  import("./date/calendar").then((m) => ({ default: m.Calendar })),
 );
 export const DatePicker = lazy(() =>
-  import('./date/date-picker').then(m => ({ default: m.DatePicker }))
+  import("./date/date-picker").then((m) => ({ default: m.DatePicker })),
 );
 ```
 
@@ -1006,9 +959,7 @@ export const DatePicker = lazy(() =>
 ```json
 // package.json
 {
-  "sideEffects": [
-    "**/*.css"
-  ]
+  "sideEffects": ["**/*.css"]
 }
 ```
 
@@ -1016,10 +967,10 @@ export const DatePicker = lazy(() =>
 
 ```typescript
 // components/form/select/select.tsx
-import { memo } from 'react';
+import { memo } from "react";
 
 export const Select = memo(function Select<T extends object>(
-  props: SelectProps<T>
+  props: SelectProps<T>,
 ) {
   // ...
 }) as <T extends object>(props: SelectProps<T>) => JSX.Element;
@@ -1041,7 +992,7 @@ export const Select = memo(function Select<T extends object>(
 
 ### 1. 컴포넌트 문서 구조
 
-```typescript
+````typescript
 /**
  * [컴포넌트 이름]
  *
@@ -1069,7 +1020,7 @@ export const Select = memo(function Select<T extends object>(
  *
  * @see {@link [관련 컴포넌트 링크]}
  */
-```
+````
 
 ### 2. Props 문서화
 
@@ -1099,7 +1050,7 @@ export interface ButtonProps {
    *
    * @default 'md'
    */
-  size?: 'sm' | 'md' | 'lg' | 'icon';
+  size?: "sm" | "md" | "lg" | "icon";
 
   /**
    * 버튼 클릭 핸들러
@@ -1110,132 +1061,28 @@ export interface ButtonProps {
 }
 ```
 
-## 테스트 전략
-
-### 1. 단위 테스트
-
-**테스트해야 할 것:**
-- 기본 렌더링
-- Props 전달
-- 이벤트 핸들링
-- 조건부 렌더링
-- Edge cases
-
-```typescript
-// button.test.tsx
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { Button } from './button';
-
-describe('Button', () => {
-  describe('Rendering', () => {
-    it('renders with children', () => {
-      render(<Button>Click me</Button>);
-      expect(screen.getByRole('button')).toHaveTextContent('Click me');
-    });
-
-    it('renders with custom className', () => {
-      render(<Button className="custom-class">Click me</Button>);
-      expect(screen.getByRole('button')).toHaveClass('custom-class');
-    });
-  });
-
-  describe('Variants', () => {
-    it('applies primary variant by default', () => {
-      render(<Button>Click me</Button>);
-      const button = screen.getByRole('button');
-      // 스타일 검증
-    });
-
-    it('applies destructive variant', () => {
-      render(<Button variant="destructive">Delete</Button>);
-      const button = screen.getByRole('button');
-      // 스타일 검증
-    });
-  });
-
-  describe('Interactions', () => {
-    it('handles click events', async () => {
-      const handlePress = vi.fn();
-      render(<Button onPress={handlePress}>Click me</Button>);
-
-      await userEvent.click(screen.getByRole('button'));
-      expect(handlePress).toHaveBeenCalledTimes(1);
-    });
-
-    it('does not trigger onPress when disabled', async () => {
-      const handlePress = vi.fn();
-      render(<Button isDisabled onPress={handlePress}>Click me</Button>);
-
-      await userEvent.click(screen.getByRole('button'));
-      expect(handlePress).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Accessibility', () => {
-    it('should not have accessibility violations', async () => {
-      const { container } = render(<Button>Click me</Button>);
-      const results = await axe(container);
-      expect(results).toHaveNoViolations();
-    });
-
-    it('supports aria-label', () => {
-      render(<Button aria-label="Custom label">X</Button>);
-      expect(screen.getByLabelText('Custom label')).toBeInTheDocument();
-    });
-  });
-});
-```
-
-### 2. 통합 테스트
-
-```typescript
-// form-integration.test.tsx
-describe('Form Integration', () => {
-  it('submits form with text field value', async () => {
-    const handleSubmit = vi.fn();
-
-    render(
-      <Form onSubmit={handleSubmit}>
-        <TextField name="username" label="Username" />
-        <Button type="submit">Submit</Button>
-      </Form>
-    );
-
-    const input = screen.getByLabelText('Username');
-    await userEvent.type(input, 'testuser');
-    await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
-
-    expect(handleSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        username: 'testuser',
-      })
-    );
-  });
-});
-```
-
 ## 위험 관리
 
 ### 잠재적 위험과 대응 방안
 
-| 위험 | 영향도 | 발생 가능성 | 대응 방안 |
-|------|--------|-------------|-----------|
-| 기존 코드 호환성 깨짐 | 높음 | 중간 | - 기존 exports 유지<br>- 점진적 마이그레이션<br>- Deprecation 경고 |
-| 마이그레이션 중 버그 발생 | 중간 | 중간 | - 충분한 테스트<br>- 단계별 진행<br>- 롤백 계획 |
-| 일정 지연 | 낮음 | 높음 | - 우선순위 설정<br>- Phase별 진행<br>- 최소 기능부터 |
-| 타입 에러 증가 | 중간 | 낮음 | - 점진적 타입 추가<br>- 충분한 검증 |
-| 번들 사이즈 증가 | 낮음 | 낮음 | - Tree-shaking 확인<br>- 번들 분석 |
+| 위험                      | 영향도 | 발생 가능성 | 대응 방안                                                          |
+| ------------------------- | ------ | ----------- | ------------------------------------------------------------------ |
+| 기존 코드 호환성 깨짐     | 높음   | 중간        | - 기존 exports 유지<br>- 점진적 마이그레이션<br>- Deprecation 경고 |
+| 마이그레이션 중 버그 발생 | 중간   | 중간        | - 수동 검증 및 코드 리뷰<br>- 단계별 진행<br>- 롤백 계획           |
+| 일정 지연                 | 낮음   | 높음        | - 우선순위 설정<br>- Phase별 진행<br>- 최소 기능부터               |
+| 타입 에러 증가            | 중간   | 낮음        | - 점진적 타입 추가<br>- 충분한 검증                                |
+| 번들 사이즈 증가          | 낮음   | 낮음        | - Tree-shaking 확인<br>- 번들 분석                                 |
 
 ### 롤백 계획
 
 각 Phase 완료 후:
+
 1. 빌드 성공 확인
 2. 타입 체크 통과 확인
-3. 기존 테스트 통과 확인
-4. Storybook 정상 작동 확인
+3. Storybook 정상 작동 확인
 
 문제 발생 시:
+
 1. Git을 사용하여 이전 Phase로 되돌리기
 2. 문제 원인 분석
 3. 수정 후 재시도
@@ -1256,23 +1103,21 @@ Week 2: 마이그레이션 및 문서화
 └─ Day 11-13: Phase 4 (문서화 및 정리)
 
 Week 3: 최적화 및 검증
-├─ Day 14-16: Phase 5 (최적화 및 개선)
-├─ Day 17-19: Phase 6 (테스트 및 검증)
-└─ Day 20: Phase 7 (정리 및 릴리스 준비)
+├─ Day 14-17: Phase 5 (최적화 및 개선)
+└─ Day 18-20: Phase 6 (정리 및 릴리스 준비)
 ```
 
 ### 마일스톤
 
 - ✅ **M1 (Week 1 종료)**: 핵심 컴포넌트 마이그레이션 완료
 - ✅ **M2 (Week 2 종료)**: 모든 컴포넌트 마이그레이션 및 문서화 완료
-- ✅ **M3 (Week 3 종료)**: 테스트 및 최적화 완료, 릴리스 준비 완료
+- ✅ **M3 (Week 3 종료)**: 최적화 완료, 릴리스 준비 완료
 
 ## 성공 측정 지표
 
 ### 정량적 지표
 
 - **타입 커버리지**: 100% (모든 공개 API에 타입 정의)
-- **테스트 커버리지**: 최소 70% (핵심 컴포넌트는 90% 이상)
 - **번들 사이즈**: 현재 대비 10% 이내 증가
 - **Storybook 커버리지**: 80% 이상의 컴포넌트에 스토리 존재
 - **빌드 시간**: 현재 대비 20% 이내 증가
@@ -1313,9 +1158,7 @@ Week 3: 최적화 및 검증
       <DialogTitle>Title</DialogTitle>
       <DialogDescription>Description</DialogDescription>
     </DialogHeader>
-    <DialogBody>
-      {/* Content */}
-    </DialogBody>
+    <DialogBody>{/* Content */}</DialogBody>
     <DialogFooter>
       <Button>Close</Button>
     </DialogFooter>
@@ -1327,10 +1170,10 @@ Week 3: 최적화 및 검증
 
 ```typescript
 // 스타일이 없는 headless 버전 제공
-import { useButton } from '@repo/ui/hooks';
+import { useButton } from "@repo/ui/hooks";
 
 // 또는
-import { Button } from '@repo/ui/headless';
+import { Button } from "@repo/ui/headless";
 ```
 
 ### 4. 디자인 토큰 시스템
@@ -1368,8 +1211,6 @@ import { Button } from '@repo/ui/headless';
 - [Tailwind Variants](https://www.tailwind-variants.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Storybook](https://storybook.js.org/)
-- [Vitest](https://vitest.dev/)
-- [Testing Library](https://testing-library.com/)
 
 ### 컴포넌트 라이브러리 참고
 
@@ -1381,46 +1222,44 @@ import { Button } from '@repo/ui/headless';
 ## 체크리스트
 
 ### Phase 1: 준비 단계
+
 - [ ] 새로운 디렉토리 구조 생성
 - [ ] 공통 유틸리티 정리
 - [ ] 공통 타입 정의
-- [ ] 테스트 환경 설정
 
 ### Phase 2: 컴포넌트 마이그레이션
+
 - [ ] High Priority 컴포넌트 (button, text-field, form, dialog)
 - [ ] Medium Priority 컴포넌트 (select, checkbox, radio-group 등)
 - [ ] Low Priority 컴포넌트 (나머지)
 - [ ] AI 컴포넌트 구조 개선
 
 ### Phase 3: package.json 업데이트
+
 - [ ] 새로운 exports 추가
 - [ ] 기존 exports 유지 (하위 호환성)
 - [ ] 빌드 스크립트 검증
 
 ### Phase 4: 문서화 및 정리
+
 - [ ] JSDoc 작성 (모든 공개 API)
 - [ ] README.md 작성
 - [ ] MIGRATION.md 작성
 - [ ] Storybook 스토리 작성
 
 ### Phase 5: 최적화 및 개선
+
 - [ ] 공통 스타일 추출
 - [ ] 공통 훅 추출
 - [ ] 타입 시스템 강화
 - [ ] 성능 최적화
 
-### Phase 6: 테스트 및 검증
-- [ ] 단위 테스트 작성
-- [ ] 통합 테스트 작성
-- [ ] 접근성 테스트
-- [ ] Storybook 스토리 검증
-- [ ] 빌드 및 타입 체크
+### Phase 6: 기존 코드 제거 및 정리
 
-### Phase 7: 기존 코드 제거 및 정리
 - [ ] Deprecation 표시
 - [ ] web 앱 import 경로 업데이트
 - [ ] storybook 앱 import 경로 업데이트
-- [ ] 기존 파일 제거 (충분한 테스트 후)
+- [ ] 기존 파일 제거 (충분한 검증 후)
 
 ## 결론
 
@@ -1430,9 +1269,8 @@ import { Button } from '@repo/ui/headless';
 2. **일관성**: 모든 컴포넌트가 동일한 패턴과 구조를 따름
 3. **타입 안전성**: 완벽한 TypeScript 타입 지원
 4. **문서화**: 포괄적인 JSDoc 및 사용 예시
-5. **테스트 가능성**: 단위 및 통합 테스트 지원
-6. **성능**: 최적화된 번들 사이즈 및 로딩 시간
-7. **접근성**: WCAG 기준을 충족하는 접근 가능한 컴포넌트
-8. **개발자 경험**: 명확한 API와 우수한 DX
+5. **성능**: 최적화된 번들 사이즈 및 로딩 시간
+6. **접근성**: WCAG 기준을 충족하는 접근 가능한 컴포넌트
+7. **개발자 경험**: 명확한 API와 우수한 DX
 
 단계별로 진행하고 각 Phase마다 충분한 검증을 거쳐 안정적인 리팩토링을 수행합니다.
