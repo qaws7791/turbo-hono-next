@@ -2,7 +2,7 @@
 
 ## 진행 상황 (Progress Update)
 
-### 완료된 작업 (2025-11-18)
+### 완료된 작업 (2025-11-19)
 
 **Phase 1: 준비 단계** ✅ 완료
 
@@ -28,16 +28,44 @@
 - 타입 안전성 강화 (any 타입 제거)
 - 컴포넌트 간 의존성 정리
 
+**Phase 3: package.json 업데이트 및 imports 수정** ✅ 완료
+
+- package.json에 50+ 새로운 exports 추가
+  - 루트 export: "./": "./src/components/index.ts"
+  - 카테고리 exports: ./form, ./button, ./date, ./layout, ./navigation, ./overlay, ./feedback, ./display, ./interaction
+  - 개별 컴포넌트 exports: 모든 31개 컴포넌트에 대한 exports 추가
+- 카테고리 index 파일 생성 및 업데이트:
+  - components/date/index.ts
+  - components/display/index.ts
+  - components/feedback/index.ts
+  - components/interaction/index.ts
+  - components/navigation/index.ts
+  - components/overlay/index.ts (popover, tooltip 포함하도록 확장)
+- Calendar 컴포넌트 마이그레이션 (src/calendar.tsx → components/date/calendar/)
+- Import 경로 수정 (21개 파일, 30개 import 에러 해결):
+  - AI 컴포넌트: 3개 파일 수정
+  - Date 컴포넌트: 3개 파일 수정 (form base 참조 제거)
+  - Form 컴포넌트: 8개 파일 수정
+  - Navigation 컴포넌트: 3개 파일 수정 (button styles 참조 수정)
+  - Display/Feedback 컴포넌트: 2개 파일 수정
+- 빌드 및 검증 완료:
+  - TypeScript 타입 검사: ✅ PASS (0 errors)
+  - Tailwind CSS 빌드: ✅ PASS (773ms)
+  - ESLint 에러 수정: 모든 lint 에러 해결
+  - Pre-commit 훅: ✅ PASS
+  - Conventional commit: ✅ PASS
+
 **다음 단계:**
 
-- **Phase 3** (다음): package.json exports 업데이트 및 하위 호환성 유지
-  - 모든 31개 컴포넌트의 새로운 export 경로 추가
-  - 기존 export 경로 유지 (하위 호환성)
-  - 중앙 components/index.ts 작성
-  - 빌드 및 타입 검증
-  - 참고: Phase 2에서 생성된 모든 컴포넌트 구조가 완비되었으므로 export만 수정하면 됨
-- **Phase 4**: README 및 마이그레이션 가이드 작성
+- **Phase 4** (다음): README 및 마이그레이션 가이드 작성
+  - packages/ui/README.md 작성
+  - MIGRATION.md 작성 (import 경로 변경 방법)
+  - JSDoc 완성도 검증
+  - Storybook 스토리 작성
 - **Phase 5**: 추가 최적화
+  - 공통 스타일 추출
+  - 공통 훅 추출
+  - 성능 최적화
 - **Phase 6**: 레거시 파일 정리
 
 ### Phase 3 준비 정보
@@ -194,8 +222,8 @@ packages/ui/src/
 - [x] 컴포넌트 카테고리별 그룹화 완료 (Phase 2 완료)
 - [x] 100% 타입 커버리지 (모든 컴포넌트에 .types.ts 적용)
 - [x] 모든 컴포넌트 JSDoc 작성 (완료)
+- [x] 기존 코드 빌드 에러 0건 (Phase 3 완료 - TypeScript, ESLint, Tailwind 모두 통과)
 - [ ] Storybook 스토리 완성도 80% 이상 (Phase 4에서)
-- [ ] 기존 코드 빌드 에러 0건 (Phase 3 후 검증)
 
 ## 제안하는 새로운 구조
 
@@ -1312,13 +1340,16 @@ import { Button } from "@repo/ui/headless";
 - [x] Low Priority 컴포넌트 (slider, switch, input-group, menu, tabs, link, popover, tooltip, progress-bar, loading-spinner, sidebar, scroll-area, icon, disclosure, list-box)
 - [x] AI 컴포넌트 구조 유지 (components/ai/로 이동)
 
-### Phase 3: package.json 업데이트 ⏳ NEXT
+### Phase 3: package.json 업데이트 ✅ DONE
 
-- [ ] 새로운 exports 추가 (모든 31개 컴포넌트)
-- [ ] 기존 exports 유지 (하위 호환성)
-- [ ] 빌드 스크립트 검증
+- [x] 새로운 exports 추가 (모든 31개 컴포넌트)
+- [x] 기존 exports 유지 (하위 호환성)
+- [x] 빌드 스크립트 검증
+- [x] TypeScript 타입 검사 통과
+- [x] ESLint 에러 해결
+- [x] 모든 import 경로 수정
 
-### Phase 4: 문서화 및 정리
+### Phase 4: 문서화 및 정리 ⏳ NEXT
 
 - [ ] JSDoc 작성 (모든 공개 API)
 - [ ] README.md 작성
