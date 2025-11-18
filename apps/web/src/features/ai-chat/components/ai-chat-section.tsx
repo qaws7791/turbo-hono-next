@@ -42,8 +42,8 @@ export function AIChatSection({
         learningPlanId,
       });
       setSelectedConversationId(newConversation.id);
-    } catch (error) {
-      console.error("대화 생성 실패:", error);
+    } catch {
+      // Error is handled by the mutation hook
     }
   };
 
@@ -56,8 +56,8 @@ export function AIChatSection({
       if (selectedConversationId === conversationId) {
         setSelectedConversationId(null);
       }
-    } catch (error) {
-      console.error("대화 삭제 실패:", error);
+    } catch {
+      // Error is handled by the mutation hook
     }
   };
 

@@ -22,7 +22,6 @@ interface UseAIChatProps {
  */
 export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
   const queryClient = useQueryClient();
-  console.log("useAIChat conversationId:", conversationId);
   const chat = useChat<AppUIMessage>({
     transport: new DefaultChatTransport({
       api: "http://localhost:3001/chat/stream",
@@ -47,8 +46,8 @@ export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
         queryKey: learningPlanKeys.detail(learningPlanId),
       });
     },
-    onError: (error: Error) => {
-      console.error("AI 채팅 에러:", error);
+    onError: () => {
+      // Error is handled by AI SDK
     },
   });
 

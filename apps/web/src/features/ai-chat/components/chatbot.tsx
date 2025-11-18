@@ -42,10 +42,10 @@ const ChatBot = ({ conversationId }: { conversationId: string }) => {
       },
     }),
     onFinish: () => {
-      console.log("onFinish");
+      // Stream completion callback
     },
-    onError: (error: Error) => {
-      console.error("AI 채팅 에러:", error);
+    onError: () => {
+      // Error is handled by AI SDK
     },
   });
   const handleSubmit = (message: PromptInputMessage) => {

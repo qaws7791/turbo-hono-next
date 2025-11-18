@@ -47,12 +47,10 @@ export const PdfInputStep = (props: PdfInputStepProps) => {
       const errorMessage =
         err instanceof Error ? err.message : "파일 업로드에 실패했습니다.";
       setError(errorMessage);
-      console.error("Upload failed:", err);
     }
   };
 
-  const handleDelete = (_documentId: string) => {
-    console.log("handleDelete", _documentId);
+  const handleDelete = () => {
     setDocument(null);
   };
 

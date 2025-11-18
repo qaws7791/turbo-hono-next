@@ -128,7 +128,6 @@ export const AiRecommendationsStep = (props: AiRecommendationsStepProps) => {
             ? err.message
             : "AI 추천을 가져오는데 실패했습니다";
         setError(errorMessage);
-        console.error("AI recommendations failed:", err);
       } finally {
         setIsLoading(false);
       }
