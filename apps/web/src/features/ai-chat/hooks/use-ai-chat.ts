@@ -10,9 +10,11 @@ import type { AppUIMessage } from "@repo/ai-types";
 
 import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
 import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
+import { API_BASE_URL } from "@/env";
 import { logger } from "@/shared/utils";
 
 const aiChatLogger = logger.createScoped("AIChat");
+const CHAT_STREAM_URL = `${API_BASE_URL}/chat/stream`;
 
 interface UseAIChatProps {
   conversationId: string;
@@ -28,7 +30,7 @@ export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
   aiChatLogger.debug("Initializing AI chat", { conversationId });
   const chat = useChat<AppUIMessage>({
     transport: new DefaultChatTransport({
-      api: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3999"}/chat/stream`,
+      api: CHAT_STREAM_URL,
       credentials: "include",
       body: {
         conversationId: conversationId ?? undefined,

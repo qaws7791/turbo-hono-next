@@ -30,15 +30,17 @@ import { useState } from "react";
 import type { AppUIMessage } from "@repo/ai-types";
 import type { PromptInputMessage } from "@repo/ui/ai";
 
+import { API_BASE_URL } from "@/env";
 import { logger } from "@/shared/utils";
 
+const CHAT_STREAM_URL = `${API_BASE_URL}/chat/stream`;
 const chatbotLogger = logger.createScoped("Chatbot");
 
 const ChatBot = ({ conversationId }: { conversationId: string }) => {
   const [input, setInput] = useState("");
   const { messages, sendMessage, status, regenerate } = useChat<AppUIMessage>({
     transport: new DefaultChatTransport({
-      api: `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3999"}/chat/stream`,
+      api: CHAT_STREAM_URL,
       credentials: "include",
       body: {
         conversationId: conversationId ?? undefined,
