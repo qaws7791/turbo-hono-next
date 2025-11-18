@@ -11,6 +11,11 @@ import {
 } from "@/features/learning-plan/api/learning-plan-service";
 import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
 
+/**
+ * NOTE: Return types are intentionally omitted to allow TypeScript to infer
+ * the precise types from queryOptions, which includes specific tuple types
+ * for queryKey that cannot be accurately represented with explicit type annotations.
+ */
 export const learningPlansQueryOptions = (params?: LearningPlanListParams) =>
   queryOptions({
     queryKey: learningPlanKeys.list(params),

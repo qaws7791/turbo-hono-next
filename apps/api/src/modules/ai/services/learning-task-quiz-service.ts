@@ -133,7 +133,7 @@ interface SubmitQuizResult {
 
 const QuizQuestionsSchema = LearningTaskQuizSchema.shape.questions;
 
-function clamp(value: number, min: number, max: number) {
+function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
@@ -369,7 +369,9 @@ function buildContextHighlights(args: {
   return highlights.slice(0, 4);
 }
 
-async function loadLearningPlanStructure(learningPlanId: number) {
+async function loadLearningPlanStructure(
+  learningPlanId: number,
+): Promise<Array<LearningPlanLearningModuleSummary>> {
   const rows = await db
     .select({
       learningModuleDbId: learningModuleTable.id,

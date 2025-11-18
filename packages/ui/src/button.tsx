@@ -44,9 +44,9 @@ const buttonStyles = tv({
   },
 });
 
-type buttonVariantProps = VariantProps<typeof buttonStyles>;
+type ButtonVariantProps = VariantProps<typeof buttonStyles>;
 
-interface ButtonProps extends AriaButtonProps, buttonVariantProps {}
+interface ButtonProps extends AriaButtonProps, ButtonVariantProps {}
 
 const Button = ({ className, variant, size, ...props }: ButtonProps) => {
   return (
@@ -65,4 +65,4 @@ const Button = ({ className, variant, size, ...props }: ButtonProps) => {
 };
 
 export { Button, buttonStyles };
-export type { ButtonProps, buttonVariantProps };
+export type { ButtonProps, ButtonVariantProps };

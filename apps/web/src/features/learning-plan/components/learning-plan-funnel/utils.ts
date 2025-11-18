@@ -3,7 +3,9 @@ import type {
   FunnelData,
 } from "@/features/learning-plan/model/types";
 
-export const getCurrentLevelLabel = (level: number) => {
+export const getCurrentLevelLabel = (
+  level: number,
+): "초보자" | "기초" | "중급" | "고급" | "전문가" => {
   return level === 1
     ? "초보자"
     : level === 2
@@ -15,7 +17,10 @@ export const getCurrentLevelLabel = (level: number) => {
           : "전문가";
 };
 
-export const handleArrayToggle = (array: Array<string>, id: string) => {
+export const handleArrayToggle = (
+  array: Array<string>,
+  id: string,
+): Array<string> => {
   if (array.includes(id)) {
     return array.filter((item) => item !== id);
   } else {

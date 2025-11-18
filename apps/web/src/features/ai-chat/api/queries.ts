@@ -2,6 +2,10 @@
  * AI Chat 쿼리 옵션 정의
  *
  * TanStack Query의 queryOptions를 사용하여 타입 안전한 쿼리를 정의합니다.
+ *
+ * NOTE: Return types are intentionally omitted to allow TypeScript to infer
+ * the precise types from queryOptions, which includes specific tuple types
+ * for queryKey that cannot be accurately represented with explicit type annotations.
  */
 
 import { queryOptions } from "@tanstack/react-query";

@@ -14,9 +14,15 @@ import {
 import type { AuthContext } from "../../../middleware/auth";
 import type { LearningTaskNoteRecord } from "../services/learning-task-note-service";
 
-function serializeRecord(record: LearningTaskNoteRecord) {
+function serializeRecord(record: LearningTaskNoteRecord): {
+  status: "idle" | "processing" | "ready" | "failed";
+  markdown: string | null;
+  requestedAt: string | null;
+  completedAt: string | null;
+  errorMessage: string | null;
+} {
   return {
-    status: record.status,
+    status: record.status as "idle" | "processing" | "ready" | "failed",
     markdown: record.markdown,
     requestedAt: record.requestedAt?.toISOString() ?? null,
     completedAt: record.completedAt?.toISOString() ?? null,

@@ -33,7 +33,9 @@ export class AIStreamService {
   /**
    * Create a message stream for AI chat
    */
-  async createMessageStream(input: StreamMessageInput) {
+  async createMessageStream(
+    input: StreamMessageInput,
+  ): Promise<ReturnType<typeof createUIMessageStream>> {
     const { conversationId, userId, messages, learningPlanId } = input;
 
     // Build learning plan context

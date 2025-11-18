@@ -36,7 +36,7 @@ export const streamMessageRoute = createRoute({
       description: "스트리밍 응답 (SSE)",
       content: {
         "text/event-stream": {
-          schema: z.any(),
+          schema: z.unknown(),
         },
       },
     },
