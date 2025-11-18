@@ -4,6 +4,7 @@ import status from "http-status";
 import { loginWithEmailRoute } from "@repo/api-spec/modules/auth/routes";
 
 import { authConfig } from "../../../config/auth";
+import { log } from "../../../lib/logger";
 import { authService } from "../services/auth.service";
 import { AuthErrors } from "../errors";
 
@@ -40,7 +41,7 @@ const loginWithEmail = new OpenAPIHono().openapi(
       if (error && typeof error === "object" && "code" in error) {
         throw error;
       }
-      console.error("Login error:", error);
+      log.error("Login error", error);
       throw AuthErrors.forbidden({ message: "Internal server error" });
     }
   },

@@ -7,6 +7,7 @@ import {
 } from "@repo/database/schema";
 
 import { db } from "../../../database/client";
+import { log } from "../../../lib/logger";
 import { generatePublicId } from "../../../utils/id-generator";
 import { LearningPlanEmoji } from "../../learning-plan/utils/emoji";
 
@@ -230,7 +231,7 @@ export async function saveLearningPlanToDatabase(
       };
     });
   } catch (error) {
-    console.error("Database save error:", error);
+    log.error("Database save error", error);
     throw error;
   }
 }

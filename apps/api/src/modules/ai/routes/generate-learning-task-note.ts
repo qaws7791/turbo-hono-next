@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { generateLearningTaskNoteRoute } from "@repo/api-spec/modules/ai/routes";
 import status from "http-status";
 
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { AIError } from "../errors";
@@ -60,7 +61,7 @@ const generateLearningTaskNote = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("AI learning-task note generation error:", error);
+      log.error("AI learning-task note generation error", error);
 
       return c.json(
         {

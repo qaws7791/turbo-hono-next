@@ -14,6 +14,7 @@ import { db } from "../../../database/client";
 import { BaseError } from "../../../errors/base.error";
 import { ErrorCodes } from "../../../errors/error-codes";
 import { generateLearningTaskQuiz } from "../../../external/ai/features/learning-task-quiz/generator";
+import { log } from "../../../lib/logger";
 import { AIErrors } from "../errors";
 
 import type {
@@ -182,7 +183,7 @@ function parseStoredQuestions(
 
   const parsed = QuizQuestionsSchema.safeParse(value);
   if (!parsed.success) {
-    console.warn("Failed to parse stored quiz questions:", parsed.error);
+    log.warn("Failed to parse stored quiz questions", { error: parsed.error });
     return null;
   }
 
@@ -861,7 +862,7 @@ export async function runLearningTaskQuizGeneration(
       .set({ updatedAt: completedAt })
       .where(eq(learningTaskTable.id, job.learningTaskId));
   } catch (error) {
-    console.error("Learning-task quiz generation failed:", error);
+    log.error("Learning-task quiz generation failed", error);
     const failureTime = new Date();
     const message =
       error instanceof Error

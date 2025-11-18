@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { submitLearningTaskQuizRoute } from "@repo/api-spec/modules/learning-plan/routes/learning-tasks/submit-learning-task-quiz";
 import status from "http-status";
 
+import { log } from "../../../../lib/logger";
 import { authMiddleware } from "../../../../middleware/auth";
 import { AuthErrors } from "../../../auth/errors";
 import { BaseError } from "../../../../errors/base.error";
@@ -69,7 +70,7 @@ const submitLearningTaskQuizHandler = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Submit learning-task quiz error:", error);
+      log.error("Submit learning-task quiz error", error);
 
       return c.json(
         {

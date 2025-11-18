@@ -4,6 +4,7 @@ import status from "http-status";
 import { logoutRoute } from "@repo/api-spec/modules/auth/routes";
 
 import { authConfig } from "../../../config/auth";
+import { log } from "../../../lib/logger";
 import { sessionService } from "../services/session.service";
 import { AuthErrors } from "../errors";
 
@@ -30,7 +31,7 @@ const logout = new OpenAPIHono().openapi(logoutRoute, async (c) => {
       status.OK,
     );
   } catch (error) {
-    console.error("Logout error:", error);
+    log.error("Logout error", error);
     throw AuthErrors.forbidden({ message: "Logout failed" });
   }
 });

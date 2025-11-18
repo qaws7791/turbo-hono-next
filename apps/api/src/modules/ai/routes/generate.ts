@@ -3,6 +3,7 @@ import { generateLearningPlanRoute as generateLearningPlanRouteSpec } from "@rep
 import status from "http-status";
 
 import { generateLearningPlan } from "../../../external/ai/features/learning-plan/generator";
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
@@ -76,10 +77,9 @@ const generateLearningPlanRoute = new OpenAPIHono<{
       });
 
       // Save the generated learningPlan to the database with transaction
-      console.log(
-        "Generated learningPlan:",
-        JSON.stringify(generatedLearningPlan, null, 2),
-      );
+      log.debug("Generated learningPlan", {
+        learningPlan: generatedLearningPlan,
+      });
       const savedLearningPlan = await saveLearningPlanToDatabase({
         userId: auth.user.id,
         generatedLearningPlan,
@@ -204,7 +204,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
         }
       }
 
-      console.error("AI learningPlan generation error:", error);
+      log.error("AI learningPlan generation error", error);
       throw AIErrors.generationFailed({
         message: "Failed to generate learningPlan due to internal error",
       });

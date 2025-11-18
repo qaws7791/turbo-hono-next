@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
 
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import {
   sanitizeFileName,
@@ -62,7 +63,7 @@ const upload = new OpenAPIHono<{
       try {
         storageUrl = await uploadToR2(storageKey, buffer, "application/pdf");
       } catch (error) {
-        console.error("R2 upload failed:", error);
+        log.error("R2 upload failed", error);
         throw DocumentErrors.uploadFailed({
           message: "Failed to upload file to storage",
         });
@@ -92,7 +93,7 @@ const upload = new OpenAPIHono<{
       }
 
       // Handle unexpected errors
-      console.error("Document upload error:", error);
+      log.error("Document upload error", error);
       throw DocumentErrors.uploadFailed({
         message: "An unexpected error occurred during upload",
       });

@@ -3,6 +3,7 @@ import { getPlanRecommendationsRoute as getPlanRecommendationsRouteSpec } from "
 import status from "http-status";
 
 import { generateDefaultsSuggestion } from "../../../external/ai/features/defaults-suggestion/generator";
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
@@ -104,7 +105,7 @@ const getPlanRecommendationsRoute = new OpenAPIHono<{
         }
       }
 
-      console.error("AI plan recommendations error:", error);
+      log.error("AI plan recommendations error", error);
       throw AIErrors.generationFailed({
         message:
           "Failed to generate plan recommendations due to internal error",

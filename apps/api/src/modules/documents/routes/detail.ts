@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { documentDetailRoute } from "@repo/api-spec/modules/documents/routes";
 
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { documentService } from "../services/document.service";
 import { DocumentErrors } from "../errors";
@@ -40,7 +41,7 @@ const detail = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Document detail error:", error);
+      log.error("Document detail error", error);
       throw DocumentErrors.storageError({
         message: "An unexpected error occurred",
       });

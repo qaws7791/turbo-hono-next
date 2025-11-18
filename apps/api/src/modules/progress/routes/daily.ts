@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { dailyProgressRoute } from "@repo/api-spec/modules/progress/routes";
 
+import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { progressService } from "../services/progress.service";
 import { ProgressErrors } from "../errors";
@@ -35,7 +36,7 @@ const dailyProgress = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Daily learning module activity aggregation error:", error);
+      log.error("Daily learning module activity aggregation error", error);
       throw ProgressErrors.internalError({
         message: "Failed to retrieve daily progress",
       });

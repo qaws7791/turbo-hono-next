@@ -4,6 +4,7 @@ import status from "http-status";
 import { signupRoute } from "@repo/api-spec/modules/auth/routes";
 
 import { authConfig } from "../../../config/auth";
+import { log } from "../../../lib/logger";
 import { authService } from "../services/auth.service";
 import { AuthErrors } from "../errors";
 
@@ -39,7 +40,7 @@ const signup = new OpenAPIHono().openapi(signupRoute, async (c) => {
     if (error && typeof error === "object" && "code" in error) {
       throw error;
     }
-    console.error("Signup error:", error);
+    log.error("Signup error", error);
     throw AuthErrors.forbidden({ message: "Internal server error" });
   }
 });

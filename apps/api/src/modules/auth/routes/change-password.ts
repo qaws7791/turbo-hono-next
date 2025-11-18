@@ -2,6 +2,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import status from "http-status";
 import { changePasswordRoute } from "@repo/api-spec/modules/auth/routes";
 
+import { log } from "../../../lib/logger";
 import { authService } from "../services/auth.service";
 import { AuthErrors } from "../errors";
 import { authMiddleware } from "../../../middleware/auth";
@@ -43,7 +44,7 @@ const changePassword = new OpenAPIHono<{
         throw error;
       }
 
-      console.error("Change password error:", error);
+      log.error("Change password error", error);
       throw AuthErrors.forbidden({
         message: "Internal server error",
       });
