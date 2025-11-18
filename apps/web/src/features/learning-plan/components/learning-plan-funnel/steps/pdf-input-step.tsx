@@ -7,6 +7,9 @@ import type { Document } from "@/features/learning-plan/model/types";
 
 import { useDocumentUpload } from "@/features/learning-plan/hooks/use-document-upload";
 import { FileUpload } from "@/shared/components/file-upload";
+import { logger } from "@/shared/utils";
+
+const pdfInputLogger = logger.createScoped("PdfInputStep");
 
 interface PdfInputStepProps {
   documentId?: string;
@@ -47,12 +50,16 @@ export const PdfInputStep = (props: PdfInputStepProps) => {
       const errorMessage =
         err instanceof Error ? err.message : "파일 업로드에 실패했습니다.";
       setError(errorMessage);
-      console.error("Upload failed:", err);
+      pdfInputLogger.error(
+        "Document upload failed",
+        err instanceof Error ? err : new Error(String(err)),
+        { fileName: file.name, fileSize: file.size },
+      );
     }
   };
 
   const handleDelete = (_documentId: string) => {
-    console.log("handleDelete", _documentId);
+    pdfInputLogger.debug("Deleting document", { documentId: _documentId });
     setDocument(null);
   };
 

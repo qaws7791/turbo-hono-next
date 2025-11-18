@@ -30,6 +30,10 @@ import { useState } from "react";
 import type { AppUIMessage } from "@repo/ai-types";
 import type { PromptInputMessage } from "@repo/ui/ai";
 
+import { logger } from "@/shared/utils";
+
+const chatbotLogger = logger.createScoped("Chatbot");
+
 const ChatBot = ({ conversationId }: { conversationId: string }) => {
   const [input, setInput] = useState("");
   const { messages, sendMessage, status, regenerate } = useChat<AppUIMessage>({
@@ -42,10 +46,10 @@ const ChatBot = ({ conversationId }: { conversationId: string }) => {
       },
     }),
     onFinish: () => {
-      console.log("onFinish");
+      chatbotLogger.debug("Chat stream finished", { conversationId });
     },
     onError: (error: Error) => {
-      console.error("AI 채팅 에러:", error);
+      chatbotLogger.error("AI chat error", error, { conversationId });
     },
   });
   const handleSubmit = (message: PromptInputMessage) => {

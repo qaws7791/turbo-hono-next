@@ -25,6 +25,9 @@ import {
 import React from "react";
 
 import { getPlanRecommendations } from "@/features/learning-plan/api/learning-plan-service";
+import { logger } from "@/shared/utils";
+
+const aiRecommendationsLogger = logger.createScoped("AiRecommendationsStep");
 
 interface AiRecommendationsStepProps {
   documentId: string;
@@ -128,7 +131,11 @@ export const AiRecommendationsStep = (props: AiRecommendationsStepProps) => {
             ? err.message
             : "AI 추천을 가져오는데 실패했습니다";
         setError(errorMessage);
-        console.error("AI recommendations failed:", err);
+        aiRecommendationsLogger.error(
+          "Failed to fetch AI recommendations",
+          err instanceof Error ? err : new Error(String(err)),
+          { documentId: props.documentId, learningTopic: props.learningTopic },
+        );
       } finally {
         setIsLoading(false);
       }

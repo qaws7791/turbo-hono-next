@@ -10,6 +10,9 @@ import type { AppUIMessage } from "@repo/ai-types";
 
 import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
 import { learningPlanKeys } from "@/features/learning-plan/api/query-keys";
+import { logger } from "@/shared/utils";
+
+const aiChatLogger = logger.createScoped("AIChat");
 
 interface UseAIChatProps {
   conversationId: string;
@@ -22,7 +25,7 @@ interface UseAIChatProps {
  */
 export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
   const queryClient = useQueryClient();
-  console.log("useAIChat conversationId:", conversationId);
+  aiChatLogger.debug("Initializing AI chat", { conversationId });
   const chat = useChat<AppUIMessage>({
     transport: new DefaultChatTransport({
       api: "http://localhost:3001/chat/stream",
@@ -48,7 +51,10 @@ export function useAIChat({ conversationId, learningPlanId }: UseAIChatProps) {
       });
     },
     onError: (error: Error) => {
-      console.error("AI 채팅 에러:", error);
+      aiChatLogger.error("AI chat error", error, {
+        conversationId,
+        learningPlanId,
+      });
     },
   });
 

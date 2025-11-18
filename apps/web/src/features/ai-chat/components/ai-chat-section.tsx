@@ -8,6 +8,9 @@ import { useState } from "react";
 import { useConversations } from "../hooks/use-conversations";
 
 import ChatBot from "@/features/ai-chat/components/chatbot";
+import { logger } from "@/shared/utils";
+
+const aiChatLogger = logger.createScoped("AIChatSection");
 
 export interface AIChatSectionProps {
   learningPlanId: string;
@@ -43,7 +46,11 @@ export function AIChatSection({
       });
       setSelectedConversationId(newConversation.id);
     } catch (error) {
-      console.error("대화 생성 실패:", error);
+      aiChatLogger.error(
+        "Failed to create conversation",
+        error instanceof Error ? error : new Error(String(error)),
+        { learningPlanId },
+      );
     }
   };
 
@@ -57,7 +64,11 @@ export function AIChatSection({
         setSelectedConversationId(null);
       }
     } catch (error) {
-      console.error("대화 삭제 실패:", error);
+      aiChatLogger.error(
+        "Failed to delete conversation",
+        error instanceof Error ? error : new Error(String(error)),
+        { conversationId, learningPlanId },
+      );
     }
   };
 
