@@ -23,4 +23,9 @@ export const learningPlanKeys = {
       learningTaskId,
       "quiz",
     ] as const,
+  recommendations: (params: {
+    documentId: string;
+    learningTopic: string;
+    mainGoal: string;
+  }) => [...learningPlanKeys.root, "recommendations", params] as const,
 };
