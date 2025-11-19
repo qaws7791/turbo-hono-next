@@ -4,13 +4,14 @@
 
 import pino from "pino";
 
+import { CONFIG } from "../config";
+
 /**
  * Log level configuration based on environment
  */
 const getLogLevel = (): pino.LevelWithSilent => {
-  const env = process.env.NODE_ENV;
-  if (env === "test") return "silent";
-  if (env === "production") return "info";
+  if (CONFIG.NODE_ENV === "test") return "silent";
+  if (CONFIG.NODE_ENV === "production") return "info";
   return "debug";
 };
 
@@ -18,9 +19,7 @@ const getLogLevel = (): pino.LevelWithSilent => {
  * Determine if we should use pretty printing
  */
 const shouldUsePrettyPrint = (): boolean => {
-  return (
-    process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test"
-  );
+  return CONFIG.NODE_ENV !== "production" && CONFIG.NODE_ENV !== "test";
 };
 
 /**
@@ -53,8 +52,8 @@ export const logger = pino({
 
   // Base configuration
   base: {
-    env: process.env.NODE_ENV,
-    service: process.env.SERVICE_NAME || "api",
+    env: CONFIG.NODE_ENV,
+    service: CONFIG.SERVICE_NAME,
   },
 
   // Timestamp configuration
