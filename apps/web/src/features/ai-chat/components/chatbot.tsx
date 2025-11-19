@@ -22,6 +22,11 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
 } from "@repo/ui/ai";
 import { DefaultChatTransport } from "ai";
 import { CopyIcon, Loader, RefreshCcwIcon } from "lucide-react";
@@ -106,6 +111,35 @@ const ChatBot = ({ conversationId }: { conversationId: string }) => {
                       );
                     case "reasoning":
                       return <span>생각중: {part.text}</span>;
+                    case "tool-createModule":
+                    case "tool-updateModule":
+                    case "tool-deleteModule":
+                    case "tool-listModules":
+                    case "tool-createTask":
+                    case "tool-updateTask":
+                    case "tool-deleteTask":
+                    case "tool-completeTasks":
+                    case "tool-listTasks":
+                    case "tool-bulkUpdateTasks":
+                    case "tool-getProgress":
+                    case "tool-getPlanDetails":
+                    case "tool-getModuleDetails":
+                      return (
+                        <Tool>
+                          <ToolHeader
+                            type={part.type}
+                            state={part.state}
+                          />
+                          <ToolContent>
+                            <ToolInput input={part.input} />
+                            <ToolOutput
+                              output={part.output}
+                              errorText={part.errorText}
+                            />
+                          </ToolContent>
+                        </Tool>
+                      );
+
                     default:
                       return null;
                   }

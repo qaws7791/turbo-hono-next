@@ -4,11 +4,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { Conversation, UseConversationsResult } from "@repo/ui/ai";
-
 import { api } from "@/api/http-client";
-import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
 import { conversationsQueryOptions } from "@/features/ai-chat/api/queries";
+import { aiChatKeys } from "@/features/ai-chat/api/query-keys";
 
 /**
  * 대화 세션 목록 조회 및 관리 훅
@@ -16,9 +14,7 @@ import { conversationsQueryOptions } from "@/features/ai-chat/api/queries";
  * @param learningPlanId - 학습 계획 ID
  * @returns 대화 세션 관리 인터페이스
  */
-export function useConversations(
-  learningPlanId: string,
-): UseConversationsResult {
+export function useConversations(learningPlanId: string) {
   const queryClient = useQueryClient();
 
   // 대화 세션 목록 조회
@@ -41,7 +37,7 @@ export function useConversations(
         );
       }
 
-      return response.data as Conversation;
+      return response.data;
     },
     onSuccess: () => {
       // 대화 세션 목록 새로고침
