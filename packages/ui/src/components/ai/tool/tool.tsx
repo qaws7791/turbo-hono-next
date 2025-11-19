@@ -52,7 +52,7 @@ const getStatusBadge = (status: ToolUIPart["state"]) => {
   return (
     <Badge
       className="gap-1.5 rounded-full text-xs"
-      variant="secondary"
+      variant="outline"
     >
       {icons[status]}
       {labels[status]}
@@ -81,7 +81,6 @@ export const ToolHeader = ({
       </span>
       {getStatusBadge(state)}
     </div>
-    <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
   </DisclosureHeader>
 );
 
