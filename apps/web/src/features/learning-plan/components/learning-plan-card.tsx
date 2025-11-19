@@ -9,6 +9,8 @@ import { tv } from "tailwind-variants";
 import type { LinkProps as AriaLinkProps } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
 
+import { formatDate } from "@/shared/utils";
+
 type LearningPlanListItem = {
   id: string;
   emoji: string;
@@ -178,7 +180,7 @@ const LearningPlanCard: React.FC<LearningPlanCardProps> = ({
       <div className={slots.footer()}>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar className="w-3 h-3" />
-          {new Date(learningPlan.createdAt).toLocaleDateString("ko-KR")}
+          {formatDate(learningPlan.createdAt)}
         </div>
 
         <div className="text-xs text-muted-foreground">

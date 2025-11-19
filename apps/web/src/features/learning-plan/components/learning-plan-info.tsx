@@ -12,6 +12,8 @@ import { cn } from "@repo/ui/utils";
 
 import type React from "react";
 
+import { formatDate } from "@/shared/utils";
+
 interface LearningPlanInfoProps extends React.ComponentProps<"div"> {
   status: "active" | "archived" | undefined;
   createdAt: string;
@@ -59,7 +61,7 @@ export default function LearningPlanInfo({
             type="iconify"
             className="size-4"
           />
-          <span>생성: {new Date(createdAt).toLocaleDateString("ko-KR")}</span>
+          <span>생성: {formatDate(createdAt)}</span>
         </div>
         <div className="flex items-center gap-1">
           <Icon
@@ -67,7 +69,7 @@ export default function LearningPlanInfo({
             type="iconify"
             className="size-4"
           />
-          <span>수정: {new Date(updatedAt).toLocaleDateString("ko-KR")}</span>
+          <span>수정: {formatDate(updatedAt)}</span>
         </div>
       </div>
 

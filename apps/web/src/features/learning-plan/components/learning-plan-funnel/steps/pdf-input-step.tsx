@@ -7,7 +7,7 @@ import type { Document } from "@/features/learning-plan/model/types";
 
 import { useDocumentUpload } from "@/features/learning-plan/hooks/use-document-upload";
 import { FileUpload } from "@/shared/components/file-upload";
-import { logger } from "@/shared/utils";
+import { getErrorMessage, logger } from "@/shared/utils";
 
 const pdfInputLogger = logger.createScoped("PdfInputStep");
 
@@ -47,8 +47,7 @@ export const PdfInputStep = (props: PdfInputStepProps) => {
       const uploadedDocument = await uploadDocument(file);
       setDocument(uploadedDocument);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "파일 업로드에 실패했습니다.";
+      const errorMessage = getErrorMessage(err, "파일 업로드에 실패했습니다.");
       setError(errorMessage);
       pdfInputLogger.error(
         "Document upload failed",
