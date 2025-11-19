@@ -4,6 +4,7 @@
  */
 
 import { useState } from "react";
+import { cn } from "@repo/ui/utils";
 
 import { useConversations } from "../hooks/use-conversations";
 
@@ -73,7 +74,7 @@ export function AIChatSection({
   };
 
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {/* 대화 세션 목록 */}
       <div className="border border-gray-200 rounded-lg p-4 h-[200px] overflow-y-auto">
         <div className="flex items-center justify-between mb-3">

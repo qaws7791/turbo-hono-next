@@ -11,6 +11,7 @@ import {
 } from "@repo/ui/calendar";
 import { Icon } from "@repo/ui/icon";
 import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
+import { cn } from "@repo/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
 import * as React from "react";
 
@@ -250,7 +251,11 @@ const LearningTaskItem = ({
 
   return (
     <div
-      className={`flex items-start gap-3 p-3 rounded-lg border border-muted transition-colors hover:bg-muted/40 cursor-pointer ${className || ""}`}
+      className={cn(
+        "flex items-start gap-3 p-3 rounded-lg border border-muted",
+        "transition-colors hover:bg-muted/40 cursor-pointer",
+        className,
+      )}
       onClick={handleContainerClick}
     >
       <button
