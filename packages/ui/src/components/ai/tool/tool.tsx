@@ -2,7 +2,6 @@
 
 import {
   CheckCircleIcon,
-  ChevronDownIcon,
   CircleIcon,
   ClockIcon,
   WrenchIcon,
@@ -19,9 +18,14 @@ import {
 } from "../../interaction";
 
 import type { ToolUIPart } from "ai";
-import type { ComponentProps, ReactNode } from "react";
-
-export type ToolProps = ComponentProps<typeof Disclosure>;
+import type { ReactNode } from "react";
+import type {
+  ToolContentProps,
+  ToolHeaderProps,
+  ToolInputProps,
+  ToolOutputProps,
+  ToolProps,
+} from "./tool.types";
 
 export const Tool = ({ className, ...props }: ToolProps) => (
   <Disclosure
@@ -29,13 +33,6 @@ export const Tool = ({ className, ...props }: ToolProps) => (
     {...props}
   />
 );
-
-export type ToolHeaderProps = {
-  title?: string;
-  type: ToolUIPart["type"];
-  state: ToolUIPart["state"];
-  className?: string;
-};
 
 const getStatusBadge = (status: ToolUIPart["state"]) => {
   const labels: Record<ToolUIPart["state"], string> = {
@@ -88,8 +85,6 @@ export const ToolHeader = ({
   </DisclosureHeader>
 );
 
-export type ToolContentProps = ComponentProps<typeof DisclosurePanel>;
-
 export const ToolContent = ({ className, ...props }: ToolContentProps) => (
   <DisclosurePanel
     className={cn(
@@ -99,10 +94,6 @@ export const ToolContent = ({ className, ...props }: ToolContentProps) => (
     {...props}
   />
 );
-
-export type ToolInputProps = ComponentProps<"div"> & {
-  input: ToolUIPart["input"];
-};
 
 export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
   <div
@@ -120,11 +111,6 @@ export const ToolInput = ({ className, input, ...props }: ToolInputProps) => (
     </div>
   </div>
 );
-
-export type ToolOutputProps = ComponentProps<"div"> & {
-  output: ToolUIPart["output"];
-  errorText: ToolUIPart["errorText"];
-};
 
 export const ToolOutput = ({
   className,
