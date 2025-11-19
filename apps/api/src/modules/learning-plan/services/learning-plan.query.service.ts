@@ -184,8 +184,8 @@ export class LearningPlanQueryService {
           description: module.description,
           order: module.order,
           isExpanded: module.isExpanded,
-          createdAt: new Date().toISOString(), // Module doesn't have timestamps in the nested structure
-          updatedAt: new Date().toISOString(),
+          createdAt: module.createdAt.toISOString(),
+          updatedAt: module.updatedAt.toISOString(),
           learningTasks: module.tasks.map((task) => ({
             id: task.publicId,
             title: task.title,
@@ -195,8 +195,8 @@ export class LearningPlanQueryService {
             dueDate: task.dueDate?.toISOString() ?? null,
             memo: task.memo,
             order: task.order,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            createdAt: task.createdAt.toISOString(),
+            updatedAt: task.updatedAt.toISOString(),
           })),
         })),
         documents,

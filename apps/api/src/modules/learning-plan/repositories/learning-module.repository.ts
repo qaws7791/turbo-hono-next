@@ -25,6 +25,8 @@ export interface LearningModuleWithTasks extends LearningModule {
     completedAt: Date | null;
     dueDate: Date | null;
     memo: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   }>;
 }
 
@@ -124,6 +126,8 @@ export class LearningModuleRepository
         taskCompletedAt: learningTask.completedAt,
         taskDueDate: learningTask.dueDate,
         taskMemo: learningTask.memo,
+        taskCreatedAt: learningTask.createdAt,
+        taskUpdatedAt: learningTask.updatedAt,
       })
       .from(learningModule)
       .leftJoin(
@@ -167,6 +171,8 @@ export class LearningModuleRepository
           completedAt: row.taskCompletedAt,
           dueDate: row.taskDueDate,
           memo: row.taskMemo,
+          createdAt: row.taskCreatedAt!,
+          updatedAt: row.taskUpdatedAt!,
         });
       }
     }

@@ -62,6 +62,8 @@ export interface LearningPlanWithRelations extends LearningPlan {
     description: string | null;
     order: number;
     isExpanded: boolean;
+    createdAt: Date;
+    updatedAt: Date;
     tasks: Array<{
       id: number;
       publicId: string;
@@ -73,6 +75,8 @@ export interface LearningPlanWithRelations extends LearningPlan {
       dueDate: Date | null;
       memo: string | null;
       noteStatus: string | null;
+      createdAt: Date;
+      updatedAt: Date;
     }>;
   }>;
 }
@@ -107,6 +111,8 @@ interface QueryRow {
   moduleDescription: string | null;
   moduleOrder: number | null;
   moduleIsExpanded: boolean | null;
+  moduleCreatedAt: Date | null;
+  moduleUpdatedAt: Date | null;
 
   // Learning Task fields
   taskId: number | null;
@@ -118,6 +124,8 @@ interface QueryRow {
   taskCompletedAt: Date | null;
   taskDueDate: Date | null;
   taskMemo: string | null;
+  taskCreatedAt: Date | null;
+  taskUpdatedAt: Date | null;
 
   // AI Note status
   noteStatus: string | null;
@@ -383,6 +391,8 @@ export class LearningPlanRepository
         moduleDescription: learningModule.description,
         moduleOrder: learningModule.order,
         moduleIsExpanded: learningModule.isExpanded,
+        moduleCreatedAt: learningModule.createdAt,
+        moduleUpdatedAt: learningModule.updatedAt,
 
         // Learning Task fields
         taskId: learningTask.id,
@@ -394,6 +404,8 @@ export class LearningPlanRepository
         taskCompletedAt: learningTask.completedAt,
         taskDueDate: learningTask.dueDate,
         taskMemo: learningTask.memo,
+        taskCreatedAt: learningTask.createdAt,
+        taskUpdatedAt: learningTask.updatedAt,
       })
       .from(learningPlan)
       .leftJoin(
@@ -582,6 +594,8 @@ export class LearningPlanRepository
           description: row.moduleDescription,
           order: row.moduleOrder!,
           isExpanded: row.moduleIsExpanded!,
+          createdAt: row.moduleCreatedAt!,
+          updatedAt: row.moduleUpdatedAt!,
           tasks: [],
         };
         moduleMap.set(row.moduleId, module);
@@ -605,6 +619,8 @@ export class LearningPlanRepository
             dueDate: row.taskDueDate,
             memo: row.taskMemo,
             noteStatus: row.noteStatus,
+            createdAt: row.taskCreatedAt!,
+            updatedAt: row.taskUpdatedAt!,
           });
         }
       }
