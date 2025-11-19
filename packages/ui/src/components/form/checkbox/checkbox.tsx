@@ -16,7 +16,11 @@ import { checkboxInnerStyles, checkboxStyles } from "./checkbox.styles";
 import type { CheckboxProps, FormCheckboxGroupProps } from "./checkbox.types";
 
 /**
- * CheckboxGroup component - Groups multiple checkboxes together
+ * CheckboxGroup component
+ *
+ * @description
+ * A container for multiple checkbox components. Built on React Aria Components for accessibility.
+ * Manages selection state and provides grouped checkbox functionality.
  *
  * @example
  * ```tsx
@@ -29,9 +33,14 @@ import type { CheckboxProps, FormCheckboxGroupProps } from "./checkbox.types";
 const CheckboxGroup = AriaCheckboxGroup;
 
 /**
- * Checkbox component - Accessible checkbox with check/indeterminate states
+ * Checkbox component
+ *
+ * @description
+ * A checkbox input control for selecting one or more options. Built on React Aria Components for accessibility.
+ * Supports checked, unchecked, and indeterminate states.
  *
  * @example
+ * Basic usage
  * ```tsx
  * <Checkbox value="subscribe">
  *   Subscribe to newsletter
@@ -39,6 +48,7 @@ const CheckboxGroup = AriaCheckboxGroup;
  * ```
  *
  * @example
+ * Indeterminate state
  * ```tsx
  * <Checkbox isIndeterminate>
  *   Partial selection

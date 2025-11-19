@@ -12,6 +12,26 @@ import type { ComponentProps } from "react";
 
 export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
+/**
+ * Conversation component
+ *
+ * @description
+ * Container for displaying a conversation or chat messages. Built on use-stick-to-bottom for automatic
+ * scrolling to the latest message. Use with ConversationContent to hold messages and ConversationEmptyState
+ * for empty state display.
+ *
+ * @example
+ * Basic usage
+ * ```tsx
+ * <Conversation>
+ *   <ConversationContent>
+ *     {messages.map((msg) => (
+ *       <Message key={msg.id} message={msg} />
+ *     ))}
+ *   </ConversationContent>
+ * </Conversation>
+ * ```
+ */
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
     className={twMerge("relative flex-1 overflow-y-hidden", className)}
@@ -26,6 +46,20 @@ export type ConversationContentProps = ComponentProps<
   typeof StickToBottom.Content
 >;
 
+/**
+ * ConversationContent component
+ *
+ * @description
+ * Container for message content within a Conversation. Provides flex layout with spacing
+ * for displaying individual messages.
+ *
+ * @example
+ * ```tsx
+ * <ConversationContent>
+ *   {messages.map((msg) => <Message key={msg.id} {...msg} />)}
+ * </ConversationContent>
+ * ```
+ */
 export const ConversationContent = ({
   className,
   ...props

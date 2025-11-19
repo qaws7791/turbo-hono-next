@@ -1,7 +1,6 @@
 "use client";
 
 import { Check, ChevronRight, Circle } from "lucide-react";
-import * as React from "react";
 import {
   Header as AriaHeader,
   Keyboard as AriaKeyboard,

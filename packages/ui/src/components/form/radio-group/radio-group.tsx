@@ -24,7 +24,11 @@ import type {
 } from "./radio-group.types";
 
 /**
- * RadioGroup component - Groups radio buttons for single selection
+ * RadioGroup component
+ *
+ * @description
+ * A container for radio button components allowing single selection from multiple options.
+ * Built on React Aria Components for accessibility.
  *
  * @example
  * ```tsx
@@ -46,9 +50,14 @@ const RadioGroup = ({ className, ...props }: RadioGroupProps) => {
 };
 
 /**
- * Radio component - Single radio button option
+ * Radio component
+ *
+ * @description
+ * A single radio button option within a RadioGroup. Built on React Aria Components for accessibility.
+ * Only one radio in a group can be selected at a time.
  *
  * @example
+ * Basic option
  * ```tsx
  * <Radio value="option1">
  *   Select this option

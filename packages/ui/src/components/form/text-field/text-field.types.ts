@@ -45,4 +45,15 @@ export interface FormTextFieldProps extends AriaTextFieldProps {
    * @default false
    */
   textArea?: boolean;
+
+  /**
+   * Placeholder text for the input/textarea
+   */
+  placeholder?: string;
+
+  /**
+   * Input type (text, email, password, number, etc.)
+   * Only applies when textArea is false
+   */
+  type?: string;
 }

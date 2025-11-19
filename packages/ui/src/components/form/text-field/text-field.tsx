@@ -139,6 +139,8 @@ export function FormTextField({
   description,
   errorMessage,
   textArea,
+  placeholder,
+  type,
   className,
   ...props
 }: FormTextFieldProps) {
@@ -150,7 +152,14 @@ export function FormTextField({
       {...props}
     >
       {label && <Label>{label}</Label>}
-      {textArea ? <TextArea /> : <Input />}
+      {textArea ? (
+        <TextArea placeholder={placeholder} />
+      ) : (
+        <Input
+          placeholder={placeholder}
+          type={type}
+        />
+      )}
       {description && (
         <Text
           className="text-sm text-muted-foreground"

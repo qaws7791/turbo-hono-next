@@ -172,6 +172,13 @@ const DEFAULT_USER_MENU_ITEMS: Array<UserMenuItem> = [
 ];
 
 // Sub-components
+
+/**
+ * SidebarHeader component
+ *
+ * @description
+ * Container for sidebar header content, typically containing the logo and close button.
+ */
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   children,
   className,
@@ -426,6 +433,34 @@ const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({
 };
 
 // Main Sidebar Component with Composition
+
+/**
+ * Sidebar component
+ *
+ * @description
+ * A flexible sidebar navigation component with header, nav, footer, and user menu sections.
+ * Use as a compound component with Sidebar.Header, Sidebar.Nav, etc.
+ * Built using React Context for internal state management.
+ *
+ * @example
+ * Basic usage
+ * ```tsx
+ * <Sidebar onClose={() => setSidebarOpen(false)}>
+ *   <Sidebar.Header>
+ *     <Sidebar.Logo text="MyApp" />
+ *     <Sidebar.CloseButton />
+ *   </Sidebar.Header>
+ *
+ *   <Sidebar.Content>
+ *     <Sidebar.Nav items={navItems} activeItem="home" />
+ *   </Sidebar.Content>
+ *
+ *   <Sidebar.Footer>
+ *     <Sidebar.UserMenu user={currentUser} />
+ *   </Sidebar.Footer>
+ * </Sidebar>
+ * ```
+ */
 const SidebarRoot: React.FC<SidebarProps> = ({
   className,
   onClose,

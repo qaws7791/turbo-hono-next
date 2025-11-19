@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-
 import { badgeStyles } from "./badge.styles";
 
 import type { BadgeProps } from "./badge.types";

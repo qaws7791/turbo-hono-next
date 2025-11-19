@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import * as React from "react";
 import {
   Input as AriaInput,
   NumberField as AriaNumberField,
