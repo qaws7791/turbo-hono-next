@@ -13,10 +13,10 @@ import {
 } from "react-aria-components";
 
 // TODO: Update imports once components are migrated
+import { cn } from "../../../utils";
 import { Button } from "../../button/button/button";
-import { ListBoxCollection, ListBoxSection } from "../../../list-box";
-import { SelectPopover } from "../../../select";
-import { twMerge } from "../../../utils";
+import { SelectPopover } from "../../form/select";
+import { ListBoxCollection, ListBoxSection } from "../../interaction/list-box";
 
 import type {
   JollyMenuProps,
@@ -72,7 +72,7 @@ function MenuPopover({ className, ...props }: MenuPopoverProps) {
   return (
     <SelectPopover
       className={composeRenderProps(className, (className) =>
-        twMerge("w-auto", className),
+        cn("w-auto", className),
       )}
       {...props}
     />
@@ -111,7 +111,7 @@ MenuPopover.displayName = "MenuPopover";
 const Menu = <T extends object>({ className, ...props }: MenuProps<T>) => (
   <AriaMenu
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "max-h-[inherit] overflow-auto rounded-md p-1 outline-0 [clip-path:inset(0_0_0_0_round_calc(var(--radius)-2px))]",
         className,
       ),
@@ -163,7 +163,7 @@ const MenuItem = ({ children, className, ...props }: MenuItemProps) => (
       props.textValue || (typeof children === "string" ? children : undefined)
     }
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
         /* Disabled */
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -228,7 +228,7 @@ const MenuHeader = ({
   ...props
 }: MenuHeaderProps) => (
   <AriaHeader
-    className={twMerge(
+    className={cn(
       "px-3 py-1.5 text-sm font-semibold",
       inset && "pl-8",
       separator && "-mx-1 mb-1 border-b border-b-border pb-2.5",
@@ -254,7 +254,7 @@ MenuHeader.displayName = "MenuHeader";
  */
 const MenuSeparator = ({ className, ...props }: MenuSeparatorProps) => (
   <AriaSeparator
-    className={twMerge("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn("-mx-1 my-1 h-px bg-muted", className)}
     {...props}
   />
 );
@@ -275,10 +275,7 @@ MenuSeparator.displayName = "MenuSeparator";
 const MenuKeyboard = ({ className, ...props }: MenuKeyboardProps) => {
   return (
     <AriaKeyboard
-      className={twMerge(
-        "ml-auto text-xs tracking-widest opacity-60",
-        className,
-      )}
+      className={cn("ml-auto text-xs tracking-widest opacity-60", className)}
       {...props}
     />
   );

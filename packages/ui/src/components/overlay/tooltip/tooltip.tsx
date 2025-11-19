@@ -6,7 +6,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type { TooltipProps } from "./tooltip.types";
 
@@ -68,7 +68,7 @@ const Tooltip = ({ className, offset = 4, ...props }: TooltipProps) => (
   <AriaTooltip
     offset={offset}
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0",
         /* Entering */
         "data-[entering]:zoom-in-95",

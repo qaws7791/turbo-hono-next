@@ -7,9 +7,9 @@ import {
   Text,
   composeRenderProps,
 } from "react-aria-components";
-import { twMerge } from "tailwind-merge";
 
 import { FieldError, Label } from "..";
+import { cn } from "../../../utils";
 
 import { checkboxInnerStyles, checkboxStyles } from "./checkbox.styles";
 
@@ -103,7 +103,7 @@ function FormCheckboxGroup({
   return (
     <CheckboxGroup
       className={composeRenderProps(className, (className) =>
-        twMerge("group flex flex-col gap-2", className),
+        cn("group flex flex-col gap-2", className),
       )}
       {...props}
     >

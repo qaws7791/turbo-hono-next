@@ -7,11 +7,10 @@ import {
   Text,
   composeRenderProps,
 } from "react-aria-components";
-import { twMerge } from "tailwind-merge";
 
 // TODO: Import from new location once button is migrated
-import { Button } from "../../button";
 import { FieldError, FieldGroup, Label } from "..";
+import { Button } from "../../button";
 
 import type {
   FormNumberFieldProps,
@@ -48,7 +47,7 @@ function NumberFieldInput({ className, ...props }: NumberFieldInputProps) {
   return (
     <AriaInput
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           "w-fit min-w-0 flex-1 border-r border-transparent bg-background pr-2 outline-0 placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden",
           className,
         ),
@@ -72,7 +71,7 @@ function NumberFieldSteppers({
 }: NumberFieldSteppersProps) {
   return (
     <div
-      className={twMerge(
+      className={cn(
         "absolute right-0 flex h-full flex-col border-l",
         className,
       )}
@@ -109,10 +108,7 @@ function NumberFieldStepper({ className, ...props }: NumberFieldStepperProps) {
   return (
     <Button
       className={composeRenderProps(className, (className) =>
-        twMerge(
-          "w-auto grow rounded-none px-0.5 text-muted-foreground",
-          className,
-        ),
+        cn("w-auto grow rounded-none px-0.5 text-muted-foreground", className),
       )}
       variant={"ghost"}
       size={"icon"}
@@ -145,7 +141,7 @@ function FormNumberField({
   return (
     <NumberField
       className={composeRenderProps(className, (className) =>
-        twMerge("group flex flex-col gap-2", className),
+        cn("group flex flex-col gap-2", className),
       )}
       {...props}
     >

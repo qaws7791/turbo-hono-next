@@ -7,7 +7,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type { PopoverDialogProps, PopoverProps } from "./popover.types";
 
@@ -59,7 +59,7 @@ const Popover = ({ className, offset = 4, ...props }: PopoverProps) => (
   <AriaPopover
     offset={offset}
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "z-50 rounded-md border border-border bg-popover text-popover-foreground shadow-md outline-none",
         /* Entering */
         "data-[entering]:animate-in data-[entering]:fade-in-0 data-[entering]:zoom-in-95",
@@ -93,7 +93,7 @@ Popover.displayName = "Popover";
 function PopoverDialog({ className, ...props }: PopoverDialogProps) {
   return (
     <AriaDialog
-      className={twMerge("p-4 outline-0", className)}
+      className={cn("p-4 outline-0", className)}
       {...props}
     />
   );

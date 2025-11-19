@@ -9,9 +9,9 @@ import {
   Text,
   composeRenderProps,
 } from "react-aria-components";
-import { twMerge } from "tailwind-merge";
 
 import { FieldError, FieldGroup, Label } from "..";
+import { cn } from "../../../utils";
 
 import {
   searchFieldClearStyles,
@@ -48,7 +48,7 @@ function SearchField({ className, ...props }: SearchFieldProps) {
   return (
     <AriaSearchField
       className={composeRenderProps(className, (className) =>
-        twMerge(className, "group"),
+        cn(className, "group"),
       )}
       {...props}
     />
@@ -142,7 +142,7 @@ function FormSearchField({
   return (
     <SearchField
       className={composeRenderProps(className, (className) =>
-        twMerge(className, "group flex flex-col gap-2"),
+        cn(className, "group flex flex-col gap-2"),
       )}
       {...props}
     >

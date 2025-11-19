@@ -1,6 +1,6 @@
 "use client";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 import { Separator } from "../../layout/separator";
 
 import { buttonGroupStyles } from "./button-group.styles";
@@ -42,7 +42,7 @@ function ButtonGroup({ className, orientation, ...props }: ButtonGroupProps) {
       role="group"
       data-slot="button-group"
       data-orientation={orientation}
-      className={twMerge(buttonGroupStyles({ orientation }), className)}
+      className={cn(buttonGroupStyles({ orientation }), className)}
       {...props}
     />
   );
@@ -68,7 +68,7 @@ ButtonGroup.displayName = "ButtonGroup";
 function ButtonGroupText({ className, ...props }: ButtonGroupTextProps) {
   return (
     <div
-      className={twMerge(
+      className={cn(
         "bg-muted flex items-center gap-2 rounded-md border px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
@@ -94,7 +94,7 @@ function ButtonGroupSeparator({
     <Separator
       data-slot="button-group-separator"
       orientation={orientation}
-      className={twMerge(
+      className={cn(
         "bg-input relative !m-0 self-stretch data-[orientation=vertical]:h-auto",
         className,
       )}

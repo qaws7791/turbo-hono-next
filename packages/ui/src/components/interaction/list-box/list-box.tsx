@@ -10,7 +10,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type {
   ListBoxHeaderProps,
@@ -78,7 +78,7 @@ function ListBox<T extends object>({ className, ...props }: ListBoxProps<T>) {
   return (
     <AriaListBox
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           className,
           "group overflow-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none",
           /* Empty */
@@ -134,7 +134,7 @@ const ListBoxItem = <T extends object>({
         props.textValue || (typeof children === "string" ? children : undefined)
       }
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           "relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none",
           /* Disabled */
           "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
@@ -180,7 +180,7 @@ ListBoxItem.displayName = "ListBoxItem";
 function ListBoxHeader({ className, ...props }: ListBoxHeaderProps) {
   return (
     <AriaHeader
-      className={twMerge("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+      className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
       {...props}
     />
   );

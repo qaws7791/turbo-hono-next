@@ -1,4 +1,4 @@
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type { LoadingSpinnerProps } from "./loading-spinner.types";
 
@@ -34,7 +34,7 @@ import type { LoadingSpinnerProps } from "./loading-spinner.types";
  */
 const LoadingSpinner = ({ className, ...props }: LoadingSpinnerProps) => (
   <div
-    className={twMerge("flex justify-center items-center", className)}
+    className={cn("flex justify-center items-center", className)}
     {...props}
   >
     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>

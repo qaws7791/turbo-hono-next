@@ -19,8 +19,8 @@ import {
   useLocale,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
 import { buttonVariants } from "../../../styles/variants/button-variants";
+import { cn } from "../../../utils";
 
 import type {
   CalendarCellProps as AriaCalendarCellProps,
@@ -47,7 +47,7 @@ const CalendarHeading = (props: React.ComponentProps<"header">) => {
     >
       <AriaButton
         slot="previous"
-        className={twMerge(
+        className={cn(
           buttonVariants({ variant: "outline" }),
           "size-7 bg-transparent p-0 opacity-50",
           /* Hover */
@@ -69,7 +69,7 @@ const CalendarHeading = (props: React.ComponentProps<"header">) => {
       <AriaHeading className="grow text-center text-sm font-medium" />
       <AriaButton
         slot="next"
-        className={twMerge(
+        className={cn(
           buttonVariants({ variant: "outline" }),
           "size-7 bg-transparent p-0 opacity-50",
           /* Hover */
@@ -94,7 +94,7 @@ const CalendarHeading = (props: React.ComponentProps<"header">) => {
 
 const CalendarGrid = ({ className, ...props }: AriaCalendarGridProps) => (
   <AriaCalendarGrid
-    className={twMerge(
+    className={cn(
       " border-separate border-spacing-x-0 border-spacing-y-1 ",
       className,
     )}
@@ -111,7 +111,7 @@ const CalendarHeaderCell = ({
   ...props
 }: AriaCalendarHeaderCellProps) => (
   <AriaCalendarHeaderCell
-    className={twMerge(
+    className={cn(
       "w-9 rounded-md text-[0.8rem] font-normal text-muted-foreground",
       className,
     )}
@@ -124,7 +124,7 @@ const CalendarGridBody = ({
   ...props
 }: AriaCalendarGridBodyProps) => (
   <AriaCalendarGridBody
-    className={twMerge("[&>tr>td]:p-0", className)}
+    className={cn("[&>tr>td]:p-0", className)}
     {...props}
   />
 );
@@ -134,7 +134,7 @@ const CalendarCell = ({ className, ...props }: AriaCalendarCellProps) => {
   return (
     <AriaCalendarCell
       className={composeRenderProps(className, (className, renderProps) =>
-        twMerge(
+        cn(
           buttonVariants({ variant: "ghost" }),
           "relative flex size-9 items-center justify-center p-0 text-sm font-normal",
           /* Disabled */
@@ -187,7 +187,7 @@ function FormCalendar<T extends AriaDateValue>({
   return (
     <Calendar
       className={composeRenderProps(className, (className) =>
-        twMerge("w-fit", className),
+        cn("w-fit", className),
       )}
       {...props}
     >
@@ -225,7 +225,7 @@ function FormRangeCalendar<T extends AriaDateValue>({
   return (
     <RangeCalendar
       className={composeRenderProps(className, (className) =>
-        twMerge("w-fit", className),
+        cn("w-fit", className),
       )}
       {...props}
     >

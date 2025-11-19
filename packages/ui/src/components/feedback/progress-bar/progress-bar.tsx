@@ -6,8 +6,8 @@ import {
 } from "react-aria-components";
 
 // TODO: Update import once form components are migrated
+import { cn } from "../../../utils";
 import { Label, labelVariants } from "../../form/label";
-import { twMerge } from "../../../utils";
 
 import type { FormProgressBarProps, ProgressProps } from "./progress-bar.types";
 
@@ -59,7 +59,7 @@ const Progress = ({
 }: ProgressProps) => (
   <AriaProgressBar
     className={composeRenderProps(className, (className) =>
-      twMerge("w-full", className),
+      cn("w-full", className),
     )}
     {...props}
   >
@@ -67,13 +67,13 @@ const Progress = ({
       <>
         {children}
         <div
-          className={twMerge(
+          className={cn(
             "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
             barClassName,
           )}
         >
           <div
-            className={twMerge(
+            className={cn(
               "size-full flex-1 bg-primary transition-all",
               fillClassName,
             )}
@@ -132,7 +132,7 @@ function FormProgressBar({
   return (
     <Progress
       className={composeRenderProps(className, (className) =>
-        twMerge("group flex flex-col gap-2", className),
+        cn("group flex flex-col gap-2", className),
       )}
       {...props}
     >

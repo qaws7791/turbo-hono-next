@@ -9,7 +9,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type {
   TabListProps,
@@ -52,7 +52,7 @@ function Tabs({ className, ...props }: TabsProps) {
   return (
     <AriaTabs
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           "group flex",
           /* Orientation */
           "data-[orientation=horizontal]:flex-col",
@@ -85,7 +85,7 @@ const TabList = <T extends object>({
 }: TabListProps<T>) => (
   <AriaTabList
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "flex",
         /* Orientation */
         "data-[orientation=horizontal]:border-b",
@@ -128,7 +128,7 @@ TabList.displayName = "TabList";
 const Tab = ({ className, ...props }: TabProps) => (
   <AriaTab
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "relative inline-flex min-w-0 cursor-default items-center justify-center whitespace-nowrap py-2.5 px-4 text-sm font-medium text-muted-foreground outline-none forced-color-adjust:none",
         /* Hover */
         "hover:cursor-pointer",
@@ -169,7 +169,7 @@ Tab.displayName = "Tab";
 const TabPanel = ({ className, ...props }: TabPanelProps) => (
   <AriaTabPanel
     className={composeRenderProps(className, (className) =>
-      twMerge("rounded outline-none", className),
+      cn("rounded outline-none", className),
     )}
     {...props}
   />

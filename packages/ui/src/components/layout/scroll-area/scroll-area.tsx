@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type { ScrollAreaProps } from "./scroll-area.types";
 
@@ -51,7 +51,7 @@ const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
     return (
       <div
         ref={ref}
-        className={twMerge(
+        className={cn(
           "relative",
           orientationClasses[orientation],
           /* Custom scrollbar styles */

@@ -9,7 +9,6 @@ import {
   Text,
   composeRenderProps,
 } from "react-aria-components";
-import { twMerge } from "tailwind-merge";
 
 import { FieldError, Label } from "..";
 import {
@@ -19,6 +18,7 @@ import {
   ListBoxSection,
 } from "../../../components/interaction/list-box";
 import { Popover } from "../../../components/overlay/popover";
+import { cn } from "../../../utils";
 
 import type {
   FormSelectProps,
@@ -81,7 +81,7 @@ const SelectValue = <T extends object>({
 }: SelectValueProps<T>) => (
   <AriaSelectValue
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "line-clamp-1 data-[placeholder]:text-muted-foreground",
         /* Description */
         "[&>[slot=description]]:hidden",
@@ -109,7 +109,7 @@ const SelectTrigger = ({
 }: SelectTriggerProps) => (
   <AriaButton
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
         /* Disabled */
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
@@ -149,7 +149,7 @@ const SelectTrigger = ({
 const SelectPopover = ({ className, ...props }: SelectPopoverProps) => (
   <Popover
     className={composeRenderProps(className, (className) =>
-      twMerge("min-w-(--trigger-width)", className),
+      cn("min-w-(--trigger-width)", className),
     )}
     {...props}
   />
@@ -172,7 +172,7 @@ const SelectListBox = <T extends object>({
 }: SelectListBoxProps<T>) => (
   <AriaListBox
     className={composeRenderProps(className, (className) =>
-      twMerge(
+      cn(
         "max-h-[inherit] overflow-auto p-1 outline-none [clip-path:inset(0_0_0_0_round_calc(var(--radius)-2px))]",
         className,
       ),
@@ -208,7 +208,7 @@ function FormSelect<T extends object>({
   return (
     <Select
       className={composeRenderProps(className, (className) =>
-        twMerge("group flex flex-col gap-2", className),
+        cn("group flex flex-col gap-2", className),
       )}
       {...props}
     >

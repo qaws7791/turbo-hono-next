@@ -1,4 +1,4 @@
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type { IconProps } from "./icon.types";
 
@@ -36,9 +36,7 @@ import type { IconProps } from "./icon.types";
  * ```
  */
 export function Icon({ name, type, className }: IconProps) {
-  return (
-    <span className={twMerge(type, name, "size-6 inline-block", className)} />
-  );
+  return <span className={cn(type, name, "size-6 inline-block", className)} />;
 }
 
 Icon.displayName = "Icon";

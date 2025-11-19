@@ -4,9 +4,9 @@ import * as React from "react";
 import { composeRenderProps } from "react-aria-components";
 
 // TODO: Update imports once button and text-field components are migrated
+import { cn } from "../../../utils";
 import { Button } from "../../button/button/button";
 import { Input, TextArea } from "../text-field/text-field";
-import { twMerge } from "../../../utils";
 
 import {
   inputGroupAddonVariants,
@@ -53,7 +53,7 @@ function InputGroup({ className, ...props }: InputGroupProps) {
     <div
       data-slot="input-group"
       role="group"
-      className={twMerge(
+      className={cn(
         "group/input-group border-input dark:bg-input/30 relative flex w-full items-center rounded-md border shadow-xs transition-[color,box-shadow] outline-none",
         "h-9 min-w-0 has-[>textarea]:h-auto",
 
@@ -108,7 +108,7 @@ function InputGroupAddon({
       role="group"
       data-slot="input-group-addon"
       data-align={align}
-      className={twMerge(inputGroupAddonVariants({ align }), className)}
+      className={cn(inputGroupAddonVariants({ align }), className)}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest("button")) {
           return;
@@ -177,7 +177,7 @@ InputGroupButton.displayName = "InputGroupButton";
 function InputGroupText({ className, ...props }: InputGroupTextProps) {
   return (
     <span
-      className={twMerge(
+      className={cn(
         "text-muted-foreground flex items-center gap-2 text-sm [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
@@ -207,7 +207,7 @@ function InputGroupInput({ className, ...props }: InputGroupInputProps) {
     <Input
       data-slot="input-group-control"
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           "flex-1 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent",
           className,
         ),
@@ -245,7 +245,7 @@ const InputGroupTextarea = React.forwardRef<
       ref={ref}
       data-slot="input-group-control"
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           "flex-1 resize-none rounded-none border-0 bg-transparent py-3 shadow-none data-[focused]:ring-0 dark:bg-transparent",
           className,
         ),

@@ -7,9 +7,9 @@ import {
   Text,
   composeRenderProps,
 } from "react-aria-components";
-import { twMerge } from "tailwind-merge";
 
 import { FieldError, Label } from "..";
+import { cn } from "../../../utils";
 
 import {
   radioGroupStyles,
@@ -112,7 +112,7 @@ function FormRadioGroup({
   return (
     <RadioGroup
       className={composeRenderProps(className, (className) =>
-        twMerge("group/radiogroup flex-col items-start", className),
+        cn("group/radiogroup flex-col items-start", className),
       )}
       {...props}
     >

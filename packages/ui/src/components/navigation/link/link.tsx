@@ -2,8 +2,8 @@
 
 import { Link as AriaLink, composeRenderProps } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
 import { buttonVariants } from "../../../styles/variants/button-variants";
+import { cn } from "../../../utils";
 
 import type { LinkProps } from "./link.types";
 
@@ -60,7 +60,7 @@ const Link = ({ className, variant, size, ...props }: LinkProps) => {
   return (
     <AriaLink
       className={composeRenderProps(className, (className) =>
-        twMerge(
+        cn(
           variant &&
             buttonVariants({
               variant,
