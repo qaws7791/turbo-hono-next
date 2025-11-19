@@ -44,6 +44,14 @@ export interface ProgressStats {
 }
 
 /**
+ * Learning plan with progress statistics
+ */
+export interface LearningPlanWithStats extends LearningPlan {
+  totalTasks: number;
+  completedTasks: number;
+}
+
+/**
  * Learning plan with nested modules and tasks
  */
 export interface LearningPlanWithRelations extends LearningPlan {
@@ -238,6 +246,102 @@ export class LearningPlanRepository
       .where(and(...conditions))
       .orderBy(orderFn(sortByColumn), desc(learningPlan.id))
       .limit(limit);
+  }
+
+  /**
+   * Find learning plans with progress statistics in a single query
+   * Optimized version of findAll() that includes totalTasks and completedTasks
+   * Avoids N+1 queries by using JOIN and aggregation
+   */
+  async findAllWithStats(
+    options: FindAllLearningPlansOptions,
+    tx?: DatabaseTransaction,
+  ): Promise<Array<LearningPlanWithStats>> {
+    const executor = tx ?? db;
+    const {
+      userId,
+      status,
+      search,
+      sortBy = "created_at",
+      order = "desc",
+      limit,
+      cursor,
+    } = options;
+
+    const conditions = [eq(learningPlan.userId, userId)];
+
+    // Status filter
+    if (status) {
+      conditions.push(eq(learningPlan.status, status));
+    }
+
+    // Search filter
+    if (search) {
+      conditions.push(
+        or(
+          ilike(learningPlan.title, `%${search}%`),
+          ilike(learningPlan.description, `%${search}%`),
+        )!,
+      );
+    }
+
+    // Cursor condition for pagination
+    if (cursor) {
+      const cursorCondition = this.buildCursorCondition(sortBy, order, cursor);
+      conditions.push(cursorCondition);
+    }
+
+    // Determine sort order
+    const orderFn = order === "asc" ? asc : desc;
+
+    // Map sortBy to actual column names
+    const sortByColumn =
+      sortBy === "created_at"
+        ? learningPlan.createdAt
+        : sortBy === "updated_at"
+          ? learningPlan.updatedAt
+          : learningPlan.title;
+
+    const result = await executor
+      .select({
+        id: learningPlan.id,
+        publicId: learningPlan.publicId,
+        userId: learningPlan.userId,
+        title: learningPlan.title,
+        description: learningPlan.description,
+        emoji: learningPlan.emoji,
+        status: learningPlan.status,
+        learningTopic: learningPlan.learningTopic,
+        userLevel: learningPlan.userLevel,
+        targetWeeks: learningPlan.targetWeeks,
+        weeklyHours: learningPlan.weeklyHours,
+        learningStyle: learningPlan.learningStyle,
+        preferredResources: learningPlan.preferredResources,
+        mainGoal: learningPlan.mainGoal,
+        additionalRequirements: learningPlan.additionalRequirements,
+        createdAt: learningPlan.createdAt,
+        updatedAt: learningPlan.updatedAt,
+        totalTasks: sql<number>`COUNT(DISTINCT ${learningTask.id})`,
+        completedTasks: sql<number>`
+          COUNT(DISTINCT ${learningTask.id})
+          FILTER (WHERE ${learningTask.isCompleted} = true)
+        `,
+      })
+      .from(learningPlan)
+      .leftJoin(
+        learningModule,
+        eq(learningModule.learningPlanId, learningPlan.id),
+      )
+      .leftJoin(
+        learningTask,
+        eq(learningTask.learningModuleId, learningModule.id),
+      )
+      .where(and(...conditions))
+      .groupBy(learningPlan.id)
+      .orderBy(orderFn(sortByColumn), desc(learningPlan.id))
+      .limit(limit);
+
+    return result as Array<LearningPlanWithStats>;
   }
 
   /**

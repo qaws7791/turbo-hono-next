@@ -9,7 +9,7 @@ import { LearningPlanErrors } from "../errors";
 import { learningPlanRepository } from "../repositories/learning-plan.repository";
 import { calculateCompletionPercent } from "../utils/progress";
 
-import type { LearningPlan } from "@repo/database/types";
+import type { LearningPlanWithStats } from "../repositories/learning-plan.repository";
 
 /**
  * Input type for getting a learning plan
@@ -241,8 +241,8 @@ export class LearningPlanQueryService {
         }
       }
 
-      // Query learning plans with pagination
-      const plans = await learningPlanRepository.findAll({
+      // Query learning plans with progress statistics in a single query
+      const plans = await learningPlanRepository.findAllWithStats({
         userId,
         status,
         search,
@@ -252,38 +252,35 @@ export class LearningPlanQueryService {
         cursor: cursorData,
       });
 
-      // Calculate progress for each plan
-      const plansWithProgress = await Promise.all(
-        plans.slice(0, limit).map(async (plan) => {
-          const stats = await learningPlanRepository.getProgressStats(plan.id);
-          const completionPercent = calculateCompletionPercent(
-            stats.completedTasks,
-            stats.totalTasks,
-          );
+      // Transform plans with completion percentage
+      const plansWithProgress = plans.slice(0, limit).map((plan) => {
+        const completionPercent = calculateCompletionPercent(
+          plan.completedTasks,
+          plan.totalTasks,
+        );
 
-          return {
-            id: plan.publicId,
-            emoji: plan.emoji,
-            title: plan.title,
-            description: plan.description,
-            status: plan.status as "active" | "archived",
-            learningModuleCompletionPercent: completionPercent,
-            learningTopic: plan.learningTopic,
-            userLevel: plan.userLevel,
-            targetWeeks: plan.targetWeeks,
-            weeklyHours: plan.weeklyHours,
-            learningStyle: plan.learningStyle,
-            preferredResources: plan.preferredResources,
-            mainGoal: plan.mainGoal,
-            additionalRequirements: plan.additionalRequirements,
-            createdAt: plan.createdAt.toISOString(),
-            updatedAt: plan.updatedAt.toISOString(),
-          };
-        }),
-      );
+        return {
+          id: plan.publicId,
+          emoji: plan.emoji,
+          title: plan.title,
+          description: plan.description,
+          status: plan.status as "active" | "archived",
+          learningModuleCompletionPercent: completionPercent,
+          learningTopic: plan.learningTopic,
+          userLevel: plan.userLevel,
+          targetWeeks: plan.targetWeeks,
+          weeklyHours: plan.weeklyHours,
+          learningStyle: plan.learningStyle,
+          preferredResources: plan.preferredResources,
+          mainGoal: plan.mainGoal,
+          additionalRequirements: plan.additionalRequirements,
+          createdAt: plan.createdAt.toISOString(),
+          updatedAt: plan.updatedAt.toISOString(),
+        };
+      });
 
       // Create paginated result
-      const getCursorValue = (item: LearningPlan): string | Date => {
+      const getCursorValue = (item: LearningPlanWithStats): string | Date => {
         if (sort === "title") return item.title;
         if (sort === "updated_at") return item.updatedAt;
         return item.createdAt;
