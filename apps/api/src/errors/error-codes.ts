@@ -54,6 +54,7 @@ export const ErrorCodes = {
   LEARNING_PLAN_TASK_CREATION_FAILED: "LP_008",
   LEARNING_PLAN_TASK_MOVE_FAILED: "LP_009",
   LEARNING_PLAN_TASK_UPDATE_FAILED: "LP_010",
+  LEARNING_PLAN_TASK_DELETION_FAILED: "LP_011",
 
   // AI (AI)
   AI_GENERATION_FAILED: "AI_001",
@@ -138,6 +139,8 @@ export const ErrorMessages: Record<ErrorCode, string> = {
   [ErrorCodes.LEARNING_PLAN_TASK_MOVE_FAILED]: "Failed to move learning task",
   [ErrorCodes.LEARNING_PLAN_TASK_UPDATE_FAILED]:
     "Failed to update learning task",
+  [ErrorCodes.LEARNING_PLAN_TASK_DELETION_FAILED]:
+    "Failed to delete learning task",
 
   // AI
   [ErrorCodes.AI_GENERATION_FAILED]: "AI generation failed",

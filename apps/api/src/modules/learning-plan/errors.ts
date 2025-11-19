@@ -2,8 +2,8 @@ import { BaseError } from "../../errors/base.error";
 import { ErrorCodes } from "../../errors/error-codes";
 
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { ErrorCode } from "../../errors/error-codes";
 import type { ErrorDetails } from "../../errors/base.error";
+import type { ErrorCode } from "../../errors/error-codes";
 
 /**
  * Learning plan specific error class.
@@ -117,6 +117,13 @@ export const LearningPlanErrors = {
       500,
       ErrorCodes.LEARNING_PLAN_TASK_MOVE_FAILED,
       "Failed to move learning task",
+      details,
+    ),
+  taskDeletionFailed: (details?: ErrorDetails) =>
+    new LearningPlanError(
+      500,
+      ErrorCodes.LEARNING_PLAN_TASK_DELETION_FAILED,
+      "Failed to delete learning task",
       details,
     ),
 

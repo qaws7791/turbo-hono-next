@@ -282,7 +282,7 @@ export class LearningTaskCommandService {
         error: error instanceof Error ? error.message : "Unknown error",
         userId: input.userId,
       });
-      throw LearningPlanErrors.taskCreationFailed();
+      throw LearningPlanErrors.taskDeletionFailed();
     }
   }
 
