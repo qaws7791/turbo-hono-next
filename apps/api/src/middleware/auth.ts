@@ -48,19 +48,7 @@ export const optionalAuthMiddleware = createMiddleware<{
   Variables: OptionalAuthVariables;
 }>(async (c, next) => {
   // Get session token from cookie
-  const cookieHeader = c.req.header("cookie");
-  let sessionToken: string | undefined;
-
-  if (cookieHeader) {
-    const cookies = cookieHeader.split(";").map((cookie) => cookie.trim());
-    const sessionCookie = cookies.find((cookie) =>
-      cookie.startsWith(`${authConfig.session.cookieName}=`),
-    );
-
-    if (sessionCookie) {
-      sessionToken = sessionCookie.split("=")[1];
-    }
-  }
+  const sessionToken = getCookie(c, authConfig.session.cookieName);
 
   // If token exists, try to verify session
   if (sessionToken) {
