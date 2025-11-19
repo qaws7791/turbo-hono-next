@@ -8,7 +8,7 @@ import {
 } from "@repo/ui/dialog";
 import { Icon } from "@repo/ui/icon";
 import { Tooltip, TooltipTrigger } from "@repo/ui/tooltip";
-import { twMerge } from "@repo/ui/utils";
+import { cn } from "@repo/ui/utils";
 
 import type React from "react";
 
@@ -39,7 +39,7 @@ export default function LearningPlanInfo({
   return (
     <div className="flex items-center justify-between">
       <div
-        className={twMerge(
+        className={cn(
           "flex items-center gap-4 text-sm text-muted-foreground",
           className,
         )}

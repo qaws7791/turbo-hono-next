@@ -16,7 +16,7 @@ import {
 } from "@repo/ui/calendar";
 import { Card } from "@repo/ui/card";
 import { Icon } from "@repo/ui/icon";
-import { twMerge } from "@repo/ui/utils";
+import { cn } from "@repo/ui/utils";
 import * as React from "react";
 
 import type { CalendarDate } from "@internationalized/date";
@@ -165,7 +165,7 @@ export function CompletionCalendarSection() {
           key={key}
           date={date}
           className={({ isSelected, isDisabled }) =>
-            twMerge(
+            cn(
               "flex-col gap-1 text-sm group",
               hasActivity && !isDisabled && !isSelected && "text-primary",
             )
@@ -279,7 +279,7 @@ export function CompletionCalendarSection() {
                             <div className="flex flex-wrap items-center gap-2">
                               <Badge
                                 variant={meta.badgeVariant}
-                                className={twMerge(
+                                className={cn(
                                   "px-2.5 py-0.5",
                                   meta.badgeClassName,
                                 )}

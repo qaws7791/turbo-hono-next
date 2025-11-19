@@ -11,6 +11,7 @@ import {
 // TODO: Import from new location once button is migrated
 import { FieldError, FieldGroup, Label } from "..";
 import { Button } from "../../button";
+import { cn } from "../../../utils";
 
 import type {
   FormNumberFieldProps,
