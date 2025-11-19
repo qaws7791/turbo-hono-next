@@ -50,6 +50,7 @@
     "./feedback": "./src/components/feedback/index.ts",
     "./badge": "./src/components/display/badge/index.ts",
     "./icon": "./src/components/display/icon/index.ts",
+    "./code-block": "./src/components/display/code-block/index.ts",
     "./display": "./src/components/display/index.ts",
     "./disclosure": "./src/components/interaction/disclosure/index.ts",
     "./list-box": "./src/components/interaction/list-box/index.ts",
