@@ -1,139 +1,103 @@
 "use client";
 
+import { ChevronDownIcon } from "lucide-react";
+import { useContext } from "react";
 import {
   Disclosure as AriaDisclosure,
+  DisclosureGroup as AriaDisclosureGroup,
   DisclosurePanel as AriaDisclosurePanel,
   Button,
+  DisclosureGroupStateContext,
+  Heading,
   composeRenderProps,
 } from "react-aria-components";
 
-import { twMerge } from "../../../utils";
+import { cn } from "../../../utils";
 
 import type {
+  DisclosureGroupProps,
+  DisclosureHeaderProps,
   DisclosurePanelProps,
   DisclosureProps,
-  DisclosureTriggerProps,
 } from "./disclosure.types";
 
-/**
- * Disclosure - Expandable/collapsible content container.
- * Provides an accessible way to show/hide content.
- *
- * @example
- * Basic usage:
- * ```tsx
- * <Disclosure>
- *   <DisclosureTrigger>
- *     Show more information
- *     <ChevronDownIcon />
- *   </DisclosureTrigger>
- *   <DisclosurePanel>
- *     <p>Hidden content that can be revealed.</p>
- *   </DisclosurePanel>
- * </Disclosure>
- * ```
- *
- * @example
- * Controlled state:
- * ```tsx
- * const [isExpanded, setIsExpanded] = useState(false);
- *
- * <Disclosure isExpanded={isExpanded} onExpandedChange={setIsExpanded}>
- *   <DisclosureTrigger>
- *     {isExpanded ? 'Show less' : 'Show more'}
- *   </DisclosureTrigger>
- *   <DisclosurePanel>
- *     Collapsible content
- *   </DisclosurePanel>
- * </Disclosure>
- * ```
- */
-const Disclosure = ({ className, ...props }: DisclosureProps) => (
-  <AriaDisclosure
-    className={composeRenderProps(className, (className) =>
-      twMerge("group", className),
-    )}
-    {...props}
-  />
-);
+function Disclosure({ children, className, ...props }: DisclosureProps) {
+  const isInGroup = useContext(DisclosureGroupStateContext) !== null;
+  return (
+    <AriaDisclosure
+      {...props}
+      className={composeRenderProps(className, (className) =>
+        cn(
+          "group min-w-64",
+          isInGroup && "border-0 border-b last:border-b-0",
+          className,
+        ),
+      )}
+    >
+      {children}
+    </AriaDisclosure>
+  );
+}
 
-Disclosure.displayName = "Disclosure";
+function DisclosureHeader({ children, className }: DisclosureHeaderProps) {
+  return (
+    <Heading className="flex">
+      <Button
+        slot="trigger"
+        className={composeRenderProps(className, (className) => {
+          return cn(
+            "group flex flex-1 items-center justify-between rounded-md py-4 font-medium ring-offset-background transition-all hover:underline",
+            "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+            "data-[focus-visible]:outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-ring data-[focus-visible]:ring-offset-2",
+            "outline-none",
+            className,
+          );
+        })}
+      >
+        {children}
+        <ChevronDownIcon
+          aria-hidden
+          className={cn(
+            "size-4 shrink-0 transition-transform duration-200",
+            "group-data-[expanded]:rotate-180",
+            "group-data-[disabled]:opacity-50",
+          )}
+        />
+      </Button>
+    </Heading>
+  );
+}
 
-/**
- * DisclosureTrigger - Button that toggles the disclosure panel.
- * Automatically manages ARIA attributes for accessibility.
- *
- * @example
- * ```tsx
- * <DisclosureTrigger>
- *   Click to expand
- *   <ChevronDownIcon className="group-data-[expanded]:rotate-180" />
- * </DisclosureTrigger>
- * ```
- *
- * @example
- * Custom styling:
- * ```tsx
- * <DisclosureTrigger className="w-full justify-start">
- *   Expand section
- * </DisclosureTrigger>
- * ```
- */
-const DisclosureTrigger = ({ className, ...props }: DisclosureTriggerProps) => (
-  <Button
-    slot="trigger"
-    className={composeRenderProps(className, (className) =>
-      twMerge(
-        "flex w-full items-center justify-between rounded-md px-4 py-2 text-sm font-medium transition-all",
-        "data-[hovered]:bg-accent data-[hovered]:text-accent-foreground",
-        "data-[focus-visible]:outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-ring data-[focus-visible]:ring-offset-2",
-        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-        className,
-      ),
-    )}
-    {...props}
-  />
-);
+function DisclosurePanel({
+  children,
+  className,
+  ...props
+}: DisclosurePanelProps) {
+  return (
+    <AriaDisclosurePanel
+      {...props}
+      className={"overflow-hidden text-sm transition-all"}
+    >
+      <div className={cn("pb-4 pt-0", className)}>{children}</div>
+    </AriaDisclosurePanel>
+  );
+}
 
-DisclosureTrigger.displayName = "DisclosureTrigger";
+function DisclosureGroup({
+  children,
+  className,
+  ...props
+}: DisclosureGroupProps) {
+  return (
+    <AriaDisclosureGroup
+      {...props}
+      className={composeRenderProps(className, (className) =>
+        cn("", className),
+      )}
+    >
+      {children}
+    </AriaDisclosureGroup>
+  );
+}
 
-/**
- * DisclosurePanel - The collapsible content area.
- * Animates in and out with smooth transitions.
- *
- * @example
- * ```tsx
- * <DisclosurePanel>
- *   <div className="p-4">
- *     <p>Content that can be hidden or shown</p>
- *   </div>
- * </DisclosurePanel>
- * ```
- *
- * @example
- * Custom padding:
- * ```tsx
- * <DisclosurePanel className="px-6 py-4">
- *   Expanded content with custom padding
- * </DisclosurePanel>
- * ```
- */
-const DisclosurePanel = ({ className, ...props }: DisclosurePanelProps) => (
-  <AriaDisclosurePanel
-    className={composeRenderProps(className, (className) =>
-      twMerge(
-        "overflow-hidden transition-all",
-        /* Entering */
-        "data-[entering]:animate-in data-[entering]:fade-in-0 data-[entering]:slide-in-from-top-1",
-        /* Exiting */
-        "data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:slide-out-to-top-1",
-        className,
-      ),
-    )}
-    {...props}
-  />
-);
-
-DisclosurePanel.displayName = "DisclosurePanel";
-
-export { Disclosure, DisclosurePanel, DisclosureTrigger };
+export { Disclosure, DisclosureGroup, DisclosureHeader, DisclosurePanel };

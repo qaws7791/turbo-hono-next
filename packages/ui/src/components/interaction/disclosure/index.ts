@@ -1,6 +1,13 @@
-export { Disclosure, DisclosurePanel, DisclosureTrigger } from "./disclosure";
+export {
+  Disclosure,
+  DisclosureGroup,
+  DisclosureHeader,
+  DisclosurePanel,
+} from "./disclosure";
+
 export type {
+  DisclosureGroupProps,
+  DisclosureHeaderProps,
   DisclosurePanelProps,
   DisclosureProps,
-  DisclosureTriggerProps,
 } from "./disclosure.types";
