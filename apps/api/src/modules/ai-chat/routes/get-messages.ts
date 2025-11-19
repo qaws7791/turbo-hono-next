@@ -1,28 +1,23 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { getMessagesRoute } from "@repo/api-spec";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../middleware/auth";
 import { messageQueryService } from "../services/message-query.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const getMessages = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const getMessages = new OpenAPIHono().openapi(
   {
     ...getMessagesRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const params = c.req.valid("param");
 
     const response = await messageQueryService.getMessages({
       conversationId: params.conversationId,
-      userId: auth.user.id,
+      userId,
     });
 
     return c.json(response, status.OK);

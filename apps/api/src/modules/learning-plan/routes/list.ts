@@ -1,27 +1,22 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { learningPlanListRoute } from "@repo/api-spec/modules/learning-plan/routes/list";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../middleware/auth";
 import { learningPlanQueryService } from "../services/learning-plan.query.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const list = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const list = new OpenAPIHono().openapi(
   {
     ...learningPlanListRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const query = c.req.valid("query");
 
     const response = await learningPlanQueryService.listLearningPlans({
-      userId: auth.user.id,
+      userId,
       cursor: query.cursor,
       limit: query.limit,
       status: query.status,

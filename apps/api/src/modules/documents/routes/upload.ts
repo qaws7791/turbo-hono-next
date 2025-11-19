@@ -1,6 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { documentUploadRoute } from "@repo/api-spec/modules/documents/routes";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import {
@@ -9,24 +10,17 @@ import {
   validatePdfFile,
 } from "../../../utils/pdf";
 import { generateStorageKey, uploadToR2 } from "../../../utils/r2";
-import { documentService } from "../services/document.service";
 import { DocumentErrors } from "../errors";
+import { documentService } from "../services/document.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const upload = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const upload = new OpenAPIHono().openapi(
   {
     ...documentUploadRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
     try {
-      const auth = c.get("auth");
-      const userId = auth.user.id;
+      const { userId } = extractAuthContext(c);
 
       // Parse multipart form data
       const body = await c.req.parseBody();

@@ -2,9 +2,9 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { generateLearningTaskQuizRoute } from "@repo/api-spec/modules/ai/routes";
 import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
-import { AuthErrors } from "../../auth/errors";
 import { AIError } from "../errors";
 import {
   prepareLearningTaskQuizGeneration,
@@ -12,31 +12,21 @@ import {
   serializeQuizRecord,
 } from "../services/learning-task-quiz-service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const generateLearningTaskQuiz = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const generateLearningTaskQuiz = new OpenAPIHono().openapi(
   {
     ...generateLearningTaskQuizRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
     try {
-      const auth = c.get("auth");
-
-      if (!auth?.user?.id) {
-        throw AuthErrors.unauthorized();
-      }
+      const { userId } = extractAuthContext(c);
 
       const { id } = c.req.valid("param");
       const query = c.req.valid("query") ?? {};
 
       const { started, record, latestResult, job } =
         await prepareLearningTaskQuizGeneration({
-          userId: auth.user.id,
+          userId,
           learningTaskPublicId: id,
           force: query.force,
         });

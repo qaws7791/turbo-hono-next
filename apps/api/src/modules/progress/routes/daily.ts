@@ -1,31 +1,26 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { dailyProgressRoute } from "@repo/api-spec/modules/progress/routes";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
-import { progressService } from "../services/progress.service";
 import { ProgressErrors } from "../errors";
+import { progressService } from "../services/progress.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const dailyProgress = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const dailyProgress = new OpenAPIHono().openapi(
   {
     ...dailyProgressRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
     try {
-      const auth = c.get("auth");
+      const { userId } = extractAuthContext(c);
       const query = c.req.valid("query");
 
       // Get daily progress via service
       const result = await progressService.getDailyProgress({
-        userId: auth.user.id,
+        userId,
         start: query.start,
         end: query.end,
       });

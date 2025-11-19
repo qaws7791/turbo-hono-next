@@ -2,20 +2,14 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { getPlanRecommendationsRoute as getPlanRecommendationsRouteSpec } from "@repo/api-spec/modules/ai/routes";
 import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { generateDefaultsSuggestion } from "../../../external/ai/features/defaults-suggestion/generator";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
-import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
 import { AIErrors } from "../errors";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const getPlanRecommendationsRoute = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const getPlanRecommendationsRoute = new OpenAPIHono().openapi(
   {
     ...getPlanRecommendationsRouteSpec,
     middleware: [authMiddleware] as const,
@@ -23,11 +17,7 @@ const getPlanRecommendationsRoute = new OpenAPIHono<{
   async (c) => {
     try {
       const body = c.req.valid("json");
-      const auth = c.get("auth");
-
-      if (!auth?.user?.id) {
-        throw AuthErrors.unauthorized();
-      }
+      const { userId } = extractAuthContext(c);
 
       const { learningTopic, mainGoal, documentId } = body;
 
@@ -37,7 +27,7 @@ const getPlanRecommendationsRoute = new OpenAPIHono<{
         try {
           document = await documentService.getDocumentDetail({
             publicId: documentId,
-            userId: auth.user.id,
+            userId,
           });
         } catch {
           throw AIErrors.documentNotFound();

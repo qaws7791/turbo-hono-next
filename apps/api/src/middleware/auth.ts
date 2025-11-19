@@ -1,11 +1,12 @@
 import { getCookie } from "hono/cookie";
+import { createMiddleware } from "hono/factory";
 
 import { authConfig } from "../config/auth";
 import { AuthErrors } from "../modules/auth/errors";
 import { sessionService } from "../modules/auth/services/session.service";
 
+import type { AuthVariables, OptionalAuthVariables } from "../types/variables";
 import type { SessionData } from "../modules/auth/services/session.service";
-import type { Context, Next } from "hono";
 
 export interface AuthContext {
   user: SessionData["user"];
@@ -15,33 +16,37 @@ export interface AuthContext {
   };
 }
 
-export async function authMiddleware(c: Context, next: Next) {
-  // Get session token from cookie
-  const sessionToken = getCookie(c, authConfig.session.cookieName);
+export const authMiddleware = createMiddleware<{ Variables: AuthVariables }>(
+  async (c, next) => {
+    // Get session token from cookie
+    const sessionToken = getCookie(c, authConfig.session.cookieName);
 
-  if (!sessionToken) {
-    throw AuthErrors.unauthorized();
-  }
+    if (!sessionToken) {
+      throw AuthErrors.unauthorized();
+    }
 
-  // Verify session
-  const sessionData = await sessionService.getSessionByToken(sessionToken);
-  if (!sessionData) {
-    throw AuthErrors.sessionExpired();
-  }
+    // Verify session
+    const sessionData = await sessionService.getSessionByToken(sessionToken);
+    if (!sessionData) {
+      throw AuthErrors.sessionExpired();
+    }
 
-  // Set auth context
-  c.set("auth", {
-    user: sessionData.user,
-    session: {
-      id: sessionData.id,
-      expiresAt: sessionData.expiresAt,
-    },
-  });
+    // Set auth context with type safety
+    c.set("auth", {
+      user: sessionData.user,
+      session: {
+        id: sessionData.id,
+        expiresAt: sessionData.expiresAt,
+      },
+    });
 
-  await next();
-}
+    await next();
+  },
+);
 
-export async function optionalAuthMiddleware(c: Context, next: Next) {
+export const optionalAuthMiddleware = createMiddleware<{
+  Variables: OptionalAuthVariables;
+}>(async (c, next) => {
   // Get session token from cookie
   const cookieHeader = c.req.header("cookie");
   let sessionToken: string | undefined;
@@ -72,4 +77,4 @@ export async function optionalAuthMiddleware(c: Context, next: Next) {
   }
 
   await next();
-}
+});

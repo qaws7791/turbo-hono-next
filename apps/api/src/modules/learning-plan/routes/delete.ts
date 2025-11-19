@@ -1,28 +1,23 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { deleteLearningPlanRoute } from "@repo/api-spec/modules/learning-plan/routes/delete";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../middleware/auth";
 import { learningPlanCommandService } from "../services/learning-plan.command.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const deleteLearningPlan = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const deleteLearningPlan = new OpenAPIHono().openapi(
   {
     ...deleteLearningPlanRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const { id } = c.req.valid("param");
 
     const result = await learningPlanCommandService.deleteLearningPlan({
       publicId: id,
-      userId: auth.user.id,
+      userId,
     });
 
     return c.json(result, status.OK);

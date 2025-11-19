@@ -2,26 +2,21 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { getLearningTaskNoteRoute } from "@repo/api-spec/modules/learning-plan/routes/learning-tasks/get-learning-task-note";
 import status from "http-status";
 
+import { extractAuthContext } from "../../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../../middleware/auth";
 import { getLearningTaskNote } from "../../../ai/services/learning-task-note-service";
 
-import type { AuthContext } from "../../../../middleware/auth";
-
-const getLearningTaskNoteHandler = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const getLearningTaskNoteHandler = new OpenAPIHono().openapi(
   {
     ...getLearningTaskNoteRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const { id } = c.req.valid("param");
 
     const result = await getLearningTaskNote({
-      userId: auth.user.id,
+      userId,
       learningTaskPublicId: id,
     });
 

@@ -1,31 +1,26 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { createConversationRoute } from "@repo/api-spec";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../middleware/auth";
 import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
-import { conversationCommandService } from "../services/conversation-command.service";
 import { AIChatErrors } from "../errors";
+import { conversationCommandService } from "../services/conversation-command.service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const createConversation = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const createConversation = new OpenAPIHono().openapi(
   {
     ...createConversationRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const body = c.req.valid("json");
 
     // Public ID → Internal ID 변환
     const learningPlan = await learningPlanRepository.findByPublicId(
       body.learningPlanId,
-      auth.user.id,
+      userId,
     );
 
     if (!learningPlan) {
@@ -34,7 +29,7 @@ const createConversation = new OpenAPIHono<{
 
     const conversation = await conversationCommandService.createConversation({
       learningPlanId: learningPlan.id,
-      userId: auth.user.id,
+      userId,
       title: body.title,
     });
 

@@ -1,28 +1,23 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import status from "http-status";
 import { reorderLearningModuleRoute } from "@repo/api-spec/modules/learning-plan/routes/learning-modules/reorder-learning-module";
+import status from "http-status";
 
+import { extractAuthContext } from "../../../../lib/auth-context.helper";
 import { authMiddleware } from "../../../../middleware/auth";
 import { learningModuleCommandService } from "../../services/learning-module.command.service";
 
-import type { AuthContext } from "../../../../middleware/auth";
-
-const reorderLearningModule = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const reorderLearningModule = new OpenAPIHono().openapi(
   {
     ...reorderLearningModuleRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const { id } = c.req.valid("param");
     const { newOrder } = c.req.valid("json");
 
     const result = await learningModuleCommandService.reorderModule({
-      userId: auth.user.id,
+      userId,
       learningModuleId: id,
       newOrder,
     });

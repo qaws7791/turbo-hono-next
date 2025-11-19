@@ -3,31 +3,26 @@ import { streamMessageRoute } from "@repo/api-spec";
 import { createUIMessageStreamResponse } from "ai";
 import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
 import { aiStreamService } from "../services/ai-stream.service";
 import { conversationQueryService } from "../services/conversation-query.service";
 
 import type { AppUIMessage } from "@repo/ai-types";
-import type { AuthContext } from "../../../middleware/auth";
 
-const streamMessage = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const streamMessage = new OpenAPIHono().openapi(
   {
     ...streamMessageRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
-    const auth = c.get("auth");
+    const { userId } = extractAuthContext(c);
     const body = c.req.valid("json");
     const conversationId = body.conversationId as string;
     const messages = body.messages as Array<AppUIMessage>;
-    const userId = auth.user.id;
 
-    log.info("streamMessage", { auth, body });
+    log.info("streamMessage", { body });
 
     if (!conversationId) {
       return c.json(

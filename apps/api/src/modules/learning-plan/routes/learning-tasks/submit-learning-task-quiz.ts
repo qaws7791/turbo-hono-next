@@ -2,34 +2,25 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { submitLearningTaskQuizRoute } from "@repo/api-spec/modules/learning-plan/routes/learning-tasks/submit-learning-task-quiz";
 import status from "http-status";
 
-import { log } from "../../../../lib/logger";
-import { authMiddleware } from "../../../../middleware/auth";
-import { AuthErrors } from "../../../auth/errors";
 import { BaseError } from "../../../../errors/base.error";
 import { ErrorCodes } from "../../../../errors/error-codes";
+import { extractAuthContext } from "../../../../lib/auth-context.helper";
+import { log } from "../../../../lib/logger";
+import { authMiddleware } from "../../../../middleware/auth";
 import { AIErrors } from "../../../ai/errors";
 import {
   serializeQuizRecord,
   submitLearningTaskQuiz,
 } from "../../../ai/services/learning-task-quiz-service";
 
-import type { AuthContext } from "../../../../middleware/auth";
-
-const submitLearningTaskQuizHandler = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const submitLearningTaskQuizHandler = new OpenAPIHono().openapi(
   {
     ...submitLearningTaskQuizRoute,
     middleware: [authMiddleware] as const,
   },
   async (c) => {
     try {
-      const auth = c.get("auth");
-      if (!auth?.user?.id) {
-        throw AuthErrors.unauthorized();
-      }
+      const { userId } = extractAuthContext(c);
 
       const { id } = c.req.valid("param");
       const body = c.req.valid("json");
@@ -44,7 +35,7 @@ const submitLearningTaskQuizHandler = new OpenAPIHono<{
       }
 
       const { quiz, evaluation } = await submitLearningTaskQuiz({
-        userId: auth.user.id,
+        userId,
         quizId: numericQuizId,
         answers: body.answers,
       });

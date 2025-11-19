@@ -2,21 +2,15 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { generateLearningPlanRoute as generateLearningPlanRouteSpec } from "@repo/api-spec/modules/ai/routes";
 import status from "http-status";
 
+import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { generateLearningPlan } from "../../../external/ai/features/learning-plan/generator";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
-import { AuthErrors } from "../../auth/errors";
 import { documentService } from "../../documents/services/document.service";
 import { AIErrors } from "../errors";
 import { saveLearningPlanToDatabase } from "../services/learning-plan-service";
 
-import type { AuthContext } from "../../../middleware/auth";
-
-const generateLearningPlanRoute = new OpenAPIHono<{
-  Variables: {
-    auth: AuthContext;
-  };
-}>().openapi(
+const generateLearningPlanRoute = new OpenAPIHono().openapi(
   {
     ...generateLearningPlanRouteSpec,
     middleware: [authMiddleware] as const,
@@ -24,11 +18,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
   async (c) => {
     try {
       const body = c.req.valid("json");
-      const auth = c.get("auth");
-
-      if (!auth?.user?.id) {
-        throw AuthErrors.unauthorized();
-      }
+      const { userId } = extractAuthContext(c);
 
       const {
         learningTopic,
@@ -48,7 +38,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
         try {
           document = await documentService.getDocumentDetail({
             publicId: documentId,
-            userId: auth.user.id,
+            userId,
           });
         } catch {
           throw AIErrors.documentNotFound();
@@ -81,7 +71,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
         learningPlan: generatedLearningPlan,
       });
       const savedLearningPlan = await saveLearningPlanToDatabase({
-        userId: auth.user.id,
+        userId,
         generatedLearningPlan,
         personalizedData: {
           learningTopic,
@@ -99,7 +89,7 @@ const generateLearningPlanRoute = new OpenAPIHono<{
       if (documentId) {
         await documentService.linkToLearningPlan({
           publicId: documentId,
-          userId: auth.user.id,
+          userId,
           learningPlanId: savedLearningPlan.id,
         });
       }
