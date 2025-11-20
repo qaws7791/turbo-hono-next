@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 
 import { createAppRouter, createRouterContext } from "@/app/router";
 import * as TanStackQueryProvider from "@/app/providers/query-client";
-import { AuthProvider, useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import reportWebVitals from "@/reportWebVitals.ts";
 import "@repo/ui/components.css";
 import "@/styles.css";
@@ -13,21 +13,13 @@ const queryClientContext = TanStackQueryProvider.getContext();
 const routerContext = createRouterContext(queryClientContext.queryClient);
 export const router = createAppRouter(routerContext);
 
-function InnerApp() {
+function App() {
   const auth = useAuth();
   return (
     <RouterProvider
       router={router}
       context={{ auth }}
     />
-  );
-}
-
-function App() {
-  return (
-    <AuthProvider>
-      <InnerApp />
-    </AuthProvider>
   );
 }
 
