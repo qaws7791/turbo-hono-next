@@ -3,15 +3,10 @@
  * 기본 HTML 엘리먼트만 사용하는 단순화된 UI
  */
 
-import { useState } from "react";
 import { cn } from "@repo/ui/utils";
 
-import { useConversations } from "../hooks/use-conversations";
-
+import { useConversationManager } from "@/features/ai-chat/hooks/use-conversation-manager";
 import ChatBot from "@/features/ai-chat/components/chatbot";
-import { logger } from "@/shared/utils";
-
-const aiChatLogger = logger.createScoped("AIChatSection");
 
 export interface AIChatSectionProps {
   learningPlanId: string;
@@ -26,52 +21,14 @@ export function AIChatSection({
   learningPlanId,
   className = "",
 }: AIChatSectionProps) {
-  // 대화 세션 관리
   const {
+    selectedConversationId,
+    setSelectedConversationId,
     conversations,
-    isLoading: isLoadingConversations,
-    createConversation,
-    deleteConversation,
-  } = useConversations(learningPlanId);
-
-  // 선택된 대화 세션
-  const [selectedConversationId, setSelectedConversationId] = useState<
-    string | null
-  >(() => conversations[0]?.id ?? null);
-
-  // 새 대화 생성 핸들러
-  const handleCreateConversation = async () => {
-    try {
-      const newConversation = await createConversation({
-        learningPlanId,
-      });
-      setSelectedConversationId(newConversation.id);
-    } catch (error) {
-      aiChatLogger.error(
-        "Failed to create conversation",
-        error instanceof Error ? error : new Error(String(error)),
-        { learningPlanId },
-      );
-    }
-  };
-
-  // 대화 삭제 핸들러
-  const handleDeleteConversation = async (conversationId: string) => {
-    try {
-      await deleteConversation(conversationId);
-
-      // 삭제된 대화가 선택된 대화라면 초기화
-      if (selectedConversationId === conversationId) {
-        setSelectedConversationId(null);
-      }
-    } catch (error) {
-      aiChatLogger.error(
-        "Failed to delete conversation",
-        error instanceof Error ? error : new Error(String(error)),
-        { conversationId, learningPlanId },
-      );
-    }
-  };
+    isLoadingConversations,
+    handleCreateConversation,
+    handleDeleteConversation,
+  } = useConversationManager(learningPlanId);
 
   return (
     <div className={cn("flex flex-col gap-4", className)}>

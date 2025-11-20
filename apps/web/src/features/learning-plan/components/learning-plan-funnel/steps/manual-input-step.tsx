@@ -17,7 +17,8 @@ import {
 } from "@repo/ui/slider";
 import { FormTextField } from "@repo/ui/text-field";
 import { ChevronLeft, ChevronRight, PenLine } from "lucide-react";
-import React from "react";
+
+import { useManualInputForm } from "@/features/learning-plan/hooks/use-manual-input-form";
 
 interface ManualInputStepProps {
   onBack: () => void;
@@ -52,35 +53,33 @@ const resourceOptions = [
 ] as const;
 
 export const ManualInputStep = (props: ManualInputStepProps) => {
-  const [learningTopic, setLearningTopic] = React.useState<string>("");
-  const [mainGoal, setMainGoal] = React.useState<string>("");
-  const [userLevel, setUserLevel] = React.useState<string>("초보자");
-  const [targetWeeks, setTargetWeeks] = React.useState<number>(4);
-  const [weeklyHours, setWeeklyHours] = React.useState<number>(10);
-  const [learningStyle, setLearningStyle] = React.useState<string>("실습 중심");
-  const [preferredResources, setPreferredResources] =
-    React.useState<string>("온라인 강의");
-  const [additionalRequirements, setAdditionalRequirements] =
-    React.useState<string>("");
+  const {
+    learningTopic,
+    setLearningTopic,
+    mainGoal,
+    setMainGoal,
+    userLevel,
+    setUserLevel,
+    targetWeeks,
+    setTargetWeeks,
+    weeklyHours,
+    setWeeklyHours,
+    learningStyle,
+    setLearningStyle,
+    preferredResources,
+    setPreferredResources,
+    additionalRequirements,
+    setAdditionalRequirements,
+    isValid,
+    getFormData,
+  } = useManualInputForm();
 
   const handleNext = () => {
-    if (!learningTopic.trim() || !mainGoal.trim()) {
+    if (!isValid) {
       return;
     }
-
-    props.onNext({
-      learningTopic: learningTopic.trim(),
-      mainGoal: mainGoal.trim(),
-      userLevel,
-      targetWeeks,
-      weeklyHours,
-      learningStyle,
-      preferredResources,
-      additionalRequirements: additionalRequirements.trim() || undefined,
-    });
+    props.onNext(getFormData());
   };
-
-  const isValid = learningTopic.trim().length > 0 && mainGoal.trim().length > 0;
 
   return (
     <>

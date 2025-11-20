@@ -1,4 +1,4 @@
-import { parseDate } from "@internationalized/date";
+import * as React from "react";
 import { Button } from "@repo/ui/button";
 import {
   Calendar,
@@ -13,12 +13,12 @@ import { Icon } from "@repo/ui/icon";
 import { Popover, PopoverDialog, PopoverTrigger } from "@repo/ui/popover";
 import { cn } from "@repo/ui/utils";
 import { useNavigate } from "@tanstack/react-router";
-import * as React from "react";
 
 import type { LearningTask } from "@/features/learning-plan/model/types";
 
-import { Link } from "@/shared/components/link";
+import { useDueDateMenu } from "@/features/learning-plan/hooks/use-due-date-menu";
 import { formatLearningTaskDueDate } from "@/features/learning-plan/model/format-learning-task-due-date";
+import { Link } from "@/shared/components/link";
 
 interface LearningTaskItemProps {
   learningTask: LearningTask;
@@ -31,13 +31,6 @@ interface LearningTaskItemProps {
   isUpdatingDueDate?: boolean;
 }
 
-const formatDateForInput = (dueDate?: string | null) => {
-  if (!dueDate) return "";
-  const date = new Date(dueDate);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
-};
-
 interface LearningTaskDueDateMenuProps {
   dueDate?: string | null;
   onSave: (value: string | null) => void;
@@ -49,77 +42,16 @@ const LearningTaskDueDateMenu = ({
   onSave,
   isDisabled = false,
 }: LearningTaskDueDateMenuProps) => {
-  const initialDateValue = React.useMemo(
-    () => formatDateForInput(dueDate),
-    [dueDate],
-  );
-  const [dateValue, setDateValue] = React.useState<string>(initialDateValue);
-  const [isOpen, setIsOpen] = React.useState(false);
-  const hasMountedRef = React.useRef(false);
-
-  React.useEffect(() => {
-    setDateValue(initialDateValue);
-  }, [initialDateValue]);
-
-  const calendarValue = React.useMemo(() => {
-    if (!dateValue) return null;
-    try {
-      return parseDate(dateValue);
-    } catch {
-      return null;
-    }
-  }, [dateValue]);
-
-  const isDirty = dateValue !== initialDateValue;
-
-  const commitChanges = React.useCallback(() => {
-    if (!onSave || !isDirty) return;
-
-    const currentDueDate = dueDate ?? null;
-
-    if (!dateValue) {
-      if (currentDueDate !== null) {
-        onSave(null);
-      }
-      return;
-    }
-
-    const candidate = new Date(`${dateValue}T00:00:00`);
-    if (Number.isNaN(candidate.getTime())) {
-      if (currentDueDate !== null) {
-        onSave(null);
-      }
-      return;
-    }
-
-    const nextValue = candidate.toISOString();
-    if (nextValue !== currentDueDate) {
-      onSave(nextValue);
-    }
-  }, [dateValue, dueDate, isDirty, onSave]);
-
-  React.useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
-
-    if (!isOpen) {
-      commitChanges();
-    }
-  }, [commitChanges, isOpen]);
-
-  const handleOpenChange = (nextOpen: boolean) => {
-    setIsOpen(nextOpen);
-  };
-
-  const handleClear = (close: () => void) => {
-    setDateValue("");
-    close();
-  };
+  const {
+    setDateValue,
+    calendarValue,
+    isOpen,
+    hasDueDate,
+    handleOpenChange,
+    handleClear,
+  } = useDueDateMenu(dueDate, onSave);
 
   const buttonLabel = formatLearningTaskDueDate(dueDate);
-  const hasDueDate = Boolean(dueDate);
 
   return (
     <PopoverTrigger

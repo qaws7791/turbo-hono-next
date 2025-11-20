@@ -1,15 +1,9 @@
 import { Button } from "@repo/ui/button";
 import { FormTextField } from "@repo/ui/text-field";
 import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
-import React from "react";
 
-import type { Document } from "@/features/learning-plan/model/types";
-
-import { useDocumentUpload } from "@/features/learning-plan/hooks/use-document-upload";
+import { usePdfInputForm } from "@/features/learning-plan/hooks/use-pdf-input-form";
 import { FileUpload } from "@/shared/components/file-upload";
-import { getErrorMessage, logger } from "@/shared/utils";
-
-const pdfInputLogger = logger.createScoped("PdfInputStep");
 
 interface PdfInputStepProps {
   documentId?: string;
@@ -24,60 +18,26 @@ interface PdfInputStepProps {
 }
 
 export const PdfInputStep = (props: PdfInputStepProps) => {
-  const [document, setDocument] = React.useState<Document | null>(null);
-  const [learningTopic, setLearningTopic] = React.useState<string>(
-    props.learningTopic || "",
-  );
-  const [mainGoal, setMainGoal] = React.useState<string>(props.mainGoal || "");
-  const [error, setError] = React.useState<string | null>(null);
-  const { uploadDocument, isUploading, errorMessage } = useDocumentUpload();
-
-  React.useEffect(() => {
-    if (!errorMessage) {
-      return;
-    }
-
-    setError(errorMessage);
-  }, [errorMessage]);
-
-  const handleUpload = async (file: File) => {
-    setError(null);
-
-    try {
-      const uploadedDocument = await uploadDocument(file);
-      setDocument(uploadedDocument);
-    } catch (err) {
-      const errorMessage = getErrorMessage(err, "파일 업로드에 실패했습니다.");
-      setError(errorMessage);
-      pdfInputLogger.error(
-        "Document upload failed",
-        err instanceof Error ? err : new Error(String(err)),
-        { fileName: file.name, fileSize: file.size },
-      );
-    }
-  };
-
-  const handleDelete = (_documentId: string) => {
-    pdfInputLogger.debug("Deleting document", { documentId: _documentId });
-    setDocument(null);
-  };
+  const {
+    document,
+    learningTopic,
+    setLearningTopic,
+    mainGoal,
+    setMainGoal,
+    error,
+    isUploading,
+    isValid,
+    handleUpload,
+    handleDelete,
+    getFormData,
+  } = usePdfInputForm(props.learningTopic, props.mainGoal);
 
   const handleNext = () => {
-    if (!document || !learningTopic.trim() || !mainGoal.trim()) {
+    if (!isValid) {
       return;
     }
-
-    props.onNext({
-      documentId: document.id,
-      learningTopic: learningTopic.trim(),
-      mainGoal: mainGoal.trim(),
-    });
+    props.onNext(getFormData());
   };
-
-  const isValid =
-    document !== null &&
-    learningTopic.trim().length > 0 &&
-    mainGoal.trim().length > 0;
 
   return (
     <>

@@ -1,9 +1,3 @@
-import {
-  endOfMonth,
-  getLocalTimeZone,
-  startOfMonth,
-  today,
-} from "@internationalized/date";
 import { Badge } from "@repo/ui/badge";
 import {
   Calendar,
@@ -21,30 +15,11 @@ import * as React from "react";
 
 import type { CalendarDate } from "@internationalized/date";
 import type { IconName } from "@repo/ui/icon";
-import type {
-  ActivityItem,
-  ActivityType,
-  DailyActivityDay,
-} from "@/features/progress/model/types";
+import type { ActivityType } from "@/features/progress/model/types";
 
-import { useDailyActivity } from "@/features/progress/hooks/use-daily-activity";
+import { useCompletionCalendarData } from "@/features/progress/hooks/use-completion-calendar-data";
+import { formatActivityTime } from "@/features/progress/utils/activity-data-formatter";
 import { Link } from "@/shared/components/link";
-
-const timeZone = getLocalTimeZone();
-
-const dayFormatter = new Intl.DateTimeFormat("ko-KR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-  weekday: "short",
-});
-
-const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
-  hour: "2-digit",
-  minute: "2-digit",
-  hour12: true,
-  timeZone,
-});
 
 const activityMeta: Record<
   ActivityType,
@@ -71,82 +46,19 @@ const activityMeta: Record<
   },
 };
 
-const formatDate = (date: CalendarDate) => {
-  return dayFormatter.format(date.toDate(timeZone));
-};
-
-const formatTime = (isoDate: string) => {
-  return timeFormatter.format(new Date(isoDate));
-};
-
 export function CompletionCalendarSection() {
-  const currentDate = React.useMemo(() => today(timeZone), []);
-
-  const [selectedDate, setSelectedDate] = React.useState<CalendarDate>(
-    () => currentDate,
-  );
-  const [visibleDate, setVisibleDate] = React.useState<CalendarDate>(
-    () => currentDate,
-  );
-
-  const range = React.useMemo(() => {
-    const start = startOfMonth(visibleDate).toString();
-    const end = endOfMonth(visibleDate).toString();
-
-    return { start, end };
-  }, [visibleDate]);
-
-  const { data } = useDailyActivity(range);
-  const activityData = data;
-  const activityItems = activityData?.items;
-
-  const activityDays = React.useMemo<ReadonlyArray<DailyActivityDay>>(
-    () => activityItems ?? [],
-    [activityItems],
-  );
-
-  const activityMap = React.useMemo(() => {
-    const map = new Map<string, DailyActivityDay>();
-    for (const day of activityDays) {
-      map.set(day.date, day);
-    }
-    return map;
-  }, [activityDays]);
-
-  const monthTotals = React.useMemo(() => {
-    return activityDays.reduce<{ completed: number; due: number }>(
-      (totals, day) => ({
-        completed: totals.completed + day.completed.length,
-        due: totals.due + day.due.length,
-      }),
-      { completed: 0, due: 0 },
-    );
-  }, [activityDays]);
-
-  const selectedKey = selectedDate.toString();
-  const selectedDay = activityMap.get(selectedKey);
-  const selectedCompletedCount = selectedDay?.completed.length ?? 0;
-  const selectedDueCount = selectedDay?.due.length ?? 0;
-  const selectedDateLabel = formatDate(selectedDate);
-
-  const dayActivities = React.useMemo<Array<ActivityItem>>(() => {
-    if (!selectedDay) return [];
-
-    const dueItems = [...selectedDay.due].sort((a, b) =>
-      a.dueDate.localeCompare(b.dueDate),
-    );
-    const completedItems = [...selectedDay.completed].sort((a, b) =>
-      a.completedAt.localeCompare(b.completedAt),
-    );
-
-    return [
-      ...dueItems.map((item) => ({ type: "due" as const, ...item })),
-      ...completedItems.map((item) => ({
-        type: "completed" as const,
-        ...item,
-      })),
-    ];
-  }, [selectedDay]);
+  const {
+    selectedDate,
+    setSelectedDate,
+    visibleDate,
+    setVisibleDate,
+    activityMap,
+    monthTotals,
+    selectedCompletedCount,
+    selectedDueCount,
+    selectedDateLabel,
+    dayActivities,
+  } = useCompletionCalendarData();
 
   const renderCell = React.useCallback(
     (date: CalendarDate) => {
@@ -293,7 +205,7 @@ export function CompletionCalendarSection() {
                               <span className="text-xs text-muted-foreground">
                                 {meta.timeLabel}:{" "}
                                 <span className="font-medium text-foreground">
-                                  {formatTime(
+                                  {formatActivityTime(
                                     activity.type === "due"
                                       ? activity.dueDate
                                       : activity.completedAt,

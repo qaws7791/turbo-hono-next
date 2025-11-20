@@ -1,8 +1,10 @@
 import { Button } from "@repo/ui/button";
-import { useState } from "react";
 import { FileTrigger } from "react-aria-components";
 
 import type { Document } from "@/features/learning-plan/model/types";
+
+import { useFileDrop } from "@/shared/hooks/use-file-drop";
+import { formatFileSize, validateFile } from "@/shared/utils/file-validation";
 
 interface FileUploadProps {
   documents: Array<Document>;
@@ -19,7 +21,7 @@ export function FileUpload({
   maxFiles = 3,
   isUploading = false,
 }: FileUploadProps) {
-  const [dragActive, setDragActive] = useState(false);
+  const { dragActive, handleDrag, handleDrop } = useFileDrop();
 
   const handleFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
@@ -29,48 +31,15 @@ export function FileUpload({
     }
 
     const file = fileList[0];
-
     if (!file) return;
 
-    // Validate file type
-    if (file.type !== "application/pdf") {
-      alert("PDF 파일만 업로드할 수 있습니다.");
-      return;
-    }
-
-    // Validate file size (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB를 초과할 수 없습니다.");
+    const validation = validateFile(file);
+    if (!validation.isValid) {
+      alert(validation.message);
       return;
     }
 
     await onUpload(file);
-  };
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   const canUpload = documents.length < maxFiles && !isUploading;
@@ -92,7 +61,7 @@ export function FileUpload({
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
-          onDrop={handleDrop}
+          onDrop={(e) => handleDrop(e, onUpload, maxFiles, documents.length)}
         >
           <div className="flex flex-col items-center justify-center text-center">
             <svg
