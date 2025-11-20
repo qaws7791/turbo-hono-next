@@ -20,7 +20,7 @@ Vite + React 프론트엔드 - TanStack Router/Query, React Aria Components
 
 ## Directory Structure
 
-```
+```text
 src/
   ├── routes/              # 파일 기반 라우팅
   ├── features/            # 기능별 모듈
@@ -35,13 +35,89 @@ src/
 
 ## Feature Structure
 
-```
+```text
 features/[feature-name]/
-  ├── api/          # API 호출 + React Query hooks
+  ├── model/        # 도메인 모델 (비즈니스 엔티티)
+  │   ├── types.ts      # 도메인 타입 정의
+  │   ├── mappers.ts    # API → 도메인 변환 함수
+  │   └── utils.ts      # 도메인 로직 유틸리티 (선택)
+  ├── api/          # API 계층
+  │   ├── types.ts      # API 응답 타입 (paths에서 추출)
+  │   ├── *-service.ts  # API 호출 함수
+  │   └── *-queries.ts  # React Query options
   ├── hooks/        # 커스텀 hooks
-  ├── components/   # 기능별 컴포넌트
-  └── model/        # Zustand stores (선택)
+  └── components/   # 기능별 컴포넌트
 ```
+
+### 도메인 모델 패턴
+
+**원칙**: API 응답 구조와 독립적인 비즈니스 엔티티 정의
+
+**이점**:
+
+- API 변경에 대한 영향 최소화 (변환 레이어가 격리)
+- 컴포넌트는 안정된 도메인 모델만 의존
+- UI 로직에 필요한 computed properties 추가 가능
+- 테스트 용이성 향상 (도메인 모델 mock 쉬움)
+
+**구현 예시** ([features/auth](./src/features/auth), [features/progress](./src/features/progress)):
+
+1. **`model/types.ts`** - 도메인 엔티티 정의
+
+   ```typescript
+   export interface User {
+     readonly id: string;
+     readonly username: string;
+     readonly email: string;
+   }
+   ```
+
+2. **`api/types.ts`** - API 응답 타입만 정의
+
+   ```typescript
+   import type { paths } from "@/api/schema";
+
+   export type ApiUser =
+     paths["/auth/me"]["get"]["responses"][200]["content"]["application/json"];
+   ```
+
+3. **`model/mappers.ts`** - 변환 함수
+
+   ```typescript
+   import type { ApiUser } from "../api/types";
+   import type { User } from "./types";
+
+   export function mapApiUserToUser(apiUser: ApiUser): User {
+     return {
+       id: apiUser.id,
+       username: apiUser.name, // API 필드명 변환
+       email: apiUser.email,
+     };
+   }
+   ```
+
+4. **`api/*-service.ts`** - 변환 적용
+
+   ```typescript
+   import { mapApiUserToUser } from "../model/mappers";
+   import type { User } from "../model/types";
+
+   export async function fetchCurrentUser(): Promise<User | null> {
+     const response = await api.auth.me();
+     if (response.error || !response.data) return null;
+     return mapApiUserToUser(response.data);
+   }
+   ```
+
+5. **컴포넌트** - 도메인 모델 사용
+
+   ```typescript
+   import type { User } from "@/features/auth/model/types";
+
+   function UserProfile({ user }: { user: User }) {
+     return <div>{user.username}</div>; // API 구조와 무관
+   }
+   ```
 
 ## Important Rules
 
@@ -59,7 +135,7 @@ features/[feature-name]/
 
 ## Routing
 
-```
+```text
 routes/
   ├── __root.tsx                           # Root layout
   ├── index.tsx                            # /

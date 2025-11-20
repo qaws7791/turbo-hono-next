@@ -5,7 +5,7 @@ import type { LearningPlanDetailResponse } from "@/features/learning-plan/api/le
 import type { LearningModule } from "@/features/learning-plan/model/types";
 
 import { learningPlanQueryOptions } from "@/features/learning-plan/api/learning-plan-queries";
-import { transformLearningModules } from "@/features/learning-plan/model/learning-module";
+import { transformLearningModules } from "@/features/learning-plan/model/mappers";
 
 type LearningPlanPayload = LearningPlanDetailResponse["data"];
 

@@ -21,17 +21,14 @@ import * as React from "react";
 
 import type { CalendarDate } from "@internationalized/date";
 import type { IconName } from "@repo/ui/icon";
-import type { DailyActivityResponse } from "@/features/progress/api/progress-service";
+import type {
+  ActivityItem,
+  ActivityType,
+  DailyActivityDay,
+} from "@/features/progress/model/types";
 
 import { useDailyActivity } from "@/features/progress/hooks/use-daily-activity";
 import { Link } from "@/shared/components/link";
-
-type DailyActivityData = NonNullable<DailyActivityResponse["data"]>;
-type DailyActivityDay = DailyActivityData["items"][number];
-type ActivityItem =
-  | (DailyActivityDay["due"][number] & { type: "due" })
-  | (DailyActivityDay["completed"][number] & { type: "completed" });
-type ActivityType = ActivityItem["type"];
 
 const timeZone = getLocalTimeZone();
 
@@ -100,10 +97,10 @@ export function CompletionCalendarSection() {
   }, [visibleDate]);
 
   const { data } = useDailyActivity(range);
-  const activityData: DailyActivityData | undefined = data?.data;
+  const activityData = data;
   const activityItems = activityData?.items;
 
-  const activityDays = React.useMemo<Array<DailyActivityDay>>(
+  const activityDays = React.useMemo<ReadonlyArray<DailyActivityDay>>(
     () => activityItems ?? [],
     [activityItems],
   );

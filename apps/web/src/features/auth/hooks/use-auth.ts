@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
-import type { AuthUser } from "@/features/auth/types";
+import type { User } from "@/features/auth/model/types";
 
 import { authKeys, authMeQueryOptions } from "@/features/auth/api/auth-queries";
 import {
@@ -60,7 +60,7 @@ export function useAuth() {
   });
 
   const login = useCallback(
-    async (email: string, password: string): Promise<AuthUser> => {
+    async (email: string, password: string): Promise<User> => {
       const result = await loginMutation.mutateAsync({ email, password });
       if (!result.success) {
         throw result.error;
@@ -75,11 +75,7 @@ export function useAuth() {
   }, [logoutMutation]);
 
   const signup = useCallback(
-    async (
-      email: string,
-      password: string,
-      name: string,
-    ): Promise<AuthUser> => {
+    async (email: string, password: string, name: string): Promise<User> => {
       const result = await signupMutation.mutateAsync({
         email,
         password,
