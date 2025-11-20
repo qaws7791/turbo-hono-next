@@ -7,7 +7,7 @@ import {
 
 // TODO: Update import once form components are migrated
 import { cn } from "../../../utils";
-import { Label, labelVariants } from "../../form/label";
+import { Label, labelStyles } from "../../form/label";
 
 import type { FormProgressBarProps, ProgressProps } from "./progress-bar.types";
 
@@ -139,7 +139,7 @@ function FormProgressBar({
       {({ valueText }) => (
         <div className="flex w-full justify-between">
           <Label>{label}</Label>
-          {showValue && <span className={labelVariants()}>{valueText}</span>}
+          {showValue && <span className={labelStyles()}>{valueText}</span>}
         </div>
       )}
     </Progress>

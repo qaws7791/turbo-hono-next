@@ -1,3 +1,3 @@
 export { FormDescription } from "./form-description";
-export { formDescriptionVariants } from "./form-description.styles";
+export { formDescriptionStyles } from "./form-description.styles";
 export type { FormDescriptionProps } from "./form-description.types";

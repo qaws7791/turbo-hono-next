@@ -2,7 +2,7 @@
 
 import { Group as AriaGroup, composeRenderProps } from "react-aria-components";
 
-import { fieldGroupVariants } from "./field-group.styles";
+import { fieldGroupStyles } from "./field-group.styles";
 
 import type { FieldGroupProps } from "./field-group.types";
 
@@ -35,7 +35,7 @@ export function FieldGroup({ className, variant, ...props }: FieldGroupProps) {
   return (
     <AriaGroup
       className={composeRenderProps(className, (className, renderProps) =>
-        fieldGroupVariants({ ...renderProps, variant, className }),
+        fieldGroupStyles({ ...renderProps, variant, className }),
       )}
       {...props}
     />

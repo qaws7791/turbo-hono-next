@@ -2,7 +2,7 @@
 
 import { Text as AriaText } from "react-aria-components";
 
-import { formDescriptionVariants } from "./form-description.styles";
+import { formDescriptionStyles } from "./form-description.styles";
 
 import type { FormDescriptionProps } from "./form-description.types";
 
@@ -32,7 +32,7 @@ import type { FormDescriptionProps } from "./form-description.types";
 export function FormDescription({ className, ...props }: FormDescriptionProps) {
   return (
     <AriaText
-      className={formDescriptionVariants({ className })}
+      className={formDescriptionStyles({ className })}
       slot="description"
       {...props}
     />

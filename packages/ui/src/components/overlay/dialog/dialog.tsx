@@ -14,7 +14,7 @@ import {
 
 import { cn } from "../../../utils";
 
-import { sheetVariants } from "./dialog.styles";
+import { sheetStyles } from "./dialog.styles";
 
 import type {
   DialogContentProps,
@@ -173,7 +173,7 @@ export function DialogContent({
       className={composeRenderProps(className, (className) =>
         cn(
           side
-            ? sheetVariants({ side, className: "h-full p-6" })
+            ? sheetStyles({ side, className: "h-full p-6" })
             : "fixed left-[50vw] top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 border bg-background p-6 shadow-lg duration-200 data-[exiting]:duration-300 data-[entering]:animate-in data-[exiting]:animate-out data-[entering]:fade-in-0 data-[exiting]:fade-out-0 data-[entering]:zoom-in-95 data-[exiting]:zoom-out-95 sm:rounded-lg md:w-full",
           className,
         ),

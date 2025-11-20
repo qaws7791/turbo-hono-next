@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
  * FieldGroup style variants
  * Container for grouping form field elements
  */
-export const fieldGroupVariants = tv({
+export const fieldGroupStyles = tv({
   base: "",
   variants: {
     variant: {

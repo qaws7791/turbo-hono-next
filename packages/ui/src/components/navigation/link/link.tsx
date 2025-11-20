@@ -2,8 +2,8 @@
 
 import { Link as AriaLink, composeRenderProps } from "react-aria-components";
 
-import { buttonVariants } from "../../../styles/variants/button-variants";
 import { cn } from "../../../utils";
+import { buttonStyles } from "../../button/button/button.styles";
 
 import type { LinkProps } from "./link.types";
 
@@ -62,7 +62,7 @@ const Link = ({ className, variant, size, ...props }: LinkProps) => {
       className={composeRenderProps(className, (className) =>
         cn(
           variant &&
-            buttonVariants({
+            buttonStyles({
               variant,
               size,
               className,

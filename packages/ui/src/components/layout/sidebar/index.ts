@@ -3,7 +3,7 @@ export {
   DEFAULT_USER_MENU_ITEMS,
   LegacySidebar,
   Sidebar,
-  sidebarVariants,
+  sidebarStyles,
   useSidebarContext,
 } from "./sidebar";
 export type {

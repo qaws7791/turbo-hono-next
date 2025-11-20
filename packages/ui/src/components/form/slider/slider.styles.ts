@@ -6,7 +6,7 @@ import { focusVisibleRing } from "../../../utils";
  * Styles for the Slider container.
  * Adapts layout based on orientation (horizontal/vertical).
  */
-export const sliderVariants = tv({
+export const sliderStyles = tv({
   base: "relative flex touch-none select-none items-center flex-col gap-3",
   variants: {
     orientation: {
@@ -20,7 +20,7 @@ export const sliderVariants = tv({
  * Styles for the SliderTrack.
  * The background track that shows the full range.
  */
-export const sliderTrackVariants = tv({
+export const sliderTrackStyles = tv({
   base: "relative grow rounded-full bg-secondary data-[disabled]:opacity-50",
   variants: {
     orientation: {
@@ -34,7 +34,7 @@ export const sliderTrackVariants = tv({
  * Styles for the SliderFillTrack.
  * The colored portion showing the current value.
  */
-export const sliderFillTrackVariants = tv({
+export const sliderFillTrackStyles = tv({
   base: "absolute rounded-full bg-primary",
   variants: {
     orientation: {
@@ -48,7 +48,7 @@ export const sliderFillTrackVariants = tv({
  * Styles for the SliderThumb.
  * The draggable handle with focus ring.
  */
-export const sliderThumbVariants = tv({
+export const sliderThumbStyles = tv({
   extend: focusVisibleRing,
   base: [
     "left-1/2 top-1/2 block size-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors",

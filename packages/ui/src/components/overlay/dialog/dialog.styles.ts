@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
  * Sheet variants for slide-in dialog
  * Used for mobile-friendly bottom sheets and side panels
  */
-export const sheetVariants = tv({
+export const sheetStyles = tv({
   base: [
     "fixed z-50 gap-4 bg-background shadow-lg transition ease-in-out",
     /* Entering */

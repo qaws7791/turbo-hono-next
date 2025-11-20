@@ -3,7 +3,7 @@ import { tv } from "tailwind-variants";
 /**
  * Separator style variants
  */
-export const separatorVariants = tv({
+export const separatorStyles = tv({
   base: [
     "bg-border shrink-0",
     /* Horizontal */

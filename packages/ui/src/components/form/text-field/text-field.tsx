@@ -9,10 +9,11 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { inputVariants, textAreaVariants } from "../../../styles/variants";
 import { cn } from "../../../utils";
 import { FieldError } from "../field-error";
 import { Label } from "../label";
+
+import { inputStyles, textAreaStyles } from "./text-field.styles";
 
 import type {
   FormTextFieldProps,
@@ -64,7 +65,7 @@ export function Input({ className, ...props }: InputProps) {
   return (
     <AriaInput
       className={composeRenderProps(className, (className, renderProps) =>
-        inputVariants({ ...renderProps, className }),
+        inputStyles({ ...renderProps, className }),
       )}
       {...props}
     />
@@ -97,7 +98,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <AriaTextArea
         ref={ref}
         className={composeRenderProps(className, (className, renderProps) =>
-          textAreaVariants({ ...renderProps, className }),
+          textAreaStyles({ ...renderProps, className }),
         )}
         {...props}
       />

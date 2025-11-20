@@ -6,7 +6,7 @@ import type {
   ModalOverlayProps as AriaModalOverlayProps,
 } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
-import type { sheetVariants } from "./dialog.styles";
+import type { sheetStyles } from "./dialog.styles";
 
 /**
  * Dialog component props
@@ -26,7 +26,7 @@ export type DialogOverlayProps = AriaModalOverlayProps;
 /**
  * Sheet variant props
  */
-export type SheetVariantProps = VariantProps<typeof sheetVariants>;
+export type SheetVariantProps = VariantProps<typeof sheetStyles>;
 
 /**
  * DialogContent component props

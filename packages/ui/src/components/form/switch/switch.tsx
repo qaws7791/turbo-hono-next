@@ -6,9 +6,9 @@ import {
 } from "react-aria-components";
 
 import {
-  switchContainerVariants,
-  switchHandleVariants,
-  switchVariants,
+  switchContainerStyles,
+  switchHandleStyles,
+  switchStyles,
 } from "./switch.styles";
 
 import type { SwitchProps } from "./switch.types";
@@ -57,14 +57,14 @@ import type { SwitchProps } from "./switch.types";
 const Switch = ({ children, className, ...props }: SwitchProps) => (
   <AriaSwitch
     className={composeRenderProps(className, (className, renderProps) =>
-      switchContainerVariants({ ...renderProps, className }),
+      switchContainerStyles({ ...renderProps, className }),
     )}
     {...props}
   >
     {composeRenderProps(children, (children) => (
       <>
-        <div className={switchVariants()}>
-          <div className={switchHandleVariants()} />
+        <div className={switchStyles()}>
+          <div className={switchHandleStyles()} />
         </div>
         {children}
       </>

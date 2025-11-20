@@ -10,7 +10,7 @@ import {
 } from "react-aria-components";
 
 import { cn } from "../../../utils";
-import { FieldError, Label, fieldGroupVariants } from "../../form";
+import { FieldError, Label, fieldGroupStyles } from "../../form";
 
 import type {
   DateInputProps,
@@ -100,7 +100,7 @@ function DateInput({
   return (
     <AriaDateInput
       className={composeRenderProps(className, (className) =>
-        cn(fieldGroupVariants({ variant }), "text-sm", className),
+        cn(fieldGroupStyles({ variant }), "text-sm", className),
       )}
       {...props}
     >

@@ -3,8 +3,8 @@ import type { ComponentProps } from "react";
 import type { VariantProps } from "tailwind-variants";
 import type { Button } from "../../button/button/button";
 import type {
-  inputGroupAddonVariants,
-  inputGroupButtonVariants,
+  inputGroupAddonStyles,
+  inputGroupButtonStyles,
 } from "./input-group.styles";
 
 /**
@@ -18,7 +18,7 @@ export type InputGroupProps = ComponentProps<"div">;
  * Displays supplementary content alongside the input.
  */
 export type InputGroupAddonProps = ComponentProps<"div"> &
-  VariantProps<typeof inputGroupAddonVariants>;
+  VariantProps<typeof inputGroupAddonStyles>;
 
 /**
  * Props for InputGroupButton.
@@ -28,7 +28,7 @@ export type InputGroupButtonProps = Omit<
   ComponentProps<typeof Button>,
   "size"
 > &
-  VariantProps<typeof inputGroupButtonVariants>;
+  VariantProps<typeof inputGroupButtonStyles>;
 
 /**
  * Props for InputGroupText.

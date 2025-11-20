@@ -776,7 +776,7 @@ import { focusVisibleRing } from "../../utils/focus-ring";
  * 버튼 스타일 variants
  * Button, Link 등 여러 컴포넌트에서 재사용
  */
-export const buttonVariants = tv({
+export const buttonStyles = tv({
   extend: focusVisibleRing,
   base: [
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors",
@@ -815,7 +815,7 @@ import { tv } from "tailwind-variants";
  * 입력 필드 컨테이너 스타일 variants
  * TextField, NumberField, SearchField 등에서 재사용
  */
-export const inputGroupVariants = tv({
+export const inputGroupStyles = tv({
   base: "",
   variants: {
     variant: {

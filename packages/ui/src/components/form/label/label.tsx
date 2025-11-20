@@ -2,7 +2,7 @@
 
 import { Label as AriaLabel } from "react-aria-components";
 
-import { labelVariants } from "./label.styles";
+import { labelStyles } from "./label.styles";
 
 import type { LabelProps } from "./label.types";
 
@@ -28,7 +28,7 @@ import type { LabelProps } from "./label.types";
 export function Label({ className, ...props }: LabelProps) {
   return (
     <AriaLabel
-      className={labelVariants({ className })}
+      className={labelStyles({ className })}
       {...props}
     />
   );

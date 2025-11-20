@@ -5,7 +5,7 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { buttonVariants } from "../../../styles/variants/button-variants";
+import { buttonStyles } from "./button.styles";
 
 import type { ButtonProps } from "./button.types";
 
@@ -44,7 +44,7 @@ export function Button({ className, variant, size, ...props }: ButtonProps) {
   return (
     <AriaButton
       className={composeRenderProps(className, (className, renderProps) =>
-        buttonVariants({
+        buttonStyles({
           ...renderProps,
           variant,
           size,

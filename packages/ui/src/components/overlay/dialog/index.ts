@@ -8,7 +8,7 @@ export {
   DialogTitle,
   DialogDescription,
 } from "./dialog";
-export { sheetVariants } from "./dialog.styles";
+export { sheetStyles } from "./dialog.styles";
 export type {
   DialogProps,
   DialogTriggerProps,

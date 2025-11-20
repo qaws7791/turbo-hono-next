@@ -273,7 +273,7 @@ import { cn } from "@repo/ui/utils";
 import type { BaseComponentProps } from "@repo/ui/types";
 
 // Styles - No change needed
-import { buttonVariants } from "@repo/ui/styles";
+import { buttonStyles } from "@repo/ui/styles";
 ```
 
 ## Common Patterns

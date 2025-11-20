@@ -295,7 +295,7 @@ Import utilities and type definitions:
 ```tsx
 import { cn } from "@repo/ui/utils"; // className utility
 import type { BaseComponentProps } from "@repo/ui/types"; // Base prop types
-import { buttonVariants } from "@repo/ui/styles"; // Style variants
+import { buttonStyles } from "@repo/ui/styles"; // Style variants
 ```
 
 ## Styling
@@ -314,9 +314,9 @@ All components are styled with Tailwind CSS and support the `className` prop:
 Use the exported `variants` to create custom component variants:
 
 ```tsx
-import { buttonVariants } from "@repo/ui/styles";
+import { buttonStyles } from "@repo/ui/styles";
 
-const customButton = buttonVariants({ variant: "destructive", size: "lg" });
+const customButton = buttonStyles({ variant: "destructive", size: "lg" });
 // Use in your own component
 <button className={customButton}>Delete</button>;
 ```

@@ -1,12 +1,14 @@
 import { tv } from "tailwind-variants";
 
-import { focusVisibleRing } from "../../utils/focus-ring";
+import { focusVisibleRing } from "../../../utils/focus-ring";
+
+import type { VariantProps } from "tailwind-variants";
 
 /**
  * Button component style variants
  * Used by Button and other interactive components that need button-like styling
  */
-export const buttonVariants = tv({
+export const buttonStyles = tv({
   extend: focusVisibleRing,
   base: [
     "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors",
@@ -38,3 +40,5 @@ export const buttonVariants = tv({
     size: "md",
   },
 });
+
+export type ButtonStyleProps = VariantProps<typeof buttonStyles>;

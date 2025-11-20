@@ -13,11 +13,7 @@ export {
   FormTextField,
 } from "./form";
 
-export {
-  labelVariants,
-  formDescriptionVariants,
-  fieldGroupVariants,
-} from "./form";
+export { labelStyles, formDescriptionStyles, fieldGroupStyles } from "./form";
 
 export type {
   FormProps,
@@ -65,7 +61,7 @@ export {
   DialogDescription,
 } from "./overlay";
 
-export { sheetVariants } from "./overlay";
+export { sheetStyles } from "./overlay";
 
 export type {
   DialogProps,
@@ -84,6 +80,6 @@ export type {
 // ============================================================================
 export { Separator } from "./layout";
 
-export { separatorVariants } from "./layout";
+export { separatorStyles } from "./layout";
 
 export type { SeparatorProps } from "./layout";

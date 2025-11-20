@@ -1,11 +1,11 @@
 import type { GroupProps as AriaGroupProps } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
-import type { fieldGroupVariants } from "./field-group.styles";
+import type { fieldGroupStyles } from "./field-group.styles";
 
 /**
  * FieldGroup component variant props
  */
-export type FieldGroupVariantProps = VariantProps<typeof fieldGroupVariants>;
+export type FieldGroupVariantProps = VariantProps<typeof fieldGroupStyles>;
 
 /**
  * FieldGroup component props

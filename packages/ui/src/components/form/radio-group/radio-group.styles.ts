@@ -1,6 +1,6 @@
 import { tv } from "tailwind-variants";
 
-import { labelVariants } from "../label/label.styles";
+import { labelStyles } from "../label/label.styles";
 
 export const radioGroupStyles = tv({
   base: "group/radiogroup flex flex-col flex-wrap gap-2",
@@ -16,7 +16,7 @@ export const radioGroupStyles = tv({
 });
 
 export const radioStyles = tv({
-  extend: labelVariants,
+  extend: labelStyles,
   base: [
     "group/radio flex items-center gap-x-2",
     /* Disabled */

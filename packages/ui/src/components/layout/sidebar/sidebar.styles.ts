@@ -5,7 +5,7 @@ import { focusVisibleRing } from "../../../utils";
 /**
  * Sidebar component variant styles.
  */
-export const sidebarVariants = tv({
+export const sidebarStyles = tv({
   slots: {
     root: "w-full max-w-[256px] bg-background border-r border-border flex flex-col h-full",
     header: "px-4 py-5",
@@ -25,7 +25,7 @@ export const sidebarVariants = tv({
 /**
  * Navigation item variant styles.
  */
-export const navItemVariants = tv({
+export const navItemStyles = tv({
   extend: focusVisibleRing,
   base: "w-full flex items-center justify-between px-3 py-2 rounded-md group font-medium transition-colors",
   variants: {
@@ -43,7 +43,7 @@ export const navItemVariants = tv({
 /**
  * User menu variant styles.
  */
-export const userMenuVariants = tv({
+export const userMenuStyles = tv({
   extend: focusVisibleRing,
   base: "w-full flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors",
 });

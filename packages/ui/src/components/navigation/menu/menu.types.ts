@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import type {
   MenuItemProps as AriaMenuItemProps,
   MenuProps as AriaMenuProps,
@@ -5,9 +6,8 @@ import type {
   SeparatorProps as AriaSeparatorProps,
   PopoverProps,
 } from "react-aria-components";
-import type { ComponentProps } from "react";
 import type { VariantProps } from "tailwind-variants";
-import type { buttonVariants } from "../../../styles/variants/button-variants";
+import type { buttonStyles } from "../../button/button/button.styles";
 
 /**
  * Props for the MenuTrigger component.
@@ -52,7 +52,7 @@ export type MenuKeyboardProps = ComponentProps<"kbd">;
  */
 export interface JollyMenuProps<T>
   extends AriaMenuProps<T>,
-    VariantProps<typeof buttonVariants>,
+    VariantProps<typeof buttonStyles>,
     Omit<AriaMenuTriggerProps, "children"> {
   label?: string;
 }

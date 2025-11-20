@@ -1,7 +1,7 @@
 export { Switch } from "./switch";
 export {
-  switchContainerVariants,
-  switchHandleVariants,
-  switchVariants,
+  switchContainerStyles,
+  switchHandleStyles,
+  switchStyles,
 } from "./switch.styles";
 export type { SwitchProps } from "./switch.types";

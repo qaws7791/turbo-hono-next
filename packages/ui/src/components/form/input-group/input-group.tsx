@@ -9,8 +9,8 @@ import { Button } from "../../button/button/button";
 import { Input, TextArea } from "../text-field/text-field";
 
 import {
-  inputGroupAddonVariants,
-  inputGroupButtonVariants,
+  inputGroupAddonStyles,
+  inputGroupButtonStyles,
 } from "./input-group.styles";
 
 import type {
@@ -108,7 +108,7 @@ function InputGroupAddon({
       role="group"
       data-slot="input-group-addon"
       data-align={align}
-      className={cn(inputGroupAddonVariants({ align }), className)}
+      className={cn(inputGroupAddonStyles({ align }), className)}
       onClick={(e) => {
         if ((e.target as HTMLElement).closest("button")) {
           return;
@@ -155,7 +155,7 @@ function InputGroupButton({
       data-size={size}
       variant={variant}
       className={composeRenderProps(className, (className, renderProps) =>
-        inputGroupButtonVariants({ ...renderProps, size, className }),
+        inputGroupButtonStyles({ ...renderProps, size, className }),
       )}
       {...props}
     />

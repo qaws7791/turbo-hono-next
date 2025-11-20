@@ -1,6 +1,6 @@
 import type { LinkProps as AriaLinkProps } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
-import type { buttonVariants } from "../../../styles/variants/button-variants";
+import type { buttonStyles } from "../../button/button/button.styles";
 
 /**
  * Props for the Link component.
@@ -8,4 +8,4 @@ import type { buttonVariants } from "../../../styles/variants/button-variants";
  */
 export interface LinkProps
   extends AriaLinkProps,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonStyles> {}

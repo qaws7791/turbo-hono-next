@@ -4,7 +4,7 @@ import { tv } from "tailwind-variants";
  * Styles for InputGroupAddon.
  * Supports different alignments (inline-start, inline-end, block-start, block-end).
  */
-export const inputGroupAddonVariants = tv({
+export const inputGroupAddonStyles = tv({
   base: "text-muted-foreground flex h-auto cursor-text items-center justify-center gap-2 py-1.5 text-sm font-medium select-none [&>svg:not([class*='size-'])]:size-4 [&>kbd]:rounded-[calc(var(--radius)-5px)] group-data-[disabled=true]/input-group:opacity-50",
   variants: {
     align: {
@@ -27,7 +27,7 @@ export const inputGroupAddonVariants = tv({
  * Styles for InputGroupButton.
  * Compact button styles for use within input groups.
  */
-export const inputGroupButtonVariants = tv({
+export const inputGroupButtonStyles = tv({
   base: "text-sm shadow-none flex gap-2 items-center",
   variants: {
     size: {
@@ -39,5 +39,22 @@ export const inputGroupButtonVariants = tv({
   },
   defaultVariants: {
     size: "xs",
+  },
+});
+
+export const inputGroupStyles = tv({
+  base: "",
+  variants: {
+    variant: {
+      default: [
+        "relative flex h-10 w-full items-center overflow-hidden rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+        "data-[focus-within]:outline-none data-[focus-within]:ring-2 data-[focus-within]:ring-ring data-[focus-within]:ring-offset-2",
+        "data-[disabled]:opacity-50",
+      ],
+      ghost: "",
+    },
+  },
+  defaultVariants: {
+    variant: "default",
   },
 });

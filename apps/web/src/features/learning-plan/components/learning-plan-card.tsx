@@ -30,7 +30,7 @@ type LearningPlanListItem = {
   updatedAt: string;
 };
 
-const learningPlanCardVariants = tv({
+const learningPlanCardStyles = tv({
   extend: focusRing,
   slots: {
     root: [
@@ -80,9 +80,7 @@ const learningPlanCardVariants = tv({
   },
 });
 
-type LearningPlanCardVariantProps = VariantProps<
-  typeof learningPlanCardVariants
->;
+type LearningPlanCardStyleProps = VariantProps<typeof learningPlanCardStyles>;
 
 type UserLevelMapping = {
   beginner: "초보자";
@@ -110,7 +108,7 @@ const LearningPlanCard: React.FC<LearningPlanCardProps> = ({
   ...props
 }) => {
   const userLevelKey = learningPlan.userLevel as keyof UserLevelMapping;
-  const slots = learningPlanCardVariants({ difficulty: userLevelKey });
+  const slots = learningPlanCardStyles({ difficulty: userLevelKey });
   const completionLabel = `${learningPlan.learningModuleCompletionPercent}% 완료`;
   const emoji = learningPlan.emoji || "📚";
   const emojiLabel = `${learningPlan.title} 학습 계획 아이콘`;
@@ -191,9 +189,9 @@ const LearningPlanCard: React.FC<LearningPlanCardProps> = ({
   );
 };
 
-export { LearningPlanCard, learningPlanCardVariants };
+export { LearningPlanCard, learningPlanCardStyles };
 export type {
   LearningPlanCardProps,
-  LearningPlanCardVariantProps,
+  LearningPlanCardStyleProps,
   LearningPlanListItem,
 };

@@ -7,8 +7,9 @@ export {
   InputGroupTextarea,
 } from "./input-group";
 export {
-  inputGroupAddonVariants,
-  inputGroupButtonVariants,
+  inputGroupAddonStyles,
+  inputGroupButtonStyles,
+  inputGroupStyles,
 } from "./input-group.styles";
 export type {
   InputGroupAddonProps,

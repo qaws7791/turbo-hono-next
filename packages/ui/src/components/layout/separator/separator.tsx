@@ -4,7 +4,7 @@ import { useSeparator } from "react-aria";
 
 import { cn } from "../../../utils";
 
-import { separatorVariants } from "./separator.styles";
+import { separatorStyles } from "./separator.styles";
 
 import type { SeparatorProps } from "./separator.types";
 
@@ -43,7 +43,7 @@ export function Separator({ className, ...props }: SeparatorProps) {
   return (
     <div
       {...separatorProps}
-      className={cn(separatorVariants(), className)}
+      className={cn(separatorStyles(), className)}
     />
   );
 }

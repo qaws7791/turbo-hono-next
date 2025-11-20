@@ -38,7 +38,7 @@ const useSidebarContext = () => {
 };
 
 // Variants
-const sidebarVariants = tv({
+const sidebarStyles = tv({
   slots: {
     root: "w-full max-w-[256px] bg-background border-r border-border flex flex-col h-full",
     header: "px-4 py-5",
@@ -55,7 +55,7 @@ const sidebarVariants = tv({
   },
 });
 
-const navItemVariants = tv({
+const navItemStyles = tv({
   extend: focusVisibleRing,
   base: "w-full flex items-center justify-between px-3 py-2 rounded-md group font-medium transition-colors",
   variants: {
@@ -70,7 +70,7 @@ const navItemVariants = tv({
   },
 });
 
-const userMenuVariants = tv({
+const userMenuStyles = tv({
   extend: focusVisibleRing,
   base: "w-full flex items-center justify-between p-2 hover:bg-accent rounded-md transition-colors",
 });
@@ -81,9 +81,9 @@ const DEFAULT_NAV_ITEMS: Array<NavItem> = [
 ];
 
 // Types
-type SidebarVariantProps = VariantProps<typeof sidebarVariants>;
-type NavItemVariantProps = VariantProps<typeof navItemVariants>;
-type UserMenuVariantProps = VariantProps<typeof userMenuVariants>;
+type SidebarStylesProps = VariantProps<typeof sidebarStyles>;
+type NavItemStylesProps = VariantProps<typeof navItemStyles>;
+type UserMenuStylesProps = VariantProps<typeof userMenuStyles>;
 
 interface NavItem {
   id: string;
@@ -183,7 +183,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({
   children,
   className,
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   return (
     <div className={slots.header({ className })}>
@@ -201,7 +201,7 @@ const SidebarLogo: React.FC<SidebarLogoProps> = ({
   children,
   className,
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   const logoContent = children || (
     <>
@@ -245,7 +245,7 @@ const SidebarCloseButton: React.FC<SidebarCloseButtonProps> = ({
   className,
 }) => {
   const { onClose } = useSidebarContext();
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   if (!onClose) return null;
 
@@ -277,7 +277,7 @@ const SidebarNavItem: React.FC<SidebarNavItemProps> = ({
     <Link
       href={item.href}
       className={composeRenderProps(className, (className, renderProps) =>
-        navItemVariants({ ...renderProps, isActive, className }),
+        navItemStyles({ ...renderProps, isActive, className }),
       )}
       {...props}
     >
@@ -296,7 +296,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
   children,
   className,
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   return <div className={slots.content({ className })}>{children}</div>;
 };
@@ -308,7 +308,7 @@ const SidebarNav: React.FC<SidebarNavProps> = ({
   renderItem,
   className,
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   const currentActiveItem = activeItem;
 
@@ -353,7 +353,7 @@ const SidebarFooter: React.FC<SidebarFooterProps> = ({
   children,
   className,
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   return <div className={slots.footer({ className })}>{children}</div>;
 };
@@ -391,7 +391,7 @@ const SidebarUserMenu: React.FC<SidebarUserMenuProps> = ({
     <MenuTrigger>
       <Button
         className={composeRenderProps("", (classNameProp, renderProps) =>
-          userMenuVariants({
+          userMenuStyles({
             ...renderProps,
             className: className || classNameProp,
           }),
@@ -468,7 +468,7 @@ const SidebarRoot: React.FC<SidebarProps> = ({
   isCollapsed = false,
   variant = "default",
 }) => {
-  const slots = sidebarVariants();
+  const slots = sidebarStyles();
 
   const contextValue = React.useMemo(
     () => ({ isCollapsed, variant, onClose }),
@@ -542,12 +542,12 @@ export {
   DEFAULT_USER_MENU_ITEMS,
   LegacySidebar,
   Sidebar,
-  sidebarVariants,
+  sidebarStyles,
   useSidebarContext,
 };
 export type {
   NavItem,
-  NavItemVariantProps,
+  NavItemStylesProps,
   SidebarCloseButtonProps,
   SidebarContentProps,
   SidebarFooterProps,
@@ -557,8 +557,8 @@ export type {
   SidebarNavProps,
   SidebarProps,
   SidebarUserMenuProps,
-  SidebarVariantProps,
+  SidebarStylesProps,
   UserMenuItem,
-  UserMenuVariantProps,
+  UserMenuStylesProps,
   UserProfile,
 };

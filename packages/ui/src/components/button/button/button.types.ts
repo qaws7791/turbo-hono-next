@@ -1,11 +1,11 @@
 import type { ButtonProps as AriaButtonProps } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
-import type { buttonVariants } from "../../../styles/variants/button-variants";
+import type { buttonStyles } from "./button.styles";
 
 /**
  * Button component variant props
  */
-export type ButtonVariantProps = VariantProps<typeof buttonVariants>;
+export type ButtonVariantProps = VariantProps<typeof buttonStyles>;
 
 /**
  * Button component props

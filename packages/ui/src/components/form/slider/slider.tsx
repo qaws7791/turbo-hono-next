@@ -10,13 +10,13 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
-import { labelVariants } from "../label/label.styles";
+import { labelStyles } from "../label/label.styles";
 
 import {
-  sliderFillTrackVariants,
-  sliderThumbVariants,
-  sliderTrackVariants,
-  sliderVariants,
+  sliderFillTrackStyles,
+  sliderStyles,
+  sliderThumbStyles,
+  sliderTrackStyles,
 } from "./slider.styles";
 
 import type {
@@ -44,7 +44,7 @@ import type {
 const SliderOutput = ({ className, ...props }: SliderOutputProps) => (
   <AriaSliderOutput
     className={composeRenderProps(className, (className, renderProps) =>
-      labelVariants({ ...renderProps, className }),
+      labelStyles({ ...renderProps, className }),
     )}
     {...props}
   />
@@ -108,7 +108,7 @@ const Slider = <T extends number | Array<number>>({
 }: SliderProps<T>) => (
   <AriaSlider
     className={composeRenderProps(className, (className) =>
-      sliderVariants({ ...props, orientation, className }),
+      sliderStyles({ ...props, orientation, className }),
     )}
     orientation={orientation}
     {...props}
@@ -132,7 +132,7 @@ Slider.displayName = "Slider";
 const SliderTrack = ({ className, ...props }: SliderTrackProps) => (
   <AriaSliderTrack
     className={composeRenderProps(className, (className, renderProps) =>
-      sliderTrackVariants({
+      sliderTrackStyles({
         ...renderProps,
         orientation: renderProps.orientation,
         className,
@@ -165,7 +165,7 @@ const SliderFillTrack = ({
   return (
     <div
       style={{ [orientation]: state.getThumbPercent(0) * 100 + "%" }}
-      className={sliderFillTrackVariants({
+      className={sliderFillTrackStyles({
         className,
         orientation: state.orientation,
       })}
@@ -196,7 +196,7 @@ SliderFillTrack.displayName = "SliderFillTrack";
 const SliderThumb = ({ className, ...props }: SliderThumbProps) => (
   <AriaSliderThumb
     className={composeRenderProps(className, (className, renderProps) =>
-      sliderThumbVariants({ ...renderProps, className }),
+      sliderThumbStyles({ ...renderProps, className }),
     )}
     {...props}
   />

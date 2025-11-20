@@ -19,8 +19,8 @@ import {
   useLocale,
 } from "react-aria-components";
 
-import { buttonVariants } from "../../../styles/variants/button-variants";
 import { cn } from "../../../utils";
+import { buttonStyles } from "../../button/button/button.styles";
 
 import type {
   CalendarCellProps as AriaCalendarCellProps,
@@ -48,7 +48,7 @@ const CalendarHeading = (props: React.ComponentProps<"header">) => {
       <AriaButton
         slot="previous"
         className={cn(
-          buttonVariants({ variant: "outline" }),
+          buttonStyles({ variant: "outline" }),
           "size-7 bg-transparent p-0 opacity-50",
           /* Hover */
           "data-[hovered]:opacity-100",
@@ -70,7 +70,7 @@ const CalendarHeading = (props: React.ComponentProps<"header">) => {
       <AriaButton
         slot="next"
         className={cn(
-          buttonVariants({ variant: "outline" }),
+          buttonStyles({ variant: "outline" }),
           "size-7 bg-transparent p-0 opacity-50",
           /* Hover */
           "data-[hovered]:opacity-100",
@@ -135,7 +135,7 @@ const CalendarCell = ({ className, ...props }: AriaCalendarCellProps) => {
     <AriaCalendarCell
       className={composeRenderProps(className, (className, renderProps) =>
         cn(
-          buttonVariants({ variant: "ghost" }),
+          buttonStyles({ variant: "ghost" }),
           "relative flex size-9 items-center justify-center p-0 text-sm font-normal",
           /* Disabled */
           renderProps.isDisabled && "text-muted-foreground opacity-50",

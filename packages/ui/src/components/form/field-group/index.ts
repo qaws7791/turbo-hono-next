@@ -1,5 +1,5 @@
 export { FieldGroup } from "./field-group";
-export { fieldGroupVariants } from "./field-group.styles";
+export { fieldGroupStyles } from "./field-group.styles";
 export type {
   FieldGroupProps,
   FieldGroupVariantProps,

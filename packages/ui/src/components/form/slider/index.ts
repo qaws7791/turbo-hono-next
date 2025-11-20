@@ -6,10 +6,10 @@ export {
   SliderTrack,
 } from "./slider";
 export {
-  sliderFillTrackVariants,
-  sliderThumbVariants,
-  sliderTrackVariants,
-  sliderVariants,
+  sliderFillTrackStyles,
+  sliderThumbStyles,
+  sliderTrackStyles,
+  sliderStyles,
 } from "./slider.styles";
 export type {
   SliderFillTrackProps,

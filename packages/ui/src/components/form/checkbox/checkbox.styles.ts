@@ -1,9 +1,9 @@
 import { tv } from "tailwind-variants";
 
-import { labelVariants } from "../label/label.styles";
+import { labelStyles } from "../label/label.styles";
 
 export const checkboxStyles = tv({
-  extend: labelVariants,
+  extend: labelStyles,
   base: [
     "group/checkbox flex items-center gap-x-2",
     /* Disabled */

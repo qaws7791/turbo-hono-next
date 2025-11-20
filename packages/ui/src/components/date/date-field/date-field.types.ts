@@ -8,7 +8,7 @@ import type {
   ValidationResult as AriaValidationResult,
 } from "react-aria-components";
 import type { VariantProps } from "tailwind-variants";
-import type { fieldGroupVariants } from "../../form/field-group";
+import type { fieldGroupStyles } from "../../form/field-group";
 
 export type DateFieldProps<T extends AriaDateValue> = AriaDateFieldProps<T>;
 
@@ -18,7 +18,7 @@ export type DateSegmentProps = AriaDateSegmentProps;
 
 export interface DateInputProps
   extends AriaDateInputProps,
-    VariantProps<typeof fieldGroupVariants> {}
+    VariantProps<typeof fieldGroupStyles> {}
 
 export interface FormDateFieldProps<T extends AriaDateValue>
   extends AriaDateFieldProps<T> {
