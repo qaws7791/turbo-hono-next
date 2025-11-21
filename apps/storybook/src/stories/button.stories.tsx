@@ -1,4 +1,5 @@
 import { Button } from "@repo/ui/button";
+import { HeartIcon } from "lucide-react";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -131,7 +132,7 @@ export const Large: Story = {
 export const IconOnly: Story = {
   args: {
     isIconOnly: true,
-    children: "🔍",
+    children: <HeartIcon />,
   },
 };
 
@@ -170,7 +171,9 @@ export const AllSizes: Story = {
       <Button size="sm">Small</Button>
       <Button size="md">Medium</Button>
       <Button size="lg">Large</Button>
-      <Button isIconOnly>🔍</Button>
+      <Button isIconOnly>
+        <HeartIcon />
+      </Button>
     </div>
   ),
 };
@@ -297,19 +300,19 @@ export const IconOnlySizes: Story = {
         isIconOnly
         size="sm"
       >
-        🔍
+        <HeartIcon />
       </Button>
       <Button
         isIconOnly
         size="md"
       >
-        🔍
+        <HeartIcon />
       </Button>
       <Button
         isIconOnly
         size="lg"
       >
-        🔍
+        <HeartIcon />
       </Button>
     </div>
   ),
