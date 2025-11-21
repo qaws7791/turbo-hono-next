@@ -29,9 +29,9 @@ export const buttonStyles = tv({
       link: "text-primary underline-offset-4 data-[hovered]:underline",
     },
     size: {
-      sm: "h-9 rounded-md px-3",
-      md: "h-10 px-4 py-2",
-      lg: "h-11 rounded-md px-8",
+      sm: "h-9 rounded-md px-3 [&_svg]:size-4.5",
+      md: "h-10 px-4 py-2 [&_svg]:size-5",
+      lg: "h-11 rounded-md px-8 [&_svg]:size-6",
     },
     fullWidth: {
       true: "w-full",
