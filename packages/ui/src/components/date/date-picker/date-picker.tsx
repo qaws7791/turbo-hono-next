@@ -152,7 +152,7 @@ function JollyDatePicker<T extends AriaDateValue>({
         />
         <Button
           variant="ghost"
-          size="icon"
+          isIconOnly
           className="mr-1 size-6 data-[focus-visible]:ring-offset-0"
         >
           <CalendarIcon
@@ -235,7 +235,7 @@ function JollyDateRangePicker<T extends AriaDateValue>({
 
         <Button
           variant="ghost"
-          size="icon"
+          isIconOnly
           className="mr-1 size-6 data-[focus-visible]:ring-offset-0"
         >
           <CalendarIcon

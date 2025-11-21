@@ -5,6 +5,8 @@ import {
   composeRenderProps,
 } from "react-aria-components";
 
+import { LoadingSpinner } from "../../feedback/loading-spinner";
+
 import { buttonStyles } from "./button.styles";
 
 import type { ButtonProps } from "./button.types";
@@ -39,8 +41,43 @@ import type { ButtonProps } from "./button.types";
  *   Disabled
  * </Button>
  * ```
+ *
+ * @example
+ * Loading state
+ * ```tsx
+ * <Button isLoading>
+ *   Submit
+ * </Button>
+ * ```
+ *
+ * @example
+ * Full width button
+ * ```tsx
+ * <Button fullWidth>
+ *   Full Width
+ * </Button>
+ * ```
+ *
+ * @example
+ * Icon only button
+ * ```tsx
+ * <Button isIconOnly>
+ *   <Icon />
+ * </Button>
+ * ```
  */
-export function Button({ className, variant, size, ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  fullWidth,
+  isIconOnly,
+  isLoading,
+  loadingFallback,
+  isDisabled,
+  children,
+  ...props
+}: ButtonProps) {
   return (
     <AriaButton
       className={composeRenderProps(className, (className, renderProps) =>
@@ -48,11 +85,18 @@ export function Button({ className, variant, size, ...props }: ButtonProps) {
           ...renderProps,
           variant,
           size,
+          fullWidth,
+          isIconOnly,
           className,
         }),
       )}
+      isDisabled={isDisabled || isLoading}
       {...props}
-    />
+    >
+      {isLoading
+        ? (loadingFallback ?? <LoadingSpinner className="size-4" />)
+        : children}
+    </AriaButton>
   );
 }
 

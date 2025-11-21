@@ -207,7 +207,7 @@ export const DashboardWidget: Story = {
         <CardAction>
           <Button
             variant="ghost"
-            size="icon"
+            isIconOnly
           >
             ⋮
           </Button>

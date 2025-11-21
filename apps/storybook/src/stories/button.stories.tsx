@@ -126,11 +126,11 @@ export const Large: Story = {
 };
 
 /**
- * Icon button - square shape for icons
+ * Icon only button - square shape for icons
  */
-export const Icon: Story = {
+export const IconOnly: Story = {
   args: {
-    size: "icon",
+    isIconOnly: true,
     children: "🔍",
   },
 };
@@ -170,7 +170,7 @@ export const AllSizes: Story = {
       <Button size="sm">Small</Button>
       <Button size="md">Medium</Button>
       <Button size="lg">Large</Button>
-      <Button size="icon">🔍</Button>
+      <Button isIconOnly>🔍</Button>
     </div>
   ),
 };
@@ -222,21 +222,94 @@ export const DisabledVariants: Story = {
 };
 
 /**
- * Button with loading state pattern
+ * Loading state - shows spinner and disables button
  */
-export const WithLoadingState: Story = {
+export const Loading: Story = {
+  args: {
+    isLoading: true,
+    children: "Submit",
+  },
+};
+
+/**
+ * Loading state with custom fallback
+ */
+export const LoadingWithFallback: Story = {
+  args: {
+    isLoading: true,
+    loadingFallback: "Loading...",
+    children: "Submit",
+  },
+};
+
+/**
+ * Loading state across variants
+ */
+export const LoadingVariants: Story = {
   render: () => (
     <div className="flex gap-4">
-      <Button>
-        <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
-        Loading...
+      <Button
+        isLoading
+        variant="primary"
+      >
+        Primary
       </Button>
       <Button
+        isLoading
         variant="secondary"
-        isDisabled
       >
-        <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
-        Loading...
+        Secondary
+      </Button>
+      <Button
+        isLoading
+        variant="outline"
+      >
+        Outline
+      </Button>
+    </div>
+  ),
+};
+
+/**
+ * Full width button
+ */
+export const FullWidth: Story = {
+  args: {
+    fullWidth: true,
+    children: "Full Width Button",
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-80">
+        <Story />
+      </div>
+    ),
+  ],
+};
+
+/**
+ * Icon only with different sizes
+ */
+export const IconOnlySizes: Story = {
+  render: () => (
+    <div className="flex items-center gap-4">
+      <Button
+        isIconOnly
+        size="sm"
+      >
+        🔍
+      </Button>
+      <Button
+        isIconOnly
+        size="md"
+      >
+        🔍
+      </Button>
+      <Button
+        isIconOnly
+        size="lg"
+      >
+        🔍
       </Button>
     </div>
   ),

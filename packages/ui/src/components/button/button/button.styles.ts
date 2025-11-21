@@ -32,9 +32,19 @@ export const buttonStyles = tv({
       sm: "h-9 rounded-md px-3",
       md: "h-10 px-4 py-2",
       lg: "h-11 rounded-md px-8",
-      icon: "size-10",
+    },
+    fullWidth: {
+      true: "w-full",
+    },
+    isIconOnly: {
+      true: "px-0",
     },
   },
+  compoundVariants: [
+    { isIconOnly: true, size: "sm", class: "size-9" },
+    { isIconOnly: true, size: "md", class: "size-10" },
+    { isIconOnly: true, size: "lg", class: "size-11" },
+  ],
   defaultVariants: {
     variant: "primary",
     size: "md",

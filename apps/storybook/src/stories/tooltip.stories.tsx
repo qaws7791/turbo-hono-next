@@ -54,7 +54,7 @@ export const OnIconButton: Story = {
   render: () => (
     <TooltipTrigger>
       <Button
-        size="icon"
+        isIconOnly
         variant="outline"
       >
         ⚙
@@ -115,7 +115,7 @@ export const MultipleTooltips: Story = {
     <div className="flex gap-4">
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="outline"
         >
           ✏
@@ -124,7 +124,7 @@ export const MultipleTooltips: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="outline"
         >
           🗑
@@ -133,7 +133,7 @@ export const MultipleTooltips: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="outline"
         >
           ↓
@@ -142,7 +142,7 @@ export const MultipleTooltips: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="outline"
         >
           ⋮
@@ -187,7 +187,7 @@ export const Toolbar: Story = {
     <div className="flex gap-2 rounded-lg border p-2">
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           <strong>B</strong>
@@ -196,7 +196,7 @@ export const Toolbar: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           <em>I</em>
@@ -205,7 +205,7 @@ export const Toolbar: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           <u>U</u>
@@ -215,7 +215,7 @@ export const Toolbar: Story = {
       <div className="mx-1 w-px bg-border" />
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           ☰
@@ -224,7 +224,7 @@ export const Toolbar: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           ≡
@@ -233,7 +233,7 @@ export const Toolbar: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           ☰
@@ -346,7 +346,7 @@ export const DataTable: Story = {
               <div className="flex justify-end gap-1">
                 <TooltipTrigger>
                   <Button
-                    size="icon"
+                    isIconOnly
                     variant="ghost"
                   >
                     ✏
@@ -355,7 +355,7 @@ export const DataTable: Story = {
                 </TooltipTrigger>
                 <TooltipTrigger>
                   <Button
-                    size="icon"
+                    isIconOnly
                     variant="ghost"
                   >
                     🗑
@@ -379,7 +379,7 @@ export const KeyboardShortcuts: Story = {
     <div className="flex gap-2 rounded-lg border p-2">
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           💾
@@ -390,7 +390,7 @@ export const KeyboardShortcuts: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           📋
@@ -401,7 +401,7 @@ export const KeyboardShortcuts: Story = {
       </TooltipTrigger>
       <TooltipTrigger>
         <Button
-          size="icon"
+          isIconOnly
           variant="ghost"
         >
           📄

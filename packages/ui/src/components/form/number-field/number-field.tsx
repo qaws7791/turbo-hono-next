@@ -112,7 +112,7 @@ function NumberFieldStepper({ className, ...props }: NumberFieldStepperProps) {
         cn("w-auto grow rounded-none px-0.5 text-muted-foreground", className),
       )}
       variant={"ghost"}
-      size={"icon"}
+      isIconOnly
       {...props}
     />
   );

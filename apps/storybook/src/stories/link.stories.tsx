@@ -493,7 +493,7 @@ export const SocialLinks: Story = {
         target="_blank"
         rel="noopener noreferrer"
         variant="ghost"
-        size="icon"
+        isIconOnly
       >
         𝕏
       </Link>
@@ -502,7 +502,7 @@ export const SocialLinks: Story = {
         target="_blank"
         rel="noopener noreferrer"
         variant="ghost"
-        size="icon"
+        isIconOnly
       >
         GitHub
       </Link>
@@ -511,7 +511,7 @@ export const SocialLinks: Story = {
         target="_blank"
         rel="noopener noreferrer"
         variant="ghost"
-        size="icon"
+        isIconOnly
       >
         in
       </Link>

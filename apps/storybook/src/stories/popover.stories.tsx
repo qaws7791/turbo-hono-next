@@ -152,7 +152,7 @@ export const ActionMenu: Story = {
     <PopoverTrigger>
       <Button
         variant="outline"
-        size="icon"
+        isIconOnly
       >
         ⋮
       </Button>
@@ -186,7 +186,7 @@ export const FormHelp: Story = {
         <PopoverTrigger>
           <Button
             variant="ghost"
-            size="icon"
+            isIconOnly
             className="h-5 w-5"
           >
             ?
@@ -269,25 +269,25 @@ export const Share: Story = {
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                size="icon"
+                isIconOnly
               >
                 📧
               </Button>
               <Button
                 variant="outline"
-                size="icon"
+                isIconOnly
               >
                 🐦
               </Button>
               <Button
                 variant="outline"
-                size="icon"
+                isIconOnly
               >
                 👥
               </Button>
               <Button
                 variant="outline"
-                size="icon"
+                isIconOnly
               >
                 💼
               </Button>
