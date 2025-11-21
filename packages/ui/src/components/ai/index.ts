@@ -16,6 +16,22 @@ export type {
 } from "./conversation";
 
 export {
+  History,
+  HistoryContent,
+  HistoryGroup,
+  HistoryItem,
+  HistoryItemMenuTrigger,
+} from "./history";
+
+export type {
+  HistoryContentProps,
+  HistoryGroupProps,
+  HistoryItemMenuTriggerProps,
+  HistoryItemProps,
+  HistoryProps,
+} from "./history";
+
+export {
   Message,
   MessageAction,
   MessageActions,
