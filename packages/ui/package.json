@@ -54,7 +54,8 @@
     "./disclosure": "./src/components/interaction/disclosure/index.ts",
     "./list-box": "./src/components/interaction/list-box/index.ts",
     "./interaction": "./src/components/interaction/index.ts",
-    "./ai": "./src/components/ai/index.ts"
+    "./ai": "./src/components/ai/index.ts",
+    "./chatbot": "./src/components/ai/chatbot/index.ts"
   },
   "files": [
     "dist"
