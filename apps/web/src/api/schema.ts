@@ -4481,6 +4481,145 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/chat/conversations/{conversationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * 대화 세션 상세 정보와 메시지 목록을 조회합니다
+     * @description 특정 대화 세션의 상세 정보와 모든 메시지를 한 번에 조회합니다.
+     *
+     *     - **시간순 정렬**: 메시지는 createdAt 기준으로 오래된 메시지부터 표시됩니다.
+     *     - **권한 확인**: 대화 세션 소유자만 조회할 수 있습니다.
+     *     - **전체 컨텍스트**: 대화의 모든 메시지를 포함하여 전체 맥락을 제공합니다.
+     */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 대화 세션 ID */
+          conversationId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 대화 세션 상세 정보 */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": components["schemas"]["ConversationDetailResponse"];
+          };
+        };
+        /** @description 대화 세션을 찾을 수 없음 */
+        404: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    /**
+     * 대화 세션을 삭제합니다
+     * @description 대화 세션과 관련된 모든 메시지를 삭제합니다.
+     *
+     *     - **CASCADE 삭제**: 대화 세션에 속한 모든 메시지가 함께 삭제됩니다.
+     *     - **권한 확인**: 대화 세션 소유자만 삭제할 수 있습니다.
+     */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          /** @description 대화 세션 ID */
+          conversationId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description 삭제 완료 */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                /**
+                 * @description 에러 코드
+                 * @example VALIDATION_ERROR
+                 */
+                code: string;
+                /**
+                 * @description 에러 메시지
+                 * @example 요청 데이터가 유효하지 않습니다.
+                 */
+                message: string;
+              };
+            };
+          };
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/chat/conversations/{conversationId}/messages": {
     parameters: {
       query?: never;
@@ -4544,71 +4683,6 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chat/conversations/{conversationId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    post?: never;
-    /**
-     * 대화 세션을 삭제합니다
-     * @description 대화 세션과 관련된 모든 메시지를 삭제합니다.
-     *
-     *     - **CASCADE 삭제**: 대화 세션에 속한 모든 메시지가 함께 삭제됩니다.
-     *     - **권한 확인**: 대화 세션 소유자만 삭제할 수 있습니다.
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          /** @description 대화 세션 ID */
-          conversationId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description 삭제 완료 */
-        204: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content?: never;
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                /**
-                 * @description 에러 코드
-                 * @example VALIDATION_ERROR
-                 */
-                code: string;
-                /**
-                 * @description 에러 메시지
-                 * @example 요청 데이터가 유효하지 않습니다.
-                 */
-                message: string;
-              };
-            };
-          };
-        };
-      };
-    };
     options?: never;
     head?: never;
     patch?: never;
@@ -4715,6 +4789,16 @@ export interface components {
        * @example 2025-11-13T10:00:00.000Z
        */
       createdAt: string;
+    };
+    ConversationDetailResponse: {
+      conversation: components["schemas"]["Conversation"] & unknown;
+      /** @description 메시지 목록 (시간순 정렬) */
+      messages: Array<components["schemas"]["Message"]>;
+      /**
+       * @description 전체 메시지 개수
+       * @example 15
+       */
+      totalMessageCount: number;
     };
     MessageListResponse: {
       /** @description 메시지 목록 */

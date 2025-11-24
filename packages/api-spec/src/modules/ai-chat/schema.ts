@@ -168,6 +168,27 @@ export const CreateConversationRequestSchema = z
   .openapi("CreateConversationRequest");
 
 /**
+ * 대화 상세 조회 응답 스키마 (대화 정보 + 메시지 목록)
+ */
+export const ConversationDetailResponseSchema = z
+  .object({
+    conversation: ConversationSchema.openapi({
+      description: "대화 세션 정보",
+    }),
+    messages: z.array(MessageSchema).openapi({
+      description: "메시지 목록 (시간순 정렬)",
+    }),
+    totalMessageCount: z
+      .number()
+      .int()
+      .openapi({
+        description: "전체 메시지 개수",
+        examples: [15],
+      }),
+  })
+  .openapi("ConversationDetailResponse");
+
+/**
  * 공통 에러 응답
  */
 export { ErrorResponseSchema };

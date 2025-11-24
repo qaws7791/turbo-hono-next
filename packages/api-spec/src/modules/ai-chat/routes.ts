@@ -1,6 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 
 import {
+  ConversationDetailResponseSchema,
   ConversationListResponseSchema,
   ConversationSchema,
   CreateConversationRequestSchema,
@@ -151,6 +152,63 @@ export const getMessagesRoute = createRoute({
 });
 
 /**
+ * GET /chat/conversations/{conversationId} - 대화 세션 상세 조회 (메시지 포함)
+ */
+export const getConversationDetailRoute = createRoute({
+  tags: ["ai-chat"],
+  method: "get",
+  path: "/chat/conversations/{conversationId}",
+  summary: "대화 세션 상세 정보와 메시지 목록을 조회합니다",
+  description: `특정 대화 세션의 상세 정보와 모든 메시지를 한 번에 조회합니다.
+
+- **시간순 정렬**: 메시지는 createdAt 기준으로 오래된 메시지부터 표시됩니다.
+- **권한 확인**: 대화 세션 소유자만 조회할 수 있습니다.
+- **전체 컨텍스트**: 대화의 모든 메시지를 포함하여 전체 맥락을 제공합니다.`,
+  request: {
+    params: z.object({
+      conversationId: z
+        .string()
+        .min(1)
+        .openapi({
+          description: "대화 세션 ID",
+          examples: ["conv_1234567890"],
+        }),
+    }),
+  },
+  responses: {
+    200: {
+      description: "대화 세션 상세 정보",
+      content: {
+        "application/json": {
+          schema: ConversationDetailResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: "대화 세션을 찾을 수 없음",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: {
+        "application/json": {
+          schema: ErrorResponseSchema,
+        },
+      },
+    },
+  },
+  security: [
+    {
+      cookieAuth: [],
+    },
+  ],
+});
+
+/**
  * POST /chat/conversations - 새 대화 세션 생성
  */
 export const createConversationRoute = createRoute({
@@ -242,6 +300,7 @@ export const deleteConversationRoute = createRoute({
 export const aiChatRoutes = [
   streamMessageRoute,
   getConversationsRoute,
+  getConversationDetailRoute,
   getMessagesRoute,
   createConversationRoute,
   deleteConversationRoute,
