@@ -15,7 +15,7 @@ const getConversationDetail = new OpenAPIHono().openapi(
   async (c) => {
     const { userId } = extractAuthContext(c);
     const params = c.req.valid("param");
-
+    console.log("params", params);
     try {
       const response =
         await conversationQueryService.getConversationWithMessages(

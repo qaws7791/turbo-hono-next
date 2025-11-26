@@ -6,10 +6,14 @@ import status from "http-status";
 import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
+import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
+import { AIChatErrors } from "../errors";
 import { aiStreamService } from "../services/ai-stream.service";
+import { conversationCommandService } from "../services/conversation-command.service";
 import { conversationQueryService } from "../services/conversation-query.service";
 
 import type { AppUIMessage } from "@repo/ai-types";
+import type { AIConversation } from "@repo/database";
 
 const streamMessage = new OpenAPIHono().openapi(
   {
@@ -19,32 +23,73 @@ const streamMessage = new OpenAPIHono().openapi(
   async (c) => {
     const { userId } = extractAuthContext(c);
     const body = c.req.valid("json");
-    const conversationId = body.conversationId as string;
-    const messages = body.messages as Array<AppUIMessage>;
+    let conversationId = body.conversationId as string | undefined;
+    const message = body.message as AppUIMessage;
+    const learningPlanPublicId = body.learningPlanId as string | undefined;
 
     log.info("streamMessage", { body });
 
-    if (!conversationId) {
-      return c.json(
-        { error: "conversationId is required for new conversations" },
-        status.BAD_REQUEST,
-      );
-    }
-
     try {
-      // Get conversation and verify ownership
-      const conversation = await conversationQueryService.getConversation(
-        conversationId,
+      let isNewConversation = false;
+
+      if (!learningPlanPublicId) {
+        return c.json(
+          {
+            error: "learningPlanId is required when conversationId is missing",
+          },
+          status.BAD_REQUEST,
+        );
+      }
+
+      // Convert public ID to internal ID
+      const learningPlan = await learningPlanRepository.findByPublicId(
+        learningPlanPublicId,
         userId,
       );
+
+      if (!learningPlan) {
+        throw AIChatErrors.learningPlanNotFound();
+      }
+
+      let conversation: AIConversation | null = null;
+
+      if (conversationId) {
+        conversation = await conversationQueryService.getConversation(
+          conversationId,
+          userId,
+        );
+      }
+
+      if (!conversation) {
+        // Create new conversation
+        conversation = await conversationCommandService.createConversation({
+          learningPlanId: learningPlan.id,
+          userId,
+          title: "새 대화",
+        });
+
+        isNewConversation = true;
+
+        log.info("New conversation created", {
+          conversationId,
+          learningPlanPublicId,
+          userId,
+        });
+      }
+
+      conversationId = conversation.id;
+      const learningPlanId = conversation.learningPlanId;
 
       // Create AI message stream
       const stream = await aiStreamService.createMessageStream({
-        conversationId: conversation.id,
+        conversation,
         userId,
-        messages,
-        learningPlanId: conversation.learningPlanId,
+        messages: [message],
+        learningPlanId,
+        isNewConversation,
       });
+
+      // conversationId는 스트림 metadata로 전달됨 (ai-stream.service.ts의 messageMetadata 참조)
 
       // Return UI Message Stream Response
       return createUIMessageStreamResponse({

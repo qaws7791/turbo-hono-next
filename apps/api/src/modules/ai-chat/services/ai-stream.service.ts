@@ -18,12 +18,14 @@ import { messageCommandService } from "./message-command.service";
 import { messageQueryService } from "./message-query.service";
 
 import type { AppUIMessage } from "@repo/ai-types";
+import type { AIConversation } from "@repo/database";
 
 export interface StreamMessageInput {
-  conversationId: string;
+  conversation: AIConversation;
   userId: string;
   messages: Array<AppUIMessage>;
   learningPlanId: number;
+  isNewConversation?: boolean;
 }
 
 /**
@@ -36,7 +38,7 @@ export class AIStreamService {
   async createMessageStream(
     input: StreamMessageInput,
   ): Promise<ReturnType<typeof createUIMessageStream>> {
-    const { conversationId, userId, messages, learningPlanId } = input;
+    const { conversation, userId, messages, learningPlanId } = input;
 
     // Build learning plan context
     const planContext = await learningPlanContextService.buildContext(
@@ -48,14 +50,13 @@ export class AIStreamService {
 
     // Get message history (last 20 messages)
     const messagesFromDB = await messageQueryService.getLatestMessages(
-      conversationId,
+      conversation.id,
       userId,
       20,
     );
-
     // Save new user messages
     const savedMessages = await messageCommandService.saveMessages({
-      conversationId,
+      conversationId: conversation.id,
       userId,
       messages: messages.map((msg) => ({
         id: msg.id,
@@ -78,6 +79,12 @@ export class AIStreamService {
       })),
     ];
 
+    log.debug(`UI MESSAGES`, {
+      messagesFromDB,
+      savedMessages,
+      uiMessages,
+    });
+
     // Create UI message stream
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
@@ -88,38 +95,48 @@ export class AIStreamService {
           stopWhen: stepCountIs(5),
           tools: createTools(userId, planContext.learningPlan.id),
         });
-
         result.consumeStream();
 
         dataStream.merge(
           result.toUIMessageStream({
             sendReasoning: true,
+            messageMetadata: ({ part }) => {
+              if (part.type === "start") {
+                return {
+                  timestamp: new Date().toISOString(),
+                  conversationId: conversation.id,
+                  title: conversation.title,
+                  isNewConversation: input.isNewConversation,
+                };
+              }
+            },
           }),
         );
       },
       generateId: randomUUID,
-      onFinish: async ({ messages: finishedMessages }) => {
+      onFinish: async ({ responseMessage }) => {
         await messageCommandService.saveMessages({
-          conversationId,
+          conversationId: conversation.id,
           userId,
-          messages: finishedMessages.map((currentMessage) => ({
-            id: currentMessage.id,
-            role: currentMessage.role,
-            parts: currentMessage.parts,
-            createdAt: new Date(),
-            attachments: [],
-          })),
+          messages: [
+            {
+              id: responseMessage.id,
+              role: responseMessage.role,
+              parts: responseMessage.parts,
+              attachments: [],
+              createdAt: new Date(),
+            },
+          ],
         });
 
         log.info("AI message stream finished", {
-          conversationId,
-          messageCount: finishedMessages.length,
+          conversationId: conversation.id,
         });
       },
       onError: (error) => {
         log.error("AI stream error", {
           error: error instanceof Error ? error.message : "Unknown error",
-          conversationId,
+          conversationId: conversation.id,
           userId,
         });
         return "Oops, an error occurred!";

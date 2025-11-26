@@ -63,7 +63,7 @@ export class ConversationQueryService {
     conversationId: string,
     userId: string,
     tx?: DatabaseTransaction,
-  ): Promise<AIConversation> {
+  ): Promise<AIConversation | null> {
     const conversation = await conversationRepository.findByIdAndUserId(
       conversationId,
       userId,
@@ -71,11 +71,7 @@ export class ConversationQueryService {
     );
 
     if (!conversation) {
-      log.warn("Conversation not found or unauthorized", {
-        conversationId,
-        userId,
-      });
-      throw new Error("Conversation not found");
+      return null;
     }
 
     return conversation;

@@ -53,7 +53,7 @@ export class ConversationCommandService {
         id: conversationId,
         learningPlanId,
         userId,
-        title: title ?? null,
+        title: title ?? "새 대화",
         createdAt: new Date(),
         updatedAt: new Date(),
       },
