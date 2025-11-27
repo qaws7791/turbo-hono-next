@@ -1,20 +1,28 @@
 import { Button } from "@repo/ui/button";
 import {
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogOverlay,
   DialogTitle,
   DialogTrigger,
 } from "@repo/ui/dialog";
 import { Icon } from "@repo/ui/icon";
+import { Label } from "@repo/ui/label";
+import { Input, TextArea } from "@repo/ui/text-field";
 import { Tooltip, TooltipTrigger } from "@repo/ui/tooltip";
 import { cn } from "@repo/ui/utils";
+import { useEffect, useState } from "react";
 
 import type React from "react";
 
+import { useLearningPlanUpdate } from "@/features/learning-plan/hooks/use-learning-plan-update";
 import { formatDate } from "@/shared/utils";
 
 interface LearningPlanInfoProps extends React.ComponentProps<"div"> {
+  id: string;
+  title: string;
+  description?: string;
   status: "active" | "archived" | undefined;
   createdAt: string;
   updatedAt: string;
@@ -32,12 +40,42 @@ interface LearningPlanInfoProps extends React.ComponentProps<"div"> {
 }
 
 export default function LearningPlanInfo({
+  id,
+  title,
+  description,
   status,
   createdAt,
   updatedAt,
   className,
   documents,
 }: LearningPlanInfoProps) {
+  const [newTitle, setNewTitle] = useState(title);
+  const [newDescription, setNewDescription] = useState(description || "");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const { mutate: updateLearningPlan, isPending } = useLearningPlanUpdate(id);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNewTitle(title);
+      setNewDescription(description || "");
+    }
+  }, [isOpen, title, description]);
+
+  const handleSave = () => {
+    updateLearningPlan(
+      {
+        title: newTitle,
+        description: newDescription,
+      },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+        },
+      },
+    );
+  };
+
   return (
     <div className="flex items-center justify-between">
       <div
@@ -140,17 +178,70 @@ export default function LearningPlanInfo({
           </DialogOverlay>
         </DialogTrigger>
 
-        <Button
-          variant="outline"
-          size="sm"
+        <DialogTrigger
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
         >
-          <Icon
-            name="solar--settings-outline"
-            type="iconify"
-            className="size-4 mr-2"
-          />
-          설정
-        </Button>
+          <Button
+            variant="outline"
+            size="sm"
+          >
+            <Icon
+              name="solar--settings-outline"
+              type="iconify"
+              className="size-4 mr-2"
+            />
+            설정
+          </Button>
+          <DialogOverlay>
+            <DialogContent className="sm:max-w-[500px]">
+              {({ close }) => (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>학습 계획 설정</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="title">제목</Label>
+                      <Input
+                        id="title"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="학습 계획 제목을 입력하세요"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="description">설명</Label>
+                      <TextArea
+                        id="description"
+                        value={newDescription}
+                        onChange={(e) => setNewDescription(e.target.value)}
+                        placeholder="학습 계획 설명을 입력하세요"
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={close}
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      isDisabled={isPending}
+                      isLoading={isPending}
+                      loadingFallback="저장 중"
+                    >
+                      저장
+                    </Button>
+                  </DialogFooter>
+                </>
+              )}
+            </DialogContent>
+          </DialogOverlay>
+        </DialogTrigger>
       </div>
     </div>
   );

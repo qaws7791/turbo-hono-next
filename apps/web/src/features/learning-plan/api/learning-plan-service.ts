@@ -36,6 +36,13 @@ export function getLearningPlanDetail(learningPlanId: string) {
   return api.learningPlans.detail(learningPlanId);
 }
 
+export function updateLearningPlan(
+  learningPlanId: string,
+  data: Parameters<typeof api.learningPlans.update>[1],
+) {
+  return api.learningPlans.update(learningPlanId, data);
+}
+
 export function getLearningTaskDetail(learningTaskId: string) {
   return api.learningTasks.detail(learningTaskId);
 }

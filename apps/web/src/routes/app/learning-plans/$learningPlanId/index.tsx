@@ -107,9 +107,11 @@ function RouteComponent() {
         {/* 학습 계획 정보 */}
         <LearningPlanInfo
           id={learningPlan.id}
+          title={learningPlan.title}
+          description={learningPlan.description || undefined}
           status={learningPlan.status}
-          createdAt={learningPlan.createdAt || ""}
-          updatedAt={learningPlan.updatedAt || ""}
+          createdAt={learningPlan.createdAt}
+          updatedAt={learningPlan.updatedAt}
           documents={learningPlan.documents}
         />
 
