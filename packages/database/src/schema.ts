@@ -283,7 +283,7 @@ export const aiConversation = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    title: text("title"),
+    title: text("title").notNull(),
     createdAt: timestamp("created_at")
       .$defaultFn(() => new Date())
       .notNull(),

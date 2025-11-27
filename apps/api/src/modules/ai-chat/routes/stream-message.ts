@@ -6,8 +6,10 @@ import status from "http-status";
 import { extractAuthContext } from "../../../lib/auth-context.helper";
 import { log } from "../../../lib/logger";
 import { authMiddleware } from "../../../middleware/auth";
+import { generateConversationTitle } from "../../../external/ai/features/conversation-title/generator";
 import { learningPlanRepository } from "../../learning-plan/repositories/learning-plan.repository";
 import { AIChatErrors } from "../errors";
+import { extractTextFromUIMessage } from "../helpers/message.helper";
 import { aiStreamService } from "../services/ai-stream.service";
 import { conversationCommandService } from "../services/conversation-command.service";
 import { conversationQueryService } from "../services/conversation-query.service";
@@ -61,17 +63,24 @@ const streamMessage = new OpenAPIHono().openapi(
       }
 
       if (!conversation) {
-        // Create new conversation
+        // Extract text from user message for title generation
+        const userMessageText = extractTextFromUIMessage(message);
+
+        // Generate title from user's first message using AI
+        const title = await generateConversationTitle(userMessageText);
+
+        // Create new conversation with AI-generated title
         conversation = await conversationCommandService.createConversation({
           learningPlanId: learningPlan.id,
           userId,
-          title: "새 대화",
+          title,
         });
 
         isNewConversation = true;
 
         log.info("New conversation created", {
-          conversationId,
+          conversationId: conversation.id,
+          title,
           learningPlanPublicId,
           userId,
         });

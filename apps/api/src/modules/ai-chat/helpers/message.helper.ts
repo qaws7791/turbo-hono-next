@@ -37,3 +37,14 @@ export function convertToDBMessages(
     createdAt: new Date(),
   }));
 }
+
+/**
+ * Extract text content from UI message parts
+ */
+export function extractTextFromUIMessage(message: AppUIMessage): string {
+  const textParts = message.parts
+    .filter((part) => part.type === "text")
+    .map((part) => part.text);
+
+  return textParts.join(" ").trim();
+}
