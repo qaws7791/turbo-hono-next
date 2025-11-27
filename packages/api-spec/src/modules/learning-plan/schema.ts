@@ -505,6 +505,7 @@ export const LearningPlanUpdateRequestSchema = z.object({
   additionalRequirements: z
     .string()
     .nullable()
+    .optional()
     .openapi({
       description: "추가 요구 사항",
       examples: ["React, Node.js 포함"],
