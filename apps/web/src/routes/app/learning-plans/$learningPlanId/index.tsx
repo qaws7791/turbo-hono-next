@@ -1,7 +1,7 @@
 import { Icon } from "@repo/ui/icon";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { AIChatSection } from "@/features/ai-chat/components/ai-chat-section";
+import { Chat } from "@/features/ai-chat/components/chat";
 import { LearningModuleList } from "@/features/learning-plan/components/learning-module-list";
 import LearningPlanInfo from "@/features/learning-plan/components/learning-plan-info";
 import { useLearningPlanDetail } from "@/features/learning-plan/hooks/use-learning-plan-detail";
@@ -124,10 +124,7 @@ function RouteComponent() {
             />
           </div>
 
-          {/* 우측 패널 - AI 채팅 */}
-          <div className="lg:col-span-1">
-            <AIChatSection learningPlanId={learningPlanId} />
-          </div>
+          <Chat learningPlanId={learningPlanId} />
         </div>
       </div>
     </AppPageLayout>

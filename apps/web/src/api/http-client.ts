@@ -4,7 +4,6 @@ import type { paths } from "./schema";
 
 import { API_BASE_URL } from "@/env";
 
-
 type LearningPlanCreateBody = NonNullable<
   paths["/plans"]["post"]["requestBody"]
 >["content"]["application/json"];
@@ -367,6 +366,19 @@ const ai = {
 };
 
 const aiChat = {
+  /**
+   * 대화 세션 상세 조회
+   */
+  getConversation: async (conversationId: string) => {
+    return client.GET("/chat/conversations/{conversationId}", {
+      params: {
+        path: {
+          conversationId,
+        },
+      },
+    });
+  },
+
   /**
    * 학습 계획의 대화 세션 목록 조회
    */

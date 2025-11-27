@@ -64,7 +64,8 @@ function AppLayoutComponent() {
           <DialogTrigger>
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
+              isIconOnly
             >
               <MenuIcon className="h-5 w-5" />
             </Button>
