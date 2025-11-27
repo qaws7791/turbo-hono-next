@@ -141,7 +141,7 @@ ChatbotHeaderActions.displayName = "ChatbotHeaderActions";
 export const ChatbotContent = memo(
   ({ className, children, ...props }: ChatbotContentProps) => (
     <main
-      className={cn("flex min-h-0 flex-1 flex-col", className)}
+      className={cn("flex min-h-0 flex-1 flex-col relative", className)}
       {...props}
     >
       {children}
