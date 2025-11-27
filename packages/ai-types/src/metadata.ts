@@ -6,6 +6,9 @@ import { z } from "zod";
  */
 export const messageMetadataSchema = z.object({
   timestamp: z.string(),
+  conversationId: z.string(),
+  title: z.string().optional(),
+  isNewConversation: z.boolean().optional(),
 });
 
 /**

@@ -47,12 +47,21 @@ export const aiResponseProgressDataSchema = z.object({
 });
 
 /**
+ * 대화 생성 완료 데이터
+ */
+export const conversationCreatedDataSchema = z.object({
+  conversationId: z.string().describe("생성된 대화 ID"),
+  timestamp: z.string().describe("생성 시각 (ISO 8601)"),
+});
+
+/**
  * 커스텀 데이터 파트 스키마 (저장용)
  */
 export const dataPartsSchema = z.object({
   toolExecutionStatus: toolExecutionStatusDataSchema.optional(),
   planUpdateNotification: planUpdateNotificationDataSchema.optional(),
   aiResponseProgress: aiResponseProgressDataSchema.optional(),
+  conversationCreated: conversationCreatedDataSchema.optional(),
 });
 
 /**
@@ -93,6 +102,7 @@ export const uiDataTypesSchema = z.object({
   toolExecutionStatus: toolExecutionStatusDataSchema.optional(),
   planUpdateNotification: planUpdateNotificationDataSchema.optional(),
   aiResponseProgress: aiResponseProgressDataSchema.optional(),
+  conversationCreated: conversationCreatedDataSchema.optional(),
 });
 
 export type UIDataTypes = {
@@ -122,5 +132,10 @@ export type UIDataTypes = {
     step: string;
     stepNumber: number;
     totalSteps: number;
+  };
+  /** 대화 생성 완료 알림 */
+  conversationCreated: {
+    conversationId: string;
+    timestamp: string;
   };
 };

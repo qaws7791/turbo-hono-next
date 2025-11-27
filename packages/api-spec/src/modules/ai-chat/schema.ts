@@ -112,7 +112,8 @@ export const SendMessageRequestSchema = z
       .string()
       .optional()
       .openapi({
-        description: "대화 세션 ID (없으면 새 대화 세션 생성)",
+        description:
+          "대화 세션 ID (새 대화 시작 시에는 생략, 서버에서 생성하여 응답 스트림의 metadata로 반환)",
         examples: ["conv_1234567890"],
       }),
     learningPlanId: z.string().openapi({
