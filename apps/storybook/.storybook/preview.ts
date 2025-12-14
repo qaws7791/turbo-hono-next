@@ -1,4 +1,3 @@
-import "@repo/ui/components.css";
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/globals.css";
 
