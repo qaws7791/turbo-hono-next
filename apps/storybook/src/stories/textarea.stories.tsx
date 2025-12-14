@@ -1,21 +1,18 @@
-import { Slider } from "@repo/ui/slider";
+import { Textarea } from "@repo/ui/textarea";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta = {
-  title: "Components/Slider",
-  component: Slider,
+  title: "Components/Textarea",
+  component: Textarea,
   tags: ["autodocs"],
-} satisfies Meta<typeof Slider>;
+} satisfies Meta<typeof Textarea>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    defaultValue: [50],
-    max: 100,
-    step: 1,
-    className: "w-[60%]",
+    placeholder: "Type your message here.",
   },
 };

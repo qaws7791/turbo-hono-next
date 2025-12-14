@@ -1,13 +1,13 @@
+import { Checkbox } from "@repo/ui/checkbox";
 import { Label } from "@repo/ui/label";
-import { Switch } from "@repo/ui/switch";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta = {
-  title: "Components/Switch",
-  component: Switch,
+  title: "Components/Label",
+  component: Label,
   tags: ["autodocs"],
-} satisfies Meta<typeof Switch>;
+} satisfies Meta<typeof Label>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -15,8 +15,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <div className="flex items-center space-x-2">
-      <Switch id="airplane-mode" />
-      <Label htmlFor="airplane-mode">Airplane Mode</Label>
+      <Checkbox id="terms" />
+      <Label htmlFor="terms">Accept terms and conditions</Label>
     </div>
   ),
 };
