@@ -99,7 +99,7 @@ pnpm --filter storybook lint
 ### 기본 구조
 
 ```typescript
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@repo/ui/button";
 
 const meta = {
