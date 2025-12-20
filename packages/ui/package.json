@@ -4,22 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./ai/chain-of-thought": "./src/ai/chain-of-thought.tsx",
-    "./ai/code-block": "./src/ai/code-block.tsx",
-    "./ai/confirmation": "./src/ai/confirmation.tsx",
-    "./ai/conversation": "./src/ai/conversation.tsx",
-    "./ai/image": "./src/ai/image.tsx",
-    "./ai/inline-citation": "./src/ai/inline-citation.tsx",
-    "./ai/loader": "./src/ai/loader.tsx",
-    "./ai/message": "./src/ai/message.tsx",
-    "./ai/plan": "./src/ai/plan.tsx",
-    "./ai/prompt-input": "./src/ai/prompt-input.tsx",
-    "./ai/reasoning": "./src/ai/reasoning.tsx",
-    "./ai/shimmer": "./src/ai/shimmer.tsx",
-    "./ai/sources": "./src/ai/sources.tsx",
-    "./ai/suggestion": "./src/ai/suggestion.tsx",
-    "./ai/task": "./src/ai/task.tsx",
-    "./ai/tool": "./src/ai/tool.tsx",
+    "./ai/*": "./src/ai/*.tsx",
     "./hooks/use-mobile": "./src/hooks/use-mobile.tsx",
     "./utils": "./src/utils.ts",
     "./accordion": "./src/ui/accordion.tsx",
@@ -47,7 +32,6 @@
     "./hover-card": "./src/ui/hover-card.tsx",
     "./input": "./src/ui/input.tsx",
     "./input-group": "./src/ui/input-group.tsx",
-    "./input-otp": "./src/ui/input-otp.tsx",
     "./item": "./src/ui/item.tsx",
     "./kbd": "./src/ui/kbd.tsx",
     "./label": "./src/ui/label.tsx",
@@ -73,18 +57,11 @@
     "./tabs": "./src/ui/tabs.tsx",
     "./textarea": "./src/ui/textarea.tsx",
     "./toggle": "./src/ui/toggle.tsx",
+    "./timeline": "./src/ui/timeline.tsx",
     "./toggle-group": "./src/ui/toggle-group.tsx",
     "./tooltip": "./src/ui/tooltip.tsx"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --minify",
-    "dev": "tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "check-types": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
@@ -105,7 +82,6 @@
     "react-dom": "catalog:",
     "rimraf": "^6.0.1",
     "tailwindcss": "catalog:",
-    "tsup": "^8.0.0",
     "typescript": "catalog:"
   },
   "dependencies": {
@@ -114,14 +90,12 @@
     "@repo/ai-types": "workspace:*",
     "@tabler/icons-react": "^3.36.0",
     "@tailwindcss/cli": "^4.1.13",
-    "@xyflow/react": "^12.10.0",
     "ai": "^5.0.47",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
-    "input-otp": "^1.4.2",
     "lucide-react": "^0.525.0",
     "motion": "^12.23.26",
     "nanoid": "^5.1.5",
@@ -132,13 +106,8 @@
     "sonner": "^2.0.7",
     "streamdown": "^1.6.10",
     "tailwind-merge": "^3.4.0",
-    "tailwind-variants": "catalog:",
-    "tokenlens": "^1.3.1",
     "tw-animate-css": "^1.4.0",
     "use-stick-to-bottom": "^1.1.1",
     "vaul": "^1.1.2"
-  },
-  "peerDependencies": {
-    "tailwind-variants": "catalog:"
   }
 }

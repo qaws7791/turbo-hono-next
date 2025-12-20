@@ -69,7 +69,7 @@ function CommandInput({
       data-slot="command-input-wrapper"
       className="p-1 pb-0"
     >
-      <InputGroup className="bg-input/30 h-9">
+      <InputGroup className="bg-background h-9">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(

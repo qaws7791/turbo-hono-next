@@ -311,6 +311,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: ^3.36.0
+        version: 3.36.0(react@19.1.1)
       isbot:
         specifier: ^5.1.31
         version: 5.1.31
@@ -323,6 +326,9 @@ importers:
       react-router:
         specifier: 7.10.1
         version: 7.10.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.11
     devDependencies:
       '@react-router/dev':
         specifier: 7.10.1

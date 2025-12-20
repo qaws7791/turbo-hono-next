@@ -18,8 +18,7 @@
     "react": "catalog:",
     "react-aria-components": "catalog:",
     "react-docgen-typescript": "^2.4.0",
-    "react-dom": "catalog:",
-    "tailwind-variants": "catalog:"
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^4.1.2",

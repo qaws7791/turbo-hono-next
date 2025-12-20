@@ -6,7 +6,7 @@ A comprehensive, accessible React component library built on [React Aria Compone
 
 - **Accessible by Default**: Built on React Aria Components with WCAG 2.1 compliance
 - **Type-Safe**: Full TypeScript support with strict typing
-- **Customizable**: Tailwind CSS v4 with tailwind-variants for flexible styling
+- **Customizable**: Tailwind CSS v4 for styling
 - **Well-Documented**: JSDoc comments and comprehensive examples
 - **Organized**: Components grouped by functionality (form, layout, navigation, etc.)
 - **Modular**: Import only what you need
@@ -40,7 +40,8 @@ export function App() {
 ### Form Components
 
 ```tsx
-import { TextField, Button } from "@repo/ui";
+import { TextField } from "@repo/ui/input";
+import { Button } from "@repo/ui/button";
 import { Form } from "@repo/ui/form";
 
 export function LoginForm() {
@@ -77,7 +78,8 @@ export function LoginForm() {
 ### Dialog Component
 
 ```tsx
-import { Dialog, Button } from "@repo/ui";
+import { Dialog } from "@repo/ui/dialog";
+import { Button } from "@repo/ui/button";
 
 export function Confirmation() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -126,11 +128,10 @@ Complete form solution with validation support.
 
 **Import example:**
 
-```tsx
 import { TextField, Select, Button } from "@repo/ui/form";
 // or
-import { Form, TextField, Select } from "@repo/ui";
-```
+import { Form } from "@repo/ui/form";
+import { TextField, Select } from "@repo/ui/input";
 
 ### Layout Components
 
@@ -280,9 +281,9 @@ import { TextField } from "@repo/ui/text-field";
 import { Dialog } from "@repo/ui/dialog";
 ```
 
-### All Components Import
+### All Components Import (Not Recommended)
 
-Import everything (not recommended for production):
+Importing from the root package is supported but **not recommended** for production as it can lead to larger bundle sizes:
 
 ```tsx
 import { Button, TextField, Dialog, Card, Badge } from "@repo/ui";
@@ -436,5 +437,4 @@ See LICENSE file for details.
 
 - [React Aria Components](https://react-spectrum.adobe.com/react-aria/components.html)
 - [Tailwind CSS](https://tailwindcss.com/)
-- [tailwind-variants](https://www.tailwind-variants.org/)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
