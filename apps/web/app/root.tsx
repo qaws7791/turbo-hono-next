@@ -1,3 +1,6 @@
+import { Button } from "@repo/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
+import { Toaster } from "@repo/ui/sonner";
 import {
   Links,
   Meta,
@@ -8,6 +11,7 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -25,7 +29,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <head>
         <meta charSet="utf-8" />
         <meta
@@ -37,6 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster />
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -52,6 +57,8 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = "Oops!";
   let details = "An unexpected error occurred.";
   let stack: string | undefined;
+  const showStack =
+    typeof window !== "undefined" && window.location.hostname === "localhost";
 
   if (isRouteErrorResponse(error)) {
     message = error.status === 404 ? "404" : "Error";
@@ -59,20 +66,34 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       error.status === 404
         ? "The requested page could not be found."
         : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+  } else if (showStack && error && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
+    <div className="mx-auto flex min-h-svh w-full max-w-3xl items-center px-4 py-10">
+      <Card className="w-full">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-base">{message}</CardTitle>
+          <p className="text-muted-foreground text-sm">{details}</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {stack ? (
+            <pre className="bg-muted overflow-x-auto rounded-xl p-4 text-xs">
+              <code>{stack}</code>
+            </pre>
+          ) : null}
+          <Button
+            variant="outline"
+            onClick={() => {
+              window.location.assign("/");
+            }}
+          >
+            랜딩으로
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

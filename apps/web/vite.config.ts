@@ -5,4 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  optimizeDeps: {
+    exclude: ["@repo/ui"], // 핫리로딩 시 context 에러 문제로 해결을 위해 적용
+  },
 });
