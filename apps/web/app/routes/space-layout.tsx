@@ -1,0 +1,71 @@
+import { redirect, useLoaderData } from "react-router";
+import { z } from "zod";
+
+import type { Route } from "./+types/space-layout";
+
+import { SpaceLayoutView } from "~/features/spaces/layout/space-layout-view";
+import { useSpaceLayoutModel } from "~/features/spaces/layout/use-space-layout-model";
+import { getPlanBySpaceActive, getSpace, updateSpace } from "~/mock/api";
+
+const SpaceIdSchema = z.string().uuid();
+
+function tabToPath(spaceId: string, tab: string): string | null {
+  if (tab === "documents") return `/spaces/${spaceId}/documents`;
+  if (tab === "plans") return `/spaces/${spaceId}/plans`;
+  if (tab === "concepts") return `/spaces/${spaceId}/concepts`;
+  if (tab === "overview") return `/spaces/${spaceId}`;
+  return null;
+}
+
+export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
+  const spaceId = SpaceIdSchema.safeParse(params.spaceId);
+  if (!spaceId.success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  const url = new URL(request.url);
+  const tab = url.searchParams.get("tab");
+  if (tab) {
+    const to = tabToPath(spaceId.data, tab);
+    if (to) {
+      throw redirect(to);
+    }
+  }
+
+  return {
+    space: getSpace(spaceId.data),
+    activePlan: getPlanBySpaceActive(spaceId.data),
+  };
+}
+
+export async function clientAction({ request }: Route.ClientActionArgs) {
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "update-space") {
+    const spaceId = z.string().uuid().parse(formData.get("spaceId"));
+    const icon = formData.get("icon");
+    const color = formData.get("color");
+
+    updateSpace({
+      spaceId,
+      icon: typeof icon === "string" ? icon : undefined,
+      color: typeof color === "string" ? color : undefined,
+    });
+
+    return { ok: true };
+  }
+
+  throw new Response("Bad Request", { status: 400 });
+}
+
+export default function SpaceLayoutRoute() {
+  const { space } = useLoaderData<typeof clientLoader>();
+  const model = useSpaceLayoutModel(space);
+  return (
+    <SpaceLayoutView
+      space={space}
+      model={model}
+    />
+  );
+}
