@@ -23,10 +23,30 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import type { Space } from "~/mock/schemas";
+import type { PlanGoal, PlanLevel, Space } from "~/mock/schemas";
 import type { SpacePlansModel } from "./use-space-plans-model";
 
 import { PlanStatusBadge } from "~/features/plans/plan-status-badge";
+
+function getPlanGoalLabel(goal: PlanGoal) {
+  const labels: Record<PlanGoal, string> = {
+    career: "취업/이직",
+    certificate: "자격증",
+    work: "업무 활용",
+    hobby: "자기계발/취미",
+  };
+  return labels[goal];
+}
+
+function getPlanLevelLabel(level: PlanLevel) {
+  const labels: Record<PlanLevel, string> = {
+    novice: "입문",
+    basic: "초급",
+    intermediate: "중급",
+    advanced: "고급",
+  };
+  return labels[level];
+}
 
 export function SpacePlansView({
   space,
@@ -67,7 +87,7 @@ export function SpacePlansView({
         <div className="space-y-8">
           {model.activePlan ? (
             <>
-              {/* Plan 정보 + 진행률 배지 + 프로그레스 바 */}
+              {/* 학습 계획 정보 + 진행률 배지 + 프로그레스 바 */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <div className="space-y-0.5">
@@ -129,7 +149,7 @@ export function SpacePlansView({
           ) : (
             <div className="space-y-3">
               <div className="text-muted-foreground text-sm">
-                아직 Active Plan이 없습니다. 문서를 기반으로 Plan을
+                아직 활성화된 학습 계획이 없습니다. 문서를 기반으로 학습 계획을
                 생성해보세요.
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -144,7 +164,7 @@ export function SpacePlansView({
                   variant="outline"
                   render={<Link to={`/spaces/${space.id}/plans/new`} />}
                 >
-                  Plan 만들기
+                  학습 계획 만들기
                 </Button>
               </div>
             </div>
@@ -202,9 +222,16 @@ export function SpacePlansView({
                     >
                       {plan.title}
                     </Link>
-                    <div className="text-muted-foreground text-xs font-medium">
-                      목표 {plan.goal} · 수준 {plan.level} · 문서{" "}
-                      {plan.sourceDocumentIds.length}개
+                    <div className="space-x-1">
+                      <Badge variant="outline">
+                        {getPlanGoalLabel(plan.goal)}
+                      </Badge>
+                      <Badge variant="outline">
+                        {getPlanLevelLabel(plan.level)}
+                      </Badge>
+                      <Badge variant="outline">
+                        {plan.sourceDocumentIds.length}개의 문서
+                      </Badge>
                     </div>
                   </div>
                 </TableCell>

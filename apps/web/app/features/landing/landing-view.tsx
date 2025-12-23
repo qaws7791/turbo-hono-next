@@ -50,7 +50,7 @@ export function LandingView({ model }: { model: LandingModel }) {
               variant="ghost"
               render={<a href="#pricing" />}
             >
-              Pricing
+              요금제
             </Button>
             <Button render={<Link to={model.primaryHref} />}>
               무료로 시작하기
@@ -110,8 +110,8 @@ export function LandingView({ model }: { model: LandingModel }) {
                 <div className="bg-muted h-28 rounded-xl" />
                 <div className="bg-muted h-28 rounded-xl" />
                 <p className="text-muted-foreground text-sm">
-                  Home에서 오늘 할 일을 확인하고, 세션은 풀스크린 모드에서
-                  몰입해 진행합니다.
+                  홈에서 오늘 할 일을 확인하고, 세션은 풀스크린 모드에서 몰입해
+                  진행합니다.
                 </p>
               </CardContent>
             </Card>
@@ -160,11 +160,11 @@ export function LandingView({ model }: { model: LandingModel }) {
               },
               {
                 title: "복습 자동화",
-                body: "Spaced Repetition 기반으로 복습을 자동 스케줄링합니다.",
+                body: "간격 반복 학습 기반으로 복습을 자동 스케줄링합니다.",
               },
               {
                 title: "지식 아카이브",
-                body: "배운 내용을 Concept으로 자동 정리해 검색 중심으로 제공합니다.",
+                body: "배운 내용을 개념으로 자동 정리해 검색 중심으로 제공합니다.",
               },
             ].map((item) => (
               <Card key={item.title}>
@@ -180,7 +180,7 @@ export function LandingView({ model }: { model: LandingModel }) {
         </Section>
 
         <Section
-          title="How it works"
+          title="준비 과정"
           subtitle="4단계로 시작합니다."
         >
           <div
@@ -194,7 +194,7 @@ export function LandingView({ model }: { model: LandingModel }) {
                 body: "AI가 구조와 개념을 추출합니다.",
               },
               {
-                title: "3) Plan 생성",
+                title: "3) 학습 계획 생성",
                 body: "목표/수준을 고르면 즉시 생성됩니다.",
               },
               { title: "4) 매일 시작", body: "Home에서 ‘시작’만 누릅니다." },
@@ -212,28 +212,27 @@ export function LandingView({ model }: { model: LandingModel }) {
         </Section>
 
         <Section
-          title="Science backed"
+          title="과학적 근거"
           subtitle="학습 과학의 4원리를 반영합니다."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {[
-              "Spaced Repetition",
-              "Cognitive Load Theory",
-              "Retrieval Practice",
-              "Knowledge Tracing",
-            ].map((item) => (
-              <Card key={item}>
-                <CardContent className="flex items-center justify-between p-6">
-                  <span className="font-medium">{item}</span>
-                  <span className="text-muted-foreground text-sm">적용됨</span>
-                </CardContent>
-              </Card>
-            ))}
+            {["간격 반복 학습", "인지 부하 이론", "인출 연습", "지식 추적"].map(
+              (item) => (
+                <Card key={item}>
+                  <CardContent className="flex items-center justify-between p-6">
+                    <span className="font-medium">{item}</span>
+                    <span className="text-muted-foreground text-sm">
+                      적용됨
+                    </span>
+                  </CardContent>
+                </Card>
+              ),
+            )}
           </div>
         </Section>
 
         <Section
-          title="Pricing"
+          title="요금제"
           subtitle="무료로 시작하고, 필요할 때 업그레이드합니다."
         >
           <div
@@ -242,21 +241,21 @@ export function LandingView({ model }: { model: LandingModel }) {
           >
             {[
               {
-                title: "Free",
+                title: "무료",
                 price: "₩0",
-                items: ["Space 2개", "문서 10개", "기본 Plan/세션"],
+                items: ["스페이스 2개", "문서 10개", "기본 학습 계획/세션"],
                 cta: "무료로 시작하기",
               },
               {
-                title: "Pro",
+                title: "프로",
                 price: "₩19,000",
-                items: ["무제한 Space", "고급 세션 개인화", "우선 지원"],
-                cta: "Pro 시작하기",
+                items: ["무제한 스페이스", "고급 세션 개인화", "우선 지원"],
+                cta: "프로 시작하기",
               },
               {
-                title: "Team",
+                title: "팀",
                 price: "문의",
-                items: ["팀 Space", "공유 아카이브", "관리/보안 옵션"],
+                items: ["팀 스페이스", "공유 아카이브", "관리/보안 옵션"],
                 cta: "문의하기",
               },
             ].map((tier) => (
@@ -293,16 +292,16 @@ export function LandingView({ model }: { model: LandingModel }) {
           >
             {[
               {
-                q: "자료를 업로드하면 Plan이 자동으로 바뀌나요?",
-                a: "아니요. 업로드는 저장/분석만 합니다. Plan은 사용자가 명시적으로 생성합니다.",
+                q: "자료를 업로드하면 학습 계획이 자동으로 바뀌나요?",
+                a: "아니요. 업로드는 저장/분석만 합니다. 학습 계획은 사용자가 명시적으로 생성합니다.",
               },
               {
                 q: "복습은 어떻게 동작하나요?",
-                a: "Spaced Repetition 기반으로 복습 필요도를 계산해 큐에 반영합니다.",
+                a: "간격 반복 학습 기반으로 복습 필요도를 계산해 큐에 반영합니다.",
               },
               {
                 q: "세션 상세 페이지가 있나요?",
-                a: "별도의 세션 상세 페이지 대신, 세션 요약 카드와 Concept Library로 복습합니다.",
+                a: "별도의 세션 상세 페이지 대신, 세션 요약 카드와 개념 라이브러리로 복습합니다.",
               },
               {
                 q: "데이터는 안전한가요?",
@@ -337,7 +336,7 @@ export function LandingView({ model }: { model: LandingModel }) {
                   오늘 할 일은 AI가 준비합니다
                 </div>
                 <div className="text-muted-foreground text-sm">
-                  목표 말하기 → 자료 업로드 → Plan 생성 → 매일 시작
+                  목표 말하기 → 자료 업로드 → 학습 계획 생성 → 매일 시작
                 </div>
               </div>
               <Button
@@ -356,7 +355,7 @@ export function LandingView({ model }: { model: LandingModel }) {
           <div className="space-y-1">
             <div className="font-semibold">Learning OS</div>
             <div className="text-muted-foreground text-xs">
-              © {new Date().getFullYear()} Learning OS. All rights reserved.
+              © {new Date().getFullYear()} Learning OS.
             </div>
           </div>
           <div className="text-muted-foreground flex flex-wrap items-center gap-4 text-sm">

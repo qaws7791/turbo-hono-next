@@ -34,7 +34,7 @@ export function AppCommandPalette({
       onOpenChange={onOpenChange}
     >
       <Command>
-        <CommandInput placeholder="Search…" />
+        <CommandInput placeholder="검색..." />
         <CommandList>
           <CommandEmpty>결과가 없습니다.</CommandEmpty>
           <CommandSeparator />

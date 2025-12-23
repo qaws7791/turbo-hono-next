@@ -29,9 +29,8 @@ function SessionStatusBadge({
 }: {
   status: "todo" | "in_progress" | "completed";
 }) {
-  if (status === "completed")
-    return <Badge variant="secondary">Completed</Badge>;
-  return <Badge variant="outline">Todo</Badge>;
+  if (status === "completed") return <Badge variant="secondary">완료됨</Badge>;
+  return <Badge variant="outline">할 일</Badge>;
 }
 
 export function PlanDetailView({
@@ -94,7 +93,7 @@ export function PlanDetailView({
                 variant="outline"
                 disabled={model.isSubmitting}
               >
-                Pause
+                일시정지
               </Button>
             </model.fetcher.Form>
           ) : plan.status === "paused" ? (
@@ -109,7 +108,7 @@ export function PlanDetailView({
                 variant="outline"
                 disabled={model.isSubmitting}
               >
-                Resume
+                다시 시작
               </Button>
             </model.fetcher.Form>
           ) : (
@@ -117,7 +116,7 @@ export function PlanDetailView({
               variant="outline"
               disabled
             >
-              Archived
+              보관됨
             </Button>
           )}
 
@@ -132,7 +131,7 @@ export function PlanDetailView({
               variant="ghost"
               disabled={model.isSubmitting}
             >
-              Archive
+              보관
             </Button>
           </model.fetcher.Form>
         </div>
@@ -186,7 +185,7 @@ export function PlanDetailView({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Progress</CardTitle>
+          <CardTitle className="text-base">진행률</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-center justify-between">
@@ -203,7 +202,7 @@ export function PlanDetailView({
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Curriculum</CardTitle>
+          <CardTitle className="text-base">학습 커리큘럼</CardTitle>
           <CardDescription>
             단순한 아코디언으로 학습 경로를 안내합니다.
           </CardDescription>

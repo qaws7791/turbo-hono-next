@@ -12,9 +12,9 @@ export function SpaceConceptsView({
   return (
     <div className="space-y-6">
       <div className="">
-        <h2 className="text-foreground text-xl font-semibold">Concepts</h2>
+        <h2 className="text-foreground text-xl font-semibold">개념 목록</h2>
         <p className="text-muted-foreground text-sm">
-          {space.name}의 Concept 목록입니다.
+          {space.name}의 개념 목록입니다.
         </p>
       </div>
 
@@ -30,7 +30,7 @@ export function SpaceConceptsView({
 
       {concepts.length === 0 ? (
         <div className="text-muted-foreground text-sm">
-          아직 Concept가 없습니다. 세션을 완료하면 자동으로 저장됩니다.
+          아직 개념이 없습니다. 세션을 완료하면 자동으로 저장됩니다.
         </div>
       ) : null}
     </div>

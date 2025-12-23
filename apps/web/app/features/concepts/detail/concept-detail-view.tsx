@@ -147,7 +147,7 @@ function RelatedTabContent({ related }: { related: Array<Concept> }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">관련 Concept</h3>
+        <h3 className="text-sm font-medium">관련 개념</h3>
         {related.length > 0 && (
           <span className="text-muted-foreground text-xs">
             {related.length}개
@@ -156,9 +156,7 @@ function RelatedTabContent({ related }: { related: Array<Concept> }) {
       </div>
 
       {related.length === 0 ? (
-        <p className="text-muted-foreground text-sm">
-          관련된 Concept이 없습니다.
-        </p>
+        <p className="text-muted-foreground text-sm">관련된 개념이 없습니다.</p>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {related.map((c) => (
@@ -202,7 +200,7 @@ export function ConceptDetailView({
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink render={<Link to="/concepts" />}>
-                컨셉 라이브러리
+                개념 라이브러리
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

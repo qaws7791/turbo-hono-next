@@ -10,26 +10,26 @@ export function useCommandActions(input: {
   return React.useMemo(
     () => [
       {
-        group: "Navigate",
-        label: "Home",
+        group: "이동",
+        label: "홈",
         shortcut: "G H",
         run: () => input.navigate("/home"),
       },
       {
-        group: "Navigate",
-        label: "Spaces",
+        group: "이동",
+        label: "스페이스",
         shortcut: "G S",
         run: () => input.navigate("/spaces"),
       },
       {
-        group: "Navigate",
-        label: "Concept Library",
+        group: "이동",
+        label: "개념 라이브러리",
         shortcut: "G C",
         run: () => input.navigate("/concepts"),
       },
       {
-        group: "Actions",
-        label: "Settings",
+        group: "액션",
+        label: "설정",
         shortcut: "⌘ ,",
         run: input.openSettings,
       },
@@ -37,4 +37,3 @@ export function useCommandActions(input: {
     [input],
   );
 }
-

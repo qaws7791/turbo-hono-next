@@ -10,7 +10,7 @@ import { deleteDocument, listDocuments, uploadDocument } from "~/mock/api";
 const SpaceIdSchema = z.string().uuid();
 
 export function meta() {
-  return [{ title: "Documents" }];
+  return [{ title: "문서" }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -24,7 +24,10 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-export async function clientAction({ request, params }: Route.ClientActionArgs) {
+export async function clientAction({
+  request,
+  params,
+}: Route.ClientActionArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
@@ -84,6 +87,11 @@ export async function clientAction({ request, params }: Route.ClientActionArgs) 
 export default function SpaceDocumentsRoute() {
   const { spaceId, documents } = useLoaderData<typeof clientLoader>();
   const model = useSpaceDocumentsModel(documents);
-  return <SpaceDocumentsView spaceId={spaceId} documents={documents} model={model} />;
+  return (
+    <SpaceDocumentsView
+      spaceId={spaceId}
+      documents={documents}
+      model={model}
+    />
+  );
 }
-

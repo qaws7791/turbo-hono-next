@@ -41,7 +41,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
           <div>
             <h1 className="text-foreground text-2xl font-medium">스페이스</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              학습 목표를 스페이스로 분리하고, 각 스페이스에서 문서/Plan을
+              학습 목표를 스페이스로 분리하고, 각 스페이스에서 문서/학습 계획을
               관리합니다.
             </p>
           </div>
@@ -52,7 +52,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
             <Input
               value={model.query}
               onChange={(e) => model.setQuery(e.target.value)}
-              placeholder="Space 검색"
+              placeholder="스페이스 검색"
             />
           </div>
           <div className="text-muted-foreground text-sm">
@@ -67,7 +67,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                 첫 번째 학습 공간을 만들어보세요
               </CardTitle>
               <CardDescription>
-                Space는 하나의 학습 목표를 담는 컨테이너입니다. 예:
+                스페이스는 하나의 학습 목표를 담는 컨테이너입니다. 예:
                 &ldquo;프론트엔드 마스터하기&rdquo;
               </CardDescription>
             </CardHeader>
@@ -115,7 +115,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                       </span>
                     </div>
 
-                    {/* Active Plan 진행률 */}
+                    {/* 활성 학습 계획 진행률 */}
                     {space.activePlan ? (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
@@ -130,7 +130,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                       </div>
                     ) : (
                       <div className="text-muted-foreground text-sm">
-                        Active Plan이 없습니다.
+                        진행 중인 학습 계획이 없습니다.
                       </div>
                     )}
 
@@ -156,7 +156,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
         >
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Space 만들기</DialogTitle>
+              <DialogTitle>스페이스 만들기</DialogTitle>
               <DialogDescription>
                 최소 입력으로 시작하고, 필요한 정보는 나중에 추가할 수 있습니다.
               </DialogDescription>

@@ -44,7 +44,7 @@ export function UserMenu({
           <div className="text-sm font-medium">{user.name}</div>
           <div className="text-muted-foreground text-xs">{user.email}</div>
           <div className="text-muted-foreground text-xs">
-            Plan:{" "}
+            플랜:{" "}
             <span className="text-foreground font-medium">{user.plan}</span>
           </div>
         </div>
@@ -55,7 +55,7 @@ export function UserMenu({
             className="w-full justify-start"
             onClick={onOpenSettings}
           >
-            Settings
+            설정
             <span className="ml-auto text-xs">
               <CommandShortcut>⌘ ,</CommandShortcut>
             </span>

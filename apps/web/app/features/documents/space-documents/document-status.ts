@@ -15,3 +15,9 @@ export function documentStatusBadgeVariant(
   return "outline";
 }
 
+export function documentKindLabel(kind: Document["kind"]): string {
+  if (kind === "file") return "파일";
+  if (kind === "url") return "URL";
+  if (kind === "text") return "텍스트";
+  return kind;
+}

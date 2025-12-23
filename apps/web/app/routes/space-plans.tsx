@@ -20,7 +20,7 @@ const PlanIdSchema = z.string().uuid();
 const IntentSchema = z.enum(["set-active", "pause", "resume", "archive"]);
 
 export function meta() {
-  return [{ title: "Plans" }];
+  return [{ title: "학습 계획" }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {

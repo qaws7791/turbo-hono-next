@@ -21,7 +21,7 @@ export function ConceptLibraryView({
       <PageHeader />
       <PageBody className="space-y-12 mt-24">
         <h1 className="text-foreground text-2xl font-medium">
-          컨셉 라이브러리
+          개념 라이브러리
         </h1>
         <div className="relative">
           <Input
@@ -47,7 +47,7 @@ export function ConceptLibraryView({
 
         {concepts.length === 0 ? (
           <div className="text-muted-foreground text-sm">
-            조건에 맞는 Concept가 없습니다.
+            조건에 맞는 개념이 없습니다.
           </div>
         ) : null}
       </PageBody>

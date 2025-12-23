@@ -42,7 +42,7 @@ export function AppSidebar({
     <Sidebar>
       <SidebarHeader>
         <SidebarMenuItem className="flex items-center justify-between">
-          <span className="ml-2">Application</span>
+          <span className="ml-2">애플리케이션</span>
           <SidebarTrigger />
         </SidebarMenuItem>
         <SidebarMenu>
@@ -52,7 +52,7 @@ export function AppSidebar({
               render={<NavLink to="/home" />}
             >
               <IconHome />
-              <span className="font-medium">Home</span>
+              <span className="font-medium">홈</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -62,7 +62,7 @@ export function AppSidebar({
               className="cursor-pointer"
             >
               <IconSearch />
-              <span className="font-medium">Search</span>
+              <span className="font-medium">검색</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -71,7 +71,7 @@ export function AppSidebar({
               render={<NavLink to="/concepts" />}
             >
               <IconNotebook />
-              <span className="font-medium">Concepts</span>
+              <span className="font-medium">개념</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -87,7 +87,7 @@ export function AppSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton render={<NavLink to="/spaces" />}>
                   <IconNotebook />
-                  <span className="font-medium">Spaces</span>
+                  <span className="font-medium">스페이스</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuSub className="ml-0 border-l-0">

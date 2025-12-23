@@ -9,6 +9,11 @@ import { Separator } from "@repo/ui/separator";
 import { Textarea } from "@repo/ui/textarea";
 import { Link } from "react-router";
 
+import {
+  documentKindLabel,
+  documentStatusLabel,
+} from "../../documents/space-documents/document-status";
+
 import type { Document, PlanGoal, PlanLevel } from "~/mock/schemas";
 import type { PlanWizardModel } from "./types";
 
@@ -52,16 +57,18 @@ export function PlanWizardView({
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <div className="space-y-1">
-        <h2 className="text-foreground text-xl font-semibold">Plan 생성</h2>
+        <h2 className="text-foreground text-xl font-semibold">
+          학습 계획 생성
+        </h2>
         <p className="text-muted-foreground text-sm">
-          3단계로 1분 내 Plan을 생성합니다.
+          3단계로 1분 내 학습 계획을 생성합니다.
         </p>
       </div>
 
       <Card>
         <CardHeader className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-base">Step {model.step}/3</CardTitle>
+            <CardTitle className="text-base">{model.step}단계/3</CardTitle>
             <Button
               variant="ghost"
               size="sm"
@@ -96,7 +103,7 @@ export function PlanWizardView({
               {documents.length === 0 ? (
                 <div className="space-y-2">
                   <div className="text-muted-foreground text-sm">
-                    Plan을 만들려면 학습 자료가 필요합니다.
+                    학습 계획을 만들려면 학습 자료가 필요합니다.
                   </div>
                   <Button render={<Link to={`/spaces/${spaceId}/documents`} />}>
                     문서 업로드로 이동
@@ -130,11 +137,12 @@ export function PlanWizardView({
                               {doc.title}
                             </div>
                             <Badge variant={docStatusBadgeVariant(doc.status)}>
-                              {doc.status}
+                              {documentStatusLabel(doc.status)}
                             </Badge>
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {doc.kind.toUpperCase()} · 태그 {doc.tags.length}개
+                            {documentKindLabel(doc.kind)} · 태그{" "}
+                            {doc.tags.length}개
                           </div>
                           {doc.summary ? (
                             <div className="text-muted-foreground text-sm">
@@ -327,7 +335,7 @@ export function PlanWizardView({
                 onClick={model.submit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "생성 중" : "Plan 생성하기"}
+                {isSubmitting ? "생성 중" : "학습 계획 생성하기"}
               </Button>
             )}
           </div>

@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { Link, useFetcher } from "react-router";
 
 import {
+  documentKindLabel,
   documentStatusBadgeVariant,
   documentStatusLabel,
 } from "./document-status";
@@ -46,8 +47,8 @@ export function SpaceDocumentsView({
         <div className="space-y-1">
           <h2 className="text-foreground text-xl font-semibold">문서</h2>
           <p className="text-muted-foreground text-sm">
-            자료를 업로드하면 AI가 자동으로 분석합니다. Plan은 자동으로 바뀌지
-            않습니다.
+            자료를 업로드하면 AI가 자동으로 분석합니다. 학습 계획은 자동으로
+            바뀌지 않습니다.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -57,7 +58,7 @@ export function SpaceDocumentsView({
             disabled={model.completedCount === 0}
             render={<Link to={`/spaces/${spaceId}/plans/new`} />}
           >
-            Plan 생성하기
+            학습 계획 생성하기
           </Button>
         </div>
       </div>
@@ -67,7 +68,8 @@ export function SpaceDocumentsView({
           <CardHeader>
             <CardTitle className="text-base">자료를 업로드해보세요</CardTitle>
             <CardDescription>
-              PDF/URL/텍스트를 올리면 분석 후 Plan 생성을 시작할 수 있습니다.
+              PDF/URL/텍스트를 올리면 분석 후 학습 계획 생성을 시작할 수
+              있습니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -88,7 +90,7 @@ export function SpaceDocumentsView({
                   </Badge>
                 </div>
                 <CardDescription>
-                  {doc.kind.toUpperCase()} · 태그 {doc.tags.length}개
+                  {documentKindLabel(doc.kind)} · 태그 {doc.tags.length}개
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -155,7 +157,7 @@ export function SpaceDocumentsView({
           <DialogHeader>
             <DialogTitle>자료 업로드</DialogTitle>
             <DialogDescription>
-              업로드 후 자동 분석됩니다. 분석 완료 문서만 Plan에 포함할 수
+              업로드 후 자동 분석됩니다. 분석 완료 문서만 학습 계획에 포함할 수
               있습니다.
             </DialogDescription>
           </DialogHeader>

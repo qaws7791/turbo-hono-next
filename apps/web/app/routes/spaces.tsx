@@ -15,7 +15,7 @@ import {
 } from "~/mock/api";
 
 export function meta() {
-  return [{ title: "Spaces" }];
+  return [{ title: "스페이스" }];
 }
 
 export function clientLoader() {

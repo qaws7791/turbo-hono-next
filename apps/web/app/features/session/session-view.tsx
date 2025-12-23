@@ -52,12 +52,10 @@ export function SessionView({
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-3">
               <div className="text-sm font-medium">
-                Step {state.currentStep + 1}/{state.totalSteps} ·{" "}
+                {state.currentStep + 1}단계/{state.totalSteps} ·{" "}
                 {stepLabel(activeStep.type)}
               </div>
-              {state.isRecovery ? (
-                <Badge variant="outline">Recovery</Badge>
-              ) : null}
+              {state.isRecovery ? <Badge variant="outline">복구</Badge> : null}
             </div>
             <Progress
               value={progressPercent}
@@ -69,7 +67,7 @@ export function SessionView({
             size="sm"
             render={<Link to="/home" />}
           >
-            Home
+            홈
           </Button>
         </div>
       </header>
@@ -155,10 +153,10 @@ export function SessionView({
 
                 <div className="rounded-xl border border-border p-4">
                   <div className="text-sm font-medium">
-                    저장된 Concept {controller.state.createdConceptIds.length}개
+                    저장된 개념 {controller.state.createdConceptIds.length}개
                   </div>
                   <div className="text-muted-foreground mt-1 text-xs">
-                    Concept Library에서 바로 확인할 수 있습니다.
+                    개념 라이브러리에서 바로 확인할 수 있습니다.
                   </div>
                 </div>
 

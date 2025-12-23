@@ -1,8 +1,8 @@
 import { redirect, useLoaderData } from "react-router";
 import { z } from "zod";
 
-import type { Route } from "./+types/plan-detail";
 import type { PlanDetailData } from "~/features/plans/detail/types";
+import type { Route } from "./+types/plan-detail";
 
 import { PlanDetailView } from "~/features/plans/detail/plan-detail-view";
 import { usePlanDetailModel } from "~/features/plans/detail/use-plan-detail-model";
@@ -13,7 +13,7 @@ const PlanIdSchema = z.string().uuid();
 const IntentSchema = z.enum(["pause", "resume", "archive"]);
 
 export function meta() {
-  return [{ title: "Plan 상세" }];
+  return [{ title: "학습 계획 상세" }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -36,7 +36,10 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-export async function clientAction({ request, params }: Route.ClientActionArgs) {
+export async function clientAction({
+  request,
+  params,
+}: Route.ClientActionArgs) {
   const planId = PlanIdSchema.safeParse(params.planId);
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!planId.success || !spaceId.success) {
@@ -66,6 +69,14 @@ export async function clientAction({ request, params }: Route.ClientActionArgs) 
 
 export default function PlanDetailRoute() {
   const data: PlanDetailData = useLoaderData<typeof clientLoader>();
-  const model = usePlanDetailModel({ plan: data.plan, nextQueue: data.nextQueue });
-  return <PlanDetailView data={data} model={model} />;
+  const model = usePlanDetailModel({
+    plan: data.plan,
+    nextQueue: data.nextQueue,
+  });
+  return (
+    <PlanDetailView
+      data={data}
+      model={model}
+    />
+  );
 }

@@ -143,8 +143,11 @@ export function HomeView({
             {queue.length === 0 ? (
               <div className="text-muted-foreground space-y-2 text-sm">
                 <p>오늘 할 일이 없습니다.</p>
-                <p>Space를 만들고 문서를 업로드한 다음, Plan을 생성해보세요.</p>
-                <Button render={<Link to="/spaces" />}>Spaces로</Button>
+                <p>
+                  스페이스를 만들고 문서를 업로드한 다음, 학습 계획을
+                  생성해보세요.
+                </p>
+                <Button render={<Link to="/spaces" />}>스페이스로</Button>
               </div>
             ) : (
               <Table>
@@ -244,7 +247,7 @@ export function HomeView({
             )}
             <Separator className="mt-6" />
             <div className="text-muted-foreground text-xs mt-4">
-              세션 상세 페이지 대신, 세션 요약 카드와 Concept Library로
+              세션 상세 페이지 대신, 세션 요약 카드와 개념 라이브러리로
               복습합니다.
             </div>
           </div>

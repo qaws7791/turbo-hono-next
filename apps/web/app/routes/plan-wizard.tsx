@@ -11,7 +11,7 @@ import { PlanGoalSchema, PlanLevelSchema, UuidSchema } from "~/mock/schemas";
 const SpaceIdSchema = z.string().uuid();
 
 export function meta() {
-  return [{ title: "Plan 생성" }];
+  return [{ title: "학습 계획 생성" }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -23,7 +23,10 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
   return { spaceId: spaceId.data, documents };
 }
 
-export async function clientAction({ request, params }: Route.ClientActionArgs) {
+export async function clientAction({
+  request,
+  params,
+}: Route.ClientActionArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
@@ -71,9 +74,13 @@ export async function clientAction({ request, params }: Route.ClientActionArgs) 
     level: parsed.data.level,
     durationMode: parsed.data.durationMode,
     durationValue:
-      parsed.data.durationMode === "custom" ? parsed.data.durationValue : undefined,
+      parsed.data.durationMode === "custom"
+        ? parsed.data.durationValue
+        : undefined,
     durationUnit:
-      parsed.data.durationMode === "custom" ? parsed.data.durationUnit : undefined,
+      parsed.data.durationMode === "custom"
+        ? parsed.data.durationUnit
+        : undefined,
     notes: parsed.data.notes,
   });
 
@@ -103,4 +110,3 @@ export default function PlanWizardRoute() {
     />
   );
 }
-

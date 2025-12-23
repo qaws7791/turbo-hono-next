@@ -12,7 +12,7 @@ const SearchSchema = z.object({
 });
 
 export function meta() {
-  return [{ title: "Concept Library" }];
+  return [{ title: "개념 라이브러리" }];
 }
 
 export function clientLoader({ request }: Route.ClientLoaderArgs) {

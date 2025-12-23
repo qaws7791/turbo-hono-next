@@ -9,7 +9,7 @@ import { getSpace, listConcepts } from "~/mock/api";
 const SpaceIdSchema = z.string().uuid();
 
 export function meta() {
-  return [{ title: "Concepts" }];
+  return [{ title: "개념" }];
 }
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
