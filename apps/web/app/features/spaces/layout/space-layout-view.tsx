@@ -1,4 +1,5 @@
 import { Button } from "@repo/ui/button";
+import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
 import * as React from "react";
 import { NavLink, Outlet, useFetcher } from "react-router";
 
@@ -13,10 +14,12 @@ function TabLink({
   to,
   label,
   isActive,
+  icon,
 }: {
   to: string;
   label: string;
   isActive: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
     <Button
@@ -25,6 +28,7 @@ function TabLink({
       className="justify-start"
       render={<NavLink to={to} />}
     >
+      {icon}
       {label}
     </Button>
   );
@@ -58,8 +62,7 @@ export function SpaceLayoutView({
         { method: "post" },
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedIcon, selectedColor]);
+  }, [selectedIcon, selectedColor, fetcher, space.color, space.icon, space.id]);
 
   return (
     <>
@@ -76,7 +79,7 @@ export function SpaceLayoutView({
           </div>
         </div>
       </PageHeader>
-      <PageBody className="space-y-8 mt-24">
+      <PageBody className="space-y-8 mt-24 max-w-4xl">
         <div className="flex flex-1 items-center gap-2">
           <IconColorPicker
             selectedIcon={selectedIcon}
@@ -93,23 +96,21 @@ export function SpaceLayoutView({
         <div className="flex flex-wrap items-center gap-2">
           <TabLink
             to={model.basePath}
-            label="개요"
-            isActive={model.isOverview}
+            label="학습 계획"
+            isActive={model.isPlans}
+            icon={<IconSchool />}
           />
           <TabLink
             to={`${model.basePath}/documents`}
             label="문서"
             isActive={model.isDocuments}
-          />
-          <TabLink
-            to={`${model.basePath}/plans`}
-            label="학습 계획"
-            isActive={model.isPlans}
+            icon={<IconFileDescription />}
           />
           <TabLink
             to={`${model.basePath}/concepts`}
             label="개념"
             isActive={model.isConcepts}
+            icon={<IconBook />}
           />
         </div>
 

@@ -24,11 +24,11 @@ export function ConceptCard({
     >
       <Card className="flex flex-col h-full transition-colors group-hover:bg-muted/50 group-focus-visible:ring-2 group-focus-visible:ring-ring">
         <CardHeader className="space-y-2">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <ConceptReviewBadge status={concept.reviewStatus} />
             <CardTitle className="text-base truncate">
               {concept.title}
             </CardTitle>
-            <ConceptReviewBadge status={concept.reviewStatus} />
           </div>
           <div className="text-muted-foreground text-sm">
             {concept.oneLiner}

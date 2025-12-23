@@ -11,9 +11,8 @@ const SpaceIdSchema = z.string().uuid();
 
 function tabToPath(spaceId: string, tab: string): string | null {
   if (tab === "documents") return `/spaces/${spaceId}/documents`;
-  if (tab === "plans") return `/spaces/${spaceId}/plans`;
+  if (tab === "plans") return `/spaces/${spaceId}`;
   if (tab === "concepts") return `/spaces/${spaceId}/concepts`;
-  if (tab === "overview") return `/spaces/${spaceId}`;
   return null;
 }
 
