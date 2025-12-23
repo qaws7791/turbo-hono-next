@@ -63,10 +63,10 @@ export function SpacePlansView({
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-20">
       {/* 오늘의 세션 카드 - 개요 탭에서 이동됨 */}
       <div className="border rounded-3xl p-4 sm:py-6 sm:px-4">
-        <div className="flex flex-row items-start justify-between gap-4 space-y-0 pb-1">
+        <div className="flex flex-row items-start justify-between gap-4 space-y-0">
           <div className="space-y-1">
             <h2 className="font-semibold">{model.activePlan?.title}</h2>
             <p className="sr-only">오늘의 학습 세션입니다.</p>
@@ -84,7 +84,7 @@ export function SpacePlansView({
             </Button>
           )}
         </div>
-        <div className="space-y-8">
+        <div className="space-y-8 mt-4">
           {model.activePlan ? (
             <>
               {/* 학습 계획 정보 + 진행률 배지 + 프로그레스 바 */}
@@ -109,7 +109,7 @@ export function SpacePlansView({
               {/* 다음 세션 정보 (평탄화: 중첩 카드 제거) */}
               {model.nextSession && (
                 <div className="grid gap-4">
-                  <div className="flex items-center justify-between gap-4 p-4 border rounded-xl">
+                  <div className="flex justify-between gap-4 p-4 border rounded-xl flex-col items-start sm:flex-row sm:items-center">
                     <div className="min-w-0">
                       <div className="text-sm font-medium truncate">
                         {model.nextSession.sessionTitle}
@@ -172,156 +172,91 @@ export function SpacePlansView({
         </div>
       </div>
 
-      {/* 학습 계획 목록 */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-foreground text-xl font-semibold">학습 계획</h2>
-          <p className="text-muted-foreground text-sm">
-            문서들을 기반으로 학습 계획을 생성해보세요.
-          </p>
+      <div className="space-y-8">
+        {/* 학습 계획 목록 */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-foreground text-xl font-semibold">학습 계획</h2>
+            <p className="text-muted-foreground text-sm">
+              문서들을 기반으로 학습 계획을 생성해보세요.
+            </p>
+          </div>
+          <Button render={<Link to={`/spaces/${space.id}/plans/new`} />}>
+            <IconPlus />
+            만들기
+          </Button>
         </div>
-        <Button render={<Link to={`/spaces/${space.id}/plans/new`} />}>
-          <IconPlus /> 학습 계획 만들기
-        </Button>
-      </div>
 
-      {model.plans.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              아직 학습 계획이 없습니다
-            </CardTitle>
-            <CardDescription>
-              문서를 기반으로 AI가 맞춤 학습 계획을 만들어 드립니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button render={<Link to={`/spaces/${space.id}/plans/new`} />}>
-              + 학습 계획 만들기
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>계획</TableHead>
-              <TableHead>진행률</TableHead>
-              <TableHead>상태</TableHead>
-              <TableHead className="text-right">액션</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {model.plans.map((plan) => (
-              <TableRow key={plan.id}>
-                <TableCell>
-                  <div className="space-y-0.5">
-                    <Link
-                      to={`/spaces/${space.id}/plan/${plan.id}`}
-                      className="font-medium hover:underline block"
-                    >
-                      {plan.title}
-                    </Link>
-                    <div className="space-x-1">
-                      <Badge variant="outline">
-                        {getPlanGoalLabel(plan.goal)}
-                      </Badge>
-                      <Badge variant="outline">
-                        {getPlanLevelLabel(plan.level)}
-                      </Badge>
-                      <Badge variant="outline">
-                        {plan.sourceDocumentIds.length}개의 문서
-                      </Badge>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1 min-w-32">
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{plan.totalSessions}개 세션</span>
-                      <span>{plan.progressPercent}%</span>
-                    </div>
-                    <Progress
-                      value={plan.progressPercent}
-                      className="h-1.5"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <PlanStatusBadge status={plan.status} />
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    {plan.status === "active" ? (
-                      <model.fetcher.Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="pause"
-                        />
-                        <input
-                          type="hidden"
-                          name="planId"
-                          value={plan.id}
-                        />
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          size="sm"
-                          disabled={model.isSubmitting}
-                        >
-                          Pause
-                        </Button>
-                      </model.fetcher.Form>
-                    ) : plan.status === "paused" ? (
-                      <model.fetcher.Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="resume"
-                        />
-                        <input
-                          type="hidden"
-                          name="planId"
-                          value={plan.id}
-                        />
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          size="sm"
-                          disabled={model.isSubmitting}
-                        >
-                          Resume
-                        </Button>
-                      </model.fetcher.Form>
-                    ) : null}
-                    <model.fetcher.Form method="post">
-                      <input
-                        type="hidden"
-                        name="intent"
-                        value="set-active"
-                      />
-                      <input
-                        type="hidden"
-                        name="planId"
-                        value={plan.id}
-                      />
-                      <Button
-                        type="submit"
-                        variant="outline"
-                        size="sm"
-                        disabled={model.isSubmitting}
-                      >
-                        Active로
-                      </Button>
-                    </model.fetcher.Form>
-                  </div>
-                </TableCell>
+        {model.plans.length === 0 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">
+                아직 학습 계획이 없습니다
+              </CardTitle>
+              <CardDescription>
+                문서를 기반으로 AI가 맞춤 학습 계획을 만들어 드립니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button render={<Link to={`/spaces/${space.id}/plans/new`} />}>
+                + 학습 계획 만들기
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>계획</TableHead>
+                <TableHead>진행률</TableHead>
+                <TableHead>상태</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+            </TableHeader>
+            <TableBody>
+              {model.plans.map((plan) => (
+                <TableRow key={plan.id}>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Link
+                        to={`/spaces/${space.id}/plan/${plan.id}`}
+                        className="font-medium text-lg hover:underline block"
+                      >
+                        {plan.title}
+                      </Link>
+                      <div className="space-x-1">
+                        <Badge variant="outline">
+                          {getPlanGoalLabel(plan.goal)}
+                        </Badge>
+                        <Badge variant="outline">
+                          {getPlanLevelLabel(plan.level)}
+                        </Badge>
+                        <Badge variant="outline">
+                          {plan.sourceDocumentIds.length}개의 문서
+                        </Badge>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1 min-w-32">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{plan.totalSessions}개 세션</span>
+                        <span>{plan.progressPercent}%</span>
+                      </div>
+                      <Progress
+                        value={plan.progressPercent}
+                        className="h-1.5"
+                      />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <PlanStatusBadge status={plan.status} />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
     </div>
   );
 }
