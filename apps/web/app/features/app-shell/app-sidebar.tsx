@@ -86,8 +86,7 @@ export function AppSidebar({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton render={<NavLink to="/spaces" />}>
-                  <IconNotebook />
-                  <span className="font-medium">스페이스</span>
+                  스페이스
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuSub className="ml-0 border-l-0">
