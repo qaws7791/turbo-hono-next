@@ -6,7 +6,13 @@ import type { Route } from "./+types/plan-detail";
 
 import { PlanDetailView } from "~/features/plans/detail/plan-detail-view";
 import { usePlanDetailModel } from "~/features/plans/detail/use-plan-detail-model";
-import { getPlan, getSpace, planNextQueue, setPlanStatus } from "~/mock/api";
+import {
+  getPlan,
+  getSpace,
+  listDocuments,
+  planNextQueue,
+  setPlanStatus,
+} from "~/mock/api";
 
 const SpaceIdSchema = z.string().uuid();
 const PlanIdSchema = z.string().uuid();
@@ -29,10 +35,16 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
+  const allDocuments = listDocuments(spaceId.data);
+  const sourceDocuments = allDocuments.filter((doc) =>
+    plan.sourceDocumentIds.includes(doc.id),
+  );
+
   return {
     space,
     plan,
     nextQueue: planNextQueue(plan.id, 3),
+    sourceDocuments,
   };
 }
 

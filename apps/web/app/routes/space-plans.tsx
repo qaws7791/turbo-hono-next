@@ -5,15 +5,7 @@ import type { Route } from "./+types/space-plans";
 
 import { SpacePlansView } from "~/features/spaces/plans/space-plans-view";
 import { useSpacePlansModel } from "~/features/spaces/plans/use-space-plans-model";
-import {
-  getPlan,
-  getPlanBySpaceActive,
-  getSpace,
-  listPlans,
-  planNextQueue,
-  setActivePlan,
-  setPlanStatus,
-} from "~/mock/api";
+import { getSpace, listPlans, setActivePlan, setPlanStatus } from "~/mock/api";
 
 const SpaceIdSchema = z.string().uuid();
 const PlanIdSchema = z.string().uuid();
@@ -30,11 +22,8 @@ export function clientLoader({ params }: Route.ClientLoaderArgs) {
   }
   const space = getSpace(spaceId.data);
   const plans = listPlans(spaceId.data);
-  const activePlanData = getPlanBySpaceActive(spaceId.data);
-  const activePlan = activePlanData ? getPlan(activePlanData.id) : null;
-  const nextQueue = activePlan ? planNextQueue(activePlan.id, 3) : [];
 
-  return { space, plans, activePlan, nextQueue };
+  return { space, plans };
 }
 
 export async function clientAction({
@@ -77,9 +66,8 @@ export async function clientAction({
 }
 
 export default function SpacePlansRoute() {
-  const { space, plans, activePlan, nextQueue } =
-    useLoaderData<typeof clientLoader>();
-  const model = useSpacePlansModel({ plans, nextQueue, activePlan });
+  const { space, plans } = useLoaderData<typeof clientLoader>();
+  const model = useSpacePlansModel({ plans });
   return (
     <SpacePlansView
       space={space}

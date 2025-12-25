@@ -1,3 +1,6 @@
+import { Input } from "@repo/ui/input";
+import { useState } from "react";
+
 import { ConceptCard } from "../concept-card";
 
 import type { Concept, Space } from "~/mock/schemas";
@@ -9,6 +12,17 @@ export function SpaceConceptsView({
   space: Space;
   concepts: Array<Concept>;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredConcepts = concepts.filter((concept) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      concept.title.toLowerCase().includes(query) ||
+      concept.oneLiner.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="">
@@ -18,8 +32,17 @@ export function SpaceConceptsView({
         </p>
       </div>
 
+      <div className="max-w-md">
+        <Input
+          type="text"
+          placeholder="개념 검색..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       <div className="grid gap-4">
-        {concepts.map((concept) => (
+        {filteredConcepts.map((concept) => (
           <ConceptCard
             key={concept.id}
             concept={concept}
@@ -28,7 +51,11 @@ export function SpaceConceptsView({
         ))}
       </div>
 
-      {concepts.length === 0 ? (
+      {filteredConcepts.length === 0 && searchQuery.trim() ? (
+        <div className="text-muted-foreground text-sm">
+          &quot;{searchQuery}&quot;에 해당하는 개념이 없습니다.
+        </div>
+      ) : concepts.length === 0 ? (
         <div className="text-muted-foreground text-sm">
           아직 개념이 없습니다. 세션을 완료하면 자동으로 저장됩니다.
         </div>

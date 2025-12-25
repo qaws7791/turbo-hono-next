@@ -831,34 +831,97 @@ export function startSession(input: {
   const runId = randomUuidV4();
   const createdAt = nowIso();
 
-  const steps = [
-    {
-      type: "LEARN" as const,
-      title: "오늘 배울 내용",
-      content: `${found.moduleTitle}\n\n${found.session.title}\n\n핵심 정의를 먼저 잡고, 짧게 확인한 다음, 직접 적용해봅니다.`,
-    },
-    {
-      type: "CHECK" as const,
-      question: "가장 안전한 상태 업데이트 방식은 무엇일까요?",
-      options: [
-        "값을 직접 변경한다",
-        "함수형 updater를 사용한다",
-        "렌더 중에 업데이트한다",
-      ],
-      answerIndex: 1,
-    },
-    {
-      type: "PRACTICE" as const,
-      prompt: "한 줄로 오늘 배운 핵심을 적어보세요.",
-      placeholder: "예: 이전 값을 기반으로 업데이트할 때는 updater 함수...",
-    },
-    {
-      type: "COMPLETE" as const,
-      summary:
-        "세션이 완료되었습니다. 오늘 학습한 핵심 개념이 아카이브에 저장됩니다.",
-      createdConceptIds: [],
-    },
-  ];
+  // 세션 타입에 따라 다른 스텝 구성 생성
+  const isReview = found.session.type === "review";
+
+  const steps = isReview
+    ? [
+        // 복습 세션: 플래시카드 + 빈칸 채우기 위주
+        {
+          type: "INFO" as const,
+          title: "복습 세션 시작",
+          content: `${found.moduleTitle}\n\n이전에 학습한 내용을 빠르게 점검합니다. 기억나지 않는 부분이 있어도 괜찮아요!`,
+          variant: "info" as const,
+        },
+        {
+          type: "FLASHCARD" as const,
+          front:
+            "상태 업데이트 시 이전 값을 기반으로 해야 할 때 사용하는 패턴은?",
+          back: "함수형 updater: setState(prev => prev + 1)",
+        },
+        {
+          type: "FILL_BLANK" as const,
+          instruction: "빈칸을 채워 코드를 완성하세요.",
+          template: "setState({{prev}} => {{prev}} + 1)",
+          blanks: [
+            {
+              id: "prev",
+              answer: "prev",
+              alternatives: ["previous", "oldValue"],
+            },
+          ],
+        },
+        {
+          type: "SUMMARY" as const,
+          title: "복습 완료",
+          points: [
+            "함수형 updater를 사용하면 이전 상태를 안전하게 참조할 수 있습니다.",
+            "비동기 업데이트에서도 최신 상태를 보장합니다.",
+          ],
+          nextHint: "다음 세션에서 더 심화된 내용을 학습합니다.",
+        },
+        {
+          type: "COMPLETE" as const,
+          summary: "복습 세션이 완료되었습니다. 잘 기억하고 계시네요!",
+          createdConceptIds: [],
+        },
+      ]
+    : [
+        // 일반 학습 세션: 다양한 스텝 타입 포함
+        {
+          type: "LEARN" as const,
+          title: "오늘 배울 내용",
+          content: `${found.moduleTitle}\n\n${found.session.title}\n\n핵심 정의를 먼저 잡고, 짧게 확인한 다음, 직접 적용해봅니다.`,
+        },
+        {
+          type: "INFO" as const,
+          title: "핵심 팁",
+          content:
+            "상태를 업데이트할 때 이전 값에 의존하는 경우, 직접 값을 참조하지 말고 함수형 updater를 사용하세요. 이렇게 하면 React가 최신 상태를 보장합니다.",
+          variant: "tip" as const,
+        },
+        {
+          type: "CHECK" as const,
+          question: "가장 안전한 상태 업데이트 방식은 무엇일까요?",
+          options: [
+            "값을 직접 변경한다",
+            "함수형 updater를 사용한다",
+            "렌더 중에 업데이트한다",
+          ],
+          answerIndex: 1,
+          explanation:
+            "함수형 updater setState(prev => prev + 1)를 사용하면 React가 최신 상태를 보장합니다.",
+        },
+        {
+          type: "CODE" as const,
+          instruction: "카운터를 1 증가시키는 안전한 코드를 작성하세요.",
+          starterCode:
+            "// 카운터 상태 업데이트\nsetCount(/* 여기에 코드 작성 */);",
+          language: "javascript" as const,
+          hint: "이전 값을 받아서 새로운 값을 반환하는 함수를 전달하세요.",
+        },
+        {
+          type: "PRACTICE" as const,
+          prompt: "한 줄로 오늘 배운 핵심을 적어보세요.",
+          placeholder: "예: 이전 값을 기반으로 업데이트할 때는 updater 함수...",
+        },
+        {
+          type: "COMPLETE" as const,
+          summary:
+            "세션이 완료되었습니다. 오늘 학습한 핵심 개념이 아카이브에 저장됩니다.",
+          createdConceptIds: [],
+        },
+      ];
 
   const run = {
     runId,
@@ -895,7 +958,28 @@ export function getSessionRun(runId: string) {
   if (!run) {
     throw new Error("NOT_FOUND_RUN");
   }
-  return run;
+
+  // Enrich with plan and session title info
+  const plan = db.plans.find((p) => p.id === run.planId);
+  let planTitle = "";
+  let moduleTitle = "";
+  let sessionTitle = "";
+
+  if (plan) {
+    planTitle = plan.title;
+    const found = findSessionInPlan(plan, run.sessionId);
+    if (found) {
+      moduleTitle = found.moduleTitle;
+      sessionTitle = found.session.title;
+    }
+  }
+
+  return {
+    ...run,
+    planTitle,
+    moduleTitle,
+    sessionTitle,
+  };
 }
 
 export function saveSessionProgress(input: {

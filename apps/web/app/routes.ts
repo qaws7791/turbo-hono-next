@@ -17,9 +17,10 @@ export default [
       index("routes/space-plans.tsx"),
       route("documents", "routes/space-documents.tsx"),
       route("plans/new", "routes/plan-wizard.tsx"),
-      route("plan/:planId", "routes/plan-detail.tsx"),
       route("concepts", "routes/space-concepts.tsx"),
     ]),
+    // 학습 계획 상세는 스페이스 레이아웃과 분리하여 독립적인 UI 제공
+    route("spaces/:spaceId/plan/:planId", "routes/plan-detail.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;
