@@ -170,24 +170,26 @@ export function HomeView({
                       to={`/session?planId=${item.planId}&sessionId=${item.sessionId}`}
                       key={item.sessionId}
                     >
-                      <Card className="hover:bg-muted">
-                        <CardContent>
-                          {/* 유형 배지 */}
+                      <Card className="hover:bg-muted h-full">
+                        <CardContent className="h-full flex flex-col justify-between">
                           <div>
-                            <QueueTypeBadge type={item.type} />
-                          </div>
-                          {/* 세션 제목 및 계획 정보 */}
-                          <div className="pt-3">
-                            <span className="font-semibold block text-base">
-                              {item.sessionTitle}
-                            </span>
-                            <div className="text-muted-foreground text-sm">
-                              {item.planTitle} · {item.durationMinutes}분
+                            {/* 유형 배지 */}
+                            <div>
+                              <QueueTypeBadge type={item.type} />
+                            </div>
+                            {/* 세션 제목 및 계획 정보 */}
+                            <div className="mt-4">
+                              <span className="font-semibold block text-base">
+                                {item.sessionTitle}
+                              </span>
+                              <div className="text-muted-foreground text-sm">
+                                {item.planTitle} · {item.durationMinutes}분
+                              </div>
                             </div>
                           </div>
 
                           {/* 스페이스 및 예정일 */}
-                          <div className="flex items-center justify-between text-sm mt-6">
+                          <div className="flex items-center justify-between text-sm mt-4 gap-4">
                             <div className="flex items-center gap-2">
                               <SpaceIcon
                                 className="size-4 shrink-0"
