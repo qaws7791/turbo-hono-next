@@ -101,6 +101,7 @@ export type PlanSessionStatus = z.infer<typeof PlanSessionStatusSchema>;
 export const PlanSessionSchema = z.object({
   id: UuidSchema,
   moduleId: UuidSchema,
+  blueprintId: UuidSchema,
   title: z.string().min(1).max(120),
   type: PlanSessionTypeSchema,
   scheduledDate: IsoDateSchema,
@@ -162,7 +163,7 @@ export const ConceptSchema = z.object({
 });
 export type Concept = z.infer<typeof ConceptSchema>;
 
-const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
+export const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.string(),
     z.number(),
@@ -174,102 +175,197 @@ const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
 );
 
 // === 세션 스텝 타입 정의 ===
-// 기존 타입 + 확장 타입으로 유동적인 세션 구성 지원
+// 새로운 학습 플로우: 인트로 → 개념학습 → 이해도체크 → 적용활동 → 요약
 
 export const SessionStepTypeSchema = z.enum([
-  // 기존 타입
-  "LEARN",
-  "CHECK",
-  "PRACTICE",
-  "COMPLETE",
-  // 확장 타입
-  "INFO",
-  "CODE",
-  "FLASHCARD",
-  "FILL_BLANK",
-  "SUMMARY",
+  // 고정 스텝
+  "SESSION_INTRO", // 세션 인트로 (항상 첫 번째)
+  "SESSION_SUMMARY", // 세션 요약 (항상 마지막)
+  // 개념 학습
+  "CONCEPT", // 마크다운 기반 개념 설명 (챕터 분리 가능)
+  // 이해도 체크 (키보드 입력 없이 클릭만으로)
+  "CHECK", // 4지선다 퀴즈
+  "CLOZE", // 빈칸 맞히기 (4지선다)
+  "MATCHING", // 짝끼리 연결
+  "FLASHCARD", // 플래시카드
+  "SPEED_OX", // 스피드 O/X
+  // 적용 활동
+  "APPLICATION", // 짧은 실습/적용 문제
 ]);
 export type SessionStepType = z.infer<typeof SessionStepTypeSchema>;
 
-export const SessionStepSchema = z.discriminatedUnion("type", [
-  // === 기존 타입 (하위 호환성 유지) ===
+export const SessionStepIdSchema = z.string().min(1).max(80);
+export type SessionStepId = z.infer<typeof SessionStepIdSchema>;
+
+export const SessionStepIntentSchema = z.enum([
+  "INTRO",
+  "EXPLAIN",
+  "RETRIEVAL",
+  "PRACTICE",
+  "WRAPUP",
+]);
+export type SessionStepIntent = z.infer<typeof SessionStepIntentSchema>;
+
+export const SessionStepGatingSchema = z.object({
+  required: z.boolean().optional(),
+  when: z.string().min(1).max(200).optional(),
+});
+export type SessionStepGating = z.infer<typeof SessionStepGatingSchema>;
+
+export const SessionStepNextSchema = z.union([
+  z.object({ default: SessionStepIdSchema }),
   z.object({
-    type: z.literal("LEARN"),
-    title: z.string().min(1).max(120),
-    content: z.string().min(1).max(5_000),
+    branches: z
+      .array(
+        z.object({
+          when: z.string().min(1).max(200),
+          to: SessionStepIdSchema,
+        }),
+      )
+      .min(1),
   }),
-  z.object({
+]);
+export type SessionStepNext = z.infer<typeof SessionStepNextSchema>;
+
+const SessionStepBaseSchema = z.object({
+  id: SessionStepIdSchema,
+  estimatedSeconds: z
+    .number()
+    .int()
+    .positive()
+    .max(60 * 60)
+    .optional(),
+  intent: SessionStepIntentSchema.optional(),
+  gating: SessionStepGatingSchema.optional(),
+  next: SessionStepNextSchema.optional(),
+});
+
+export const SessionStepSchema = z.discriminatedUnion("type", [
+  // === 1. 세션 인트로 (첫번째 고정) ===
+  SessionStepBaseSchema.extend({
+    type: z.literal("SESSION_INTRO"),
+    planTitle: z.string().min(1).max(120),
+    moduleTitle: z.string().min(1).max(120),
+    sessionTitle: z.string().min(1).max(120),
+    durationMinutes: z.number().int().min(1).max(180),
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]),
+    learningGoals: z.array(z.string().min(1).max(200)).min(1).max(5),
+    questionsToCover: z.array(z.string().min(1).max(200)).min(1).max(5),
+    prerequisites: z.array(z.string().min(1).max(100)).max(5).default([]),
+  }),
+
+  // === 2. 개념 학습 (마크다운 지원, 챕터 분리) ===
+  SessionStepBaseSchema.extend({
+    type: z.literal("CONCEPT"),
+    title: z.string().min(1).max(120),
+    content: z.string().min(1).max(10_000), // 마크다운 (mermaid 포함)
+    chapterIndex: z.number().int().min(1).optional(), // 현재 챕터 번호
+    totalChapters: z.number().int().min(1).optional(), // 전체 챕터 수
+  }),
+
+  // === 3. 이해도 체크 ===
+  // 4지선다 퀴즈
+  SessionStepBaseSchema.extend({
     type: z.literal("CHECK"),
     question: z.string().min(1).max(500),
-    options: z.array(z.string().min(1).max(200)).min(2).max(6),
-    answerIndex: z.number().int().min(0).max(5),
-    explanation: z.string().max(500).optional(), // 정답 설명 (신규 추가)
-  }),
-  z.object({
-    type: z.literal("PRACTICE"),
-    prompt: z.string().min(1).max(1_000),
-    placeholder: z.string().min(1).max(120).optional(),
-  }),
-  z.object({
-    type: z.literal("COMPLETE"),
-    summary: z.string().min(1).max(1_000),
-    createdConceptIds: z.array(UuidSchema).max(10).default([]),
+    options: z.array(z.string().min(1).max(200)).length(4),
+    answerIndex: z.number().int().min(0).max(3),
+    explanation: z.string().max(500).optional(),
   }),
 
-  // === 확장 타입 (새로운 학습 활동) ===
-
-  // 읽기 전용 정보 카드 (팁, 경고, 예제 등)
-  z.object({
-    type: z.literal("INFO"),
-    title: z.string().min(1).max(120),
-    content: z.string().min(1).max(3_000),
-    variant: z.enum(["info", "warning", "tip", "example"]).default("info"),
+  // 빈칸 맞히기 (4지선다 Cloze)
+  SessionStepBaseSchema.extend({
+    type: z.literal("CLOZE"),
+    sentence: z.string().min(1).max(500), // "React의 {{blank}}는 상태를 관리합니다."
+    blankId: z.string().min(1).max(50),
+    options: z.array(z.string().min(1).max(100)).length(4),
+    answerIndex: z.number().int().min(0).max(3),
+    explanation: z.string().max(500).optional(),
   }),
 
-  // 코드 실습 (코드 입력 + 검증)
-  z.object({
-    type: z.literal("CODE"),
-    instruction: z.string().min(1).max(500),
-    starterCode: z.string().max(2_000).optional(),
-    language: z
-      .enum(["javascript", "typescript", "python", "css", "html", "other"])
-      .default("javascript"),
-    hint: z.string().max(300).optional(),
+  // 짝끼리 연결
+  SessionStepBaseSchema.extend({
+    type: z.literal("MATCHING"),
+    instruction: z.string().min(1).max(200),
+    pairs: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(50),
+          left: z.string().min(1).max(100),
+          right: z.string().min(1).max(100),
+        }),
+      )
+      .min(2)
+      .max(6),
   }),
 
-  // 플래시카드 (앞면/뒷면 회상)
-  z.object({
+  // 플래시카드
+  SessionStepBaseSchema.extend({
     type: z.literal("FLASHCARD"),
     front: z.string().min(1).max(500),
     back: z.string().min(1).max(1_000),
   }),
 
-  // 빈칸 채우기
-  z.object({
-    type: z.literal("FILL_BLANK"),
-    instruction: z.string().min(1).max(300),
-    template: z.string().min(1).max(1_000), // {{blank_id}} 형식으로 빈칸 표시
-    blanks: z
-      .array(
-        z.object({
-          id: z.string().min(1).max(50),
-          answer: z.string().min(1).max(100),
-          alternatives: z.array(z.string().min(1).max(100)).optional(), // 허용되는 대안 답안
-        }),
-      )
-      .min(1)
-      .max(10),
+  // 스피드 O/X
+  SessionStepBaseSchema.extend({
+    type: z.literal("SPEED_OX"),
+    statement: z.string().min(1).max(300),
+    isTrue: z.boolean(),
+    explanation: z.string().max(500).optional(),
   }),
 
-  // 중간 요약 (학습 내용 정리)
-  z.object({
-    type: z.literal("SUMMARY"),
-    title: z.string().min(1).max(120),
-    points: z.array(z.string().min(1).max(300)).min(1).max(10),
-    nextHint: z.string().max(200).optional(), // 다음 스텝 힌트
+  // === 4. 적용 활동 ===
+  SessionStepBaseSchema.extend({
+    type: z.literal("APPLICATION"),
+    scenario: z.string().min(1).max(1_000), // 상황 설명
+    question: z.string().min(1).max(500), // 질문
+    options: z.array(z.string().min(1).max(300)).min(2).max(4), // 선택지
+    correctIndex: z.number().int().min(0).max(3),
+    feedback: z.string().max(500).optional(), // 정답 선택 후 피드백
+  }),
+
+  // === 5. 세션 요약 (마지막 고정) ===
+  SessionStepBaseSchema.extend({
+    type: z.literal("SESSION_SUMMARY"),
+    celebrationEmoji: z.string().min(1).max(10).default("🎉"),
+    encouragement: z.string().min(1).max(200),
+    studyTimeMinutes: z.number().int().min(0).optional(), // 런타임에 계산
+    savedConceptCount: z.number().int().min(0).optional(), // 런타임에 계산
+    completedActivities: z
+      .array(z.string().min(1).max(100))
+      .max(10)
+      .default([]),
+    keyTakeaways: z.array(z.string().min(1).max(200)).min(1).max(5),
+    nextSessionPreview: z
+      .object({
+        title: z.string().min(1).max(120),
+        description: z.string().max(200).optional(),
+      })
+      .optional(),
   }),
 ]);
 export type SessionStep = z.infer<typeof SessionStepSchema>;
+
+export const SessionBlueprintSchema = z.object({
+  schemaVersion: z.number().int().positive(),
+  blueprintId: UuidSchema,
+  createdAt: IsoDateTimeSchema,
+  context: z.object({
+    planId: UuidSchema,
+    moduleId: UuidSchema,
+    planSessionId: UuidSchema,
+    sessionType: PlanSessionTypeSchema,
+  }),
+  timeBudget: z.object({
+    targetMinutes: z.number().int().min(1).max(180),
+    minMinutes: z.number().int().min(1).max(180),
+    maxMinutes: z.number().int().min(1).max(180),
+    profile: z.enum(["MICRO", "STANDARD", "DEEP"]),
+  }),
+  steps: z.array(SessionStepSchema).min(1),
+  startStepId: SessionStepIdSchema,
+});
+export type SessionBlueprint = z.infer<typeof SessionBlueprintSchema>;
 
 // === 세션 템플릿 (구조 패턴 정의) ===
 
@@ -319,13 +415,15 @@ export const SessionRunSchema = z.object({
   runId: UuidSchema,
   planId: UuidSchema,
   sessionId: UuidSchema,
+  blueprintId: UuidSchema,
   isRecovery: z.boolean().default(false),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
-  currentStep: z.number().int().min(0),
-  totalSteps: z.number().int().min(1),
-  steps: z.array(SessionStepSchema).min(1),
+  currentStepId: SessionStepIdSchema,
+  stepHistory: z.array(SessionStepIdSchema).min(1),
+  historyIndex: z.number().int().min(0),
   inputs: z.record(z.string(), JsonValueSchema).default({}),
+  createdConceptIds: z.array(UuidSchema).max(10).default([]),
   status: SessionRunStatusSchema,
 });
 export type SessionRun = z.infer<typeof SessionRunSchema>;
@@ -337,6 +435,7 @@ export const DbSchema = z.object({
   documents: z.array(DocumentSchema),
   plans: z.array(PlanSchema),
   concepts: z.array(ConceptSchema),
+  sessionBlueprints: z.array(SessionBlueprintSchema),
   sessionRuns: z.array(SessionRunSchema),
 });
 export type Db = z.infer<typeof DbSchema>;

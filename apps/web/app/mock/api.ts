@@ -1,10 +1,12 @@
 import { z } from "zod";
 
+import { createSessionBlueprint } from "./blueprints";
 import {
   ConceptReviewStatusSchema,
   DbSchema,
   DocumentKindSchema,
   IsoDateSchema,
+  JsonValueSchema,
   PlanGoalSchema,
   PlanLevelSchema,
   PlanSchema,
@@ -26,6 +28,7 @@ import type {
   PlanSession,
   PlanSessionStatus,
   PlanSessionType,
+  SessionBlueprint,
   Space,
   User,
 } from "./schemas";
@@ -71,17 +74,7 @@ type PlanWithDerived = Plan & {
   totalSessions: number;
 };
 
-const JsonPrimitiveSchema = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-]);
-const JsonValueShallowSchema = z.union([
-  JsonPrimitiveSchema,
-  z.array(JsonPrimitiveSchema),
-]);
-const SessionInputsSchema = z.record(z.string(), JsonValueShallowSchema);
+const SessionInputsSchema = z.record(z.string(), JsonValueSchema);
 
 function readDb(): Db {
   const db = readDbOrSeed();
@@ -132,6 +125,19 @@ function requireConcept(db: Db, conceptId: string): Concept {
     throw new Error("NOT_FOUND_CONCEPT");
   }
   return concept;
+}
+
+function requireSessionBlueprint(
+  db: Db,
+  blueprintId: string,
+): SessionBlueprint {
+  const blueprint = db.sessionBlueprints.find(
+    (b) => b.blueprintId === blueprintId,
+  );
+  if (!blueprint) {
+    throw new Error("NOT_FOUND_BLUEPRINT");
+  }
+  return blueprint;
 }
 
 function mutateDocumentsForAnalysis(db: Db, now: Date): boolean {
@@ -533,6 +539,61 @@ export function createPlan(input: {
     ? `Module 2: ${tagSeed[1]}`
     : "Module 2: Practice";
 
+  const session1Id = randomUuidV4();
+  const session2Id = randomUuidV4();
+  const session3Id = randomUuidV4();
+  const session4Id = randomUuidV4();
+
+  const planTitle = `${space.name} Plan`;
+
+  const blueprint1 = createSessionBlueprint({
+    planId,
+    moduleId: module1Id,
+    planSessionId: session1Id,
+    sessionType: "session",
+    planTitle,
+    moduleTitle: module1Title,
+    sessionTitle: "Session 1: 핵심 개념",
+    targetMinutes: 30,
+    level,
+    nextSessionTitle: "Review 1: 개념 점검",
+  });
+  const blueprint2 = createSessionBlueprint({
+    planId,
+    moduleId: module1Id,
+    planSessionId: session2Id,
+    sessionType: "review",
+    planTitle,
+    moduleTitle: module1Title,
+    sessionTitle: "Review 1: 개념 점검",
+    targetMinutes: 15,
+    level,
+    nextSessionTitle: "Session 2: 적용 연습",
+  });
+  const blueprint3 = createSessionBlueprint({
+    planId,
+    moduleId: module2Id,
+    planSessionId: session3Id,
+    sessionType: "session",
+    planTitle,
+    moduleTitle: module2Title,
+    sessionTitle: "Session 2: 적용 연습",
+    targetMinutes: 30,
+    level,
+    nextSessionTitle: "Review 2: 회고",
+  });
+  const blueprint4 = createSessionBlueprint({
+    planId,
+    moduleId: module2Id,
+    planSessionId: session4Id,
+    sessionType: "review",
+    planTitle,
+    moduleTitle: module2Title,
+    sessionTitle: "Review 2: 회고",
+    targetMinutes: 15,
+    level,
+  });
+
   const plan: Plan = {
     id: planId,
     spaceId: input.spaceId,
@@ -550,18 +611,20 @@ export function createPlan(input: {
         summary: "핵심 개념을 빠르게 정리하고 안정적인 이해를 만듭니다.",
         sessions: [
           {
-            id: randomUuidV4(),
+            id: session1Id,
             moduleId: module1Id,
+            blueprintId: blueprint1.blueprintId,
             title: "Session 1: 핵심 개념",
             type: "session",
             scheduledDate: schedule[0],
-            durationMinutes: 25,
+            durationMinutes: 30,
             status: "todo",
             conceptIds: [],
           },
           {
-            id: randomUuidV4(),
+            id: session2Id,
             moduleId: module1Id,
+            blueprintId: blueprint2.blueprintId,
             title: "Review 1: 개념 점검",
             type: "review",
             scheduledDate: schedule[1],
@@ -577,18 +640,20 @@ export function createPlan(input: {
         summary: "적용과 복습으로 장기 기억을 강화합니다.",
         sessions: [
           {
-            id: randomUuidV4(),
+            id: session3Id,
             moduleId: module2Id,
+            blueprintId: blueprint3.blueprintId,
             title: "Session 2: 적용 연습",
             type: "session",
             scheduledDate: schedule[2],
-            durationMinutes: 25,
+            durationMinutes: 30,
             status: "todo",
             conceptIds: [],
           },
           {
-            id: randomUuidV4(),
+            id: session4Id,
             moduleId: module2Id,
+            blueprintId: blueprint4.blueprintId,
             title: "Review 2: 회고",
             type: "review",
             scheduledDate: schedule[3],
@@ -601,6 +666,7 @@ export function createPlan(input: {
     ],
   };
 
+  db.sessionBlueprints.unshift(blueprint1, blueprint2, blueprint3, blueprint4);
   db.plans.unshift(plan);
   space.activePlanId = plan.id;
   space.updatedAt = nowIso();
@@ -824,6 +890,19 @@ export function startSession(input: {
     throw new Error("PLAN_NOT_ACTIVE");
   }
 
+  const existing = db.sessionRuns.find(
+    (r) =>
+      r.planId === plan.id &&
+      r.sessionId === input.sessionId &&
+      r.status !== "COMPLETED",
+  );
+  if (existing) {
+    existing.isRecovery = true;
+    existing.updatedAt = nowIso();
+    commit(db);
+    return { runId: existing.runId };
+  }
+
   if (found.session.status === "todo") {
     found.session.status = "in_progress";
   }
@@ -831,109 +910,21 @@ export function startSession(input: {
   const runId = randomUuidV4();
   const createdAt = nowIso();
 
-  // 세션 타입에 따라 다른 스텝 구성 생성
-  const isReview = found.session.type === "review";
-
-  const steps = isReview
-    ? [
-        // 복습 세션: 플래시카드 + 빈칸 채우기 위주
-        {
-          type: "INFO" as const,
-          title: "복습 세션 시작",
-          content: `${found.moduleTitle}\n\n이전에 학습한 내용을 빠르게 점검합니다. 기억나지 않는 부분이 있어도 괜찮아요!`,
-          variant: "info" as const,
-        },
-        {
-          type: "FLASHCARD" as const,
-          front:
-            "상태 업데이트 시 이전 값을 기반으로 해야 할 때 사용하는 패턴은?",
-          back: "함수형 updater: setState(prev => prev + 1)",
-        },
-        {
-          type: "FILL_BLANK" as const,
-          instruction: "빈칸을 채워 코드를 완성하세요.",
-          template: "setState({{prev}} => {{prev}} + 1)",
-          blanks: [
-            {
-              id: "prev",
-              answer: "prev",
-              alternatives: ["previous", "oldValue"],
-            },
-          ],
-        },
-        {
-          type: "SUMMARY" as const,
-          title: "복습 완료",
-          points: [
-            "함수형 updater를 사용하면 이전 상태를 안전하게 참조할 수 있습니다.",
-            "비동기 업데이트에서도 최신 상태를 보장합니다.",
-          ],
-          nextHint: "다음 세션에서 더 심화된 내용을 학습합니다.",
-        },
-        {
-          type: "COMPLETE" as const,
-          summary: "복습 세션이 완료되었습니다. 잘 기억하고 계시네요!",
-          createdConceptIds: [],
-        },
-      ]
-    : [
-        // 일반 학습 세션: 다양한 스텝 타입 포함
-        {
-          type: "LEARN" as const,
-          title: "오늘 배울 내용",
-          content: `${found.moduleTitle}\n\n${found.session.title}\n\n핵심 정의를 먼저 잡고, 짧게 확인한 다음, 직접 적용해봅니다.`,
-        },
-        {
-          type: "INFO" as const,
-          title: "핵심 팁",
-          content:
-            "상태를 업데이트할 때 이전 값에 의존하는 경우, 직접 값을 참조하지 말고 함수형 updater를 사용하세요. 이렇게 하면 React가 최신 상태를 보장합니다.",
-          variant: "tip" as const,
-        },
-        {
-          type: "CHECK" as const,
-          question: "가장 안전한 상태 업데이트 방식은 무엇일까요?",
-          options: [
-            "값을 직접 변경한다",
-            "함수형 updater를 사용한다",
-            "렌더 중에 업데이트한다",
-          ],
-          answerIndex: 1,
-          explanation:
-            "함수형 updater setState(prev => prev + 1)를 사용하면 React가 최신 상태를 보장합니다.",
-        },
-        {
-          type: "CODE" as const,
-          instruction: "카운터를 1 증가시키는 안전한 코드를 작성하세요.",
-          starterCode:
-            "// 카운터 상태 업데이트\nsetCount(/* 여기에 코드 작성 */);",
-          language: "javascript" as const,
-          hint: "이전 값을 받아서 새로운 값을 반환하는 함수를 전달하세요.",
-        },
-        {
-          type: "PRACTICE" as const,
-          prompt: "한 줄로 오늘 배운 핵심을 적어보세요.",
-          placeholder: "예: 이전 값을 기반으로 업데이트할 때는 updater 함수...",
-        },
-        {
-          type: "COMPLETE" as const,
-          summary:
-            "세션이 완료되었습니다. 오늘 학습한 핵심 개념이 아카이브에 저장됩니다.",
-          createdConceptIds: [],
-        },
-      ];
+  const blueprint = requireSessionBlueprint(db, found.session.blueprintId);
 
   const run = {
     runId,
     planId: plan.id,
     sessionId: input.sessionId,
+    blueprintId: blueprint.blueprintId,
     isRecovery: input.isRecovery ?? false,
     createdAt,
     updatedAt: createdAt,
-    currentStep: 0,
-    totalSteps: steps.length,
-    steps,
+    currentStepId: blueprint.startStepId,
+    stepHistory: [blueprint.startStepId],
+    historyIndex: 0,
     inputs: {},
+    createdConceptIds: [],
     status: "ACTIVE" as const,
   };
 
@@ -974,17 +965,22 @@ export function getSessionRun(runId: string) {
     }
   }
 
+  const blueprint = requireSessionBlueprint(db, run.blueprintId);
+
   return {
     ...run,
     planTitle,
     moduleTitle,
     sessionTitle,
+    blueprint,
   };
 }
 
 export function saveSessionProgress(input: {
   runId: string;
-  currentStep: number;
+  currentStepId: string;
+  stepHistory: Array<string>;
+  historyIndex: number;
   inputs: Record<string, unknown>;
 }): void {
   const db = readDb();
@@ -992,12 +988,21 @@ export function saveSessionProgress(input: {
   const run = db.sessionRuns.find((r) => r.runId === input.runId);
   if (!run) return;
   if (run.status === "COMPLETED") return;
-  const inputs = SessionInputsSchema.parse(input.inputs);
-  run.currentStep = Math.max(
+  const parsedInputs = SessionInputsSchema.safeParse(input.inputs);
+  if (!parsedInputs.success) return;
+  const stepHistory = input.stepHistory
+    .map(String)
+    .filter(Boolean)
+    .slice(0, 200);
+  if (stepHistory.length > 0) {
+    run.stepHistory = stepHistory;
+  }
+  run.currentStepId = String(input.currentStepId);
+  run.historyIndex = Math.max(
     0,
-    Math.min(run.totalSteps - 1, input.currentStep),
+    Math.min(run.stepHistory.length - 1, Math.floor(input.historyIndex)),
   );
-  run.inputs = inputs;
+  run.inputs = parsedInputs.data;
   run.updatedAt = nowIso();
   commit(db);
 }
@@ -1012,12 +1017,37 @@ export function completeSession(input: { runId: string }): {
   if (!run) {
     throw new Error("NOT_FOUND_RUN");
   }
+  if (run.status === "COMPLETED") {
+    return { createdConceptIds: run.createdConceptIds };
+  }
 
   const plan = requirePlan(db, run.planId);
   const found = findSessionInPlan(plan, run.sessionId);
   if (!found) {
     throw new Error("NOT_FOUND_SESSION");
   }
+
+  const exampleCode = (() => {
+    const code = run.inputs.code;
+    if (code && typeof code === "object" && !Array.isArray(code)) {
+      for (const value of Object.values(code as Record<string, unknown>)) {
+        if (typeof value === "string" && value.trim().length > 0) {
+          return value.trim().slice(0, 500);
+        }
+      }
+    }
+
+    const practice = run.inputs.practice;
+    if (practice && typeof practice === "object" && !Array.isArray(practice)) {
+      for (const value of Object.values(practice as Record<string, unknown>)) {
+        if (typeof value === "string" && value.trim().length > 0) {
+          return value.trim().slice(0, 500);
+        }
+      }
+    }
+
+    return undefined;
+  })();
 
   const createdAt = nowIso();
   const titles = [
@@ -1035,11 +1065,7 @@ export function completeSession(input: { runId: string }): {
       oneLiner: "세션에서 생성된 핵심 개념을 한 줄로 요약합니다.",
       definition:
         "이 개념은 세션에서 자동으로 추출/정리되었습니다. 정의와 예제, 주의사항을 중심으로 빠르게 복습할 수 있도록 구성됩니다.",
-      exampleCode:
-        typeof run.inputs.practice === "string" &&
-        run.inputs.practice.trim().length > 0
-          ? run.inputs.practice.trim().slice(0, 500)
-          : undefined,
+      exampleCode,
       gotchas: ["복습 필요도에 따라 다시 확인해보세요."],
       tags: ["auto", "concept"],
       reviewStatus: pickReviewStatusByAge(),
@@ -1066,13 +1092,8 @@ export function completeSession(input: { runId: string }): {
   );
 
   run.status = "COMPLETED";
+  run.createdConceptIds = createdConceptIds;
   run.updatedAt = createdAt;
-
-  // Patch COMPLETE step with created concept ids
-  const last = run.steps.at(-1);
-  if (last && last.type === "COMPLETE") {
-    last.createdConceptIds = createdConceptIds;
-  }
 
   commit(db);
   return { createdConceptIds };

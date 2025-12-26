@@ -1,3 +1,4 @@
+import { createSessionBlueprint } from "./blueprints";
 import { DbSchema } from "./schemas";
 
 import type { Db } from "./schemas";
@@ -16,6 +17,7 @@ function emptyDb(): Db {
     documents: [],
     plans: [],
     concepts: [],
+    sessionBlueprints: [],
     sessionRuns: [],
   };
 }
@@ -53,8 +55,60 @@ function seededDb(): Db {
     return `${year}-${month}-${day}`;
   })();
 
+  const module1Title = "Module 1: State & Effects";
+  const module2Title = "Module 2: Data Fetching";
+  const planTitle = "React Hooks 마스터";
+
+  const blueprint1 = createSessionBlueprint({
+    planId,
+    moduleId: module1Id,
+    planSessionId: session1Id,
+    sessionType: "session",
+    planTitle,
+    moduleTitle: module1Title,
+    sessionTitle: "Session 1: useState",
+    targetMinutes: 30,
+    level: "basic",
+    nextSessionTitle: "Review 1: State 업데이트 규칙",
+  });
+  const blueprint2 = createSessionBlueprint({
+    planId,
+    moduleId: module1Id,
+    planSessionId: session2Id,
+    sessionType: "review",
+    planTitle,
+    moduleTitle: module1Title,
+    sessionTitle: "Review 1: State 업데이트 규칙",
+    targetMinutes: 15,
+    level: "basic",
+    nextSessionTitle: "Session 2: Suspense 기본",
+  });
+  const blueprint3 = createSessionBlueprint({
+    planId,
+    moduleId: module2Id,
+    planSessionId: session3Id,
+    sessionType: "session",
+    planTitle,
+    moduleTitle: module2Title,
+    sessionTitle: "Session 2: Suspense 기본",
+    targetMinutes: 30,
+    level: "basic",
+    nextSessionTitle: "Review 2: 에러 경계",
+  });
+  const blueprint4 = createSessionBlueprint({
+    planId,
+    moduleId: module2Id,
+    planSessionId: session4Id,
+    sessionType: "review",
+    planTitle,
+    moduleTitle: module2Title,
+    sessionTitle: "Review 2: 에러 경계",
+    targetMinutes: 15,
+    level: "basic",
+  });
+
   return {
-    version: 1,
+    version: 2,
     user: {
       id: userId,
       name: "홍길동",
@@ -142,22 +196,24 @@ function seededDb(): Db {
         modules: [
           {
             id: module1Id,
-            title: "Module 1: State & Effects",
+            title: module1Title,
             summary: "상태/이펙트의 핵심 개념과 안전한 사용 패턴",
             sessions: [
               {
                 id: session1Id,
                 moduleId: module1Id,
+                blueprintId: blueprint1.blueprintId,
                 title: "Session 1: useState",
                 type: "session",
                 scheduledDate: today,
-                durationMinutes: 25,
+                durationMinutes: 30,
                 status: "todo",
                 conceptIds: [],
               },
               {
                 id: session2Id,
                 moduleId: module1Id,
+                blueprintId: blueprint2.blueprintId,
                 title: "Review 1: State 업데이트 규칙",
                 type: "review",
                 scheduledDate: tomorrow,
@@ -169,22 +225,24 @@ function seededDb(): Db {
           },
           {
             id: module2Id,
-            title: "Module 2: Data Fetching",
+            title: module2Title,
             summary: "데이터 페칭과 로딩/에러 UX",
             sessions: [
               {
                 id: session3Id,
                 moduleId: module2Id,
+                blueprintId: blueprint3.blueprintId,
                 title: "Session 2: Suspense 기본",
                 type: "session",
                 scheduledDate: tomorrow,
-                durationMinutes: 25,
+                durationMinutes: 30,
                 status: "todo",
                 conceptIds: [],
               },
               {
                 id: session4Id,
                 moduleId: module2Id,
+                blueprintId: blueprint4.blueprintId,
                 title: "Review 2: 에러 경계",
                 type: "review",
                 scheduledDate: tomorrow,
@@ -271,6 +329,7 @@ function seededDb(): Db {
         relatedConceptIds: [concept1Id],
       },
     ],
+    sessionBlueprints: [blueprint1, blueprint2, blueprint3, blueprint4],
     sessionRuns: [],
   };
 }
