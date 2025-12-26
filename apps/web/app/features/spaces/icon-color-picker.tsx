@@ -150,19 +150,21 @@ export function IconColorPicker({
         open={open}
         onOpenChange={setOpen}
       >
-        <PopoverTrigger>
-          <Button
-            type="button"
-            variant="ghost"
-            className="size-8 p-0 rounded-xl transition-all"
-            aria-label="아이콘 변경하기"
-          >
-            <SelectedIconComponent
-              className="size-5"
-              style={{ color: selectedColorData?.value }}
-            />
-          </Button>
-        </PopoverTrigger>
+        <PopoverTrigger
+          render={
+            <Button
+              type="button"
+              variant="ghost"
+              className="size-8 p-0 rounded-xl transition-all"
+              aria-label="아이콘 변경하기"
+            >
+              <SelectedIconComponent
+                className="size-5"
+                style={{ color: selectedColorData?.value }}
+              />
+            </Button>
+          }
+        />
         <PopoverContent
           className="w-80 p-0"
           align="start"
