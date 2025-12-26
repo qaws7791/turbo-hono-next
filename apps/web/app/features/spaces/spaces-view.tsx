@@ -37,7 +37,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
     <>
       <PageHeader />
       <PageBody className="space-y-12 mt-24">
-        <div className="flex flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-1 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-foreground text-2xl font-medium">스페이스</h1>
             <p className="text-muted-foreground text-sm mt-1">
@@ -47,7 +47,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
           </div>
           <Button onClick={model.openCreate}>+ 스페이스 만들기</Button>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between items-end">
           <div className="w-full sm:max-w-sm">
             <Input
               value={model.query}
