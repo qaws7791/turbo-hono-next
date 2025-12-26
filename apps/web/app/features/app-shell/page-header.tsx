@@ -18,9 +18,9 @@ interface PageHeaderProps {
  * - 아래로 스크롤 시 헤더 숨김, 위로 스크롤 시 표시
  */
 export function PageHeader({ children }: PageHeaderProps) {
-  const { open } = useSidebar();
+  const { open, isMobile } = useSidebar();
 
-  if (open && !children) {
+  if (open && !isMobile && !children) {
     return <header className="h-11" />;
   }
 
@@ -34,10 +34,10 @@ export function PageHeader({ children }: PageHeaderProps) {
         // 스크롤 위치에 따른 보더 (CSS scroll-driven animation)
         "scroll-border",
         // 좌우 패딩
-        open ? "px-4" : "px-2",
+        open && !isMobile ? "px-4" : "px-2",
       )}
     >
-      {!open && <SidebarTrigger />}
+      {(isMobile || !open) && <SidebarTrigger />}
       {children}
     </header>
   );
