@@ -85,11 +85,10 @@ export async function clientAction({
 }
 
 export default function SpaceDocumentsRoute() {
-  const { spaceId, documents } = useLoaderData<typeof clientLoader>();
+  const { documents } = useLoaderData<typeof clientLoader>();
   const model = useSpaceDocumentsModel(documents);
   return (
     <SpaceDocumentsView
-      spaceId={spaceId}
       documents={documents}
       model={model}
     />

@@ -18,7 +18,7 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
-import { Link, useFetcher } from "react-router";
+import { useFetcher } from "react-router";
 
 import {
   documentKindLabel,
@@ -30,11 +30,9 @@ import type { Document } from "~/mock/schemas";
 import type { SpaceDocumentsModel } from "./use-space-documents-model";
 
 export function SpaceDocumentsView({
-  spaceId,
   documents,
   model,
 }: {
-  spaceId: string;
   documents: Array<Document>;
   model: SpaceDocumentsModel;
 }) {
@@ -43,7 +41,7 @@ export function SpaceDocumentsView({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-foreground text-xl font-semibold">문서</h2>
           <p className="text-muted-foreground text-sm">
@@ -51,16 +49,7 @@ export function SpaceDocumentsView({
             바뀌지 않습니다.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button onClick={model.openUpload}>자료 업로드</Button>
-          <Button
-            variant="outline"
-            disabled={model.completedCount === 0}
-            render={<Link to={`/spaces/${spaceId}/plans/new`} />}
-          >
-            학습 계획 생성하기
-          </Button>
-        </div>
+        <Button onClick={model.openUpload}>자료 업로드</Button>
       </div>
 
       {documents.length === 0 ? (
