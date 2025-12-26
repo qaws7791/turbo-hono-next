@@ -77,6 +77,53 @@ const defaultSettings: SettingsState = {
   retentionPolicy: "forever",
 };
 
+// 레이블 변환 함수들
+function getThemeLabel(value: string): string {
+  const labels: Record<string, string> = {
+    light: "라이트",
+    dark: "다크",
+    system: "시스템",
+  };
+  return labels[value] ?? value;
+}
+
+function getSessionLengthLabel(value: string): string {
+  const labels: Record<string, string> = {
+    "15": "15분",
+    "25": "25분",
+    "40": "40분",
+  };
+  return labels[value] ?? value;
+}
+
+function getReviewIntensityLabel(value: string): string {
+  const labels: Record<string, string> = {
+    low: "낮음",
+    medium: "중간",
+    high: "높음",
+  };
+  return labels[value] ?? value;
+}
+
+function getAriStyleLabel(value: string): string {
+  const labels: Record<string, string> = {
+    coach: "코치",
+    socratic: "소크라테스",
+    friendly: "친근한 튜터",
+  };
+  return labels[value] ?? value;
+}
+
+function getRetentionPolicyLabel(value: string): string {
+  const labels: Record<string, string> = {
+    "30days": "30일",
+    "90days": "90일",
+    "1year": "1년",
+    forever: "영구 보관",
+  };
+  return labels[value] ?? value;
+}
+
 const tabConfig = [
   { key: "profile" as const, label: "프로필", icon: IconUser },
   { key: "general" as const, label: "일반", icon: IconSettings },
@@ -293,7 +340,7 @@ function GeneralSettings({
           onValueChange={(val) => val && updateSetting("theme", val)}
         >
           <SelectTrigger className="w-32">
-            <SelectValue />
+            <SelectValue>{getThemeLabel(settings.theme)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="light">라이트</SelectItem>
@@ -491,7 +538,9 @@ function LearningSettings({
           onValueChange={(val) => val && updateSetting("sessionLength", val)}
         >
           <SelectTrigger className="w-24">
-            <SelectValue />
+            <SelectValue>
+              {getSessionLengthLabel(settings.sessionLength)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="15">15분</SelectItem>
@@ -510,7 +559,9 @@ function LearningSettings({
           onValueChange={(val) => val && updateSetting("reviewIntensity", val)}
         >
           <SelectTrigger className="w-24">
-            <SelectValue />
+            <SelectValue>
+              {getReviewIntensityLabel(settings.reviewIntensity)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="low">낮음</SelectItem>
@@ -529,7 +580,7 @@ function LearningSettings({
           onValueChange={(val) => val && updateSetting("ariStyle", val)}
         >
           <SelectTrigger className="w-32">
-            <SelectValue />
+            <SelectValue>{getAriStyleLabel(settings.ariStyle)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="coach">코치</SelectItem>
@@ -579,7 +630,9 @@ function DataSettings({
           onValueChange={(val) => val && updateSetting("retentionPolicy", val)}
         >
           <SelectTrigger className="w-28">
-            <SelectValue />
+            <SelectValue>
+              {getRetentionPolicyLabel(settings.retentionPolicy)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="30days">30일</SelectItem>

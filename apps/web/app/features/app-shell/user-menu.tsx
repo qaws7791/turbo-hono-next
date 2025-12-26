@@ -9,6 +9,15 @@ import type { User } from "~/mock/schemas";
 
 import { initials } from "~/lib/initials";
 
+function getPlanLabel(plan: string): string {
+  const labels: Record<string, string> = {
+    free: "무료",
+    pro: "프로",
+    team: "팀",
+  };
+  return labels[plan] ?? plan;
+}
+
 export function UserMenu({
   user,
   onOpenSettings,
@@ -45,7 +54,9 @@ export function UserMenu({
           <div className="text-muted-foreground text-xs">{user.email}</div>
           <div className="text-muted-foreground text-xs">
             플랜:{" "}
-            <span className="text-foreground font-medium">{user.plan}</span>
+            <span className="text-foreground font-medium">
+              {getPlanLabel(user.plan)}
+            </span>
           </div>
         </div>
         <Separator />
