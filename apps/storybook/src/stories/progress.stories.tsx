@@ -7,6 +7,9 @@ const meta = {
   title: "Components/Progress",
   component: Progress,
   tags: ["autodocs"],
+  args: {
+    value: 1,
+  },
 } satisfies Meta<typeof Progress>;
 
 export default meta;

@@ -1,4 +1,3 @@
-
 import { Button } from "@repo/ui/button";
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
@@ -11,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@repo/ui/popover";
 
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 
 const meta = {
   title: "Components/Popover",

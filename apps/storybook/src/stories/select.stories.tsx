@@ -23,7 +23,7 @@ export const Default: Story = {
   render: () => (
     <Select>
       <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select a fruit" />
+        <SelectValue>Select a fruit</SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
