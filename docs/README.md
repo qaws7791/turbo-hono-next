@@ -34,6 +34,7 @@ AI가 학습 전 과정을 자동으로 설계·운영하는 **개인 학습 운
 - [랜딩 페이지](./03-product/pages/landing.md)
 - [로그인](./03-product/pages/login.md)
 - [홈 (Home)](./03-product/pages/home.md)
+- [오늘 할 일 (Today)](./03-product/pages/today.md)
 - [Spaces 목록](./03-product/pages/spaces.md)
 - [Space 상세](./03-product/pages/space-detail.md)
 - [Documents](./03-product/pages/documents.md)

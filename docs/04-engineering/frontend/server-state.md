@@ -1,100 +1,57 @@
-# Server State Management
+# Client Data Flow (Prototype)
 
 ## 개요
 
-TanStack Query 사용 범위, 캐시 키 규칙, optimistic update, 에러/재시도 UX를 정의합니다.
+현재 `apps/web` 프로토타입은 TanStack Query를 사용하지 않고, **React Router v7의 data API(clientLoader/clientAction) + useFetcher** 패턴으로 데이터 로딩/뮤테이션을 구성합니다.
 
 ---
 
-## TanStack Query 사용
+## 기본 패턴
 
-### 캐시 키 규칙
+### 1) 로딩: Route `clientLoader`
 
-```typescript
-const queryKeys = {
-  materials: {
-    all: (spaceId: string) => ["materials", spaceId] as const,
-    detail: (id: string) => ["materials", "detail", id] as const,
-  },
-  plans: {
-    all: (spaceId: string) => ["plans", spaceId] as const,
-    detail: (id: string) => ["plans", "detail", id] as const,
-  },
-  home: {
-    queue: () => ["home", "queue"] as const,
-  },
-};
-```
+- 라우트 진입 시 필요한 데이터를 `clientLoader`에서 준비
+- 반환값은 `useLoaderData()`로 읽음
 
-### staleTime 설정
+예:
 
-| 데이터  | staleTime | 근거                   |
-| ------- | --------- | ---------------------- |
-| 목록    | 30초      | 자주 변경 가능         |
-| 상세    | 1분       | 상세 조회 중 변경 적음 |
-| Home 큐 | 10초      | 실시간성 필요          |
+- `apps/web/app/routes/home.tsx`
+- `apps/web/app/routes/space-documents.tsx`
 
----
+### 2) 뮤테이션: Route `clientAction`
 
-## Optimistic Update
+- 폼/버튼 액션은 `clientAction`에서 처리
+- 성공 시:
+  - `redirect()`로 이동하거나
+  - `null`을 반환해 현재 화면에 머무름
 
-### 예시: Material 삭제
+예:
 
-```typescript
-useMutation({
-  mutationFn: deleteMaterial,
-  onMutate: async (materialId) => {
-    await queryClient.cancelQueries({
-      queryKey: queryKeys.materials.all(spaceId),
-    });
-    const previous = queryClient.getQueryData(queryKeys.materials.all(spaceId));
+- 문서 업로드/삭제: `apps/web/app/routes/space-documents.tsx`
+- 스페이스 생성: `apps/web/app/routes/spaces.tsx`
 
-    queryClient.setQueryData(queryKeys.materials.all(spaceId), (old) =>
-      old.filter((m) => m.id !== materialId),
-    );
+### 3) 화면 내 제출: `useFetcher()`
 
-    return { previous };
-  },
-  onError: (err, _, context) => {
-    queryClient.setQueryData(
-      queryKeys.materials.all(spaceId),
-      context.previous,
-    );
-    toast.error("삭제에 실패했습니다");
-  },
-});
-```
+- 페이지 이동 없이 제출/로딩 상태를 얻기 위해 `useFetcher()`를 사용
+- 모달/탭 내부 액션에 적합
+
+예:
+
+- 문서 업로드 다이얼로그 제출
+- Plan 생성 위저드 제출
 
 ---
 
-## 에러/재시도
+## 데이터 소스
 
-### 기본 설정
+### 프로토타입(mock)
 
-```typescript
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
-```
-
-### 에러 UX
-
-- 401/403: 로그인 페이지 이동
-- 500: 재시도 버튼 표시
-- 네트워크: 자동 재시도 + 알림
+- 현재는 `apps/web/app/mock/api.ts`의 in-memory(스토리지 기반) mock 로직을 호출
+- 추후 실제 API로 교체 시, 라우트 모듈의 의존성을 API 클라이언트로 치환하는 방식으로 전환
 
 ---
 
-## 관련 문서
+## 에러/리다이렉트 규칙
 
-- [App Architecture](./app-architecture.md)
-- [에러 코드](../api/errors.md)
+- 인증 필요 라우트는 레이아웃에서 `/login?redirectTo=...`로 리다이렉트
+- 파라미터 검증 실패는 400/404를 명확히 반환(예: UUID 파싱)

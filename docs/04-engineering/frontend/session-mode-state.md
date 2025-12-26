@@ -1,92 +1,73 @@
-# Session Mode State
+# Session Mode State (Prototype)
 
 ## 개요
 
-풀스크린 세션 모드의 상태 모델, 스텝 관리, 중단/재개 처리를 정의합니다.
+`/session` 풀스크린 학습 모드의 상태 모델, 스텝 전이, 중단/재개, 중간 저장 규칙을 정리합니다.
 
 ---
 
 ## 상태 모델
 
-```typescript
-interface SessionModeState {
-  runId: string;
-  sessionId: string;
-  isRecovery: boolean;
+프로토타입은 세션 실행을 “스케줄(Session)”과 “실행 기록(SessionRun)”으로 분리하고, UI는 `SessionUiState`를 중심으로 동작합니다.
 
-  currentStep: number;
-  totalSteps: number;
+핵심 필드:
 
-  steps: StepData[];
-  inputs: Record<string, any>;
+- `runId / planId / sessionId`
+- `blueprint`: 세션 스텝 정의(시작 스텝, 스텝 리스트)
+- `currentStepId`, `stepHistory`, `historyIndex`
+- `inputs`: 스텝별 입력(선택/연결/플래시카드 결과 등)
+- `status`: `ACTIVE | COMPLETING | COMPLETED`
+- `isRecovery`: 기존 실행 복구 여부
+- `createdConceptIds`: 완료 시 생성된 Concept ID
 
-  status: "LOADING" | "ACTIVE" | "COMPLETING" | "COMPLETED";
-}
-
-type StepData =
-  | { type: "LEARN"; content: string }
-  | { type: "CHECK"; question: string; options: string[] }
-  | { type: "PRACTICE"; prompt: string }
-  | { type: "COMPLETE"; summary: string };
-```
+실제 타입 정의: `apps/web/app/features/session/types.ts`
 
 ---
 
-## 상태 관리
+## 스텝 타입
 
-### useReducer 사용
+프로토타입 세션은 아래 스텝 타입을 조합해 구성합니다.
 
-```typescript
-function sessionReducer(state: SessionModeState, action: SessionAction) {
-  switch (action.type) {
-    case "NEXT_STEP":
-      return { ...state, currentStep: state.currentStep + 1 };
-    case "SET_INPUT":
-      return {
-        ...state,
-        inputs: { ...state.inputs, [action.key]: action.value },
-      };
-    case "COMPLETE":
-      return { ...state, status: "COMPLETED" };
-    default:
-      return state;
-  }
-}
-```
+- `SESSION_INTRO`
+- `CONCEPT` (Markdown)
+- `CHECK` (4지선다)
+- `CLOZE` (빈칸 4지선다)
+- `MATCHING` (연결)
+- `FLASHCARD`
+- `SPEED_OX`
+- `APPLICATION` (적용 문제)
+- `SESSION_SUMMARY`
+
+스텝 타입 스키마: `apps/web/app/mock/schemas.ts` (`SessionStepTypeSchema`)
 
 ---
 
-## 중간 저장
+## 전이(Next/Prev)
+
+- `Prev`: `stepHistory/historyIndex` 기반으로 이전 스텝으로 이동
+- `Next`: 현재 스텝의 입력이 “진행 가능” 조건을 만족할 때만 이동
+- `SESSION_SUMMARY` 진입 직전에 완료 처리를 수행(Concept 생성/세션 완료 마킹)
+
+구현: `apps/web/app/features/session/use-session-controller.ts`
+
+---
+
+## 중간 저장(Autosave)
 
 ### 저장 트리거
 
-- 스텝 전환 시
-- 입력 변경 시 (debounce 3초)
+- 입력 변경 후 debounce(기본 3초)
+- 사용자가 세션을 종료/이탈할 때 즉시 저장
 
-```typescript
-useEffect(() => {
-  const save = debounce(() => {
-    saveProgress({ stepIndex: state.currentStep, inputs: state.inputs });
-  }, 3000);
+### 저장 내용
 
-  save();
-  return () => save.cancel();
-}, [state.inputs, state.currentStep]);
-```
+- `currentStepId`
+- `stepHistory`, `historyIndex`
+- `inputs`(검증된 형태로만)
 
 ---
 
-## 렌더 성능
+## 복구(Recovery)
 
-### 최적화
-
-- 스텝별 컴포넌트 분리
-- React.memo 적용
-- 불필요한 리렌더 방지
-
----
-
-## 관련 문서
-
-- [풀스크린 학습 세션](../../03-product/pages/learning-session.md)
-- [Sessions API](../api/sessions.md)
+- 동일한 `planId + sessionId`로 완료되지 않은 `SessionRun`이 있으면 재사용
+- 재진입 시 `isRecovery`를 true로 표시해 “복구” 상태를 UI에 노출

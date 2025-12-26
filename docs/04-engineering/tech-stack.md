@@ -17,16 +17,16 @@
 
 ## Frontend
 
-| 기술                   | 용도                       |
-| ---------------------- | -------------------------- |
-| **React**              | UI 라이브러리              |
-| **TypeScript**         | 타입 안전 개발             |
-| **TanStack Router v7** | SPA/SSR Hybrid 라우팅      |
-| **Vite**               | 빌드 도구                  |
-| **TailwindCSS v4**     | 스타일링                   |
-| **Shadcn UI**          | UI 컴포넌트 (Base-UI 기반) |
-| **Tabler React**       | 아이콘                     |
-| **TanStack Query**     | 서버 상태/캐싱 (선택)      |
+| 기술                | 용도                       |
+| ------------------- | -------------------------- |
+| **React**           | UI 라이브러리              |
+| **TypeScript**      | 타입 안전 개발             |
+| **React Router v7** | SPA 라우팅                 |
+| **Vite**            | 빌드 도구                  |
+| **TailwindCSS v4**  | 스타일링                   |
+| **Shadcn UI**       | UI 컴포넌트 (Base-UI 기반) |
+| **Tabler React**    | 아이콘                     |
+| **TanStack Query**  | 서버 상태/캐싱 (선택)      |
 
 ### 의사결정 근거
 

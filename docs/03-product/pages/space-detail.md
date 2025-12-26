@@ -1,16 +1,16 @@
-# Space 상세 (/spaces/:id)
+# Space 상세 (/spaces/:spaceId)
 
 ## 개요
 
-Space 상세 페이지는 **단일 학습 의도/목표의 컨테이너**로서, 문서 관리, Plan 생성/관리, 학습 현황 파악이 이루어지는 곳입니다.
+Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 안에서 문서 업로드, Plan 생성/관리, 개념(지식 아카이브)을 탭으로 전환하며 운영합니다.
 
 ---
 
 ## 의사결정 근거
 
-- Space는 단일 학습 의도/목표의 컨테이너
-- Space 내부에서 문서 관리, Plan 생성/관리, 학습 현황 파악이 이루어짐
-- 탭 구조로 관련 기능을 그룹화
+- Space는 한 가지 학습 목표의 맥락을 고정해 혼재를 줄임
+- Space 내부에서 문서/계획/개념이 함께 돌아야 흐름이 단순해짐
+- 탭 구조로 기능을 묶어 이동 비용을 낮춤
 
 ---
 
@@ -19,75 +19,50 @@ Space 상세 페이지는 **단일 학습 의도/목표의 컨테이너**로서,
 ### 탭 네비게이션
 
 ```
-[Overview] [Documents] [Plans] [Concepts]
+[학습 계획] [문서] [개념]
 ```
 
 ---
 
-## 1. Overview 탭
+## 1) 학습 계획 탭 (기본)
 
-**목적**: 요약 및 빠른 액션
-
-### 구성 요소
-
-- Active Plan 요약
-  - Plan 이름
-  - 진행률 (%)
-  - 오늘 할 일 수
-- 빠른 CTA
-  - "Plan 만들기" (Plan 없을 때)
-  - "문서 업로드"
-  - "세션 시작" (Active Plan 있을 때)
-- 최근 활동 요약
-
-### 와이어프레임
-
-![Space 상세 Overview 와이어프레임](assets/space-detail-wireframe.png)
-
----
-
-## 2. Documents 탭
-
-**목적**: 업로드된 자료 목록 및 관리
-
-> 상세 기획은 [Documents 페이지](./documents.md) 참조
-
-### 주요 기능
-
-- 자료 목록 (카드/리스트)
-- 자료 업로드
-- 태그/요약 확인
-- 분석 상태 확인
-
----
-
-## 3. Plans 탭
-
-**목적**: 학습 계획 생성 및 관리
+**목적**: Plan 목록 확인 및 새 Plan 생성
 
 > 상세 기획은 [Plans 페이지](./plans.md) 참조
 
 ### 주요 기능
 
-- Plan 목록 (하루/1주/1달 등)
-- Active Plan 전환
-
-- Plan 클릭 시 → Plan 상세(운영 콘솔)로 진입
+- Plan 목록 보기
+- “학습 계획 만들기” 진입
+- Plan 클릭 시 → Plan 상세로 이동
 
 ---
 
-## 4. Concepts 탭
+## 2) 문서 탭
 
-**목적**: 해당 Space의 지식 아카이브
+**목적**: 학습 자료 업로드 및 관리
 
-> 상세 기획은 [Concept Library 페이지](./concept-library.md) 참조
+> 상세 기획은 [Documents 페이지](./documents.md) 참조
 
 ### 주요 기능
 
-- 해당 Space 기준 필터 (기본)
-- 전역 검색 토글 옵션
-- Concept 카드 목록
-- 검색
+- 자료 목록 확인(요약/태그/상태)
+- 자료 업로드(파일/URL/텍스트)
+- 삭제
+
+---
+
+## 3) 개념 탭
+
+**목적**: 해당 Space에서 생성된 Concept 목록 확인
+
+> 전역 아카이브는 [Concept Library](./concept-library.md) 참조
+
+### 주요 기능
+
+- Space에 속한 Concept 카드 목록
+- 간단 검색
+- Concept 클릭 시 → Concept 상세로 이동
 
 ---
 
@@ -96,25 +71,33 @@ Space 상세 페이지는 **단일 학습 의도/목표의 컨테이너**로서,
 ### 헤더
 
 - 상단에 Space 이름 표시
-- Space 전환 드롭다운 (선택)
+- Space 아이콘/색상은 Space 상세 화면에서 즉시 변경 가능
 
-### 네비게이션
+### Space 전환
 
-- 탭 또는 사이드 내비게이션으로 하위 섹션 전환
-- **Overview가 기본 진입 화면**
+- 전역 사이드바의 Space 목록을 통해 전환
 
 ### 일관성
 
-- 모든 탭에서 동일한 레이아웃 패턴
-- 명확한 현재 탭 표시
+- 모든 탭에서 동일한 레이아웃 패턴 유지
+- “학습 계획” 탭이 기본 진입 화면
 
 ---
 
 ## 라우팅
 
-| 경로                        | 설명                          |
-| --------------------------- | ----------------------------- |
-| `/spaces/:id`               | Space 상세 (Overview 탭 기본) |
-| `/spaces/:id?tab=documents` | Documents 탭                  |
-| `/spaces/:id?tab=plans`     | Plans 탭                      |
-| `/spaces/:id?tab=concepts`  | Concepts 탭                   |
+| 경로                            | 설명               |
+| ------------------------------- | ------------------ |
+| `/spaces/:spaceId`              | 학습 계획 탭(기본) |
+| `/spaces/:spaceId/documents`    | 문서 탭            |
+| `/spaces/:spaceId/concepts`     | 개념 탭            |
+| `/spaces/:spaceId/plans/new`    | Plan 생성 위저드   |
+| `/spaces/:spaceId/plan/:planId` | Plan 상세          |
+
+### 탭 쿼리(호환)
+
+기존 링크 호환을 위해 아래 형태는 각 탭 경로로 자동 이동합니다.
+
+- `/spaces/:spaceId?tab=plans` → `/spaces/:spaceId`
+- `/spaces/:spaceId?tab=documents` → `/spaces/:spaceId/documents`
+- `/spaces/:spaceId?tab=concepts` → `/spaces/:spaceId/concepts`
