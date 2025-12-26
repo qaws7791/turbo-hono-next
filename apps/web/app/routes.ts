@@ -9,6 +9,7 @@ export default [
   route("session", "routes/session.tsx"),
   layout("routes/app-layout.tsx", [
     route("home", "routes/home.tsx"),
+    route("today", "routes/today.tsx"),
     route("spaces", "routes/spaces.tsx"),
     route("concepts", "routes/concepts.tsx"),
     route("concept/:conceptId", "routes/concept-detail.tsx"),
