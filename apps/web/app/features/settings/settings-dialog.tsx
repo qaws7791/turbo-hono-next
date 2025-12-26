@@ -433,7 +433,6 @@ function NotificationSettings({
               onChange={(e) =>
                 updateSetting("dailyReminderTime", e.target.value)
               }
-              className="w-28"
             />
           </SettingRow>
 
