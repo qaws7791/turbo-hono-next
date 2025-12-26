@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@repo/ui/breadcrumb";
 import { Button } from "@repo/ui/button";
+import { TabNav, TabNavLink } from "@repo/ui/tab-nav";
 import {
   Timeline,
   TimelineContent,
@@ -28,28 +29,6 @@ import type { ConceptDetailModel } from "./use-concept-detail-model";
 import { PageBody } from "~/features/app-shell/page-body";
 import { PageHeader } from "~/features/app-shell/page-header";
 import { formatLongDateTime } from "~/lib/time";
-
-// TabLink 컴포넌트 - space-layout-view.tsx와 동일한 스타일
-function TabLink({
-  to,
-  label,
-  isActive,
-}: {
-  to: string;
-  label: string;
-  isActive: boolean;
-}) {
-  return (
-    <Button
-      variant={isActive ? "secondary" : "outline"}
-      size="sm"
-      className="justify-start"
-      render={<NavLink to={to} />}
-    >
-      {label}
-    </Button>
-  );
-}
 
 // Ari 노트 탭 컨텐츠
 function NoteTabContent({ concept }: { concept: Concept }) {
@@ -250,23 +229,26 @@ export function ConceptDetailView({
         ) : null}
 
         {/* 탭 네비게이션 */}
-        <div className="flex flex-wrap items-center gap-2">
-          <TabLink
-            to={model.basePath}
-            label="Ari 노트"
-            isActive={model.isNoteTab}
-          />
-          <TabLink
-            to={`${model.basePath}?tab=history`}
-            label="학습 이력"
-            isActive={model.isHistoryTab}
-          />
-          <TabLink
-            to={`${model.basePath}?tab=related`}
-            label="연관 개념"
-            isActive={model.isRelatedTab}
-          />
-        </div>
+        <TabNav>
+          <TabNavLink
+            render={<NavLink to={model.basePath} />}
+            active={model.isNoteTab}
+          >
+            Ari 노트
+          </TabNavLink>
+          <TabNavLink
+            render={<NavLink to={`${model.basePath}?tab=history`} />}
+            active={model.isHistoryTab}
+          >
+            학습 이력
+          </TabNavLink>
+          <TabNavLink
+            render={<NavLink to={`${model.basePath}?tab=related`} />}
+            active={model.isRelatedTab}
+          >
+            연관 개념
+          </TabNavLink>
+        </TabNav>
 
         {/* 탭 컨텐츠 */}
         {model.isNoteTab && <NoteTabContent concept={concept} />}

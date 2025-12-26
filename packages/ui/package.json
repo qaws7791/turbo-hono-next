@@ -54,6 +54,7 @@
     "./styles.css": "./dist/styles.css",
     "./switch": "./src/ui/switch.tsx",
     "./table": "./src/ui/table.tsx",
+    "./tab-nav": "./src/ui/tab-nav.tsx",
     "./tabs": "./src/ui/tabs.tsx",
     "./textarea": "./src/ui/textarea.tsx",
     "./toggle": "./src/ui/toggle.tsx",

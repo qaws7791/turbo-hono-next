@@ -1,4 +1,4 @@
-import { Button } from "@repo/ui/button";
+import { TabNav, TabNavLink } from "@repo/ui/tab-nav";
 import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
 import * as React from "react";
 import { NavLink, Outlet, useFetcher } from "react-router";
@@ -9,30 +9,6 @@ import type { SpaceLayoutModel } from "./use-space-layout-model";
 import { PageBody } from "~/features/app-shell/page-body";
 import { PageHeader } from "~/features/app-shell/page-header";
 import { IconColorPicker } from "~/features/spaces/icon-color-picker";
-
-function TabLink({
-  to,
-  label,
-  isActive,
-  icon,
-}: {
-  to: string;
-  label: string;
-  isActive: boolean;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <Button
-      variant={isActive ? "secondary" : "outline"}
-      size="sm"
-      className="justify-start"
-      render={<NavLink to={to} />}
-    >
-      {icon}
-      {label}
-    </Button>
-  );
-}
 
 export function SpaceLayoutView({
   space,
@@ -93,26 +69,29 @@ export function SpaceLayoutView({
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <TabLink
-            to={model.basePath}
-            label="학습 계획"
-            isActive={model.isPlans}
-            icon={<IconSchool />}
-          />
-          <TabLink
-            to={`${model.basePath}/documents`}
-            label="문서"
-            isActive={model.isDocuments}
-            icon={<IconFileDescription />}
-          />
-          <TabLink
-            to={`${model.basePath}/concepts`}
-            label="개념"
-            isActive={model.isConcepts}
-            icon={<IconBook />}
-          />
-        </div>
+        <TabNav>
+          <TabNavLink
+            render={<NavLink to={model.basePath} />}
+            active={model.isPlans}
+          >
+            <IconSchool />
+            학습 계획
+          </TabNavLink>
+          <TabNavLink
+            render={<NavLink to={`${model.basePath}/documents`} />}
+            active={model.isDocuments}
+          >
+            <IconFileDescription />
+            문서
+          </TabNavLink>
+          <TabNavLink
+            render={<NavLink to={`${model.basePath}/concepts`} />}
+            active={model.isConcepts}
+          >
+            <IconBook />
+            개념
+          </TabNavLink>
+        </TabNav>
 
         <Outlet />
       </PageBody>
