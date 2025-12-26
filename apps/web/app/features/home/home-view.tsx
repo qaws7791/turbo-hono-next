@@ -4,14 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Progress } from "@repo/ui/progress";
 import { Separator } from "@repo/ui/separator";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/ui/table";
-import {
   Timeline,
   TimelineContent,
   TimelineDate,
@@ -21,7 +13,7 @@ import {
   TimelineSeparator,
   TimelineTitle,
 } from "@repo/ui/timeline";
-import { IconCalendar, IconFlame } from "@tabler/icons-react";
+import { IconArrowRight, IconCalendar, IconFlame } from "@tabler/icons-react";
 import { Link } from "react-router";
 
 import type {
@@ -138,7 +130,26 @@ export function HomeView({
         </div>
 
         <section>
-          <h2 className="text-xl font-semibold">할 일</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-xl font-semibold">할 일</h2>
+              {queue.length > 0 && (
+                <span className="text-lg text-muted-foreground font-medium">
+                  {queue.length}
+                </span>
+              )}
+            </div>
+            {queue.length > 0 && (
+              <Button
+                render={<Link to="/today" />}
+                variant="ghost"
+                size="sm"
+              >
+                전체 보기
+                <IconArrowRight />
+              </Button>
+            )}
+          </div>
           <div className="mt-4">
             {queue.length === 0 ? (
               <div className="text-muted-foreground space-y-2 text-sm">
@@ -150,59 +161,53 @@ export function HomeView({
                 <Button render={<Link to="/spaces" />}>스페이스로</Button>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>세션</TableHead>
-                    <TableHead>스페이스</TableHead>
-                    <TableHead>예정</TableHead>
-                    <TableHead>유형</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {queue.map((item) => {
-                    const SpaceIcon = getIconByName(item.spaceIcon);
-                    const colorData = getColorByName(item.spaceColor);
-                    return (
-                      <TableRow key={item.sessionId}>
-                        <TableCell>
-                          <div className="space-y-0.5">
-                            <Link
-                              to={`/session?planId=${item.planId}&sessionId=${item.sessionId}`}
-                              className="font-medium hover:underline block"
-                            >
+              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+                {queue.slice(0, 3).map((item) => {
+                  const SpaceIcon = getIconByName(item.spaceIcon);
+                  const colorData = getColorByName(item.spaceColor);
+                  return (
+                    <Link
+                      to={`/session?planId=${item.planId}&sessionId=${item.sessionId}`}
+                      key={item.sessionId}
+                    >
+                      <Card className="hover:bg-muted">
+                        <CardContent>
+                          {/* 유형 배지 */}
+                          <div>
+                            <QueueTypeBadge type={item.type} />
+                          </div>
+                          {/* 세션 제목 및 계획 정보 */}
+                          <div className="pt-3">
+                            <span className="font-semibold block text-base">
                               {item.sessionTitle}
-                            </Link>
-                            <div className="text-muted-foreground text-xs font-medium">
+                            </span>
+                            <div className="text-muted-foreground text-sm">
                               {item.planTitle} · {item.durationMinutes}분
                             </div>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2 text-sm">
-                            <SpaceIcon
-                              className="size-4 shrink-0"
-                              style={{ color: colorData?.value }}
-                            />
-                            <span>{item.spaceName}</span>
+
+                          {/* 스페이스 및 예정일 */}
+                          <div className="flex items-center justify-between text-sm mt-6">
+                            <div className="flex items-center gap-2">
+                              <SpaceIcon
+                                className="size-4 shrink-0"
+                                style={{ color: colorData?.value }}
+                              />
+                              <span className="text-muted-foreground">
+                                {item.spaceName}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <IconCalendar className="size-4" />
+                              <span>{formatShortDate(item.scheduledDate)}</span>
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-muted-foreground">
-                            <IconCalendar className="h-4" />
-                            <span className="text-sm font-medium">
-                              {formatShortDate(item.scheduledDate)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <QueueTypeBadge type={item.type} />
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                })}
+              </div>
             )}
           </div>
         </section>
