@@ -1,5 +1,6 @@
-import { SidebarInset, SidebarProvider } from "@repo/ui/sidebar";
-import { Outlet, useNavigate } from "react-router";
+import { SidebarInset, SidebarProvider, useSidebar } from "@repo/ui/sidebar";
+import { useEffect } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { SettingsDialog } from "../settings/settings-dialog";
 
@@ -9,6 +10,21 @@ import { useAppShellState } from "./use-app-shell-state";
 import { useCommandActions } from "./use-command-actions";
 
 import type { AppShellData } from "./types";
+
+/**
+ * 라우트 변경 시 모바일 사이드바를 자동으로 닫는 컴포넌트
+ * SidebarProvider 내부에서 사용해야 useSidebar 훅에 접근 가능
+ */
+function MobileSidebarAutoClose() {
+  const location = useLocation();
+  const { setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [location.pathname, setOpenMobile]);
+
+  return null;
+}
 
 export function AppShell({ user, spaces }: AppShellData) {
   const navigate = useNavigate();
@@ -24,6 +40,7 @@ export function AppShell({ user, spaces }: AppShellData) {
       open={state.sidebarOpen}
       onOpenChange={state.setSidebarOpen}
     >
+      <MobileSidebarAutoClose />
       <AppSidebar
         user={user}
         spaces={spaces}
