@@ -51,3 +51,20 @@
 .animate-fade-in-up {
   animation: fade-in-up 0.4s ease-out forwards;
 }
+
+/* 스크롤 위치에 따른 헤더 보더 애니메이션 */
+@keyframes scroll-border {
+  0% {
+    border-bottom-color: transparent;
+  }
+  100% {
+    border-bottom-color: var(--color-border);
+  }
+}
+
+.scroll-border {
+  border-bottom: 1px solid transparent;
+  animation: scroll-border linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 10px;
+}
