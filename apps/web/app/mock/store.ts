@@ -32,7 +32,9 @@ function seededDb(): Db {
   const document1Id = randomUuidV4();
   const document2Id = randomUuidV4();
   const document3Id = randomUuidV4();
+  const document4Id = randomUuidV4();
 
+  // Plan 1: React Hooks 마스터
   const planId = randomUuidV4();
   const module1Id = randomUuidV4();
   const module2Id = randomUuidV4();
@@ -41,9 +43,20 @@ function seededDb(): Db {
   const session3Id = randomUuidV4();
   const session4Id = randomUuidV4();
 
+  // Plan 2: TypeScript 마스터
+  const plan2Id = randomUuidV4();
+  const plan2Module1Id = randomUuidV4();
+  const plan2Module2Id = randomUuidV4();
+  const plan2Session1Id = randomUuidV4();
+  const plan2Session2Id = randomUuidV4();
+  const plan2Session3Id = randomUuidV4();
+  const plan2Session4Id = randomUuidV4();
+
   const concept1Id = randomUuidV4();
   const concept2Id = randomUuidV4();
   const concept3Id = randomUuidV4();
+  const concept4Id = randomUuidV4();
+  const concept5Id = randomUuidV4();
 
   const today = todayIsoDate();
   const tomorrow = (() => {
@@ -55,6 +68,7 @@ function seededDb(): Db {
     return `${year}-${month}-${day}`;
   })();
 
+  // Plan 1 blueprints
   const module1Title = "Module 1: State & Effects";
   const module2Title = "Module 2: Data Fetching";
   const planTitle = "React Hooks 마스터";
@@ -107,6 +121,59 @@ function seededDb(): Db {
     level: "basic",
   });
 
+  // Plan 2 blueprints
+  const plan2Module1Title = "Module 1: 타입 시스템 기초";
+  const plan2Module2Title = "Module 2: 고급 타입";
+  const plan2Title = "TypeScript 마스터";
+
+  const plan2Blueprint1 = createSessionBlueprint({
+    planId: plan2Id,
+    moduleId: plan2Module1Id,
+    planSessionId: plan2Session1Id,
+    sessionType: "session",
+    planTitle: plan2Title,
+    moduleTitle: plan2Module1Title,
+    sessionTitle: "Session 1: 기본 타입과 인터페이스",
+    targetMinutes: 25,
+    level: "basic",
+    nextSessionTitle: "Review 1: 타입 추론 연습",
+  });
+  const plan2Blueprint2 = createSessionBlueprint({
+    planId: plan2Id,
+    moduleId: plan2Module1Id,
+    planSessionId: plan2Session2Id,
+    sessionType: "review",
+    planTitle: plan2Title,
+    moduleTitle: plan2Module1Title,
+    sessionTitle: "Review 1: 타입 추론 연습",
+    targetMinutes: 15,
+    level: "basic",
+    nextSessionTitle: "Session 2: 제네릭 입문",
+  });
+  const plan2Blueprint3 = createSessionBlueprint({
+    planId: plan2Id,
+    moduleId: plan2Module2Id,
+    planSessionId: plan2Session3Id,
+    sessionType: "session",
+    planTitle: plan2Title,
+    moduleTitle: plan2Module2Title,
+    sessionTitle: "Session 2: 제네릭 입문",
+    targetMinutes: 30,
+    level: "intermediate",
+    nextSessionTitle: "Review 2: 유틸리티 타입",
+  });
+  const plan2Blueprint4 = createSessionBlueprint({
+    planId: plan2Id,
+    moduleId: plan2Module2Id,
+    planSessionId: plan2Session4Id,
+    sessionType: "review",
+    planTitle: plan2Title,
+    moduleTitle: plan2Module2Title,
+    sessionTitle: "Review 2: 유틸리티 타입",
+    targetMinutes: 20,
+    level: "intermediate",
+  });
+
   return {
     version: 2,
     user: {
@@ -134,7 +201,7 @@ function seededDb(): Db {
         color: "purple",
         createdAt,
         updatedAt: createdAt,
-        activePlanId: undefined,
+        activePlanId: plan2Id,
       },
     ],
     documents: [
@@ -181,6 +248,21 @@ function seededDb(): Db {
           fileSizeBytes: 123_456,
         },
       },
+      {
+        id: document4Id,
+        spaceId: spaceHobbyId,
+        title: "TypeScript 핸드북 (URL)",
+        kind: "url",
+        status: "completed",
+        summary: "TypeScript 공식 핸드북 내용을 정리합니다.",
+        tags: ["typescript", "handbook"],
+        createdAt,
+        updatedAt: createdAt,
+        source: {
+          type: "url",
+          url: "https://www.typescriptlang.org/docs/handbook/",
+        },
+      },
     ],
     plans: [
       {
@@ -216,7 +298,7 @@ function seededDb(): Db {
                 blueprintId: blueprint2.blueprintId,
                 title: "Review 1: State 업데이트 규칙",
                 type: "review",
-                scheduledDate: tomorrow,
+                scheduledDate: today,
                 durationMinutes: 15,
                 status: "todo",
                 conceptIds: [],
@@ -234,7 +316,7 @@ function seededDb(): Db {
                 blueprintId: blueprint3.blueprintId,
                 title: "Session 2: Suspense 기본",
                 type: "session",
-                scheduledDate: tomorrow,
+                scheduledDate: today,
                 durationMinutes: 30,
                 status: "todo",
                 conceptIds: [],
@@ -245,8 +327,79 @@ function seededDb(): Db {
                 blueprintId: blueprint4.blueprintId,
                 title: "Review 2: 에러 경계",
                 type: "review",
+                scheduledDate: today,
+                durationMinutes: 15,
+                status: "todo",
+                conceptIds: [],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: plan2Id,
+        spaceId: spaceHobbyId,
+        title: "TypeScript 마스터",
+        goal: "hobby",
+        level: "basic",
+        status: "active",
+        createdAt,
+        updatedAt: createdAt,
+        sourceDocumentIds: [document4Id],
+        modules: [
+          {
+            id: plan2Module1Id,
+            title: plan2Module1Title,
+            summary: "TypeScript의 기본 타입 시스템과 인터페이스 활용법",
+            sessions: [
+              {
+                id: plan2Session1Id,
+                moduleId: plan2Module1Id,
+                blueprintId: plan2Blueprint1.blueprintId,
+                title: "Session 1: 기본 타입과 인터페이스",
+                type: "session",
+                scheduledDate: today,
+                durationMinutes: 25,
+                status: "todo",
+                conceptIds: [],
+              },
+              {
+                id: plan2Session2Id,
+                moduleId: plan2Module1Id,
+                blueprintId: plan2Blueprint2.blueprintId,
+                title: "Review 1: 타입 추론 연습",
+                type: "review",
                 scheduledDate: tomorrow,
                 durationMinutes: 15,
+                status: "todo",
+                conceptIds: [],
+              },
+            ],
+          },
+          {
+            id: plan2Module2Id,
+            title: plan2Module2Title,
+            summary: "제네릭과 유틸리티 타입으로 타입을 유연하게 다루기",
+            sessions: [
+              {
+                id: plan2Session3Id,
+                moduleId: plan2Module2Id,
+                blueprintId: plan2Blueprint3.blueprintId,
+                title: "Session 2: 제네릭 입문",
+                type: "session",
+                scheduledDate: tomorrow,
+                durationMinutes: 30,
+                status: "todo",
+                conceptIds: [],
+              },
+              {
+                id: plan2Session4Id,
+                moduleId: plan2Module2Id,
+                blueprintId: plan2Blueprint4.blueprintId,
+                title: "Review 2: 유틸리티 타입",
+                type: "review",
+                scheduledDate: tomorrow,
+                durationMinutes: 20,
                 status: "todo",
                 conceptIds: [],
               },
@@ -328,8 +481,67 @@ function seededDb(): Db {
         ],
         relatedConceptIds: [concept1Id],
       },
+      {
+        id: concept4Id,
+        spaceId: spaceHobbyId,
+        title: "TypeScript 기본 타입",
+        oneLiner:
+          "string, number, boolean 등 JavaScript 원시 타입에 대응하는 TypeScript 타입입니다.",
+        definition:
+          "TypeScript는 JavaScript의 런타임 타입을 정적으로 표현합니다. 기본 타입은 타입 추론의 기초가 됩니다.",
+        exampleCode:
+          'const name: string = "홍길동";\nconst age: number = 25;\nconst isActive: boolean = true;',
+        gotchas: ["any 타입 남용을 피하세요."],
+        tags: ["typescript", "basics"],
+        reviewStatus: "soon",
+        lastStudiedAt: createdAt,
+        sources: [
+          {
+            planId: plan2Id,
+            sessionId: plan2Session1Id,
+            moduleTitle: plan2Module1Title,
+            sessionTitle: "Session 1: 기본 타입과 인터페이스",
+            studiedAt: createdAt,
+          },
+        ],
+        relatedConceptIds: [concept5Id],
+      },
+      {
+        id: concept5Id,
+        spaceId: spaceHobbyId,
+        title: "인터페이스와 타입 별칭",
+        oneLiner:
+          "객체의 형태를 정의하는 두 가지 방법: interface와 type alias.",
+        definition:
+          "interface는 확장에 열려 있고 선언 병합이 가능합니다. type alias는 유니온, 인터섹션 등 다양한 타입 조합에 유용합니다.",
+        exampleCode:
+          "interface User {\n  name: string;\n  age: number;\n}\n\ntype Status = 'active' | 'inactive';",
+        gotchas: ["상황에 맞게 interface와 type을 선택하세요."],
+        tags: ["typescript", "interface", "type"],
+        reviewStatus: "good",
+        lastStudiedAt: createdAt,
+        sources: [
+          {
+            planId: plan2Id,
+            sessionId: plan2Session1Id,
+            moduleTitle: plan2Module1Title,
+            sessionTitle: "Session 1: 기본 타입과 인터페이스",
+            studiedAt: createdAt,
+          },
+        ],
+        relatedConceptIds: [concept4Id],
+      },
     ],
-    sessionBlueprints: [blueprint1, blueprint2, blueprint3, blueprint4],
+    sessionBlueprints: [
+      blueprint1,
+      blueprint2,
+      blueprint3,
+      blueprint4,
+      plan2Blueprint1,
+      plan2Blueprint2,
+      plan2Blueprint3,
+      plan2Blueprint4,
+    ],
     sessionRuns: [],
   };
 }
