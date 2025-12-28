@@ -1,1 +1,0 @@
-ALTER TABLE "ai_conversation" ALTER COLUMN "title" SET NOT NULL;

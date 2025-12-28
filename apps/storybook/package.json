@@ -10,7 +10,6 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/ai-types": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@vitejs/plugin-react": "catalog:",
