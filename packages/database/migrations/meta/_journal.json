@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1767000944110,
+      "tag": "0000_tan_sandman",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767032648878,
+      "tag": "0001_cheerful_sage",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767100354421,
+      "tag": "0002_remove_material_url_source_type",
+      "breakpoints": true
+    }
+  ]
+}
