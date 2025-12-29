@@ -1,0 +1,226 @@
+import { createRoute, z } from "@hono/zod-openapi";
+
+import { ErrorResponseSchema, PublicIdSchema } from "../../common/schema";
+
+import {
+  CompleteMaterialUploadRequestSchema,
+  CreateMaterialResponse201Schema,
+  CreateMaterialResponse202Schema,
+  DeleteMaterialResponseSchema,
+  InitiateMaterialUploadRequestSchema,
+  InitiateMaterialUploadResponseSchema,
+  JobStatusResponseSchema,
+  MaterialDetailResponseSchema,
+  MaterialListResponseSchema,
+  MaterialProcessingStatusSchema,
+  PaginationQuerySchema,
+  UpdateMaterialTitleRequestSchema,
+  UpdateMaterialTitleResponseSchema,
+} from "./schema";
+
+export const listMaterialsRoute = createRoute({
+  tags: ["materials"],
+  method: "get",
+  path: "/api/spaces/{spaceId}/materials",
+  summary: "자료 목록 조회",
+  description:
+    "Space에 등록된 학습 자료 목록을 페이지네이션과 함께 조회합니다.\n\n**필터링 옵션**: `status`, `search`, `sort`",
+  request: {
+    params: z.object({ spaceId: PublicIdSchema }),
+    query: PaginationQuerySchema.extend({
+      status: MaterialProcessingStatusSchema.optional(),
+      search: z.string().optional(),
+      sort: z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "자료 목록을 반환합니다.",
+      content: { "application/json": { schema: MaterialListResponseSchema } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const getMaterialDetailRoute = createRoute({
+  tags: ["materials"],
+  method: "get",
+  path: "/api/materials/{materialId}",
+  summary: "자료 상세 조회",
+  description:
+    "학습 자료의 상세 정보를 조회합니다. 추출된 개념, 원본 텍스트 등을 포함합니다.",
+  request: {
+    params: z.object({ materialId: z.uuid() }),
+  },
+  responses: {
+    200: {
+      description: "자료 상세를 반환합니다.",
+      content: { "application/json": { schema: MaterialDetailResponseSchema } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const initiateMaterialUploadRoute = createRoute({
+  tags: ["materials"],
+  method: "post",
+  path: "/api/spaces/{spaceId}/materials/uploads/init",
+  summary: "R2 업로드 세션 생성",
+  description:
+    "파일 업로드를 위한 Presigned URL을 발급합니다.\n\n**지원 형식**: PDF, DOCX, TXT 등",
+  request: {
+    params: z.object({ spaceId: PublicIdSchema }),
+    body: {
+      content: {
+        "application/json": {
+          schema: InitiateMaterialUploadRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "R2 presigned PUT URL을 반환합니다.",
+      content: {
+        "application/json": { schema: InitiateMaterialUploadResponseSchema },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const completeMaterialUploadRoute = createRoute({
+  tags: ["materials"],
+  method: "post",
+  path: "/api/spaces/{spaceId}/materials/uploads/complete",
+  summary: "R2 업로드 완료 처리",
+  description:
+    "R2에 파일 업로드 완료 후 자료 분석을 시작합니다. 비동기 처리 시 `jobId`를 반환합니다.",
+  request: {
+    params: z.object({ spaceId: PublicIdSchema }),
+    body: {
+      content: {
+        "application/json": {
+          schema: CompleteMaterialUploadRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      description: "동기 처리로 업로드/분석이 완료되었습니다.",
+      content: {
+        "application/json": { schema: CreateMaterialResponse201Schema },
+      },
+    },
+    202: {
+      description: "비동기 처리로 접수되었습니다.",
+      content: {
+        "application/json": { schema: CreateMaterialResponse202Schema },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const getJobStatusRoute = createRoute({
+  tags: ["jobs"],
+  method: "get",
+  path: "/api/jobs/{jobId}",
+  summary: "비동기 작업 상태 조회",
+  description:
+    "자료 분석 등 비동기 작업의 진행 상태를 확인합니다.\n\n**상태**: `pending`, `processing`, `completed`, `failed`",
+  request: {
+    params: z.object({ jobId: z.uuid() }),
+  },
+  responses: {
+    200: {
+      description: "작업 상태를 반환합니다.",
+      content: { "application/json": { schema: JobStatusResponseSchema } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const deleteMaterialRoute = createRoute({
+  tags: ["materials"],
+  method: "delete",
+  path: "/api/materials/{materialId}",
+  summary: "자료 삭제",
+  description: "학습 자료를 삭제합니다. 연관된 개념, 임베딩도 함께 삭제됩니다.",
+  request: {
+    params: z.object({ materialId: z.uuid() }),
+  },
+  responses: {
+    200: {
+      description: "soft/hard delete 결과를 반환합니다.",
+      content: { "application/json": { schema: DeleteMaterialResponseSchema } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const updateMaterialTitleRoute = createRoute({
+  tags: ["materials"],
+  method: "patch",
+  path: "/api/materials/{materialId}",
+  summary: "자료 제목 수정",
+  description: "학습 자료의 제목을 수정합니다.",
+  request: {
+    params: z.object({ materialId: z.uuid() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: UpdateMaterialTitleRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "자료 제목이 수정되었습니다.",
+      content: {
+        "application/json": { schema: UpdateMaterialTitleResponseSchema },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const materialRoutes = [
+  listMaterialsRoute,
+  getMaterialDetailRoute,
+  initiateMaterialUploadRoute,
+  completeMaterialUploadRoute,
+  deleteMaterialRoute,
+  updateMaterialTitleRoute,
+  getJobStatusRoute,
+] as const;
