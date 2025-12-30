@@ -1,13 +1,13 @@
 import { useLoaderData } from "react-router";
-import { z } from "zod";
 
 import type { Route } from "./+types/space-documents";
 
 import { SpaceDocumentsView } from "~/features/documents/space-documents/space-documents-view";
 import { useSpaceDocumentsModel } from "~/features/documents/space-documents/use-space-documents-model";
 import { deleteDocument, listDocuments, uploadDocument } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "문서" }];

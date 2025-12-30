@@ -1,16 +1,21 @@
 import * as React from "react";
-import { redirect, useLoaderData, useNavigate, useSearchParams } from "react-router";
-import { z } from "zod";
+import {
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 
 import type { Route } from "./+types/session";
 
 import { SessionView } from "~/features/session/session-view";
 import { useSessionController } from "~/features/session/use-session-controller";
 import { authStatus, getSessionRun, startSession } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const RunIdSchema = z.string().uuid();
-const PlanIdSchema = z.string().uuid();
-const SessionIdSchema = z.string().uuid();
+const RunIdSchema = PublicIdSchema;
+const PlanIdSchema = PublicIdSchema;
+const SessionIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "학습 세션" }];
@@ -41,7 +46,10 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
     throw new Response("Bad Request", { status: 400 });
   }
 
-  const { runId } = startSession({ planId: planId.data, sessionId: sessionId.data });
+  const { runId } = startSession({
+    planId: planId.data,
+    sessionId: sessionId.data,
+  });
   throw redirect(`/session?runId=${runId}`);
 }
 
@@ -75,4 +83,3 @@ export default function SessionRoute() {
     />
   );
 }
-

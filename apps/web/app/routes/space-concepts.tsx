@@ -1,12 +1,12 @@
 import { useLoaderData } from "react-router";
-import { z } from "zod";
 
 import type { Route } from "./+types/space-concepts";
 
 import { SpaceConceptsView } from "~/features/concepts/space/space-concepts-view";
 import { getSpace, listConcepts } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "개념" }];

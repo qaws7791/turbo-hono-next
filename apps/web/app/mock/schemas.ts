@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 export const UuidSchema = z.string().uuid();
+export const PublicIdSchema = z
+  .string()
+  .regex(/^[0-9a-z]{12}$/, "Invalid public id");
 export const IsoDateTimeSchema = z.string().datetime();
 export const IsoDateSchema = z
   .string()
@@ -15,14 +18,14 @@ export const UserSchema = z.object({
 export type User = z.infer<typeof UserSchema>;
 
 export const SpaceSchema = z.object({
-  id: UuidSchema,
+  id: PublicIdSchema,
   name: z.string().min(1).max(50),
   description: z.string().min(1).max(200).optional(),
   icon: z.string().min(1).max(50).default("book"),
   color: z.string().min(1).max(20).default("blue"),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
-  activePlanId: UuidSchema.optional(),
+  activePlanId: PublicIdSchema.optional(),
 });
 export type Space = z.infer<typeof SpaceSchema>;
 
@@ -56,7 +59,7 @@ export type DocumentSource = z.infer<typeof DocumentSourceSchema>;
 
 export const DocumentSchema = z.object({
   id: UuidSchema,
-  spaceId: UuidSchema,
+  spaceId: PublicIdSchema,
   title: z.string().min(1).max(120),
   kind: DocumentKindSchema,
   status: DocumentStatusSchema,
@@ -99,7 +102,7 @@ export const PlanSessionStatusSchema = z.enum([
 export type PlanSessionStatus = z.infer<typeof PlanSessionStatusSchema>;
 
 export const PlanSessionSchema = z.object({
-  id: UuidSchema,
+  id: PublicIdSchema,
   moduleId: UuidSchema,
   blueprintId: UuidSchema,
   title: z.string().min(1).max(120),
@@ -108,7 +111,7 @@ export const PlanSessionSchema = z.object({
   durationMinutes: z.number().int().min(5).max(120),
   status: PlanSessionStatusSchema,
   completedAt: IsoDateTimeSchema.optional(),
-  conceptIds: z.array(UuidSchema).default([]),
+  conceptIds: z.array(PublicIdSchema).default([]),
 });
 export type PlanSession = z.infer<typeof PlanSessionSchema>;
 
@@ -121,8 +124,8 @@ export const PlanModuleSchema = z.object({
 export type PlanModule = z.infer<typeof PlanModuleSchema>;
 
 export const PlanSchema = z.object({
-  id: UuidSchema,
-  spaceId: UuidSchema,
+  id: PublicIdSchema,
+  spaceId: PublicIdSchema,
   title: z.string().min(1).max(80),
   goal: PlanGoalSchema,
   level: PlanLevelSchema,
@@ -138,8 +141,8 @@ export const ConceptReviewStatusSchema = z.enum(["good", "soon", "due"]);
 export type ConceptReviewStatus = z.infer<typeof ConceptReviewStatusSchema>;
 
 export const ConceptSchema = z.object({
-  id: UuidSchema,
-  spaceId: UuidSchema,
+  id: PublicIdSchema,
+  spaceId: PublicIdSchema,
   title: z.string().min(1).max(120),
   oneLiner: z.string().min(1).max(200),
   definition: z.string().min(1).max(2_000),
@@ -151,15 +154,15 @@ export const ConceptSchema = z.object({
   sources: z
     .array(
       z.object({
-        planId: UuidSchema,
-        sessionId: UuidSchema,
+        planId: PublicIdSchema,
+        sessionId: PublicIdSchema,
         moduleTitle: z.string().min(1).max(120),
         sessionTitle: z.string().min(1).max(120),
         studiedAt: IsoDateTimeSchema,
       }),
     )
     .min(1),
-  relatedConceptIds: z.array(UuidSchema).max(8).default([]),
+  relatedConceptIds: z.array(PublicIdSchema).max(8).default([]),
 });
 export type Concept = z.infer<typeof ConceptSchema>;
 
@@ -351,9 +354,9 @@ export const SessionBlueprintSchema = z.object({
   blueprintId: UuidSchema,
   createdAt: IsoDateTimeSchema,
   context: z.object({
-    planId: UuidSchema,
+    planId: PublicIdSchema,
     moduleId: UuidSchema,
-    planSessionId: UuidSchema,
+    planSessionId: PublicIdSchema,
     sessionType: PlanSessionTypeSchema,
   }),
   timeBudget: z.object({
@@ -412,9 +415,9 @@ export const SessionRunStatusSchema = z.enum([
 export type SessionRunStatus = z.infer<typeof SessionRunStatusSchema>;
 
 export const SessionRunSchema = z.object({
-  runId: UuidSchema,
-  planId: UuidSchema,
-  sessionId: UuidSchema,
+  runId: PublicIdSchema,
+  planId: PublicIdSchema,
+  sessionId: PublicIdSchema,
   blueprintId: UuidSchema,
   isRecovery: z.boolean().default(false),
   createdAt: IsoDateTimeSchema,
@@ -423,7 +426,7 @@ export const SessionRunSchema = z.object({
   stepHistory: z.array(SessionStepIdSchema).min(1),
   historyIndex: z.number().int().min(0),
   inputs: z.record(z.string(), JsonValueSchema).default({}),
-  createdConceptIds: z.array(UuidSchema).max(10).default([]),
+  createdConceptIds: z.array(PublicIdSchema).max(10).default([]),
   status: SessionRunStatusSchema,
 });
 export type SessionRun = z.infer<typeof SessionRunSchema>;

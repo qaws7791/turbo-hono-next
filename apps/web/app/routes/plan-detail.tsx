@@ -13,9 +13,10 @@ import {
   planNextQueue,
   setPlanStatus,
 } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
-const PlanIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
+const PlanIdSchema = PublicIdSchema;
 const IntentSchema = z.enum(["pause", "resume", "archive"]);
 
 export function meta() {

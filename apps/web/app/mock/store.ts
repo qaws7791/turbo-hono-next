@@ -5,6 +5,7 @@ import type { Db } from "./schemas";
 
 import { readJsonFromStorage, writeJsonToStorage } from "~/lib/storage";
 import { nowIso, todayIsoDate } from "~/lib/time";
+import { randomPublicId } from "~/lib/public-id";
 import { randomUuidV4 } from "~/lib/uuid";
 
 const DB_KEY = "tlm_mock_db_v1";
@@ -26,8 +27,8 @@ function seededDb(): Db {
   const createdAt = nowIso();
 
   const userId = randomUuidV4();
-  const spaceWorkId = randomUuidV4();
-  const spaceHobbyId = randomUuidV4();
+  const spaceWorkId = randomPublicId();
+  const spaceHobbyId = randomPublicId();
 
   const document1Id = randomUuidV4();
   const document2Id = randomUuidV4();
@@ -35,28 +36,28 @@ function seededDb(): Db {
   const document4Id = randomUuidV4();
 
   // Plan 1: React Hooks 마스터
-  const planId = randomUuidV4();
+  const planId = randomPublicId();
   const module1Id = randomUuidV4();
   const module2Id = randomUuidV4();
-  const session1Id = randomUuidV4();
-  const session2Id = randomUuidV4();
-  const session3Id = randomUuidV4();
-  const session4Id = randomUuidV4();
+  const session1Id = randomPublicId();
+  const session2Id = randomPublicId();
+  const session3Id = randomPublicId();
+  const session4Id = randomPublicId();
 
   // Plan 2: TypeScript 마스터
-  const plan2Id = randomUuidV4();
+  const plan2Id = randomPublicId();
   const plan2Module1Id = randomUuidV4();
   const plan2Module2Id = randomUuidV4();
-  const plan2Session1Id = randomUuidV4();
-  const plan2Session2Id = randomUuidV4();
-  const plan2Session3Id = randomUuidV4();
-  const plan2Session4Id = randomUuidV4();
+  const plan2Session1Id = randomPublicId();
+  const plan2Session2Id = randomPublicId();
+  const plan2Session3Id = randomPublicId();
+  const plan2Session4Id = randomPublicId();
 
-  const concept1Id = randomUuidV4();
-  const concept2Id = randomUuidV4();
-  const concept3Id = randomUuidV4();
-  const concept4Id = randomUuidV4();
-  const concept5Id = randomUuidV4();
+  const concept1Id = randomPublicId();
+  const concept2Id = randomPublicId();
+  const concept3Id = randomPublicId();
+  const concept4Id = randomPublicId();
+  const concept5Id = randomPublicId();
 
   const today = todayIsoDate();
   const tomorrow = (() => {

@@ -6,9 +6,10 @@ import type { Route } from "./+types/space-plans";
 import { SpacePlansView } from "~/features/spaces/plans/space-plans-view";
 import { useSpacePlansModel } from "~/features/spaces/plans/use-space-plans-model";
 import { getSpace, listPlans, setActivePlan, setPlanStatus } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
-const PlanIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
+const PlanIdSchema = PublicIdSchema;
 const IntentSchema = z.enum(["set-active", "pause", "resume", "archive"]);
 
 export function meta() {

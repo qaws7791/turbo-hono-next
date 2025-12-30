@@ -6,9 +6,14 @@ import type { Route } from "./+types/plan-wizard";
 import { PlanWizardView } from "~/features/plans/wizard/plan-wizard-view";
 import { usePlanWizardModel } from "~/features/plans/wizard/use-plan-wizard-model";
 import { createPlan, listDocuments } from "~/mock/api";
-import { PlanGoalSchema, PlanLevelSchema, UuidSchema } from "~/mock/schemas";
+import {
+  PlanGoalSchema,
+  PlanLevelSchema,
+  PublicIdSchema,
+  UuidSchema,
+} from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "학습 계획 생성" }];

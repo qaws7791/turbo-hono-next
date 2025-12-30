@@ -1,9 +1,10 @@
 import { redirect } from "react-router";
-import { z } from "zod";
 
 import type { Route } from "./+types/concept-detail-alias";
 
-const ConceptIdSchema = z.string().uuid();
+import { PublicIdSchema } from "~/mock/schemas";
+
+const ConceptIdSchema = PublicIdSchema;
 
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
   const conceptId = ConceptIdSchema.safeParse(params.conceptId);

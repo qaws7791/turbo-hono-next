@@ -1,13 +1,13 @@
 import { redirect, useLoaderData } from "react-router";
-import { z } from "zod";
 
 import type { Route } from "./+types/space-layout";
 
 import { SpaceLayoutView } from "~/features/spaces/layout/space-layout-view";
 import { useSpaceLayoutModel } from "~/features/spaces/layout/use-space-layout-model";
 import { getPlanBySpaceActive, getSpace, updateSpace } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
 
-const SpaceIdSchema = z.string().uuid();
+const SpaceIdSchema = PublicIdSchema;
 
 function tabToPath(spaceId: string, tab: string): string | null {
   if (tab === "documents") return `/spaces/${spaceId}/documents`;
@@ -42,7 +42,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const intent = formData.get("intent");
 
   if (intent === "update-space") {
-    const spaceId = z.string().uuid().parse(formData.get("spaceId"));
+    const spaceId = SpaceIdSchema.parse(formData.get("spaceId"));
     const icon = formData.get("icon");
     const color = formData.get("color");
 

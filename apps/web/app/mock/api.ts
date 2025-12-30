@@ -39,6 +39,7 @@ import {
   writeAuthSession,
 } from "~/lib/auth";
 import { invariant } from "~/lib/invariant";
+import { randomPublicId } from "~/lib/public-id";
 import { nowIso, todayIsoDate } from "~/lib/time";
 import { randomUuidV4 } from "~/lib/uuid";
 
@@ -267,7 +268,7 @@ export function createSpace(input: {
 
   const now = nowIso();
   const space: Space = {
-    id: randomUuidV4(),
+    id: randomPublicId(),
     name,
     description,
     icon: "book",
@@ -519,7 +520,7 @@ export function createPlan(input: {
   }
 
   const now = nowIso();
-  const planId = randomUuidV4();
+  const planId = randomPublicId();
   const module1Id = randomUuidV4();
   const module2Id = randomUuidV4();
 
@@ -539,10 +540,10 @@ export function createPlan(input: {
     ? `Module 2: ${tagSeed[1]}`
     : "Module 2: Practice";
 
-  const session1Id = randomUuidV4();
-  const session2Id = randomUuidV4();
-  const session3Id = randomUuidV4();
-  const session4Id = randomUuidV4();
+  const session1Id = randomPublicId();
+  const session2Id = randomPublicId();
+  const session3Id = randomPublicId();
+  const session4Id = randomPublicId();
 
   const planTitle = `${space.name} Plan`;
 
@@ -907,7 +908,7 @@ export function startSession(input: {
     found.session.status = "in_progress";
   }
 
-  const runId = randomUuidV4();
+  const runId = randomPublicId();
   const createdAt = nowIso();
 
   const blueprint = requireSessionBlueprint(db, found.session.blueprintId);
@@ -1057,7 +1058,7 @@ export function completeSession(input: { runId: string }): {
 
   const createdConceptIds: Array<string> = [];
   for (const title of titles) {
-    const id = randomUuidV4();
+    const id = randomPublicId();
     const concept: Concept = {
       id,
       spaceId: plan.spaceId,
