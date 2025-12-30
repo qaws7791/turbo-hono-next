@@ -1,0 +1,8 @@
+{
+  "extends": "@repo/config/tsconfig/hono",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node", "hono"]
+  },
+  "include": ["src"]
+}

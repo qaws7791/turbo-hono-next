@@ -1,0 +1,80 @@
+import { err, ok } from "neverthrow";
+
+import { ApiError } from "../../../middleware/error-handler";
+import { assertSpaceOwned } from "../../space";
+import { ListPlansInput, ListPlansResponse } from "../plan.dto";
+import { planRepository } from "../plan.repository";
+
+import type { Result } from "neverthrow";
+import type { AppError } from "../../../lib/result";
+import type {
+  ListPlansInput as ListPlansInputType,
+  ListPlansResponse as ListPlansResponseType,
+} from "../plan.dto";
+
+export async function listPlans(
+  userId: string,
+  input: ListPlansInputType,
+): Promise<Result<ListPlansResponseType, AppError>> {
+  // 1. 입력 검증
+  const parseResult = ListPlansInput.safeParse(input);
+  if (!parseResult.success) {
+    return err(
+      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
+    );
+  }
+  const validated = parseResult.data;
+
+  // 2. Space 소유권 확인
+  const spaceResult = await assertSpaceOwned(userId, validated.spaceId);
+  if (spaceResult.isErr()) return err(spaceResult.error);
+  const space = spaceResult.value;
+
+  // 3. 총 개수 조회
+  const countResult = await planRepository.countBySpaceId(
+    userId,
+    space.id,
+    validated.status,
+  );
+  if (countResult.isErr()) return err(countResult.error);
+  const total = countResult.value;
+
+  // 4. 목록 조회
+  const listResult = await planRepository.listBySpaceId(userId, space.id, {
+    page: validated.page,
+    limit: validated.limit,
+    status: validated.status,
+  });
+  if (listResult.isErr()) return err(listResult.error);
+  const planRows = listResult.value;
+
+  // 5. 진행률 맵 조회
+  const progressMapResult = await planRepository.getProgressMap(
+    planRows.map((row) => row.id),
+  );
+  if (progressMapResult.isErr()) return err(progressMapResult.error);
+  const progressMap = progressMapResult.value;
+
+  return ok(
+    ListPlansResponse.parse({
+      data: planRows.map((row) => {
+        const progress = progressMap.get(row.id) ?? {
+          totalSessions: 0,
+          completedSessions: 0,
+        };
+
+        return {
+          id: row.publicId,
+          title: row.title,
+          status: row.status,
+          goalType: row.goalType,
+          progress: {
+            completedSessions: progress.completedSessions,
+            totalSessions: progress.totalSessions,
+          },
+        };
+      }),
+      meta: { total, page: validated.page, limit: validated.limit },
+    }),
+  );
+}

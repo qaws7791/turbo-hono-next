@@ -1,0 +1,43 @@
+import { err, ok } from "neverthrow";
+
+import { ApiError } from "../../../middleware/error-handler";
+import { PlanDetailResponse } from "../plan.dto";
+import { planRepository } from "../plan.repository";
+import { formatIsoDate } from "../plan.utils";
+
+import type { Result } from "neverthrow";
+import type { AppError } from "../../../lib/result";
+import type { PlanDetailResponse as PlanDetailResponseType } from "../plan.dto";
+
+export async function getPlanDetail(
+  userId: string,
+  planId: string,
+): Promise<Result<PlanDetailResponseType, AppError>> {
+  // 1. Plan 상세 조회
+  const planResult = await planRepository.findDetailByPublicId(userId, planId);
+  if (planResult.isErr()) return err(planResult.error);
+  const plan = planResult.value;
+
+  if (!plan) {
+    return err(
+      new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+        planId,
+      }),
+    );
+  }
+
+  return ok(
+    PlanDetailResponse.parse({
+      data: {
+        id: plan.id,
+        spaceId: plan.spaceId,
+        title: plan.title,
+        status: plan.status,
+        goalType: plan.goalType,
+        currentLevel: plan.currentLevel,
+        targetDueDate: formatIsoDate(plan.targetDueDate),
+        specialRequirements: plan.specialRequirements ?? null,
+      },
+    }),
+  );
+}
