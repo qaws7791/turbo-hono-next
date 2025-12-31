@@ -3,8 +3,12 @@ import { redirect, useActionData, useNavigation } from "react-router";
 import type { LoginActionData } from "~/modules/auth";
 import type { Route } from "./+types/login";
 
-import { apiClient, unwrap } from "~/modules/api";
-import { LoginView, buildGoogleAuthUrl } from "~/modules/auth";
+import {
+  LoginView,
+  buildGoogleAuthUrl,
+  fetchAuthMe,
+  postMagicLink,
+} from "~/modules/auth";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";
@@ -19,9 +23,12 @@ export function meta() {
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const me = await apiClient.GET("/api/auth/me");
-  if (me.data) {
+  try {
+    await fetchAuthMe();
     throw redirect("/home");
+  } catch (error) {
+    // 인증되지 않은 경우 - 로그인 페이지를 보여줌
+    if (error instanceof Response) throw error; // redirect는 다시 throw
   }
 
   const url = new URL(request.url);
@@ -44,10 +51,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   if (intent === "magiclink") {
     const email = String(formData.get("email") ?? "");
     try {
-      const result = await apiClient.POST("/api/auth/magic-link", {
-        body: { email, redirectPath: redirectTo },
-      });
-      unwrap(result);
+      await postMagicLink({ email, redirectPath: redirectTo });
       return { status: "sent", email } satisfies LoginActionData;
     } catch {
       return {

@@ -1,5 +1,10 @@
 // API
-export { buildGoogleAuthUrl } from "./api";
+export {
+  buildGoogleAuthUrl,
+  fetchAuthMe,
+  postLogout,
+  postMagicLink,
+} from "./api";
 
 // Hooks
 export {
@@ -13,9 +18,6 @@ export type { AuthUser, LoginActionData, LoginViewState } from "./types";
 
 // Views
 export { LoginView } from "./views";
-
-// Models
-export { useLoginViewModel } from "./models";
 
 // Utils
 export { formatSeconds } from "./utils";
