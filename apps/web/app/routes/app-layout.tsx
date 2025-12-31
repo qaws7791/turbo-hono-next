@@ -1,22 +1,43 @@
-import { redirect, useLoaderData } from "react-router";
+import * as React from "react";
+import { useLocation, useNavigate } from "react-router";
 
-import type { Route } from "./+types/app-layout";
-
-import { AppShell } from "~/features/app-shell/app-shell";
-import { getRedirectTarget } from "~/lib/auth";
-import { authStatus, listSpaces } from "~/mock/api";
-
-export function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const { isAuthenticated, user } = authStatus();
-  if (!isAuthenticated || !user) {
-    const redirectTo = getRedirectTarget(request.url);
-    throw redirect(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
-  }
-  return { user, spaces: listSpaces() };
-}
+import { isUnauthorizedError } from "~/modules/api";
+import { AppShell } from "~/modules/app-shell";
+import { useAuthMeQuery } from "~/modules/auth";
+import { useSpacesQuery } from "~/modules/spaces";
 
 export default function AppLayoutRoute() {
-  const { user, spaces } = useLoaderData<typeof clientLoader>();
-  return <AppShell user={user} spaces={spaces} />;
-}
+  const navigate = useNavigate();
+  const location = useLocation();
+  const me = useAuthMeQuery();
+  const spaces = useSpacesQuery();
 
+  React.useEffect(() => {
+    if (!me.isError) return;
+    if (!isUnauthorizedError(me.error)) return;
+
+    const redirectTo = `${location.pathname}${location.search}`;
+    navigate(`/login?redirectTo=${encodeURIComponent(redirectTo)}`, {
+      replace: true,
+    });
+  }, [location.pathname, location.search, me.error, me.isError, navigate]);
+
+  if (me.isLoading) {
+    return null;
+  }
+
+  if (me.isError) {
+    return null;
+  }
+
+  if (!me.data) {
+    return null;
+  }
+
+  return (
+    <AppShell
+      user={me.data}
+      spaces={spaces.data ?? []}
+    />
+  );
+}

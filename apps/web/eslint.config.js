@@ -2,4 +2,9 @@
 
 import { reactConfig } from "@repo/config/eslint/react";
 
-export default [...reactConfig];
+export default [
+  ...reactConfig,
+  {
+    ignores: ["app/types/api.ts"],
+  },
+];

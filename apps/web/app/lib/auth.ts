@@ -2,12 +2,10 @@ import { z } from "zod";
 
 import { readJsonFromStorage, removeFromStorage, writeJsonToStorage } from "./storage";
 
-import { UuidSchema } from "~/mock/schemas";
-
 const AUTH_KEY = "tlm_auth_v1";
 
 const AuthSessionSchema = z.object({
-  userId: UuidSchema,
+  userId: z.string().uuid(),
 });
 
 export type AuthSession = z.infer<typeof AuthSessionSchema>;

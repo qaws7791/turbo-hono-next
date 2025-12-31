@@ -1,8 +1,5 @@
-import { useLoaderData } from "react-router";
-
-import { LandingView } from "~/features/landing/landing-view";
-import { useLandingModel } from "~/features/landing/use-landing-model";
-import { authStatus } from "~/mock/api";
+import { useAuthMeQuery } from "~/modules/auth";
+import { LandingView, useLandingModel } from "~/modules/landing";
 
 export function meta() {
   return [
@@ -14,14 +11,9 @@ export function meta() {
   ];
 }
 
-export function clientLoader() {
-  const { isAuthenticated } = authStatus();
-  return { isAuthenticated };
-}
-
 export default function LandingRoute() {
-  const { isAuthenticated } = useLoaderData<typeof clientLoader>();
+  const me = useAuthMeQuery();
+  const isAuthenticated = Boolean(me.data);
   const model = useLandingModel({ isAuthenticated });
   return <LandingView model={model} />;
 }
-

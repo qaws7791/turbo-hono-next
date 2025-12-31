@@ -1,36 +1,27 @@
-import { useLoaderData } from "react-router";
+import { useParams } from "react-router";
 
-import type { Route } from "./+types/space-concepts";
-
-import { SpaceConceptsView } from "~/features/concepts/space/space-concepts-view";
-import { getSpace, listConcepts } from "~/mock/api";
-import { PublicIdSchema } from "~/mock/schemas";
-
-const SpaceIdSchema = PublicIdSchema;
+import { SpaceConceptsView, useSpaceConceptsQuery } from "~/modules/concepts";
+import { useSpaceQuery } from "~/modules/spaces";
 
 export function meta() {
   return [{ title: "개념" }];
 }
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const spaceId = SpaceIdSchema.safeParse(params.spaceId);
-  if (!spaceId.success) {
+export default function SpaceConceptsRoute() {
+  const { spaceId } = useParams();
+  if (!spaceId) {
     throw new Response("Not Found", { status: 404 });
   }
-  const space = getSpace(spaceId.data);
 
-  return {
-    space,
-    concepts: listConcepts({ spaceId: spaceId.data }),
-  };
-}
+  const space = useSpaceQuery(spaceId);
+  const concepts = useSpaceConceptsQuery({ spaceId, page: 1, limit: 100 });
 
-export default function SpaceConceptsRoute() {
-  const { space, concepts } = useLoaderData<typeof clientLoader>();
+  if (!space.data || !concepts.data) return null;
+
   return (
     <SpaceConceptsView
-      space={space}
-      concepts={concepts}
+      space={space.data}
+      concepts={concepts.data.data}
     />
   );
 }

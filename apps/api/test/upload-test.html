@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Material Upload Test</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        color: #e2e8f0;
+      }
+
+      .container {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 48px;
+        width: 100%;
+        max-width: 560px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 8px;
+        background: linear-gradient(135deg, #60a5fa, #a78bfa);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #94a3b8;
+        margin-bottom: 32px;
+        font-size: 0.875rem;
+      }
+
+      .form-group {
+        margin-bottom: 24px;
+      }
+
+      label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #cbd5e1;
+        margin-bottom: 8px;
+      }
+
+      input[type="text"],
+      input[type="url"] {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #f1f5f9;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      input[type="text"]:focus,
+      input[type="url"]:focus {
+        outline: none;
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+      }
+
+      input[type="text"]::placeholder {
+        color: #64748b;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        background: linear-gradient(
+          135deg,
+          rgba(96, 165, 250, 0.1),
+          rgba(167, 139, 250, 0.1)
+        );
+        border: 2px dashed rgba(96, 165, 250, 0.3);
+        border-radius: 16px;
+        padding: 32px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .file-input-wrapper:hover {
+        border-color: rgba(96, 165, 250, 0.6);
+        background: linear-gradient(
+          135deg,
+          rgba(96, 165, 250, 0.15),
+          rgba(167, 139, 250, 0.15)
+        );
+      }
+
+      .file-input-wrapper.has-file {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+      }
+
+      .file-input-wrapper input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .file-icon {
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+      }
+
+      .file-label {
+        color: #94a3b8;
+        font-size: 0.875rem;
+      }
+
+      .file-name {
+        display: none;
+        color: #22c55e;
+        font-weight: 500;
+        margin-top: 8px;
+        word-break: break-all;
+      }
+
+      .file-input-wrapper.has-file .file-name {
+        display: block;
+      }
+
+      .file-input-wrapper.has-file .file-label {
+        display: none;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      button:hover:not(:disabled) {
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        transform: translateY(-1px);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      button.loading .spinner {
+        display: block;
+      }
+
+      button.loading .btn-text {
+        display: none;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .log-container {
+        margin-top: 32px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        max-height: 280px;
+        overflow-y: auto;
+      }
+
+      .log-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+      }
+
+      .log-list {
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+      }
+
+      .log-item {
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .log-item:last-child {
+        border-bottom: none;
+      }
+
+      .log-item.info {
+        color: #60a5fa;
+      }
+
+      .log-item.success {
+        color: #22c55e;
+      }
+
+      .log-item.error {
+        color: #f87171;
+      }
+
+      .log-item .timestamp {
+        color: #475569;
+        margin-right: 8px;
+      }
+
+      .result-box {
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 12px;
+        display: none;
+      }
+
+      .result-box.success {
+        display: block;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+      }
+
+      .result-box.error {
+        display: block;
+        background: rgba(248, 113, 113, 0.1);
+        border: 1px solid rgba(248, 113, 113, 0.3);
+      }
+
+      .result-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .result-box.success .result-title {
+        color: #22c55e;
+      }
+
+      .result-box.error .result-title {
+        color: #f87171;
+      }
+
+      .result-content {
+        font-family: "Consolas", "Monaco", monospace;
+        font-size: 0.8125rem;
+        color: #cbd5e1;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .api-base-help {
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 4px;
+      }
+
+      /* Auth states */
+      .auth-loading,
+      .auth-required {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+      }
+
+      .auth-loading.active,
+      .auth-required.active {
+        display: block;
+      }
+
+      .auth-loading .spinner-large {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(96, 165, 250, 0.2);
+        border-top-color: #60a5fa;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 16px;
+      }
+
+      .auth-loading p {
+        color: #94a3b8;
+      }
+
+      .auth-required .lock-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+      }
+
+      .auth-required h2 {
+        font-size: 1.25rem;
+        color: #f87171;
+        margin-bottom: 8px;
+      }
+
+      .auth-required p {
+        color: #94a3b8;
+        margin-bottom: 24px;
+        line-height: 1.6;
+      }
+
+      .auth-required .login-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #ea4335, #fbbc05);
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+      }
+
+      .auth-required .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(234, 67, 53, 0.4);
+      }
+
+      .auth-required .login-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      .user-info {
+        display: none;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-bottom: 24px;
+        font-size: 0.875rem;
+      }
+
+      .user-info.active {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .user-info .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+
+      .user-info .user-details {
+        flex: 1;
+      }
+
+      .user-info .user-name {
+        font-weight: 600;
+        color: #22c55e;
+      }
+
+      .user-info .user-email {
+        color: #94a3b8;
+        font-size: 0.75rem;
+      }
+
+      #uploadFormContainer {
+        display: none;
+      }
+
+      #uploadFormContainer.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📤 Material Upload Test</h1>
+      <p class="subtitle">로컬 개발 환경 파일 업로드 테스트</p>
+
+      <!-- Auth Loading State -->
+      <div
+        class="auth-loading active"
+        id="authLoading"
+      >
+        <div class="spinner-large"></div>
+        <p>인증 상태 확인 중...</p>
+      </div>
+
+      <!-- Auth Required State -->
+      <div
+        class="auth-required"
+        id="authRequired"
+      >
+        <div class="lock-icon">🔒</div>
+        <h2>로그인이 필요합니다</h2>
+        <p>
+          파일 업로드 기능을 사용하려면<br />
+          먼저 로그인해주세요.
+        </p>
+        <a
+          href="#"
+          class="login-btn"
+          id="loginBtn"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            />
+            <path
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
+          </svg>
+          Google로 로그인
+        </a>
+      </div>
+
+      <!-- Upload Form (shown only when logged in) -->
+      <div id="uploadFormContainer">
+        <div
+          class="user-info"
+          id="userInfo"
+        >
+          <div
+            class="user-avatar"
+            id="userAvatar"
+          >
+            U
+          </div>
+          <div class="user-details">
+            <div
+              class="user-name"
+              id="userName"
+            >
+              사용자
+            </div>
+            <div
+              class="user-email"
+              id="userEmail"
+            >
+              email@example.com
+            </div>
+          </div>
+        </div>
+
+        <form id="uploadForm">
+          <div class="form-group">
+            <label for="apiBase">API 서버 주소</label>
+            <input
+              type="url"
+              id="apiBase"
+              value="http://localhost:3001"
+              placeholder="http://localhost:3001"
+            />
+            <p class="api-base-help">기본값: http://localhost:3001</p>
+          </div>
+
+          <div class="form-group">
+            <label for="spaceId">Space ID</label>
+            <input
+              type="text"
+              id="spaceId"
+              placeholder="예: spc_abc123xyz"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="title">자료 제목 (선택)</label>
+            <input
+              type="text"
+              id="title"
+              placeholder="입력하지 않으면 파일명을 사용합니다"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>파일 선택</label>
+            <div
+              class="file-input-wrapper"
+              id="fileWrapper"
+            >
+              <div class="file-icon">📄</div>
+              <div class="file-label">
+                클릭하거나 파일을 드래그하세요<br /><small
+                  >PDF, DOCX, TXT 등 지원</small
+                >
+              </div>
+              <div
+                class="file-name"
+                id="fileName"
+              ></div>
+              <input
+                type="file"
+                id="fileInput"
+                accept=".pdf,.docx,.doc,.txt,.md,.json,.csv,.xlsx,.xls,.pptx,.ppt"
+                required
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="submitBtn"
+          >
+            <span class="btn-text">🚀 업로드 시작</span>
+            <div class="spinner"></div>
+          </button>
+        </form>
+
+        <div class="log-container">
+          <div class="log-title">실행 로그</div>
+          <div
+            class="log-list"
+            id="logList"
+          ></div>
+        </div>
+
+        <div
+          class="result-box"
+          id="resultBox"
+        >
+          <div
+            class="result-title"
+            id="resultTitle"
+          ></div>
+          <div
+            class="result-content"
+            id="resultContent"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM Elements
+      const authLoading = document.getElementById("authLoading");
+      const authRequired = document.getElementById("authRequired");
+      const uploadFormContainer = document.getElementById(
+        "uploadFormContainer",
+      );
+      const loginBtn = document.getElementById("loginBtn");
+      const userInfo = document.getElementById("userInfo");
+      const userAvatar = document.getElementById("userAvatar");
+      const userName = document.getElementById("userName");
+      const userEmail = document.getElementById("userEmail");
+
+      const form = document.getElementById("uploadForm");
+      const fileInput = document.getElementById("fileInput");
+      const fileWrapper = document.getElementById("fileWrapper");
+      const fileName = document.getElementById("fileName");
+      const submitBtn = document.getElementById("submitBtn");
+      const logList = document.getElementById("logList");
+      const resultBox = document.getElementById("resultBox");
+      const resultTitle = document.getElementById("resultTitle");
+      const resultContent = document.getElementById("resultContent");
+
+      // MIME type mapping
+      const MIME_TYPES = {
+        pdf: "application/pdf",
+        doc: "application/msword",
+        docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        txt: "text/plain",
+        md: "text/markdown",
+        json: "application/json",
+        csv: "text/csv",
+        xls: "application/vnd.ms-excel",
+        xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        ppt: "application/vnd.ms-powerpoint",
+        pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      };
+
+      function getApiBase() {
+        return document.getElementById("apiBase").value.replace(/\/$/, "");
+      }
+
+      function getMimeType(filename) {
+        const ext = filename.split(".").pop()?.toLowerCase();
+        return MIME_TYPES[ext] || "application/octet-stream";
+      }
+
+      function log(message, type = "info") {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString("ko-KR", { hour12: false });
+        const item = document.createElement("div");
+        item.className = `log-item ${type}`;
+        item.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+        logList.appendChild(item);
+        logList.scrollTop = logList.scrollHeight;
+      }
+
+      function clearLogs() {
+        logList.innerHTML = "";
+        resultBox.className = "result-box";
+        resultBox.style.display = "none";
+      }
+
+      function showResult(success, title, content) {
+        resultBox.className = `result-box ${success ? "success" : "error"}`;
+        resultBox.style.display = "block";
+        resultTitle.textContent = title;
+        resultContent.textContent =
+          typeof content === "object"
+            ? JSON.stringify(content, null, 2)
+            : content;
+      }
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitBtn.classList.toggle("loading", loading);
+      }
+
+      function formatBytes(bytes) {
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const sizes = ["Bytes", "KB", "MB", "GB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+      }
+
+      // Auth check on page load
+      async function checkAuth() {
+        const apiBase = getApiBase();
+
+        try {
+          const res = await fetch(`${apiBase}/api/auth/me`, {
+            method: "GET",
+            credentials: "include",
+          });
+
+          authLoading.classList.remove("active");
+
+          if (res.ok) {
+            const data = await res.json();
+            showLoggedInState(data.data);
+          } else {
+            showLoginRequired();
+          }
+        } catch (error) {
+          authLoading.classList.remove("active");
+          showLoginRequired();
+          console.error("Auth check failed:", error);
+        }
+      }
+
+      function showLoggedInState(user) {
+        authRequired.classList.remove("active");
+        uploadFormContainer.classList.add("active");
+        userInfo.classList.add("active");
+
+        // Update user info display
+        const initial = (user.name || user.email || "U")
+          .charAt(0)
+          .toUpperCase();
+        userAvatar.textContent = initial;
+        userName.textContent = user.name || "사용자";
+        userEmail.textContent = user.email || "";
+
+        log("🔧 Material Upload Test 페이지 준비 완료");
+        log(`👤 로그인됨: ${user.email}`, "success");
+      }
+
+      function showLoginRequired() {
+        authRequired.classList.add("active");
+        uploadFormContainer.classList.remove("active");
+
+        // Update login button href
+        const apiBase = getApiBase();
+        loginBtn.href = `${apiBase}/api/auth/google`;
+      }
+
+      // Update login button when API base changes
+      document.getElementById("apiBase").addEventListener("change", () => {
+        const apiBase = getApiBase();
+        loginBtn.href = `${apiBase}/api/auth/google`;
+      });
+
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          fileName.textContent = `${file.name} (${formatBytes(file.size)})`;
+          fileWrapper.classList.add("has-file");
+        } else {
+          fileName.textContent = "";
+          fileWrapper.classList.remove("has-file");
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        clearLogs();
+        setLoading(true);
+
+        try {
+          const apiBase = getApiBase();
+          const spaceId = document.getElementById("spaceId").value.trim();
+          const title = document.getElementById("title").value.trim();
+          const file = fileInput.files[0];
+
+          if (!file) {
+            throw new Error("파일을 선택해주세요.");
+          }
+
+          const mimeType = getMimeType(file.name);
+          log(`📁 파일: ${file.name} (${formatBytes(file.size)}, ${mimeType})`);
+          log(`🔗 API 서버: ${apiBase}`);
+          log(`📂 Space ID: ${spaceId}`);
+
+          // Step 1: Initiate Upload
+          log("⏳ 1단계: Presigned URL 요청 중...");
+          const initiateRes = await fetch(
+            `${apiBase}/api/spaces/${spaceId}/materials/uploads/init`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                originalFilename: file.name,
+                mimeType: mimeType,
+                fileSize: file.size,
+              }),
+            },
+          );
+
+          if (!initiateRes.ok) {
+            const errorData = await initiateRes.json().catch(() => ({}));
+            throw new Error(
+              `Presigned URL 요청 실패 (${initiateRes.status}): ${JSON.stringify(errorData)}`,
+            );
+          }
+
+          const initiateData = await initiateRes.json();
+          log("✅ Presigned URL 획득 완료", "success");
+          log(`   uploadId: ${initiateData.data.uploadId}`);
+
+          const {
+            uploadId,
+            uploadUrl,
+            headers: uploadHeaders,
+            method,
+          } = initiateData.data;
+
+          // Step 2: Upload file to R2
+          log("⏳ 2단계: 파일 업로드 중... (R2 직접 업로드)");
+          const uploadRes = await fetch(uploadUrl, {
+            method: method,
+            headers: uploadHeaders,
+            body: file,
+          });
+
+          if (!uploadRes.ok) {
+            throw new Error(
+              `R2 업로드 실패 (${uploadRes.status}): ${uploadRes.statusText}`,
+            );
+          }
+
+          const etag = uploadRes.headers.get("etag");
+          log("✅ 파일 업로드 완료", "success");
+          if (etag) {
+            log(`   ETag: ${etag}`);
+          }
+
+          // Step 3: Complete Upload
+          log("⏳ 3단계: 업로드 완료 처리 중...");
+          const completeBody = { uploadId };
+          if (title) {
+            completeBody.title = title;
+          }
+          if (etag) {
+            completeBody.etag = etag;
+          }
+
+          const completeRes = await fetch(
+            `${apiBase}/api/spaces/${spaceId}/materials/uploads/complete`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(completeBody),
+            },
+          );
+
+          if (!completeRes.ok) {
+            const errorData = await completeRes.json().catch(() => ({}));
+            throw new Error(
+              `업로드 완료 처리 실패 (${completeRes.status}): ${JSON.stringify(errorData)}`,
+            );
+          }
+
+          const completeData = await completeRes.json();
+          log("🎉 업로드 완료!", "success");
+
+          if (completeData.data?.processingStatus === "PROCESSING") {
+            log(
+              `   처리 상태: 비동기 처리 중 (jobId: ${completeData.data.jobId})`,
+            );
+          } else {
+            log(
+              `   처리 상태: ${completeData.data?.processingStatus || "READY"}`,
+            );
+          }
+
+          showResult(true, "✅ 업로드 성공", completeData);
+        } catch (error) {
+          log(`❌ 오류: ${error.message}`, "error");
+          showResult(false, "❌ 업로드 실패", error.message);
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      // Initialize: check auth on page load
+      checkAuth();
+    </script>
+  </body>
+</html>

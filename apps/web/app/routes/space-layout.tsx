@@ -1,13 +1,13 @@
-import { redirect, useLoaderData } from "react-router";
+import * as React from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import type { Route } from "./+types/space-layout";
+import type { SpaceDetail } from "~/modules/spaces";
 
-import { SpaceLayoutView } from "~/features/spaces/layout/space-layout-view";
-import { useSpaceLayoutModel } from "~/features/spaces/layout/use-space-layout-model";
-import { getPlanBySpaceActive, getSpace, updateSpace } from "~/mock/api";
-import { PublicIdSchema } from "~/mock/schemas";
-
-const SpaceIdSchema = PublicIdSchema;
+import {
+  SpaceLayoutView,
+  useSpaceLayoutModel,
+  useSpaceQuery,
+} from "~/modules/spaces";
 
 function tabToPath(spaceId: string, tab: string): string | null {
   if (tab === "documents") return `/spaces/${spaceId}/documents`;
@@ -16,51 +16,39 @@ function tabToPath(spaceId: string, tab: string): string | null {
   return null;
 }
 
-export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
-  const spaceId = SpaceIdSchema.safeParse(params.spaceId);
-  if (!spaceId.success) {
+export default function SpaceLayoutRoute() {
+  const navigate = useNavigate();
+  const { spaceId } = useParams();
+  const [searchParams] = useSearchParams();
+
+  React.useEffect(() => {
+    if (!spaceId) return;
+    const tab = searchParams.get("tab");
+    if (!tab) return;
+    const to = tabToPath(spaceId, tab);
+    if (!to) return;
+    navigate(to, { replace: true });
+  }, [navigate, searchParams, spaceId]);
+
+  if (!spaceId) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const url = new URL(request.url);
-  const tab = url.searchParams.get("tab");
-  if (tab) {
-    const to = tabToPath(spaceId.data, tab);
-    if (to) {
-      throw redirect(to);
-    }
-  }
-
-  return {
-    space: getSpace(spaceId.data),
-    activePlan: getPlanBySpaceActive(spaceId.data),
-  };
+  return <SpaceLayoutRouteWithId spaceId={spaceId} />;
 }
 
-export async function clientAction({ request }: Route.ClientActionArgs) {
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-
-  if (intent === "update-space") {
-    const spaceId = SpaceIdSchema.parse(formData.get("spaceId"));
-    const icon = formData.get("icon");
-    const color = formData.get("color");
-
-    updateSpace({
-      spaceId,
-      icon: typeof icon === "string" ? icon : undefined,
-      color: typeof color === "string" ? color : undefined,
-    });
-
-    return { ok: true };
+function SpaceLayoutRouteWithId({ spaceId }: { spaceId: string }) {
+  const space = useSpaceQuery(spaceId);
+  if (!space.data) {
+    return null;
   }
 
-  throw new Response("Bad Request", { status: 400 });
+  return <SpaceLayoutRouteLoaded space={space.data} />;
 }
 
-export default function SpaceLayoutRoute() {
-  const { space } = useLoaderData<typeof clientLoader>();
+function SpaceLayoutRouteLoaded({ space }: { space: SpaceDetail }) {
   const model = useSpaceLayoutModel(space);
+
   return (
     <SpaceLayoutView
       space={space}

@@ -1,14 +1,15 @@
 import { redirect } from "react-router";
 
-import type { Route } from "./+types/logout";
+import { apiClient, unwrap } from "~/modules/api";
 
-import { logout } from "~/mock/api";
-
-export async function clientAction(_: Route.ClientActionArgs) {
-  logout();
+export async function clientAction() {
+  const result = await apiClient.POST("/api/auth/logout");
+  unwrap(result);
   throw redirect("/");
 }
 
-export function clientLoader() {
+export async function clientLoader() {
+  const result = await apiClient.POST("/api/auth/logout");
+  unwrap(result);
   throw redirect("/");
 }
