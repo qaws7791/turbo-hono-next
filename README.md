@@ -1,153 +1,196 @@
-# Turborepo starter
+# LOLOG (turbo-local-market)
 
-This Turborepo starter is maintained by the Turborepo core team.
+개발자를 위한 **학습 로드맵 서비스**입니다. Turborepo 모노레포(pnpm workspaces)로
+구성되어 있으며 `apps/api`(Hono) + `apps/web`(React Router + Vite) +
+`apps/storybook`(UI 컴포넌트)로 개발합니다.
 
-## Using this example
+## 시작하기 (로컬 개발)
 
-Run the following command:
+### 요구사항
 
-```sh
-npx create-turbo@latest
+- Node.js `>= 18`
+- pnpm `10.2.1` (Corepack 권장)
+- PostgreSQL (로컬 Docker 또는 외부 DB)
+
+### 1) 리포지토리 클론
+
+```bash
+git clone <YOUR_REPO_URL>
+cd turbo-local-market
 ```
 
-## What's inside?
+### 2) 패키지 매니저 준비
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/config`: shared ESLint, Prettier, TypeScript presets used across the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```bash
+corepack enable
+corepack prepare pnpm@10.2.1 --activate
 ```
 
-### Develop
+### 3) 의존성 설치
 
-To develop all apps and packages, run the following command:
-
+```bash
+pnpm install
 ```
-cd my-turborepo
+
+### 4) PostgreSQL 프로비저닝
+
+로컬에 PostgreSQL이 없다면 Docker로 빠르게 띄울 수 있습니다.
+
+```bash
+docker run --name lolog-postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=lolog \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+이후 `DATABASE_URL`은 아래 형식으로 설정합니다.
+
+```text
+postgresql://postgres:postgres@localhost:5432/lolog
+```
+
+### 5) API 환경 변수 설정
+
+`apps/api`는 `dotenv`를 사용하므로 `apps/api/.env`를 생성합니다.
+`.env`는 Git에 커밋하지 마세요(시크릿 포함).
+
+`apps/api/.env` 예시:
+
+```env
+NODE_ENV=development
+SERVICE_NAME=LOLOG
+PORT=3001
+
+# API 서버 URL(자기 자신)
+BASE_URL=http://localhost:3001
+
+# CORS 허용 프론트엔드 Origin (web dev 서버 포트에 맞춰 수정)
+FRONTEND_URL=http://localhost:5173
+
+# Database (필수)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lolog
+
+# Cookie/Session
+SESSION_COOKIE_NAME=session
+SESSION_DURATION_DAYS=7
+COOKIE_DOMAIN=localhost
+COOKIE_SECURE=false
+
+# (선택) OAuth
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# (선택) Email
+# 개발환경은 기본적으로 전송하지 않고 로그로만 남깁니다.
+# 실제 전송 테스트가 필요하면 `EMAIL_DELIVERY_MODE=resend`로 설정하세요.
+EMAIL_DELIVERY_MODE=log
+RESEND_API_KEY=
+RESEND_EMAIL=
+
+# (선택) File Storage (Cloudflare R2)
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=
+R2_ENDPOINT=
+R2_PUBLIC_URL=
+
+# (선택) AI
+OPENAI_API_KEY=
+OPENAI_CHAT_MODEL=gpt-4o-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+```
+
+추가 환경 변수 참고:
+
+- `apps/api/src/lib/config.ts` (런타임 검증 스키마)
+- `turbo.json` (Turborepo global env)
+- `docs/ENVIRONMENT.md` (변수 목록; 실제 구현과 일부 다를 수 있음)
+
+### 6) DB 마이그레이션 (권장)
+
+DB를 준비했다면 마이그레이션을 적용합니다.
+
+```bash
+# macOS/Linux
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/lolog"
+pnpm --filter @repo/database db:migrate
+
+# Windows PowerShell
+$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/lolog"
+pnpm --filter @repo/database db:migrate
+```
+
+### 7) 개발 서버 실행
+
+```bash
 pnpm dev
 ```
 
-### Remote Caching
+기본 접속:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+- Web: `http://localhost:5173` (실제 포트는 콘솔 로그 기준)
+- API: `http://localhost:3001`
+  - OpenAPI JSON: `http://localhost:3001/openapi.json`
+  - API Docs(Scalar): `http://localhost:3001/docs`
+- Storybook: `http://localhost:6006`
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
-
-## Project Setup
-
-### ESLint
-
-- [eslint v9 is used flat config `eslint.config.js`](https://eslint.org/docs/latest/use/configure/configuration-files)
-- `eslintrc.js` file is deprecated. don't use it.
-
-Below is an example of using the `reactConfig` from the `@repo/config/eslint/react` export:
-
-```js
-// eslint.config.js
-import { reactConfig } from "@repo/config/eslint/react";
-
-export default [...reactConfig];
-```
-
-## Commit Convention
-
-See @commitlint/config-conventional
-
-### Example
+개별 실행:
 
 ```bash
-git commit -m "feat: add new feature"
+pnpm --filter web dev
+pnpm --filter api dev
+pnpm --filter storybook dev
 ```
 
-### Type-Enum
+## 모노레포 구조
 
-- `build`
-- `chore`
-- `ci`
-- `docs`
-- `feat`
-- `fix`
-- `perf`
-- `refactor`
-- `revert`
-- `style`
-- `test`
+자세한 스냅샷/설명은 `docs/04-engineering/repo-structure.md`를 참고하세요.
 
-## See best practices, checklists, guides, etc
+- `apps/api`: Hono 기반 백엔드(API, OpenAPI 문서, DB/AI/스토리지 연동)
+- `apps/web`: React Router v7 + Vite 프론트엔드(현재 `ssr: false` SPA 모드)
+- `apps/storybook`: `@repo/ui` 컴포넌트 개발/문서화
+- `packages/api-spec`: Zod 기반 API 계약(SSoT) + OpenAPI 생성
+- `packages/database`: Drizzle 스키마/마이그레이션 + DB 클라이언트
+- `packages/ui`: 공유 UI 컴포넌트 라이브러리
+- `packages/config`: ESLint/Prettier/TSConfig 공유 설정
 
-- [Nodejs Best Practices](https://github.com/goldbergyoni/nodebestpractices)
-- [building production ready React applications](https://github.com/alan2207/bulletproof-react)
-- [frontend checklist](https://github.com/thedaviddias/Front-End-Checklist)
-- [nextjs production checklist](https://nextjs.org/docs/app/guides/production-checklist)
-- [OWASP cheat sheet series](https://cheatsheetseries.owasp.org/)
-- [Toss Frontend Fundamentals](https://github.com/toss/frontend-fundamentals)
-- [React Typescript Cheatsheet](https://github.com/typescript-cheatsheets/react-typescript-cheatsheet)
-- [backend-cheatsheet](https://github.com/cheatsnake/backend-cheats)
-- [awesome-scalability](https://github.com/binhnguyennus/awesome-scalability)
-- [The Copenhagen Book](https://github.com/pilcrowonpaper/copenhagen)
-- [Professional Programming](https://github.com/charlax/professional-programming)
-- [system design](https://github.com/karanpratapsingh/system-design)
-- [explain monorepo by nx](https://monorepo.tools)
-- [angular style guide](https://github.com/johnpapa/angular-styleguide)
+## 자주 쓰는 명령
 
-## Tailwind AutoComplete Problem in VSCode
+```bash
+pnpm dev
+pnpm build
 
-- Check `.vscode/settings.json` > `tailwindCSS.experimental.configFile` for the correct configuration.
-- [Tailwind CSS IntelliSense Docs](https://github.com/tailwindlabs/tailwindcss-intellisense?tab=readme-ov-file#tailwind-css-v4x-css-entrypoints)
+pnpm lint
+pnpm lint:fix
+pnpm check-types
+pnpm format
+```
 
-## API First 개발 가이드
+DB 관련(`packages/database`):
 
-- **단일 진실의 원천 유지**: 모든 API 스펙은 `@repo/api-spec` 패키지(`packages/api-spec/src/modules`)에서 관리합니다. 새로운 엔드포인트를 추가할 때는 반드시 이 패키지에 `schema`(Zod)와 `route`(createRoute) 정의를 추가한 뒤, 해당 모듈의 `routes/index.ts`에 포함시켜 주세요.
-- **백엔드 라우터 연동**: `apps/api`에서는 기존처럼 `OpenAPIHono`를 사용하되, 스펙 패키지에서 export한 `route`/`schema`를 가져와 미들웨어와 핸들러만 주입합니다. 핸들러 내부에서 `c.req.valid(...)` 등 런타임 검증도 동일하게 유지합니다.
-- **문서/클라이언트 타입 동기화**: 스펙을 변경했다면 루트에서 `pnpm --filter @repo/api-spec docs:generate`로 OpenAPI JSON을 생성하고, 이어서 `pnpm --filter web schema:generate`를 실행해 프론트엔드 타입을 재생성합니다. CI에도 동일한 흐름을 추가하여 드리프트를 방지합니다.
-- **보안 설정과 공통 스키마**: `packages/api-spec/src/openapi.ts`에서 보안 스키마(cookieAuth)와 공통 정보가 등록됩니다. 공통 응답/오류 스키마는 각 모듈 `schema.ts`에 위치시키고 재사용하세요.
-- **검증 및 테스트**: 스펙과 구현이 동기화되었는지 확인하기 위해 API 스펙 생성 후 `apps/api`의 테스트·타입 체크(`pnpm --filter api test`, `pnpm --filter api check-types`)를 수행하고, 프론트엔드 역시 `pnpm --filter web build` 등 필요한 검증을 실행해 주세요. 스펙 JSON이 변경되었는지 `git status`로 확인하여 커밋에 포함합니다.
+```bash
+pnpm --filter @repo/database db:generate
+pnpm --filter @repo/database db:push
+pnpm --filter @repo/database db:migrate
+pnpm --filter @repo/database db:pull
+```
+
+## API First (권장 워크플로우)
+
+- API 스펙은 `@repo/api-spec`(`packages/api-spec/src/modules`)을 단일 진실의 원천으로
+  관리합니다.
+- API 구현(`apps/api`)에서는 스펙에서 export한 route/schema를 가져와 핸들러만
+  주입하는 방식으로 동기화합니다.
+- OpenAPI 산출물이 필요하면 아래를 실행합니다.
+
+```bash
+pnpm --filter @repo/api-spec docs:generate
+```
+
+## 커밋 컨벤션
+
+Conventional Commits를 사용합니다. 예: `feat: add new feature`
+
+지원 타입: `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`,
+`revert`, `style`, `test`

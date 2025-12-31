@@ -27,15 +27,20 @@ Learning OS는 **Google OAuth**와 **이메일 매직링크** 두 가지 인증 
 ### Google OAuth 시작
 
 ```
-GET /auth/google
+GET /api/auth/google?redirectPath=/home
 ```
+
+**Query Parameters**:
+| 파라미터 | 타입 | 설명 |
+|---------|------|------|
+| redirectPath | string | 로그인 완료 후 리다이렉트 경로 (기본값: /home) |
 
 **Response**: Redirect to Google OAuth consent page
 
 ### Google OAuth 콜백
 
 ```
-GET /auth/google/callback?code={code}&state={state}
+GET /api/auth/google/callback?code={code}&state={state}
 ```
 
 **Query Parameters**:
@@ -49,7 +54,7 @@ GET /auth/google/callback?code={code}&state={state}
 ### 매직링크 요청
 
 ```
-POST /auth/magic-link
+POST /api/auth/magic-link
 ```
 
 **Request Body**:
@@ -69,10 +74,14 @@ POST /auth/magic-link
 }
 ```
 
+개발환경(`NODE_ENV=development|test`)에서는 기본적으로 이메일을 실제 전송하지 않고,
+서버 로그에 `magic_link.dev`로 `verifyUrl`을 남깁니다. (기본값:
+`EMAIL_DELIVERY_MODE=log`)
+
 ### 매직링크 검증
 
 ```
-GET /auth/magic-link/verify?token={token}
+GET /api/auth/magic-link/verify?token={token}
 ```
 
 **Query Parameters**:
@@ -92,7 +101,7 @@ GET /auth/magic-link/verify?token={token}
 ### 현재 사용자 조회
 
 ```
-GET /auth/me
+GET /api/auth/me
 ```
 
 **Response**:
@@ -113,7 +122,7 @@ GET /auth/me
 ### 로그아웃
 
 ```
-POST /auth/logout
+POST /api/auth/logout
 ```
 
 **Response**:
@@ -287,15 +296,15 @@ export const requireAuth = createMiddleware(async (c, next) => {
 
 ```typescript
 // routes/auth.ts
-app.get("/auth/google", (c) => {
+app.get("/api/auth/google", (c) => {
   const state = crypto.randomBytes(16).toString("hex");
   setCookie(c, "oauth_state", state, { httpOnly: true, sameSite: "Lax" });
 
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
   url.searchParams.set("client_id", GOOGLE_CLIENT_ID);
-  url.searchParams.set("redirect_uri", `${BASE_URL}/auth/google/callback`);
+  url.searchParams.set("redirect_uri", `${BASE_URL}/api/auth/google/callback`);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", "email profile");
+  url.searchParams.set("scope", "openid email profile");
   url.searchParams.set("state", state);
 
   return c.redirect(url.toString());

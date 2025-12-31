@@ -11,7 +11,7 @@
 ### 오늘 할 일 큐 조회
 
 ```
-GET /api/v1/home/queue
+GET /api/home/queue
 ```
 
 모든 Space의 Active Plan에서 오늘 예정된 세션을 집계합니다.
@@ -39,7 +39,7 @@ GET /api/v1/home/queue
 ### Session Run 생성/재개
 
 ```
-POST /api/v1/sessions/{sessionId}/runs
+POST /api/sessions/{sessionId}/runs
 ```
 
 진행 중인 Run이 있으면 해당 Run 반환 (복구)
@@ -61,7 +61,7 @@ POST /api/v1/sessions/{sessionId}/runs
 ### Session Run 진행 저장
 
 ```
-PATCH /api/v1/session-runs/{runId}/progress
+PATCH /api/session-runs/{runId}/progress
 ```
 
 **Request**:
@@ -76,7 +76,7 @@ PATCH /api/v1/session-runs/{runId}/progress
 ### Session Run 완료
 
 ```
-POST /api/v1/session-runs/{runId}/complete
+POST /api/session-runs/{runId}/complete
 ```
 
 Concept 저장, 요약 생성 트리거
@@ -97,7 +97,7 @@ Concept 저장, 요약 생성 트리거
 ### Session Run 중단
 
 ```
-POST /api/v1/session-runs/{runId}/abandon
+POST /api/session-runs/{runId}/abandon
 ```
 
 **Request**: `{ "reason": "USER_EXIT" }`
@@ -109,7 +109,7 @@ POST /api/v1/session-runs/{runId}/abandon
 중복 요청 방지를 위해 `Idempotency-Key` 헤더 사용:
 
 ```
-POST /api/v1/sessions/{sessionId}/runs
+POST /api/sessions/{sessionId}/runs
 Idempotency-Key: client-generated-uuid
 ```
 

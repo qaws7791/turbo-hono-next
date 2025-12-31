@@ -11,17 +11,18 @@
 ### 자료 목록 조회
 
 ```
-GET /api/v1/spaces/{spaceId}/materials
+GET /api/spaces/{spaceId}/materials
 ```
 
 **Query Parameters**:
-| 파라미터 | 타입 | 기본값 | 설명 |
-|---------|------|-------|------|
-| page | number | 1 | 페이지 번호 |
-| limit | number | 20 | 페이지당 개수 (최대 100) |
-| status | string | - | 필터: PENDING, PROCESSING, READY, FAILED |
-| search | string | - | 제목 검색 |
-| sort | string | createdAt:desc | 정렬 |
+
+| 파라미터 | 타입   | 기본값         | 설명                                     |
+| -------- | ------ | -------------- | ---------------------------------------- |
+| page     | number | 1              | 페이지 번호                              |
+| limit    | number | 20             | 페이지당 개수 (최대 100)                 |
+| status   | string | -              | 필터: PENDING, PROCESSING, READY, FAILED |
+| search   | string | -              | 제목 검색                                |
+| sort     | string | createdAt:desc | 정렬                                     |
 
 **Response** (200):
 
@@ -54,7 +55,7 @@ GET /api/v1/spaces/{spaceId}/materials
 ### 자료 상세 조회
 
 ```
-GET /api/v1/materials/{materialId}
+GET /api/materials/{materialId}
 ```
 
 **Response** (200):
@@ -82,58 +83,117 @@ GET /api/v1/materials/{materialId}
 
 ---
 
-### 자료 업로드
+### 파일 업로드 (Presigned URL 방식)
+
+자료 생성은 **파일 업로드 방식만** 지원합니다. 텍스트 자료는 `.txt`/`.md` 파일로 업로드합니다.
+
+대용량 파일 업로드를 위한 **2개의 API 호출 + 1개의 직접 업로드** 플로우입니다.
+
+#### 1단계: 업로드 세션 시작
 
 ```
-POST /api/v1/spaces/{spaceId}/materials
+POST /api/spaces/{spaceId}/materials/uploads/init
 ```
 
-**Request** (multipart/form-data):
+**Request** (application/json):
 
-| 필드  | 타입   | 필수   | 설명                       |
-| ----- | ------ | ------ | -------------------------- |
-| file  | File   | 조건부 | 파일 업로드 시             |
-| url   | string | 조건부 | URL 입력 시                |
-| text  | string | 조건부 | 텍스트 입력 시             |
-| title | string | 선택   | 제목 (미입력 시 자동 추출) |
+| 필드             | 타입   | 필수 | 설명                  |
+| ---------------- | ------ | ---- | --------------------- |
+| originalFilename | string | 필수 | 원본 파일명           |
+| mimeType         | string | 필수 | MIME 타입             |
+| fileSize         | number | 필수 | 파일 크기 (최대 50MB) |
+
+**Response** (200):
+
+```json
+{
+  "data": {
+    "uploadId": "uuid",
+    "objectKey": "uploads/...",
+    "uploadUrl": "https://r2.cloudflarestorage.com/...",
+    "method": "PUT",
+    "headers": { "Content-Type": "application/pdf" },
+    "expiresAt": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+#### 2단계: Presigned URL로 파일 직접 업로드 (R2)
+
+1단계 응답의 `uploadUrl`, `method`, `headers`를 그대로 사용해 **브라우저/클라이언트가 스토리지(R2)로 직접 업로드**합니다.
+
+- 업로드 요청은 `multipart/form-data`가 아니라 **파일 바이너리 자체를 PUT**하는 방식입니다.
+- `headers`에 포함된 헤더(특히 `Content-Type`)는 **반드시 동일하게** 전송해야 합니다. (서명에 포함되어 불일치 시 `403`이 발생할 수 있습니다)
+- 업로드 성공 시 응답 헤더의 `ETag`를 받을 수 있으며, 3단계에서 `etag`로 전달하면 무결성 검증에 사용됩니다. (선택)
+- `expiresAt` 이전에 업로드/완료 처리까지 마쳐야 합니다. (만료 시 1단계를 다시 호출)
+
+**예시 (curl)**:
+
+```bash
+curl -X PUT \
+  -H "Content-Type: application/pdf" \
+  --upload-file "./react-hooks-guide.pdf" \
+  "https://r2.cloudflarestorage.com/...presigned..."
+```
+
+**예시 (브라우저 fetch)**:
+
+```ts
+const init = await api.post(`/spaces/${spaceId}/materials/uploads/init`, {
+  originalFilename: file.name,
+  mimeType: file.type || "application/octet-stream",
+  fileSize: file.size,
+});
+
+const { uploadId, uploadUrl, method, headers } = init.data.data;
+
+const uploadRes = await fetch(uploadUrl, {
+  method,
+  headers,
+  body: file,
+});
+if (!uploadRes.ok) throw new Error("Failed to upload file to R2");
+
+const etag = uploadRes.headers.get("etag") ?? undefined;
+
+await api.post(`/spaces/${spaceId}/materials/uploads/complete`, {
+  uploadId,
+  etag,
+});
+```
+
+> 브라우저에서 `etag`를 읽으려면 R2 CORS 설정에 `ExposeHeaders: ETag`가 필요할 수 있습니다. 읽을 수 없다면 `etag` 없이 3단계를 호출해도 됩니다.
+
+#### 3단계: 업로드 완료 처리
+
+클라이언트가 `uploadUrl`로 파일을 직접 업로드한 후 호출합니다.
+
+```
+POST /api/spaces/{spaceId}/materials/uploads/complete
+```
+
+**Request** (application/json):
+
+| 필드     | 타입   | 필수 | 설명                              |
+| -------- | ------ | ---- | --------------------------------- |
+| uploadId | string | 필수 | 1단계에서 받은 uploadId           |
+| title    | string | 선택 | 자료 제목 (미입력 시 파일명 사용) |
+| etag     | string | 선택 | 업로드 응답에서 받은 ETag         |
 
 **제약 조건**:
 
-- file, url, text 중 하나만 필수
 - 파일 크기: 최대 50MB
-- 지원 형식: PDF, .md, .txt, .doc, .docx
+- 지원 형식: PDF, .md, .txt, .docx
+- `sourceType` 저장 규칙: PDF/DOCX → `FILE`, TXT/MD → `TEXT`
 
-**Response** (201) - 동기 처리:
-
-```json
-{
-  "data": {
-    "id": "uuid",
-    "title": "React Hooks 완벽 가이드",
-    "processingStatus": "READY",
-    "summary": "React Hooks의 기본 개념과 활용법을 다룹니다."
-  }
-}
-```
-
-**Response** (202) - 비동기 처리:
-
-```json
-{
-  "data": {
-    "id": "uuid",
-    "jobId": "uuid",
-    "processingStatus": "PROCESSING"
-  }
-}
-```
+**Response** (201/202): 동기 처리 시 `201`, 비동기 처리 시 `202`를 반환합니다.
 
 ---
 
 ### 처리 상태 조회 (비동기)
 
 ```
-GET /api/v1/jobs/{jobId}
+GET /api/jobs/{jobId}
 ```
 
 **Response** (200):
@@ -151,19 +211,20 @@ GET /api/v1/jobs/{jobId}
 ```
 
 **status 값**:
-| 값 | 설명 |
-|----|------|
-| QUEUED | 대기 중 |
-| RUNNING | 처리 중 |
-| SUCCEEDED | 성공 |
-| FAILED | 실패 |
+
+| 값        | 설명    |
+| --------- | ------- |
+| QUEUED    | 대기 중 |
+| RUNNING   | 처리 중 |
+| SUCCEEDED | 성공    |
+| FAILED    | 실패    |
 
 ---
 
 ### 자료 삭제
 
 ```
-DELETE /api/v1/materials/{materialId}
+DELETE /api/materials/{materialId}
 ```
 
 **Response** (200) - Soft Delete:
@@ -195,7 +256,7 @@ DELETE /api/v1/materials/{materialId}
 ### 자료 제목 수정
 
 ```
-PATCH /api/v1/materials/{materialId}
+PATCH /api/materials/{materialId}
 ```
 
 **Request Body**:
@@ -269,7 +330,7 @@ async function pollJobStatus(jobId: string) {
 ### SSE 방식 (향후)
 
 ```
-GET /api/v1/jobs/{jobId}/stream
+GET /api/jobs/{jobId}/stream
 ```
 
 ```
@@ -301,18 +362,35 @@ data: {"materialId": "uuid", "status": "READY"}
 ## 스키마
 
 ```typescript
-// Request
-const CreateMaterialSchema = z
-  .object({
-    title: z.string().max(200).optional(),
-  })
-  .and(
-    z.union([
-      z.object({ file: z.instanceof(File) }),
-      z.object({ url: z.string().url() }),
-      z.object({ text: z.string().min(10).max(100000) }),
-    ]),
-  );
+// URL 수집 Request
+const CreateMaterialFromUrlSchema = z.object({
+  url: z.url(),
+  title: z.string().max(200).optional(),
+});
+
+// 텍스트 입력 Request
+const CreateMaterialFromTextSchema = z.object({
+  text: z.string().min(10).max(100000),
+  title: z.string().max(200).optional(),
+});
+
+// 파일 업로드 시작 Request
+const InitiateMaterialUploadSchema = z.object({
+  originalFilename: z.string().min(1).max(255),
+  mimeType: z.string().min(1).max(255),
+  fileSize: z
+    .number()
+    .int()
+    .positive()
+    .max(50 * 1024 * 1024),
+});
+
+// 파일 업로드 완료 Request
+const CompleteMaterialUploadSchema = z.object({
+  uploadId: z.string().uuid(),
+  title: z.string().max(200).optional(),
+  etag: z.string().min(1).optional(),
+});
 
 // Response
 const MaterialSchema = z.object({

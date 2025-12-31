@@ -30,16 +30,11 @@
 
 ## 버전 관리
 
-### URL 기반 버전
-
-```
-/api/v1/materials
-/api/v1/plans
-```
+현재 API는 URL path에 버전을 두지 않습니다(예: `/api/materials`, `/api/plans`).
 
 ### 버전 정책
 
-- **Major 변경**: URL path에 버전 증가 (v1 → v2)
+- **Major 변경**: 필요 시 버전 도입/증가 (예: v1 → v2)
 - **Minor 변경**: 하위 호환, 필드 추가
 - **Deprecation**: 최소 3개월 유지 후 제거
 
@@ -49,12 +44,12 @@
 
 ### URL 규칙
 
-| 규칙          | 예시                                              |
-| ------------- | ------------------------------------------------- |
-| 복수형 리소스 | `/materials`, `/plans`                            |
-| 중첩 리소스   | `/spaces/:spaceId/materials`                      |
-| kebab-case    | `/plan-sessions`                                  |
-| ID는 UUID     | `/materials/550e8400-e29b-41d4-a716-446655440000` |
+| 규칙          | 예시                                                  |
+| ------------- | ----------------------------------------------------- |
+| 복수형 리소스 | `/api/materials`, `/api/plans`                        |
+| 중첩 리소스   | `/api/spaces/:spaceId/materials`                      |
+| kebab-case    | `/plan-sessions`                                      |
+| ID는 UUID     | `/api/materials/550e8400-e29b-41d4-a716-446655440000` |
 
 ### HTTP 메서드
 
@@ -134,7 +129,7 @@
 ### Offset 기반
 
 ```
-GET /materials?page=1&limit=20
+GET /api/materials?page=1&limit=20
 ```
 
 ```typescript
@@ -158,14 +153,14 @@ interface PaginationMeta {
 ## Sorting
 
 ```
-GET /materials?sort=createdAt:desc
-GET /materials?sort=title:asc
+GET /api/materials?sort=createdAt:desc
+GET /api/materials?sort=title:asc
 ```
 
 ### 복합 정렬
 
 ```
-GET /materials?sort=status:asc,createdAt:desc
+GET /api/materials?sort=status:asc,createdAt:desc
 ```
 
 ---
@@ -175,20 +170,20 @@ GET /materials?sort=status:asc,createdAt:desc
 ### 단순 필터
 
 ```
-GET /materials?status=READY
-GET /materials?spaceId=uuid
+GET /api/materials?status=READY
+GET /api/materials?spaceId=uuid
 ```
 
 ### 복합 필터
 
 ```
-GET /materials?status=READY&spaceId=uuid
+GET /api/materials?status=READY&spaceId=uuid
 ```
 
 ### 검색
 
 ```
-GET /materials?search=react
+GET /api/materials?search=react
 ```
 
 ---
@@ -238,7 +233,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 
 const createMaterialRoute = createRoute({
   method: "post",
-  path: "/materials",
+  path: "/api/materials",
   request: {
     body: {
       content: {

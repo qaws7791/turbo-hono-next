@@ -11,7 +11,7 @@ RAG 기반 AI 대화 API입니다. Plan/Session/Concept 범위에서 문서 기�
 ### 메시지 전송
 
 ```
-POST /api/v1/chat/threads/{threadId}/messages
+POST /api/chat/threads/{threadId}/messages
 ```
 
 **Request**:
@@ -45,7 +45,7 @@ POST /api/v1/chat/threads/{threadId}/messages
 ### 채팅 스레드 생성
 
 ```
-POST /api/v1/chat/threads
+POST /api/chat/threads
 ```
 
 **Request**:
@@ -62,7 +62,7 @@ scopeType: SPACE / PLAN / SESSION / CONCEPT
 ### 스레드 메시지 목록
 
 ```
-GET /api/v1/chat/threads/{threadId}/messages
+GET /api/chat/threads/{threadId}/messages
 ```
 
 ---

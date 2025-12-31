@@ -11,7 +11,7 @@
 ### Plan 목록 조회
 
 ```
-GET /api/v1/spaces/{spaceId}/plans
+GET /api/spaces/{spaceId}/plans
 ```
 
 **Query Parameters**: page, limit, status (ACTIVE/PAUSED/ARCHIVED/COMPLETED)
@@ -36,13 +36,13 @@ GET /api/v1/spaces/{spaceId}/plans
 ### Plan 상세 조회
 
 ```
-GET /api/v1/plans/{planId}
+GET /api/plans/{planId}
 ```
 
 ### Plan 생성
 
 ```
-POST /api/v1/spaces/{spaceId}/plans
+POST /api/spaces/{spaceId}/plans
 ```
 
 **Request Body**:
@@ -62,7 +62,7 @@ POST /api/v1/spaces/{spaceId}/plans
 ### Plan 상태 변경
 
 ```
-PATCH /api/v1/plans/{planId}/status
+PATCH /api/plans/{planId}/status
 ```
 
 **Request**: `{ "status": "PAUSED" }`
@@ -72,7 +72,7 @@ PATCH /api/v1/plans/{planId}/status
 ### Plan Active 설정
 
 ```
-POST /api/v1/plans/{planId}/activate
+POST /api/plans/{planId}/activate
 ```
 
 기존 Active Plan은 자동 PAUSED
@@ -80,7 +80,7 @@ POST /api/v1/plans/{planId}/activate
 ### Plan 삭제
 
 ```
-DELETE /api/v1/plans/{planId}
+DELETE /api/plans/{planId}
 ```
 
 GC 트리거됨

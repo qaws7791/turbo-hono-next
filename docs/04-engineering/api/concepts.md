@@ -11,7 +11,7 @@ Concept(핵심 개념)의 조회, 검색, 복습 상태 관리 API입니다.
 ### Concept 목록 조회
 
 ```
-GET /api/v1/spaces/{spaceId}/concepts
+GET /api/spaces/{spaceId}/concepts
 ```
 
 **Query Parameters**: page, limit, search, reviewStatus (GOOD/DUE/OVERDUE)
@@ -38,7 +38,7 @@ GET /api/v1/spaces/{spaceId}/concepts
 ### Concept 상세 조회
 
 ```
-GET /api/v1/concepts/{conceptId}
+GET /api/concepts/{conceptId}
 ```
 
 **Response** (200):
@@ -63,7 +63,7 @@ GET /api/v1/concepts/{conceptId}
 ### 복습 기록
 
 ```
-POST /api/v1/concepts/{conceptId}/reviews
+POST /api/concepts/{conceptId}/reviews
 ```
 
 **Request**:
@@ -91,7 +91,7 @@ rating: AGAIN / HARD / GOOD / EASY
 ### 전체 Space Concept 검색
 
 ```
-GET /api/v1/concepts/search
+GET /api/concepts/search
 ```
 
 **Query**: q (검색어), spaceIds (배열)
