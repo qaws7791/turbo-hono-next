@@ -4,11 +4,7 @@ import type { LoginActionData } from "~/modules/auth";
 import type { Route } from "./+types/login";
 
 import { apiClient, unwrap } from "~/modules/api";
-import {
-  buildGoogleAuthUrl,
-  LoginView,
-  useLoginViewModel,
-} from "~/modules/auth";
+import { LoginView, buildGoogleAuthUrl } from "~/modules/auth";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";
@@ -73,15 +69,16 @@ export default function LoginRoute() {
     | undefined;
   const navigation = useNavigation();
 
-  const model = useLoginViewModel({
-    actionData,
-    isSubmitting: navigation.state !== "idle",
-  });
+  // 현재 제출 중인 intent를 추출 (google 또는 magiclink)
+  const submittingIntent =
+    navigation.state !== "idle"
+      ? (navigation.formData?.get("intent")?.toString() ?? null)
+      : null;
 
   return (
     <LoginView
-      state={model.state}
-      onChangeEmail={model.resetToIdle}
+      actionData={actionData}
+      submittingIntent={submittingIntent}
     />
   );
 }

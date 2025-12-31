@@ -10,19 +10,39 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { Spinner } from "@repo/ui/spinner";
+import * as React from "react";
 import { Form, Link } from "react-router";
 
 import { formatSeconds } from "../utils/format-seconds";
 
-import type { LoginViewState } from "../types";
+import type { LoginActionData } from "../types";
+
+import { useCountdown } from "~/hooks/use-countdown";
 
 export function LoginView({
-  state,
-  onChangeEmail,
+  actionData,
+  submittingIntent,
 }: {
-  state: LoginViewState;
-  onChangeEmail: () => void;
+  actionData: LoginActionData | undefined;
+  submittingIntent: string | null;
 }) {
+  const [forceIdle, setForceIdle] = React.useState(false);
+  const view = forceIdle ? "idle" : (actionData?.status ?? "idle");
+
+  const email =
+    !forceIdle && view === "sent"
+      ? (actionData as { email: string }).email
+      : "";
+
+  const errorMessage =
+    !forceIdle && actionData?.status === "error" ? actionData.message : null;
+
+  const secondsLeft = useCountdown(30, view === "sent");
+  const canResend =
+    view === "sent" && secondsLeft === 0 && submittingIntent === null;
+
+  const resetToIdle = () => setForceIdle(true);
+
   return (
     <div className="bg-background text-foreground min-h-svh">
       <div className="mx-auto grid min-h-svh max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-2">
@@ -34,7 +54,7 @@ export function LoginView({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {state.view === "sent" ? (
+            {view === "sent" ? (
               <div className="space-y-3">
                 <div className="space-y-1">
                   <div className="text-base font-medium">링크를 보냈습니다</div>
@@ -46,10 +66,10 @@ export function LoginView({
 
                 <div className="bg-muted rounded-xl p-4">
                   <div className="text-sm">
-                    전송됨: <span className="font-medium">{state.email}</span>
+                    전송됨: <span className="font-medium">{email}</span>
                   </div>
                   <div className="text-muted-foreground mt-1 text-xs">
-                    다시 보내기까지 {formatSeconds(state.secondsLeft)}
+                    다시 보내기까지 {formatSeconds(secondsLeft)}
                   </div>
                 </div>
 
@@ -66,13 +86,13 @@ export function LoginView({
                     <input
                       type="hidden"
                       name="email"
-                      value={state.email}
+                      value={email}
                     />
                     <Button
                       className="w-full"
-                      disabled={!state.canResend}
+                      disabled={!canResend}
                     >
-                      {state.isSubmitting ? (
+                      {submittingIntent === "magiclink" ? (
                         <>
                           <Spinner className="mr-2" />
                           전송 중
@@ -85,7 +105,7 @@ export function LoginView({
                   <Button
                     className="w-full"
                     variant="outline"
-                    onClick={onChangeEmail}
+                    onClick={resetToIdle}
                   >
                     이메일 주소 변경
                   </Button>
@@ -104,11 +124,11 @@ export function LoginView({
                   />
                   <Button
                     className="w-full"
-                    disabled={state.isSubmitting}
+                    disabled={submittingIntent !== null}
                     nativeButton
                     type="submit"
                   >
-                    {state.isSubmitting ? (
+                    {submittingIntent === "google" ? (
                       <>
                         <Spinner className="mr-2" />
                         로그인 중
@@ -144,17 +164,16 @@ export function LoginView({
                       required
                       autoComplete="email"
                     />
-                    {state.errorMessage ? (
-                      <p className="text-destructive text-xs">
-                        {state.errorMessage}
-                      </p>
+                    {errorMessage ? (
+                      <p className="text-destructive text-xs">{errorMessage}</p>
                     ) : null}
                   </div>
                   <Button
                     className="w-full"
-                    disabled={state.isSubmitting}
+                    disabled={submittingIntent !== null}
+                    type="submit"
                   >
-                    {state.isSubmitting ? (
+                    {submittingIntent === "magiclink" ? (
                       <>
                         <Spinner className="mr-2" />
                         전송 중
