@@ -1,9 +1,9 @@
 import { err, ok } from "neverthrow";
+import { z } from "zod";
 
 import { ApiError } from "../../../middleware/error-handler";
-import { ListChatMessagesResponse } from "../chat.dto";
+import { ChatCitation, ListChatMessagesResponse } from "../chat.dto";
 import { chatRepository } from "../chat.repository";
-import { pageRange } from "../chat.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -29,37 +29,7 @@ export async function listChatMessages(
   if (messagesResult.isErr()) return err(messagesResult.error);
   const messages = messagesResult.value;
 
-  // 3. 인용 정보 조회
-  const citationsResult = await chatRepository.listCitationsForMessages(
-    messages.map((m) => m.id),
-  );
-  if (citationsResult.isErr()) return err(citationsResult.error);
-  const citationRows = citationsResult.value;
-
-  // 4. 인용 맵 생성
-  const citationMap = new Map<
-    string,
-    Array<{
-      chunkId: string;
-      materialTitle: string;
-      quote: string;
-      pageRange?: string;
-    }>
-  >();
-
-  citationRows.forEach((row) => {
-    const quote = (row.quote ?? "").trim();
-    if (quote.length === 0) return;
-
-    const list = citationMap.get(row.messageId) ?? [];
-    list.push({
-      chunkId: row.chunkId,
-      materialTitle: row.materialTitle,
-      quote,
-      pageRange: pageRange(row.pageStart ?? null, row.pageEnd ?? null),
-    });
-    citationMap.set(row.messageId, list);
-  });
+  const citationsSchema = z.array(ChatCitation);
 
   return ok(
     ListChatMessagesResponse.parse({
@@ -67,7 +37,13 @@ export async function listChatMessages(
         id: m.id,
         role: m.role,
         contentMd: m.contentMd,
-        citations: citationMap.get(m.id),
+        citations: (() => {
+          const meta = m.metadataJson;
+          if (!meta || typeof meta !== "object") return undefined;
+          const value = (meta as Record<string, unknown>).citations;
+          const parsed = citationsSchema.safeParse(value);
+          return parsed.success ? parsed.data : undefined;
+        })(),
       })),
     }),
   );

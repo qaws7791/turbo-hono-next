@@ -1,9 +1,7 @@
 import { createHash } from "node:crypto";
 
-import {
-  inferMaterialSourceTypeFromFile,
-  parseFileBytesSource,
-} from "../../../ai/ingestion/parse";
+import { inferMaterialSourceTypeFromFile } from "../../../ai/ingestion/parse";
+import { ingestMaterial } from "../../../ai/rag/ingest";
 import {
   copyObject,
   deleteObject,
@@ -18,8 +16,6 @@ import {
   CreateMaterialResult,
 } from "../material.dto";
 import { materialRepository } from "../material.repository";
-
-import { buildChunkRows, processEmbedding } from "./embed-material";
 
 import type { Result, ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -153,6 +149,8 @@ export function completeMaterialUpload(
     }
 
     let tempBytes: Uint8Array | null = null;
+    let finalObjectKey: string | null = null;
+    let materialId: string | null = null;
     try {
       const head = await (async () => {
         try {
@@ -283,13 +281,6 @@ export function completeMaterialUpload(
         );
       }
 
-      const parsed = await parseFileBytesSource({
-        bytes: tempBytes,
-        mimeType: session.mimeType,
-        originalFilename: session.originalFilename,
-        fileSize: session.fileSize,
-      });
-
       const sourceType = inferMaterialSourceTypeFromFile({
         mimeType: session.mimeType,
         originalFilename: session.originalFilename,
@@ -302,13 +293,14 @@ export function completeMaterialUpload(
         );
       }
 
-      const materialId = crypto.randomUUID();
+      materialId = crypto.randomUUID();
       const finalKey = buildFinalObjectKey({
         userId,
         materialId,
         originalFilename: session.originalFilename,
         now,
       });
+      finalObjectKey = finalKey;
 
       await copyObject({
         sourceKey: session.objectKey,
@@ -319,9 +311,21 @@ export function completeMaterialUpload(
 
       const title = inferTitle({
         title: validated.title,
-        titleHint: parsed.titleHint,
+        titleHint: null,
         originalFilename: session.originalFilename,
       });
+
+      const ingestResult = await ingestMaterial({
+        userId,
+        spaceId: space.id,
+        materialId,
+        materialTitle: title,
+        originalFilename: session.originalFilename ?? null,
+        mimeType: session.mimeType,
+        bytes: tempBytes,
+      });
+
+      const summary = ingestResult.fullText.slice(0, 240).trim() || null;
 
       const createdAt = new Date();
       await unwrap(
@@ -332,31 +336,19 @@ export function completeMaterialUpload(
           sourceType,
           title,
           originalFilename: session.originalFilename,
-          rawText: parsed.fullText,
+          rawText: ingestResult.fullText,
           storageProvider: "R2",
           storageKey: finalKey,
           mimeType: session.mimeType,
           fileSize: session.fileSize,
           checksum,
-          processingStatus: "PROCESSING",
+          processingStatus: "READY",
+          processedAt: createdAt,
+          summary,
           createdAt,
           updatedAt: createdAt,
         }),
       );
-
-      const chunkRows = buildChunkRows(materialId, parsed);
-      await unwrap(materialRepository.insertMaterialChunks(chunkRows));
-
-      const summary = parsed.fullText.slice(0, 240).trim() || null;
-      await unwrap(
-        materialRepository.updateMaterialSummary(
-          materialId,
-          summary,
-          createdAt,
-        ),
-      );
-
-      const embedResult = await processEmbedding(materialId, chunkRows);
 
       await unwrap(
         materialRepository.updateUploadSession(session.id, {
@@ -368,20 +360,11 @@ export function completeMaterialUpload(
         }),
       );
 
-      if (embedResult.mode === "async") {
-        return CreateMaterialResult.parse({
-          mode: "async",
-          materialId,
-          jobId: embedResult.jobId,
-          processingStatus: embedResult.processingStatus,
-        });
-      }
-
       return CreateMaterialResult.parse({
         mode: "sync",
         materialId,
         title,
-        processingStatus: embedResult.processingStatus,
+        processingStatus: "READY",
         summary,
       });
     } catch (error) {
@@ -403,9 +386,35 @@ export function completeMaterialUpload(
         // ignore cleanup error
       }
 
+      // best-effort cleanup (final object)
+      try {
+        if (finalObjectKey) {
+          await deleteObject({ key: finalObjectKey });
+        }
+      } catch {
+        // ignore cleanup error
+      }
+
+      // best-effort cleanup (vector index)
+      try {
+        if (materialId) {
+          const { getVectorStoreForSpace } = await import(
+            "../../../ai/rag/vector-store"
+          );
+          const store = await getVectorStoreForSpace({ spaceId: space.id });
+          await store.delete({
+            filter: { userId, spaceId: String(space.id), materialId },
+          });
+        }
+      } catch {
+        // ignore cleanup error
+      }
+
       throw error;
     } finally {
       tempBytes = null;
+      finalObjectKey = null;
+      materialId = null;
     }
   });
 }

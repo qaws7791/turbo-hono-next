@@ -1,5 +1,6 @@
 import { err, ok } from "neverthrow";
 
+import { countMaterialChunks } from "../../../ai/rag/stats";
 import { ApiError } from "../../../middleware/error-handler";
 import { assertSpaceOwned } from "../../space";
 import { GetMaterialDetailResponse } from "../material.dto";
@@ -36,7 +37,11 @@ export async function getMaterialDetail(
   const space = spaceResult.value;
 
   // 3. 청크 수 조회
-  const chunkCountResult = await materialRepository.countChunks(materialId);
+  const chunkCountResult = await countMaterialChunks({
+    userId,
+    spaceId: space.id,
+    materialId,
+  });
   if (chunkCountResult.isErr()) return err(chunkCountResult.error);
   const chunkCount = chunkCountResult.value;
 

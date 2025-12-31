@@ -35,7 +35,7 @@ const envSchema = z.object({
   R2_PUBLIC_URL: z.string().min(1).optional(),
 
   OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_CHAT_MODEL: z.string().min(1).default("gpt-4o-mini"),
+  OPENAI_CHAT_MODEL: z.string().min(1).default("gpt-5-mini-2025-08-07"),
   OPENAI_EMBEDDING_MODEL: z.string().min(1).default("text-embedding-3-small"),
 });
 

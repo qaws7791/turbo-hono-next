@@ -1,7 +1,8 @@
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { ChatOpenAI } from "@langchain/openai";
 import { err, ok } from "neverthrow";
 
 import { CONFIG } from "../../../lib/config";
-import { requireOpenAi } from "../../../lib/openai";
 import { ApiError } from "../../../middleware/error-handler";
 import { CreateChatMessageInput, CreateChatMessageResponse } from "../chat.dto";
 import { chatRepository } from "../chat.repository";
@@ -17,6 +18,24 @@ import type {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function messageContentToString(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((part) => {
+        if (typeof part === "string") return part;
+        if (isRecord(part) && typeof part.text === "string") return part.text;
+        return "";
+      })
+      .join("");
+  }
+  return "";
+}
 
 async function createNoDocumentResponse(
   threadId: string,
@@ -137,6 +156,8 @@ export async function createChatMessage(
 
   // 6. 관련 청크 검색
   const chunksResult = await chatRepository.retrieveTopChunks({
+    userId,
+    spaceId: thread.spaceId,
     query: validated.content,
     materialIds,
     topK: 5,
@@ -154,22 +175,30 @@ export async function createChatMessage(
     .map((c) => `[${c.materialTitle}]\n${c.content}`)
     .join("\n\n---\n\n");
 
-  const client = requireOpenAi();
-  const completion = await client.chat.completions.create({
+  if (!CONFIG.OPENAI_API_KEY) {
+    return err(
+      new ApiError(
+        503,
+        "AI_SERVICE_UNAVAILABLE",
+        "AI 서비스가 설정되지 않았습니다.",
+      ),
+    );
+  }
+
+  const llm = new ChatOpenAI({
+    apiKey: CONFIG.OPENAI_API_KEY,
     model: CONFIG.OPENAI_CHAT_MODEL,
     temperature: 0.3,
-    messages: [
-      {
-        role: "system",
-        content: `${SYSTEM_PROMPT}\n\n제공된 문서 내용:\n${context}`,
-      },
-      { role: "user", content: validated.content },
-    ],
   });
 
+  const response = await llm.invoke([
+    new SystemMessage(`${SYSTEM_PROMPT}\n\n제공된 문서 내용:\n${context}`),
+    new HumanMessage(validated.content),
+  ]);
+
+  const responseText = messageContentToString(response.content).trim();
   const contentMd =
-    completion.choices[0]?.message?.content?.trim() ||
-    "응답을 생성할 수 없습니다.";
+    responseText.length > 0 ? responseText : "응답을 생성할 수 없습니다.";
   const assistantId = crypto.randomUUID();
 
   const citations = chunks.slice(0, 3).map((chunk) => ({
@@ -185,24 +214,12 @@ export async function createChatMessage(
     threadId,
     role: "ASSISTANT",
     contentMd,
+    metadataJson: { citations },
     createdAt: now,
   });
   if (assistantMsgResult.isErr()) return err(assistantMsgResult.error);
 
-  // 10. 인용 저장
-  const citationsResult = await chatRepository.insertCitations(
-    citations.map((citation) => ({
-      id: crypto.randomUUID(),
-      messageId: assistantId,
-      chunkId: citation.chunkId,
-      score: null,
-      quote: citation.quote,
-      createdAt: now,
-    })),
-  );
-  if (citationsResult.isErr()) return err(citationsResult.error);
-
-  // 11. 스레드 업데이트 시간 갱신
+  // 10. 스레드 업데이트 시간 갱신
   const updateResult = await chatRepository.updateThreadUpdatedAt(
     threadId,
     now,

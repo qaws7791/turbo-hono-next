@@ -1,5 +1,6 @@
 import { err, ok } from "neverthrow";
 
+import { getVectorStoreForSpace } from "../../../ai/rag/vector-store";
 import { deleteObject } from "../../../lib/r2";
 import { ApiError } from "../../../middleware/error-handler";
 import { assertSpaceOwned } from "../../space";
@@ -61,6 +62,16 @@ export async function deleteMaterial(
   if (material.storageProvider === "R2" && material.storageKey) {
     await deleteObject({ key: material.storageKey });
   }
+
+  // 5.5. 벡터 인덱스 삭제
+  const store = await getVectorStoreForSpace({ spaceId: material.spaceId });
+  await store.delete({
+    filter: {
+      userId,
+      spaceId: String(material.spaceId),
+      materialId,
+    },
+  });
 
   // 6. 하드 삭제
   const hardDeleteResult = await materialRepository.hardDelete(materialId);

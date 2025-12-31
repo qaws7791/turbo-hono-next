@@ -1,11 +1,8 @@
 import {
-  chatCitations,
   chatMessages,
   chatThreads,
   conceptSessionLinks,
   concepts,
-  materialChunks,
-  materialEmbeddings,
   materials,
   planSessions,
   planSourceMaterials,
@@ -13,17 +10,13 @@ import {
   sessionRuns,
   spaces,
 } from "@repo/database/schema";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { errAsync, okAsync } from "neverthrow";
 
-import { embedTexts } from "../../ai/ingestion/embed";
-import { CONFIG } from "../../lib/config";
+import { retrieveTopChunks as ragRetrieveTopChunks } from "../../ai/rag/retrieve";
 import { getDb } from "../../lib/db";
-import { requireOpenAi } from "../../lib/openai";
 import { tryPromise } from "../../lib/result";
 import { ApiError } from "../../middleware/error-handler";
-
-import { vectorLiteral } from "./chat.utils";
 
 import type { ChatScopeType } from "./chat.dto";
 import type { AppError } from "../../lib/result";
@@ -265,6 +258,7 @@ export const chatRepository = {
                 eq(materials.userId, userId),
                 eq(materials.spaceId, space.id),
                 eq(materials.processingStatus, "READY"),
+                isNull(materials.deletedAt),
               ),
             )
             .orderBy(desc(materials.createdAt))
@@ -277,6 +271,8 @@ export const chatRepository = {
   },
 
   retrieveTopChunks(params: {
+    readonly userId: string;
+    readonly spaceId: number;
     readonly query: string;
     readonly materialIds: ReadonlyArray<string>;
     readonly topK: number;
@@ -292,41 +288,22 @@ export const chatRepository = {
     AppError
   > {
     return tryPromise(async () => {
-      const db = getDb();
-      requireOpenAi();
+      const rows = await ragRetrieveTopChunks({
+        userId: params.userId,
+        spaceId: params.spaceId,
+        materialIds: params.materialIds,
+        query: params.query,
+        topK: params.topK,
+      });
 
-      if (params.materialIds.length === 0) return [];
-
-      const { vectors } = await embedTexts([params.query]);
-      const queryVector = vectors[0];
-      if (!queryVector) return [];
-
-      const queryVectorText = vectorLiteral(queryVector);
-      const distanceExpr = sql<number>`${materialEmbeddings.vector} <=> ${queryVectorText}::vector`;
-
-      return db
-        .select({
-          chunkId: materialChunks.id,
-          content: materialChunks.content,
-          pageStart: materialChunks.pageStart,
-          pageEnd: materialChunks.pageEnd,
-          materialTitle: materials.title,
-          distance: distanceExpr,
-        })
-        .from(materialChunks)
-        .innerJoin(
-          materialEmbeddings,
-          eq(materialEmbeddings.chunkId, materialChunks.id),
-        )
-        .innerJoin(materials, eq(materials.id, materialChunks.materialId))
-        .where(
-          and(
-            inArray(materialChunks.materialId, [...params.materialIds]),
-            eq(materialEmbeddings.model, CONFIG.OPENAI_EMBEDDING_MODEL),
-          ),
-        )
-        .orderBy(distanceExpr)
-        .limit(params.topK);
+      return rows.map((row) => ({
+        chunkId: row.documentId,
+        content: row.content,
+        pageStart: row.metadata.pageNumber ?? null,
+        pageEnd: row.metadata.pageNumber ?? null,
+        materialTitle: row.metadata.materialTitle,
+        distance: row.distance,
+      }));
     });
   },
 
@@ -337,6 +314,7 @@ export const chatRepository = {
     {
       id: string;
       userId: string;
+      spaceId: number;
       scopeType: ChatScopeType;
       scopeId: number;
     } | null,
@@ -348,6 +326,7 @@ export const chatRepository = {
         .select({
           id: chatThreads.id,
           userId: chatThreads.userId,
+          spaceId: chatThreads.spaceId,
           scopeType: chatThreads.scopeType,
           scopeId: chatThreads.scopeId,
         })
@@ -377,17 +356,6 @@ export const chatRepository = {
     });
   },
 
-  insertCitations(
-    rows: Array<typeof chatCitations.$inferInsert>,
-  ): ResultAsync<void, AppError> {
-    return tryPromise(async () => {
-      const db = getDb();
-      if (rows.length > 0) {
-        await db.insert(chatCitations).values(rows);
-      }
-    });
-  },
-
   updateThreadUpdatedAt(
     threadId: string,
     updatedAt: Date,
@@ -406,6 +374,7 @@ export const chatRepository = {
       id: string;
       role: string;
       contentMd: string;
+      metadataJson: Record<string, unknown> | null;
       createdAt: Date;
     }>,
     AppError
@@ -417,42 +386,12 @@ export const chatRepository = {
           id: chatMessages.id,
           role: chatMessages.role,
           contentMd: chatMessages.contentMd,
+          metadataJson: chatMessages.metadataJson,
           createdAt: chatMessages.createdAt,
         })
         .from(chatMessages)
         .where(eq(chatMessages.threadId, threadId))
         .orderBy(asc(chatMessages.createdAt));
-    });
-  },
-
-  listCitationsForMessages(messageIds: Array<string>): ResultAsync<
-    Array<{
-      messageId: string;
-      chunkId: string;
-      quote: string | null;
-      materialTitle: string;
-      pageStart: number | null;
-      pageEnd: number | null;
-    }>,
-    AppError
-  > {
-    return tryPromise(async () => {
-      const db = getDb();
-      if (messageIds.length === 0) return [];
-
-      return db
-        .select({
-          messageId: chatCitations.messageId,
-          chunkId: chatCitations.chunkId,
-          quote: chatCitations.quote,
-          materialTitle: materials.title,
-          pageStart: materialChunks.pageStart,
-          pageEnd: materialChunks.pageEnd,
-        })
-        .from(chatCitations)
-        .innerJoin(materialChunks, eq(materialChunks.id, chatCitations.chunkId))
-        .innerJoin(materials, eq(materials.id, materialChunks.materialId))
-        .where(inArray(chatCitations.messageId, messageIds));
     });
   },
 };
