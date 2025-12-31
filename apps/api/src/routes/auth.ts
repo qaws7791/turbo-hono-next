@@ -152,7 +152,11 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
           maxAge: 60 * 60 * 24 * CONFIG.SESSION_DURATION_DAYS,
         });
 
-        return c.redirect(redirectPath, 302);
+        const redirectUrl = new URL(
+          redirectPath,
+          CONFIG.FRONTEND_URL,
+        ).toString();
+        return c.redirect(redirectUrl, 302);
       },
     );
   });
@@ -199,7 +203,11 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
             maxAge: 60 * 60 * 24 * CONFIG.SESSION_DURATION_DAYS,
           });
 
-          return c.redirect(verified.redirectPath, 302);
+          const redirectUrl = new URL(
+            verified.redirectPath,
+            CONFIG.FRONTEND_URL,
+          ).toString();
+          return c.redirect(redirectUrl, 302);
         },
       );
     },
