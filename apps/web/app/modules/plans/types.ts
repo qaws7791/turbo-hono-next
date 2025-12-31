@@ -1,29 +1,64 @@
 import type { MaterialListItem } from "~/modules/materials";
-import type { paths } from "~/types/api";
 
-export type SpacePlansResponse =
-  paths["/api/spaces/{spaceId}/plans"]["get"]["responses"][200]["content"]["application/json"];
+export type PlanStatus = "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
 
-export type PlanListItem = SpacePlansResponse["data"][number];
-export type PlansListMeta = SpacePlansResponse["meta"];
+export type PlanGoalType = "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
 
-export type CreatePlanBody = NonNullable<
-  paths["/api/spaces/{spaceId}/plans"]["post"]["requestBody"]
->["content"]["application/json"];
+export type PlanCurrentLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
 
-export type CreatePlanResponse =
-  paths["/api/spaces/{spaceId}/plans"]["post"]["responses"][201]["content"]["application/json"];
+export type PlanListItem = {
+  id: string;
+  title: string;
+  status: PlanStatus;
+  goalType: PlanGoalType;
+  progress: { completedSessions: number; totalSessions: number };
+};
 
-export type PlanDetailResponse =
-  paths["/api/plans/{planId}"]["get"]["responses"][200]["content"]["application/json"];
+export type PlansListMeta = {
+  total: number;
+  page: number;
+  limit: number;
+};
 
-export type PlanDetail = PlanDetailResponse["data"];
+export type SpacePlansResponse = {
+  data: Array<PlanListItem>;
+  meta: PlansListMeta;
+};
 
-export type PlanStatusBody = NonNullable<
-  paths["/api/plans/{planId}/status"]["patch"]["requestBody"]
->["content"]["application/json"];
+export type CreatePlanBody = {
+  materialIds: Array<string>;
+  goalType: PlanGoalType;
+  currentLevel: PlanCurrentLevel;
+  targetDueDate: string;
+  specialRequirements?: string;
+};
 
-export type PlanStatus = PlanStatusBody["status"];
+export type CreatePlanResponse = {
+  data: {
+    id: string;
+    title: string;
+    status: PlanStatus;
+  };
+};
+
+export type PlanDetail = {
+  id: string;
+  spaceId: string;
+  title: string;
+  status: PlanStatus;
+  goalType: PlanGoalType;
+  currentLevel: PlanCurrentLevel;
+  targetDueDate: string;
+  specialRequirements: string | null;
+};
+
+export type PlanDetailResponse = {
+  data: PlanDetail;
+};
+
+export type PlanStatusBody = {
+  status: PlanStatus;
+};
 
 // Plan Wizard Types (from features)
 export type PlanWizardStep = 1 | 2 | 3;

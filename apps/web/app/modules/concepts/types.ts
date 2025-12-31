@@ -1,27 +1,69 @@
-import type { paths } from "~/types/api";
+export type ConceptReviewStatus = "GOOD" | "DUE" | "OVERDUE";
 
-export type SpaceConceptsResponse =
-  paths["/api/spaces/{spaceId}/concepts"]["get"]["responses"][200]["content"]["application/json"];
+export type ConceptListItem = {
+  id: string;
+  title: string;
+  oneLiner: string;
+  tags: Array<string>;
+  reviewStatus: ConceptReviewStatus;
+  srsDueAt: string | null;
+  lastLearnedAt: string | null;
+};
 
-export type ConceptListItem = SpaceConceptsResponse["data"][number];
-export type ConceptsListMeta = SpaceConceptsResponse["meta"];
+export type ConceptsListMeta = {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
 
-export type ConceptDetailResponse =
-  paths["/api/concepts/{conceptId}"]["get"]["responses"][200]["content"]["application/json"];
+export type SpaceConceptsResponse = {
+  data: Array<ConceptListItem>;
+  meta: ConceptsListMeta;
+};
 
-export type ConceptDetail = ConceptDetailResponse["data"];
+export type ConceptLinkType = "CREATED" | "UPDATED" | "REVIEWED";
 
-export type ConceptSearchResponse =
-  paths["/api/concepts/search"]["get"]["responses"][200]["content"]["application/json"];
+export type ConceptDetail = {
+  id: string;
+  title: string;
+  oneLiner: string;
+  ariNoteMd: string;
+  tags: Array<string>;
+  relatedConcepts: Array<{ id: string; title: string }>;
+  learningHistory: Array<{
+    sessionRunId: string;
+    linkType: ConceptLinkType;
+    date: string;
+  }>;
+  srsState: { interval: number; ease: number; dueAt: string } | null;
+};
 
-export type ConceptSearchItem = ConceptSearchResponse["data"][number];
+export type ConceptDetailResponse = {
+  data: ConceptDetail;
+};
 
-export type CreateReviewBody = NonNullable<
-  paths["/api/concepts/{conceptId}/reviews"]["post"]["requestBody"]
->["content"]["application/json"];
+export type ConceptSearchItem = {
+  id: string;
+  spaceId: string;
+  title: string;
+  oneLiner: string;
+};
 
-export type CreateReviewResponse =
-  paths["/api/concepts/{conceptId}/reviews"]["post"]["responses"][201]["content"]["application/json"];
+export type ConceptSearchResponse = {
+  data: Array<ConceptSearchItem>;
+};
+
+export type ConceptReviewRating = "AGAIN" | "HARD" | "GOOD" | "EASY";
+
+export type CreateReviewBody = {
+  rating: ConceptReviewRating;
+  sessionRunId?: string;
+};
+
+export type CreateReviewResponse = {
+  data: { nextDueAt: string; newInterval: number };
+};
 
 // Library Filters (from features)
 export type ConceptLibraryFilters = {

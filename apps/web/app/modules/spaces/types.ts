@@ -1,22 +1,34 @@
-import type { paths } from "~/types/api";
+export type Space = {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  color: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
-export type SpaceListResponse =
-  paths["/api/spaces"]["get"]["responses"][200]["content"]["application/json"];
+export type SpaceListResponse = {
+  data: Array<Space>;
+};
 
-export type Space = SpaceListResponse["data"][number];
+export type SpaceDetail = Space;
 
-export type SpaceDetailResponse =
-  paths["/api/spaces/{spaceId}"]["get"]["responses"][200]["content"]["application/json"];
+export type SpaceDetailResponse = {
+  data: SpaceDetail;
+};
 
-export type SpaceDetail = SpaceDetailResponse["data"];
+export type CreateSpaceBody = {
+  name: string;
+  description?: string;
+};
 
-export type CreateSpaceBody = NonNullable<
-  paths["/api/spaces"]["post"]["requestBody"]
->["content"]["application/json"];
-
-export type UpdateSpaceBody = NonNullable<
-  paths["/api/spaces/{spaceId}"]["patch"]["requestBody"]
->["content"]["application/json"];
+export type UpdateSpaceBody = {
+  name?: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+};
 
 // UI Types (from features)
 export type SpaceCard = {

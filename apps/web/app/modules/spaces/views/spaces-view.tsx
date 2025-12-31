@@ -18,11 +18,12 @@ import { Label } from "@repo/ui/label";
 import { IconClock } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import { formatRelativeTime } from "~/lib/time";
-import { PageBody, PageHeader } from "~/modules/app-shell";
 import { getColorByName, getIconByName } from "../components/icon-color-picker";
 
 import type { SpacesModel } from "../models/use-spaces-model";
+
+import { formatRelativeTime } from "~/lib/time";
+import { PageBody, PageHeader } from "~/modules/app-shell";
 
 export function SpacesView({
   model,

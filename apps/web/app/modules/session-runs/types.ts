@@ -1,26 +1,42 @@
-import type { paths } from "~/types/api";
+export type SessionRunStatus = "RUNNING" | "COMPLETED" | "ABANDONED";
+
+export type SessionRunStartData = {
+  runId: string;
+  sessionId: string;
+  status: SessionRunStatus;
+  isRecovery: boolean;
+  currentStep: number;
+};
 
 export type StartSessionRunResponseCreated =
-  paths["/api/sessions/{sessionId}/runs"]["post"]["responses"][201]["content"]["application/json"];
+  { data: SessionRunStartData };
 export type StartSessionRunResponseOk =
-  paths["/api/sessions/{sessionId}/runs"]["post"]["responses"][200]["content"]["application/json"];
+  { data: SessionRunStartData };
 
-export type SessionRunStartData = StartSessionRunResponseOk["data"];
+export type SaveProgressBody = {
+  stepIndex: number;
+  inputs: Record<string, unknown>;
+};
 
-export type SaveProgressBody = NonNullable<
-  paths["/api/session-runs/{runId}/progress"]["patch"]["requestBody"]
->["content"]["application/json"];
+export type SaveProgressResponse = {
+  data: { runId: string; savedAt: string };
+};
 
-export type SaveProgressResponse =
-  paths["/api/session-runs/{runId}/progress"]["patch"]["responses"][200]["content"]["application/json"];
+export type CompleteRunResponse = {
+  data: {
+    runId: string;
+    status: SessionRunStatus;
+    conceptsCreated: number;
+    summary: { id: string } | null;
+  };
+};
 
-export type CompleteRunResponse =
-  paths["/api/session-runs/{runId}/complete"]["post"]["responses"][200]["content"]["application/json"];
+export type AbandonRunReason = "USER_EXIT" | "NETWORK" | "ERROR" | "TIMEOUT";
 
-export type AbandonRunBody = NonNullable<
-  paths["/api/session-runs/{runId}/abandon"]["post"]["requestBody"]
->["content"]["application/json"];
+export type AbandonRunBody = {
+  reason: AbandonRunReason;
+};
 
-export type AbandonRunResponse =
-  paths["/api/session-runs/{runId}/abandon"]["post"]["responses"][200]["content"]["application/json"];
-
+export type AbandonRunResponse = {
+  data: { runId: string; status: SessionRunStatus };
+};

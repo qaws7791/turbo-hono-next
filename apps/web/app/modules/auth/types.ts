@@ -1,9 +1,15 @@
-import type { paths } from "~/types/api";
+export type AuthUser = {
+  id: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+  locale: string;
+  timezone: string;
+};
 
-export type AuthMeResponse =
-  paths["/api/auth/me"]["get"]["responses"][200]["content"]["application/json"];
-
-export type AuthUser = AuthMeResponse["data"];
+export type AuthMeResponse = {
+  data: AuthUser;
+};
 
 // Login View Types
 export type LoginActionData =
