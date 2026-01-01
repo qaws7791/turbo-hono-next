@@ -129,6 +129,6 @@ jobs:
       - uses: pnpm/action-setup@v2
       - run: pnpm install
       - run: pnpm lint
-      - run: pnpm typecheck
+      - run: pnpm check-types
       - run: pnpm test
 ```
