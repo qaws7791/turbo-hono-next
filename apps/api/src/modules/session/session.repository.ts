@@ -16,7 +16,7 @@ import { generatePublicId } from "../../lib/public-id";
 import { tryPromise } from "../../lib/result";
 
 import type { AppError } from "../../lib/result";
-import type { SessionExitReason } from "./session.dto";
+import type { SessionExitReason, SessionRunStatus } from "./session.dto";
 import type { ResultAsync } from "neverthrow";
 
 export const sessionRepository = {
@@ -123,6 +123,39 @@ export const sessionRepository = {
             eq(sessionRuns.sessionId, sessionId),
             eq(sessionRuns.userId, userId),
             eq(sessionRuns.status, "RUNNING"),
+          ),
+        )
+        .limit(1);
+      return rows[0] ?? null;
+    });
+  },
+
+  findRunByIdempotencyKey(
+    userId: string,
+    idempotencyKey: string,
+  ): ResultAsync<
+    {
+      id: number;
+      publicId: string;
+      status: SessionRunStatus;
+      sessionId: number;
+    } | null,
+    AppError
+  > {
+    return tryPromise(async () => {
+      const db = getDb();
+      const rows = await db
+        .select({
+          id: sessionRuns.id,
+          publicId: sessionRuns.publicId,
+          status: sessionRuns.status,
+          sessionId: sessionRuns.sessionId,
+        })
+        .from(sessionRuns)
+        .where(
+          and(
+            eq(sessionRuns.userId, userId),
+            eq(sessionRuns.idempotencyKey, idempotencyKey),
           ),
         )
         .limit(1);
@@ -275,6 +308,7 @@ export const sessionRepository = {
     };
     userId: string;
     now: Date;
+    idempotencyKey?: string;
   }): ResultAsync<{ publicId: string }, AppError> {
     return tryPromise(async () => {
       const db = getDb();
@@ -287,6 +321,7 @@ export const sessionRepository = {
           userId: params.userId,
           spaceId: params.session.spaceId,
           planId: params.session.planId,
+          idempotencyKey: params.idempotencyKey ?? null,
           status: "RUNNING",
           startedAt: params.now,
           createdAt: params.now,

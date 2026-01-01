@@ -43,6 +43,7 @@ export const sessionRuns = pgTable(
     planId: bigint("plan_id", { mode: "number" })
       .notNull()
       .references(() => plans.id, { onDelete: "cascade" }),
+    idempotencyKey: uuid("idempotency_key"),
     status: sessionRunStatusEnum("status").notNull(),
     startedAt: timestamp("started_at", {
       withTimezone: true,
@@ -58,6 +59,10 @@ export const sessionRuns = pgTable(
     uniqueIndex("session_runs_public_id_unique").on(table.publicId),
     index("session_runs_user_id_idx").on(table.userId),
     index("session_runs_session_id_idx").on(table.sessionId),
+    uniqueIndex("session_runs_user_idempotency_key_unique").on(
+      table.userId,
+      table.idempotencyKey,
+    ),
     uniqueIndex("session_runs_running_unique")
       .on(table.sessionId)
       .where(sql`${table.status} = 'RUNNING'`),

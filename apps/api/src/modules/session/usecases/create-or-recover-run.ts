@@ -10,6 +10,7 @@ import type { CreateSessionRunResult } from "../session.dto";
 export async function createOrRecoverRun(
   userId: string,
   sessionId: string,
+  idempotencyKey?: string,
 ): Promise<Result<CreateSessionRunResult, AppError>> {
   const now = new Date();
 
@@ -27,6 +28,46 @@ export async function createOrRecoverRun(
         sessionId,
       }),
     );
+  }
+
+  // 1.5 Idempotency-Key 처리(이전에 생성된 요청이면 동일 Run 반환)
+  if (idempotencyKey) {
+    const idempotencyResult = await sessionRepository.findRunByIdempotencyKey(
+      userId,
+      idempotencyKey,
+    );
+    if (idempotencyResult.isErr()) return err(idempotencyResult.error);
+    const idempotentRun = idempotencyResult.value;
+
+    if (idempotentRun) {
+      if (idempotentRun.sessionId !== session.id) {
+        return err(
+          new ApiError(
+            409,
+            "IDEMPOTENCY_KEY_CONFLICT",
+            "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
+            { idempotencyKey, sessionId },
+          ),
+        );
+      }
+
+      const stepResult = await sessionRepository.getLastSnapshotStep(
+        idempotentRun.id,
+      );
+      if (stepResult.isErr()) return err(stepResult.error);
+      const currentStep = stepResult.value;
+
+      return ok({
+        statusCode: 201 as const,
+        data: {
+          runId: idempotentRun.publicId,
+          sessionId: session.publicId,
+          status: idempotentRun.status,
+          isRecovery: false,
+          currentStep,
+        },
+      });
+    }
   }
 
   if (session.status === "COMPLETED") {
@@ -71,8 +112,74 @@ export async function createOrRecoverRun(
     },
     userId,
     now,
+    idempotencyKey,
   });
-  if (createResult.isErr()) return err(createResult.error);
+  if (createResult.isErr()) {
+    if (idempotencyKey) {
+      const retryResult = await sessionRepository.findRunByIdempotencyKey(
+        userId,
+        idempotencyKey,
+      );
+      if (retryResult.isErr()) return err(retryResult.error);
+      const run = retryResult.value;
+
+      if (run) {
+        if (run.sessionId !== session.id) {
+          return err(
+            new ApiError(
+              409,
+              "IDEMPOTENCY_KEY_CONFLICT",
+              "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
+              { idempotencyKey, sessionId },
+            ),
+          );
+        }
+
+        const stepResult = await sessionRepository.getLastSnapshotStep(run.id);
+        if (stepResult.isErr()) return err(stepResult.error);
+        const currentStep = stepResult.value;
+
+        return ok({
+          statusCode: 201 as const,
+          data: {
+            runId: run.publicId,
+            sessionId: session.publicId,
+            status: run.status,
+            isRecovery: false,
+            currentStep,
+          },
+        });
+      }
+    }
+
+    const existingRetryResult = await sessionRepository.findRunningRun(
+      userId,
+      session.id,
+    );
+    if (existingRetryResult.isErr()) return err(existingRetryResult.error);
+    const existingRetry = existingRetryResult.value;
+
+    if (existingRetry) {
+      const stepResult = await sessionRepository.getLastSnapshotStep(
+        existingRetry.id,
+      );
+      if (stepResult.isErr()) return err(stepResult.error);
+      const currentStep = stepResult.value;
+
+      return ok({
+        statusCode: 200 as const,
+        data: {
+          runId: existingRetry.publicId,
+          sessionId: session.publicId,
+          status: "RUNNING" as const,
+          isRecovery: true,
+          currentStep,
+        },
+      });
+    }
+
+    return err(createResult.error);
+  }
   const { publicId: runPublicId } = createResult.value;
 
   return ok({

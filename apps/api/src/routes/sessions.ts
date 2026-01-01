@@ -32,8 +32,10 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { sessionId } = c.req.valid("param");
+      const headers = c.req.valid("header");
+      const idempotencyKey = headers["Idempotency-Key"];
       return handleResult(
-        createOrRecoverRun(auth.user.id, sessionId),
+        createOrRecoverRun(auth.user.id, sessionId, idempotencyKey),
         (created) => c.json({ data: created.data }, created.statusCode),
       );
     },
