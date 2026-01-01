@@ -41,13 +41,21 @@ docker run --name lolog-postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=lolog \
   -p 5432:5432 \
-  -d postgres:16
+  -d pgvector/pgvector:pg16
 ```
 
 이후 `DATABASE_URL`은 아래 형식으로 설정합니다.
 
 ```text
 postgresql://postgres:postgres@localhost:5432/lolog
+```
+
+이 프로젝트의 DB 마이그레이션에는 `vector(1536)` 컬럼이 포함되어 있어, **pgvector 확장 활성화가 필요**합니다.
+먼저 DB에 아래 SQL을 실행하세요(권한이 없으면 DBA/관리자 권한이 필요합니다).
+
+```bash
+# Docker
+docker exec -it lolog-postgres psql -U postgres -d lolog -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
 ### 5) API 환경 변수 설정
@@ -105,11 +113,13 @@ OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
 - `apps/api/src/lib/config.ts` (런타임 검증 스키마)
 - `turbo.json` (Turborepo global env)
-- `docs/ENVIRONMENT.md` (변수 목록; 실제 구현과 일부 다를 수 있음)
+- `docs/ENVIRONMENT.md` (변수 목록)
 
 ### 6) DB 마이그레이션 (권장)
 
 DB를 준비했다면 마이그레이션을 적용합니다.
+
+> 참고: `packages/database/migrations/*`는 drizzle-kit(Drizzle ORM CLI)로 **자동 생성되는 산출물**이며, 직접 수정/추가하지 않습니다.
 
 ```bash
 # macOS/Linux
