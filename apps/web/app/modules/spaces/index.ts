@@ -1,27 +1,37 @@
-// Hooks
+// ============================================================
+// Domain Layer - Business Types
+// ============================================================
+export type {
+  CreateSpaceBody,
+  Space,
+  SpaceDetail,
+  SpaceDetailResponse,
+  SpaceListResponse,
+  UpdateSpaceBody,
+} from "./domain";
+
+// ============================================================
+// Application Layer - React Hooks and State Management
+// ============================================================
 export {
+  spaceKeys,
   useCreateSpaceMutation,
   useDeleteSpaceMutation,
+  useSpaceAppearance,
   useSpaceQuery,
   useSpacesQuery,
   useUpdateSpaceMutation,
-} from "./hooks";
+} from "./application";
 
-// Types
-export type { Space, SpaceCard, SpaceDetail } from "./types";
-
-// Components
+// ============================================================
+// UI Layer - Components and Views
+// ============================================================
 export {
   IconColorPicker,
   SPACE_COLORS,
   SPACE_ICONS,
+  SpaceLayoutView,
+  SpacesView,
   getColorByName,
   getIconByName,
-} from "./components";
-
-// Views
-export { SpaceLayoutView, SpacesView } from "./views";
-
-// Models
-export { useSpaceLayoutModel, useSpacesModel } from "./models";
-export type { SpaceLayoutModel, SpacesModel } from "./models";
+} from "./ui";

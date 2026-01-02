@@ -1,6 +1,10 @@
 import { z } from "zod";
 
-import { readJsonFromStorage, removeFromStorage, writeJsonToStorage } from "./storage";
+import {
+  readJsonFromStorage,
+  removeFromStorage,
+  writeJsonToStorage,
+} from "./storage";
 
 const AUTH_KEY = "tlm_auth_v1";
 
@@ -31,3 +35,12 @@ export function getRedirectTarget(requestUrl: string): string {
   }
 }
 
+export function safeRedirectTo(
+  value: string | null,
+  input?: { fallback?: string },
+): string {
+  const fallback = input?.fallback ?? "/home";
+  if (!value) return fallback;
+  if (value.startsWith("/") && !value.startsWith("//")) return value;
+  return fallback;
+}

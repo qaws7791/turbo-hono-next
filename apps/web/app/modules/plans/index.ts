@@ -1,34 +1,53 @@
-// Hooks
+// ============================================================
+// Domain Layer - Business Types, Rules, and Utils
+// ============================================================
+export type {
+  CreatePlanBody,
+  CreatePlanResponse,
+  PlanCurrentLevel,
+  PlanDetail,
+  PlanDetailResponse,
+  PlanGoalType,
+  PlanListItem,
+  PlanStatus,
+  PlanStatusBody,
+  PlansListMeta,
+  SpacePlansResponse,
+  UpdatePlanSessionBody,
+  UpdatePlanSessionResponse,
+} from "./domain";
+
 export {
+  MAX_PLAN_MATERIALS,
+  addDaysToToday,
+  getPlanGoalLabel,
+  isIsoDate,
+  planGoalOptions,
+  planLevelOptions,
+} from "./domain";
+
+// ============================================================
+// Application Layer - React Hooks and State Management
+// ============================================================
+export {
+  buildCreatePlanBody,
+  planKeys,
   useActivatePlanMutation,
   useCreatePlanMutation,
   usePlanQuery,
   useSetPlanStatusMutation,
+  useUpdatePlanSessionMutation,
   useSpacePlansQuery,
-} from "./hooks";
+} from "./application";
 
-// Types
-export type {
-  CreatePlanBody,
-  PlanDetail,
-  PlanListItem,
-  PlanStatus,
-  PlanWizardDerived,
-  PlanWizardModel,
-  PlanWizardStep,
-  PlanWizardValues,
-  SpacePlansResponse,
-} from "./types";
+export type { PlansBySpaceKeyInput } from "./application";
 
-// Components
-export { PlanStatusBadge } from "./components";
-
-// Views
-export { PlanDetailView, PlanWizardView, SpacePlansView } from "./views";
-
-// Models
-export { usePlanWizardModel, useSpacePlansModel } from "./models";
-export type { SpacePlansModel } from "./models";
-
-// Utils
-export { getPlanGoalLabel } from "./utils";
+// ============================================================
+// UI Layer - Components and Views
+// ============================================================
+export {
+  PlanDetailView,
+  PlanStatusBadge,
+  PlanWizardView,
+  SpacePlansView,
+} from "./ui";

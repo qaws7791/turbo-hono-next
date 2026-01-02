@@ -15,6 +15,7 @@ import {
 } from "@repo/ui/sidebar";
 import {
   IconCalendar,
+  IconHistory,
   IconHome,
   IconNotebook,
   IconSearch,
@@ -65,6 +66,15 @@ export function AppSidebar({
             >
               <IconCalendar />
               <span className="font-medium">오늘 할 일</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              isActive={location.pathname.startsWith("/history")}
+              render={<NavLink to="/history" />}
+            >
+              <IconHistory />
+              <span className="font-medium">기록</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

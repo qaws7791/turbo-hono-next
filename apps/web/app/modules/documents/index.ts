@@ -1,13 +1,13 @@
-// Views
-export { SpaceDocumentsView } from "./views";
-
-// Models
-export { useSpaceDocumentsModel } from "./models";
-export type { SpaceDocumentsModel } from "./models";
-
-// Utils
+// ============================================================
+// Domain Layer - Utils
+// ============================================================
 export {
   documentKindLabel,
   documentStatusBadgeVariant,
   documentStatusLabel,
-} from "./utils";
+} from "./domain";
+
+// ============================================================
+// UI Layer - Components and Views
+// ============================================================
+export { SpaceDocumentsView } from "./views";

@@ -2,13 +2,14 @@ import { SidebarInset, SidebarProvider, useSidebar } from "@repo/ui/sidebar";
 import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
-import { SettingsDialog } from "~/modules/settings";
-
 import { useAppShellState, useCommandActions } from "../hooks";
+
 import { AppCommandPalette } from "./app-command-palette";
 import { AppSidebar } from "./app-sidebar";
 
 import type { AppShellData } from "../types";
+
+import { SettingsDialog } from "~/modules/settings";
 
 /**
  * 라우트 변경 시 모바일 사이드바를 자동으로 닫는 컴포넌트

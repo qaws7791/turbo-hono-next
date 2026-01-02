@@ -17,29 +17,31 @@ import {
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
+import * as React from "react";
 
 import {
   documentKindLabel,
   documentStatusBadgeVariant,
   documentStatusLabel,
-} from "../utils/document-status";
+} from "../domain";
 
 import type { MaterialListItem } from "~/modules/materials";
-import type { SpaceDocumentsModel } from "../models/use-space-documents-model";
 
 export function SpaceDocumentsView({
   documents,
-  model,
   onDelete,
   onUploadFile,
   isSubmitting,
 }: {
   documents: Array<MaterialListItem>;
-  model: SpaceDocumentsModel;
   onDelete: (materialId: string) => void;
   onUploadFile: (input: { file: File; title?: string }) => void;
   isSubmitting: boolean;
 }) {
+  const [uploadOpen, setUploadOpen] = React.useState(false);
+  const openUpload = () => setUploadOpen(true);
+  const closeUpload = () => setUploadOpen(false);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -50,7 +52,7 @@ export function SpaceDocumentsView({
             바뀌지 않습니다.
           </p>
         </div>
-        <Button onClick={model.openUpload}>자료 업로드</Button>
+        <Button onClick={openUpload}>자료 업로드</Button>
       </div>
 
       {documents.length === 0 ? (
@@ -63,7 +65,7 @@ export function SpaceDocumentsView({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={model.openUpload}>자료 업로드</Button>
+            <Button onClick={openUpload}>자료 업로드</Button>
           </CardContent>
         </Card>
       ) : (
@@ -71,10 +73,7 @@ export function SpaceDocumentsView({
           {documents.map((material) => (
             <Card key={material.id}>
               <CardHeader className="space-y-1">
-                <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="text-base truncate">
-                    {material.title}
-                  </CardTitle>
+                <div className="flex items-center gap-2">
                   <Badge
                     variant={documentStatusBadgeVariant(
                       material.processingStatus,
@@ -82,15 +81,18 @@ export function SpaceDocumentsView({
                   >
                     {documentStatusLabel(material.processingStatus)}
                   </Badge>
+                  <CardDescription>
+                    {documentKindLabel(material.sourceType)} · 태그{" "}
+                    {material.tags.length}개
+                  </CardDescription>
                 </div>
-                <CardDescription>
-                  {documentKindLabel(material.sourceType)} · 태그{" "}
-                  {material.tags.length}개
-                </CardDescription>
+                <CardTitle className="text-base line-clamp-2">
+                  {material.title}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {material.summary ? (
-                  <div className="text-muted-foreground text-sm">
+                  <div className="text-muted-foreground text-sm line-clamp-4">
                     {material.summary}
                   </div>
                 ) : (
@@ -131,10 +133,8 @@ export function SpaceDocumentsView({
       )}
 
       <Dialog
-        open={model.uploadOpen}
-        onOpenChange={(open) =>
-          open ? model.openUpload() : model.closeUpload()
-        }
+        open={uploadOpen}
+        onOpenChange={(open) => (open ? openUpload() : closeUpload())}
       >
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
@@ -157,6 +157,7 @@ export function SpaceDocumentsView({
                 file,
                 title: titleRaw.length > 0 ? titleRaw : undefined,
               });
+              closeUpload();
             }}
           >
             <div className="space-y-2">
@@ -174,8 +175,12 @@ export function SpaceDocumentsView({
                 name="file"
                 type="file"
                 className="w-full text-sm"
+                accept=".pdf,.docx,.md,.markdown,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/plain"
                 required
               />
+              <p className="text-muted-foreground text-xs">
+                지원 형식: PDF, DOCX, Markdown, TXT
+              </p>
             </div>
             <Button
               type="submit"

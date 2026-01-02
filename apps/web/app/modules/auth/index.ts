@@ -1,23 +1,37 @@
-// API
-export {
-  buildGoogleAuthUrl,
-  fetchAuthMe,
-  postLogout,
-  postMagicLink,
-} from "./api";
+// ============================================================
+// Domain Layer - Business Types and Utils
+// ============================================================
+export type {
+  AuthMeResponse,
+  AuthUser,
+  LoginActionData,
+  LoginViewState,
+} from "./domain";
 
-// Hooks
+export { formatSeconds } from "./domain";
+
+// ============================================================
+// API Layer - API Functions
+// ============================================================
+export { buildGoogleAuthUrl } from "./api";
+export type { MagicLinkApiBody } from "./api";
+
+// ============================================================
+// Application Layer - React Hooks and State Management
+// ============================================================
 export {
+  authKeys,
+  fetchAuthMeOrNull,
+  logoutAndClearCache,
+  sendMagicLink,
+  startGoogleAuth,
   useAuthMeQuery,
   useLogoutMutation,
   useMagicLinkMutation,
-} from "./hooks";
+  useRedirectToLoginOnUnauthorized,
+} from "./application";
 
-// Types
-export type { AuthUser, LoginActionData, LoginViewState } from "./types";
-
-// Views
-export { LoginView } from "./views";
-
-// Utils
-export { formatSeconds } from "./utils";
+// ============================================================
+// UI Layer - Components and Views
+// ============================================================
+export { LoginView } from "./ui";
