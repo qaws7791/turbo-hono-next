@@ -37,6 +37,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    from: "assistant",
+  },
   render: () => (
     <div className="flex w-full max-w-2xl flex-col gap-6">
       <Message from="user">

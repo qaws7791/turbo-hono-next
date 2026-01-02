@@ -10,14 +10,13 @@ import {
   PromptInputBody,
   PromptInputFooter,
   PromptInputHeader,
-  
   PromptInputSubmit,
   PromptInputTextarea,
-  PromptInputTools
+  PromptInputTools,
 } from "@repo/ui/ai/prompt-input";
 import { useState } from "react";
 
-import type {PromptInputMessage} from "@repo/ui/ai/prompt-input";
+import type { PromptInputMessage } from "@repo/ui/ai/prompt-input";
 import type { ChatStatus } from "ai";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -85,5 +84,8 @@ const PromptInputDemo = () => {
 };
 
 export const Default: Story = {
+  args: {
+    onSubmit: async () => undefined,
+  },
   render: () => <PromptInputDemo />,
 };

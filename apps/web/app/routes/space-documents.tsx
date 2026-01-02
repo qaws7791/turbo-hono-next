@@ -1,9 +1,6 @@
 import { useParams } from "react-router";
 
-import {
-  SpaceDocumentsView,
-  useSpaceDocumentsModel,
-} from "~/modules/documents";
+import { SpaceDocumentsView } from "~/modules/documents";
 import {
   useDeleteMaterialMutation,
   useSpaceMaterialsQuery,
@@ -25,25 +22,16 @@ export default function SpaceDocumentsRoute() {
   const remove = useDeleteMaterialMutation();
 
   const documents = materials.data?.data ?? [];
-  const model = useSpaceDocumentsModel(documents);
 
   return (
     <SpaceDocumentsView
       documents={documents}
-      model={model}
       isSubmitting={upload.isPending || remove.isPending}
       onDelete={(materialId) => {
         remove.mutate({ materialId });
       }}
       onUploadFile={(input) => {
-        upload.mutate(
-          { spaceId, file: input.file, title: input.title },
-          {
-            onSuccess: () => {
-              model.closeUpload();
-            },
-          },
-        );
+        upload.mutate({ spaceId, file: input.file, title: input.title });
       }}
     />
   );

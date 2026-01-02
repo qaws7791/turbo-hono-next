@@ -1,22 +1,30 @@
 import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Spinner } from "@repo/ui/spinner";
+import { useQueryClient } from "@tanstack/react-query";
 import * as React from "react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
-import { useAuthMeQuery } from "~/modules/auth";
-import { isUnauthorizedError } from "~/modules/api";
+import type { CreateRunActivityBody } from "~/modules/session-runs";
+
+import { safeRedirectTo } from "~/lib/auth";
 import {
+  useAuthMeQuery,
+  useRedirectToLoginOnUnauthorized,
+} from "~/modules/auth";
+import {
+  SessionCompletedView,
+  SessionView,
+  buildSessionUrl,
+  sessionRunKeys,
   useAbandonSessionRunMutation,
   useCompleteSessionRunMutation,
+  useCreateSessionRunActivityMutation,
+  useCreateSessionRunCheckinMutation,
+  useSaveSessionRunProgressMutation,
+  useSessionRunDetailQuery,
   useStartSessionRunMutation,
 } from "~/modules/session-runs";
-
-function safeRedirectTo(value: string | null): string {
-  if (!value) return "/home";
-  if (value.startsWith("/") && !value.startsWith("//")) return value;
-  return "/home";
-}
 
 export function meta() {
   return [{ title: "학습 세션" }];
@@ -24,27 +32,25 @@ export function meta() {
 
 export default function SessionRoute() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
+  const queryClient = useQueryClient();
 
   const runId = String(searchParams.get("runId") ?? "");
   const sessionId = String(searchParams.get("sessionId") ?? "");
-  const redirectTo = safeRedirectTo(searchParams.get("redirectTo"));
+  const redirectTo = safeRedirectTo(searchParams.get("redirectTo")) || "/today";
 
   const me = useAuthMeQuery();
   const startRun = useStartSessionRunMutation();
+  const runDetail = useSessionRunDetailQuery(runId);
+  const saveProgress = useSaveSessionRunProgressMutation();
+  const createActivity = useCreateSessionRunActivityMutation();
+  const createCheckin = useCreateSessionRunCheckinMutation();
   const completeRun = useCompleteSessionRunMutation();
   const abandonRun = useAbandonSessionRunMutation();
 
-  React.useEffect(() => {
-    if (!me.isError) return;
-    if (!isUnauthorizedError(me.error)) return;
-    const redirectTarget = `${location.pathname}${location.search}`;
-    navigate(`/login?redirectTo=${encodeURIComponent(redirectTarget)}`, {
-      replace: true,
-    });
-  }, [location.pathname, location.search, me.error, me.isError, navigate]);
+  useRedirectToLoginOnUnauthorized({ isError: me.isError, error: me.error });
 
+  // Start run when sessionId is provided
   const startedRef = React.useRef<string | null>(null);
   React.useEffect(() => {
     if (!me.data) return;
@@ -58,18 +64,114 @@ export default function SessionRoute() {
       { sessionId },
       {
         onSuccess: (data) => {
-          const next = new URLSearchParams();
-          next.set("runId", data.data.runId);
-          if (redirectTo) next.set("redirectTo", redirectTo);
-          navigate(`/session?${next.toString()}`, { replace: true });
+          navigate(buildSessionUrl({ runId: data.data.runId, redirectTo }), {
+            replace: true,
+          });
         },
       },
     );
   }, [me.data, navigate, redirectTo, runId, sessionId, startRun]);
 
   const isMutating =
-    startRun.isPending || completeRun.isPending || abandonRun.isPending;
+    startRun.isPending ||
+    saveProgress.isPending ||
+    createActivity.isPending ||
+    createCheckin.isPending ||
+    completeRun.isPending ||
+    abandonRun.isPending;
 
+  // Local state
+  const [localStepIndex, setLocalStepIndex] = React.useState(0);
+  const [localInputs, setLocalInputs] = React.useState<Record<string, unknown>>(
+    {},
+  );
+  const [closeDialogOpen, setCloseDialogOpen] = React.useState(false);
+
+  // Initialize from run detail
+  const initializedRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!runId) return;
+    if (!runDetail.data) return;
+    if (initializedRef.current === runId) return;
+    initializedRef.current = runId;
+
+    setLocalStepIndex(runDetail.data.data.progress.stepIndex);
+    setLocalInputs(runDetail.data.data.progress.inputs ?? {});
+  }, [runDetail.data, runId]);
+
+  const persistProgress = React.useCallback(
+    (nextStepIndex: number, nextInputs: Record<string, unknown>) => {
+      if (!runId) return;
+      saveProgress.mutate({
+        runId,
+        body: { stepIndex: nextStepIndex, inputs: nextInputs },
+      });
+    },
+    [runId, saveProgress],
+  );
+
+  const updateInputs = React.useCallback(
+    (patch: Record<string, unknown>) => {
+      setLocalInputs((prev) => {
+        const next = { ...prev, ...patch };
+        persistProgress(localStepIndex, next);
+        return next;
+      });
+    },
+    [localStepIndex, persistProgress],
+  );
+
+  const recordActivity = React.useCallback(
+    (body: CreateRunActivityBody) => {
+      if (!runId) return;
+      createActivity.mutate({ runId, body });
+    },
+    [createActivity, runId],
+  );
+
+  const detail = runDetail.data?.data;
+  const steps = detail?.blueprint.steps ?? [];
+  const maxIndex = Math.max(0, steps.length - 1);
+
+  const handlePrev = React.useCallback(() => {
+    const next = Math.max(0, localStepIndex - 1);
+    setLocalStepIndex(next);
+    persistProgress(next, localInputs);
+  }, [localStepIndex, localInputs, persistProgress]);
+
+  const handleNext = React.useCallback(() => {
+    const next = Math.min(maxIndex, localStepIndex + 1);
+    setLocalStepIndex(next);
+    persistProgress(next, localInputs);
+  }, [localStepIndex, localInputs, maxIndex, persistProgress]);
+
+  const handleComplete = React.useCallback(() => {
+    if (!runId) return;
+    completeRun.mutate(
+      { runId },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: sessionRunKeys.detail(runId),
+          });
+        },
+      },
+    );
+  }, [runId, completeRun, queryClient]);
+
+  const handleAbandon = React.useCallback(() => {
+    if (!runId) return;
+    abandonRun.mutate(
+      { runId, body: { reason: "USER_EXIT" } },
+      {
+        onSuccess: () => {
+          navigate(redirectTo);
+        },
+      },
+    );
+  }, [runId, abandonRun, navigate, redirectTo]);
+
+  // Loading state: auth
   if (me.isLoading) {
     return (
       <div className="mx-auto flex min-h-svh w-full max-w-xl items-center px-4 py-10">
@@ -86,10 +188,34 @@ export default function SessionRoute() {
     );
   }
 
+  // Auth error (redirect handled by hook)
   if (me.isError) {
     return null;
   }
 
+  // Run detail error
+  if (runId && runDetail.isError) {
+    return (
+      <div className="mx-auto flex min-h-svh w-full max-w-xl items-center px-4 py-10">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-base">세션을 찾을 수 없습니다</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm text-muted-foreground">
+            <p>해당 `runId`의 세션을 조회할 수 없습니다.</p>
+            <Button
+              type="button"
+              render={<Link to={redirectTo} />}
+            >
+              돌아가기
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Missing params
   if (!runId && !sessionId) {
     return (
       <div className="mx-auto flex min-h-svh w-full max-w-xl items-center px-4 py-10">
@@ -106,70 +232,57 @@ export default function SessionRoute() {
     );
   }
 
-  return (
-    <div className="mx-auto flex min-h-svh w-full max-w-xl items-center px-4 py-10">
-      <Card className="w-full">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-base">학습 세션</CardTitle>
-          <div className="text-muted-foreground text-xs">
-            runId: <span className="font-mono">{runId || "(생성 중)"}</span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {startRun.isPending ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Spinner className="size-4" />
-              세션을 시작하는 중
-            </div>
-          ) : null}
+  // Loading state: run detail
+  if (runId && !detail) {
+    return (
+      <div className="mx-auto flex min-h-svh w-full max-w-xl items-center px-4 py-10">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-base">세션 불러오는 중</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Spinner className="size-4" />
+            세션 정보 조회 중
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              disabled={!runId || isMutating}
-              onClick={() => {
-                if (!runId) return;
-                completeRun.mutate(
-                  { runId },
-                  {
-                    onSuccess: () => {
-                      navigate(redirectTo);
-                    },
-                  },
-                );
-              }}
-            >
-              {completeRun.isPending ? "완료 처리 중" : "완료"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!runId || isMutating}
-              onClick={() => {
-                if (!runId) return;
-                abandonRun.mutate(
-                  { runId, body: { reason: "USER_EXIT" } },
-                  {
-                    onSuccess: () => {
-                      navigate(redirectTo);
-                    },
-                  },
-                );
-              }}
-            >
-              중단
-            </Button>
-          </div>
+  // Completed or abandoned session
+  if (detail && detail.status !== "RUNNING") {
+    return (
+      <SessionCompletedView
+        detail={detail}
+        redirectTo={redirectTo}
+      />
+    );
+  }
 
-          <div className="text-muted-foreground text-xs">
-            <p>
-              현재 API 스펙에는 세션 콘텐츠(스텝/커리큘럼) 조회가 포함되어 있지
-              않아, 실행/완료 흐름만 제공합니다.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  // Active session
+  if (detail) {
+    const stepIndex = Math.max(0, Math.min(localStepIndex, maxIndex));
+
+    return (
+      <SessionView
+        detail={detail}
+        stepIndex={stepIndex}
+        inputs={localInputs}
+        isRecovery={false}
+        isMutating={isMutating}
+        isSaving={saveProgress.isPending}
+        closeDialogOpen={closeDialogOpen}
+        onCloseDialogChange={setCloseDialogOpen}
+        onUpdateInputs={updateInputs}
+        onRecordActivity={recordActivity}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        onComplete={handleComplete}
+        onAbandon={handleAbandon}
+        redirectTo={redirectTo}
+      />
+    );
+  }
+
+  return null;
 }
-

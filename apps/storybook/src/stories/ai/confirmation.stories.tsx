@@ -23,6 +23,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const ApprovalRequested: Story = {
+  args: {
+    state: "output-available",
+  },
   render: () => (
     <div className="max-w-md">
       <Confirmation
@@ -45,6 +48,9 @@ export const ApprovalRequested: Story = {
 };
 
 export const Approved: Story = {
+  args: {
+    state: "output-available",
+  },
   render: () => (
     <div className="max-w-md">
       <Confirmation
@@ -63,6 +69,9 @@ export const Approved: Story = {
 };
 
 export const Rejected: Story = {
+  args: {
+    state: "output-available",
+  },
   render: () => (
     <div className="max-w-md">
       <Confirmation
@@ -71,7 +80,7 @@ export const Rejected: Story = {
           approved: false,
           reason: "Requires manual review",
         }}
-        state="output-denied"
+        state={"output-denied" as ToolUIPart["state"]}
       >
         <ConfirmationTitle>Tool denied</ConfirmationTitle>
         <ConfirmationRejected>

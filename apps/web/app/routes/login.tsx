@@ -5,31 +5,19 @@ import type { Route } from "./+types/login";
 
 import {
   LoginView,
-  buildGoogleAuthUrl,
-  fetchAuthMe,
-  postMagicLink,
+  fetchAuthMeOrNull,
+  sendMagicLink,
+  startGoogleAuth,
 } from "~/modules/auth";
-
-function safeRedirectTo(value: string | null): string {
-  if (!value) return "/home";
-  if (value.startsWith("/") && !value.startsWith("//")) {
-    return value;
-  }
-  return "/home";
-}
+import { safeRedirectTo } from "~/lib/auth";
 
 export function meta() {
   return [{ title: "로그인" }];
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  try {
-    await fetchAuthMe();
-    throw redirect("/home");
-  } catch (error) {
-    // 인증되지 않은 경우 - 로그인 페이지를 보여줌
-    if (error instanceof Response) throw error; // redirect는 다시 throw
-  }
+  const me = await fetchAuthMeOrNull();
+  if (me) throw redirect("/home");
 
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirectTo");
@@ -44,14 +32,14 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const redirectTo = safeRedirectTo(url.searchParams.get("redirectTo"));
 
   if (intent === "google") {
-    window.location.assign(buildGoogleAuthUrl({ redirectPath: redirectTo }));
+    startGoogleAuth({ redirectPath: redirectTo });
     return null;
   }
 
   if (intent === "magiclink") {
     const email = String(formData.get("email") ?? "");
     try {
-      await postMagicLink({ email, redirectPath: redirectTo });
+      await sendMagicLink({ email, redirectPath: redirectTo });
       return { status: "sent", email } satisfies LoginActionData;
     } catch {
       return {
@@ -68,9 +56,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 }
 
 export default function LoginRoute() {
-  const actionData = useActionData<typeof clientAction>() as
-    | LoginActionData
-    | undefined;
+  const actionData = useActionData<typeof clientAction>();
   const navigation = useNavigation();
 
   // 현재 제출 중인 intent를 추출 (google 또는 magiclink)
@@ -81,7 +67,7 @@ export default function LoginRoute() {
 
   return (
     <LoginView
-      actionData={actionData}
+      actionData={actionData ?? undefined}
       submittingIntent={submittingIntent}
     />
   );

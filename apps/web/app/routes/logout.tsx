@@ -1,13 +1,13 @@
 import { redirect } from "react-router";
 
-import { postLogout } from "~/modules/auth";
+import { logoutAndClearCache } from "~/modules/auth";
 
 export async function clientAction() {
-  await postLogout();
+  await logoutAndClearCache();
   throw redirect("/");
 }
 
 export async function clientLoader() {
-  await postLogout();
+  await logoutAndClearCache();
   throw redirect("/");
 }

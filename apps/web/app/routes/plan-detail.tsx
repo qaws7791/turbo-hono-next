@@ -5,6 +5,7 @@ import {
   useActivatePlanMutation,
   usePlanQuery,
   useSetPlanStatusMutation,
+  useUpdatePlanSessionMutation,
 } from "~/modules/plans";
 import { useSpaceQuery } from "~/modules/spaces";
 
@@ -24,8 +25,10 @@ export default function PlanDetailRoute() {
   const plan = usePlanQuery(planId);
   const activate = useActivatePlanMutation();
   const setStatus = useSetPlanStatusMutation();
+  const updateSession = useUpdatePlanSessionMutation();
 
-  const isSubmitting = activate.isPending || setStatus.isPending;
+  const isSubmitting =
+    activate.isPending || setStatus.isPending || updateSession.isPending;
 
   if (!space.data || !plan.data) return null;
 
@@ -48,6 +51,9 @@ export default function PlanDetailRoute() {
             },
           },
         );
+      }}
+      onUpdateSession={(sessionId, body) => {
+        updateSession.mutate({ planId, sessionId, body });
       }}
     />
   );

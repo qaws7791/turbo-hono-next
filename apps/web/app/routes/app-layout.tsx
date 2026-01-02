@@ -1,26 +1,15 @@
-import * as React from "react";
-import { useLocation, useNavigate } from "react-router";
-
-import { isUnauthorizedError } from "~/modules/api";
 import { AppShell } from "~/modules/app-shell";
-import { useAuthMeQuery } from "~/modules/auth";
+import {
+  useAuthMeQuery,
+  useRedirectToLoginOnUnauthorized,
+} from "~/modules/auth";
 import { useSpacesQuery } from "~/modules/spaces";
 
 export default function AppLayoutRoute() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const me = useAuthMeQuery();
   const spaces = useSpacesQuery();
 
-  React.useEffect(() => {
-    if (!me.isError) return;
-    if (!isUnauthorizedError(me.error)) return;
-
-    const redirectTo = `${location.pathname}${location.search}`;
-    navigate(`/login?redirectTo=${encodeURIComponent(redirectTo)}`, {
-      replace: true,
-    });
-  }, [location.pathname, location.search, me.error, me.isError, navigate]);
+  useRedirectToLoginOnUnauthorized({ isError: me.isError, error: me.error });
 
   if (me.isLoading) {
     return null;

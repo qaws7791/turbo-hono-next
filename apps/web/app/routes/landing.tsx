@@ -1,5 +1,5 @@
 import { useAuthMeQuery } from "~/modules/auth";
-import { LandingView, useLandingModel } from "~/modules/landing";
+import { LandingView } from "~/modules/landing";
 
 export function meta() {
   return [
@@ -14,6 +14,5 @@ export function meta() {
 export default function LandingRoute() {
   const me = useAuthMeQuery();
   const isAuthenticated = Boolean(me.data);
-  const model = useLandingModel({ isAuthenticated });
-  return <LandingView model={model} />;
+  return <LandingView isAuthenticated={isAuthenticated} />;
 }

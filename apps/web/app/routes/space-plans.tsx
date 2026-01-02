@@ -1,10 +1,6 @@
 import { useParams } from "react-router";
 
-import {
-  SpacePlansView,
-  useSpacePlansModel,
-  useSpacePlansQuery,
-} from "~/modules/plans";
+import { SpacePlansView, useSpacePlansQuery } from "~/modules/plans";
 import { useSpaceQuery } from "~/modules/spaces";
 
 export function meta() {
@@ -14,14 +10,13 @@ export function meta() {
 function SpacePlansRouteWithId({ spaceId }: { spaceId: string }) {
   const space = useSpaceQuery(spaceId);
   const plans = useSpacePlansQuery({ spaceId });
-  const model = useSpacePlansModel({ plans: plans.data?.data ?? [] });
 
   if (!space.data || !plans.data) return null;
 
   return (
     <SpacePlansView
       space={space.data}
-      model={model}
+      plans={plans.data.data}
     />
   );
 }

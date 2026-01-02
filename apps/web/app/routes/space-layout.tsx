@@ -3,11 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import type { SpaceDetail } from "~/modules/spaces";
 
-import {
-  SpaceLayoutView,
-  useSpaceLayoutModel,
-  useSpaceQuery,
-} from "~/modules/spaces";
+import { SpaceLayoutView, useSpaceQuery } from "~/modules/spaces";
 
 function tabToPath(spaceId: string, tab: string): string | null {
   if (tab === "documents") return `/spaces/${spaceId}/documents`;
@@ -47,12 +43,5 @@ function SpaceLayoutRouteWithId({ spaceId }: { spaceId: string }) {
 }
 
 function SpaceLayoutRouteLoaded({ space }: { space: SpaceDetail }) {
-  const model = useSpaceLayoutModel(space);
-
-  return (
-    <SpaceLayoutView
-      space={space}
-      model={model}
-    />
-  );
+  return <SpaceLayoutView space={space} />;
 }
