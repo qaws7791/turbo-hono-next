@@ -2,7 +2,7 @@ import { useLoaderData } from "react-router";
 
 import { LandingView } from "~/features/landing/landing-view";
 import { useLandingModel } from "~/features/landing/use-landing-model";
-import { authStatus } from "~/mock/api";
+import { getAuthStatus } from "~/api/compat/auth";
 
 export function meta() {
   return [
@@ -14,8 +14,8 @@ export function meta() {
   ];
 }
 
-export function clientLoader() {
-  const { isAuthenticated } = authStatus();
+export async function clientLoader() {
+  const { isAuthenticated } = await getAuthStatus();
   return { isAuthenticated };
 }
 
@@ -24,4 +24,3 @@ export default function LandingRoute() {
   const model = useLandingModel({ isAuthenticated });
   return <LandingView model={model} />;
 }
-

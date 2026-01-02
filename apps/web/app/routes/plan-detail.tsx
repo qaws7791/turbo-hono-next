@@ -6,13 +6,9 @@ import type { Route } from "./+types/plan-detail";
 
 import { PlanDetailView } from "~/features/plans/detail/plan-detail-view";
 import { usePlanDetailModel } from "~/features/plans/detail/use-plan-detail-model";
-import {
-  getPlan,
-  getSpace,
-  listDocuments,
-  planNextQueue,
-  setPlanStatus,
-} from "~/mock/api";
+import { getSpaceForUi } from "~/api/compat/spaces";
+import { updatePlanStatus } from "~/api/plans";
+import { getPlan, listDocuments, planNextQueue } from "~/mock/api";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
@@ -23,14 +19,14 @@ export function meta() {
   return [{ title: "학습 계획 상세" }];
 }
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   const planId = PlanIdSchema.safeParse(params.planId);
   if (!spaceId.success || !planId.success) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const space = getSpace(spaceId.data);
+  const space = await getSpaceForUi(spaceId.data);
   const plan = getPlan(planId.data);
   if (plan.spaceId !== spaceId.data) {
     throw new Response("Not Found", { status: 404 });
@@ -66,15 +62,15 @@ export async function clientAction({
   }
 
   if (intent.data === "pause") {
-    setPlanStatus({ planId: planId.data, status: "paused" });
+    await updatePlanStatus(planId.data, "PAUSED");
     return null;
   }
   if (intent.data === "resume") {
-    setPlanStatus({ planId: planId.data, status: "active" });
+    await updatePlanStatus(planId.data, "ACTIVE");
     return null;
   }
   if (intent.data === "archive") {
-    setPlanStatus({ planId: planId.data, status: "archived" });
+    await updatePlanStatus(planId.data, "ARCHIVED");
     throw redirect(`/spaces/${spaceId.data}/plans`);
   }
   return null;

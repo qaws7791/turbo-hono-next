@@ -3,10 +3,10 @@ import { redirect, useLoaderData, useSearchParams } from "react-router";
 import type { SpaceCard } from "~/features/spaces/types";
 import type { Route } from "./+types/spaces";
 
+import { createSpaceForUi } from "~/api/compat/spaces";
 import { SpacesView } from "~/features/spaces/spaces-view";
 import { useSpacesModel } from "~/features/spaces/use-spaces-model";
 import {
-  createSpace,
   getPlanBySpaceActive,
   listConcepts,
   listDocuments,
@@ -58,7 +58,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const descriptionRaw = String(formData.get("description") ?? "");
     const description =
       descriptionRaw.trim().length > 0 ? descriptionRaw : undefined;
-    const space = createSpace({ name, description });
+    const space = await createSpaceForUi({ name, description });
     throw redirect(`/spaces/${space.id}`);
   }
 

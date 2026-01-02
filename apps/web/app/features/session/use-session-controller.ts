@@ -11,7 +11,7 @@ import type {
 
 import { useDebouncedEffect } from "~/hooks/use-debounced-effect";
 import { nowIso } from "~/lib/time";
-import { completeSession, saveSessionProgress } from "~/mock/api";
+import { completeSessionRun, saveSessionRunProgress } from "~/api/session-runs";
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -378,20 +378,21 @@ export function useSessionController(run: SessionRunInput): SessionController {
 
   const saveNow = React.useCallback(() => {
     if (state.status !== "ACTIVE") return;
-    saveSessionProgress({
+    const stepIndex = Math.max(
+      0,
+      state.blueprint.steps.findIndex((s) => s.id === state.currentStepId),
+    );
+    void saveSessionRunProgress({
       runId: state.runId,
-      currentStepId: state.currentStepId,
-      stepHistory: state.stepHistory,
-      historyIndex: state.historyIndex,
+      stepIndex,
       inputs: persistedInputs,
     });
   }, [
+    state.blueprint.steps,
     state.currentStepId,
-    state.historyIndex,
     persistedInputs,
     state.runId,
     state.status,
-    state.stepHistory,
   ]);
 
   useDebouncedEffect(
@@ -472,11 +473,8 @@ export function useSessionController(run: SessionRunInput): SessionController {
     if (isBeforeSummary) {
       saveNow();
       dispatch({ type: "SET_COMPLETING" });
-      const result = completeSession({ runId: state.runId });
-      dispatch({
-        type: "SET_COMPLETED",
-        createdConceptIds: result.createdConceptIds,
-      });
+      dispatch({ type: "SET_COMPLETED", createdConceptIds: [] });
+      void completeSessionRun(state.runId);
     }
 
     dispatch({ type: "GO_NEXT", nextStepId: nextId });

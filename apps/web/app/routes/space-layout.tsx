@@ -2,9 +2,10 @@ import { redirect, useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-layout";
 
+import { getSpaceForUi, updateSpaceForUi } from "~/api/compat/spaces";
 import { SpaceLayoutView } from "~/features/spaces/layout/space-layout-view";
 import { useSpaceLayoutModel } from "~/features/spaces/layout/use-space-layout-model";
-import { getPlanBySpaceActive, getSpace, updateSpace } from "~/mock/api";
+import { getPlanBySpaceActive } from "~/mock/api";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
@@ -16,7 +17,10 @@ function tabToPath(spaceId: string, tab: string): string | null {
   return null;
 }
 
-export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
+export async function clientLoader({
+  params,
+  request,
+}: Route.ClientLoaderArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
@@ -32,7 +36,7 @@ export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
   }
 
   return {
-    space: getSpace(spaceId.data),
+    space: await getSpaceForUi(spaceId.data),
     activePlan: getPlanBySpaceActive(spaceId.data),
   };
 }
@@ -46,8 +50,7 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     const icon = formData.get("icon");
     const color = formData.get("color");
 
-    updateSpace({
-      spaceId,
+    await updateSpaceForUi(spaceId, {
       icon: typeof icon === "string" ? icon : undefined,
       color: typeof color === "string" ? color : undefined,
     });
