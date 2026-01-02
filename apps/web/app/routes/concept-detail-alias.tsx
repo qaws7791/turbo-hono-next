@@ -2,12 +2,16 @@ import { redirect } from "react-router";
 
 import type { Route } from "./+types/concept-detail-alias";
 
+import { PublicIdSchema } from "~/mock/schemas";
+
+const ConceptIdSchema = PublicIdSchema;
+
 export function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const conceptId = params.conceptId;
-  if (!conceptId) {
+  const conceptId = ConceptIdSchema.safeParse(params.conceptId);
+  if (!conceptId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  throw redirect(`/concept/${conceptId}`);
+  throw redirect(`/concept/${conceptId.data}`);
 }
 
 export default function ConceptDetailAliasRoute() {

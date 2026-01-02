@@ -1,18 +1,50 @@
-import { useSearchParams } from "react-router";
+import { useLoaderData } from "react-router";
+import { z } from "zod";
 
-import { ConceptLibraryView, useConceptSearchQuery } from "~/modules/concepts";
+import type { Route } from "./+types/concepts";
+
+import { ConceptLibraryView } from "~/features/concepts/library/concept-library-view";
+import { useConceptLibraryModel } from "~/features/concepts/library/use-concept-library-model";
+import { listConcepts } from "~/mock/api";
+
+const SearchSchema = z.object({
+  q: z.string().optional(),
+});
 
 export function meta() {
   return [{ title: "개념 라이브러리" }];
 }
 
-export default function ConceptsRoute() {
-  const [searchParams] = useSearchParams();
-  const q = String(searchParams.get("q") ?? "");
-  const conceptsQuery = useConceptSearchQuery({
-    q,
-    enabled: q.trim().length > 0,
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const url = new URL(request.url);
+  const parsed = SearchSchema.safeParse({
+    q: url.searchParams.get("q") ?? undefined,
   });
 
-  return <ConceptLibraryView concepts={conceptsQuery.data?.data ?? []} />;
+  const filters = parsed.success
+    ? parsed.data
+    : {
+        q: undefined,
+      };
+
+  const concepts = listConcepts({
+    query: filters.q,
+  });
+
+  return {
+    filters,
+    concepts,
+  };
+}
+
+export default function ConceptsRoute() {
+  const { filters, concepts } = useLoaderData<typeof clientLoader>();
+  const model = useConceptLibraryModel({ filters });
+  console.log(model);
+  return (
+    <ConceptLibraryView
+      concepts={concepts}
+      model={model}
+    />
+  );
 }

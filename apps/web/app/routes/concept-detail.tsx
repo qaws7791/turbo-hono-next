@@ -1,24 +1,43 @@
-import { useParams } from "react-router";
+import { useLoaderData } from "react-router";
 
-import { ConceptDetailView, useConceptQuery } from "~/modules/concepts";
+import type { Route } from "./+types/concept-detail";
+
+import { ConceptDetailView } from "~/features/concepts/detail/concept-detail-view";
+import { useConceptDetailModel } from "~/features/concepts/detail/use-concept-detail-model";
+import { getConcept, getSpace, listConcepts } from "~/mock/api";
+import { PublicIdSchema } from "~/mock/schemas";
+
+const ConceptIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "개념" }];
 }
 
-function ConceptDetailRouteWithId({ conceptId }: { conceptId: string }) {
-  const concept = useConceptQuery(conceptId);
+export function clientLoader({ params }: Route.ClientLoaderArgs) {
+  const conceptId = ConceptIdSchema.safeParse(params.conceptId);
+  if (!conceptId.success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+  const concept = getConcept(conceptId.data);
+  const space = getSpace(concept.spaceId);
+  const related = concept.relatedConceptIds.length
+    ? listConcepts({})
+        .filter((c) => concept.relatedConceptIds.includes(c.id))
+        .slice(0, 6)
+    : [];
 
-  if (!concept.data) return null;
-
-  return <ConceptDetailView concept={concept.data} />;
+  return { concept, space, related };
 }
 
 export default function ConceptDetailRoute() {
-  const { conceptId } = useParams();
-  if (!conceptId) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  return <ConceptDetailRouteWithId conceptId={conceptId} />;
+  const { concept, space, related } = useLoaderData<typeof clientLoader>();
+  const model = useConceptDetailModel(concept);
+  return (
+    <ConceptDetailView
+      concept={concept}
+      space={space}
+      related={related}
+      model={model}
+    />
+  );
 }

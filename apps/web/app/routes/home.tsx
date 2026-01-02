@@ -1,23 +1,36 @@
-import { useAuthMeQuery } from "~/modules/auth";
-import { HomeView, useHomeQueueQuery } from "~/modules/home";
+import { useLoaderData } from "react-router";
+
+import { HomeView } from "~/features/home/home-view";
+import {
+  authStatus,
+  homeQueue,
+  recentSessions,
+  statsForHome,
+} from "~/mock/api";
 
 export function meta() {
   return [{ title: "Home" }];
 }
 
-export default function HomeRoute() {
-  const me = useAuthMeQuery();
-  const queue = useHomeQueueQuery();
+export function clientLoader() {
+  const { user } = authStatus();
+  return {
+    user,
+    stats: statsForHome(),
+    queue: homeQueue(),
+    recent: recentSessions(6),
+  };
+}
 
-  if (!me.data || !queue.data) {
-    return null;
-  }
+export default function HomeRoute() {
+  const { user, stats, queue, recent } = useLoaderData<typeof clientLoader>();
 
   return (
     <HomeView
-      user={me.data}
-      queue={queue.data.data}
-      summary={queue.data.summary}
+      user={user}
+      stats={stats}
+      queue={queue}
+      recent={recent}
     />
   );
 }

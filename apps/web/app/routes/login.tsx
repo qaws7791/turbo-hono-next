@@ -1,23 +1,29 @@
 import { redirect, useActionData, useNavigation } from "react-router";
 
-import type { LoginActionData } from "~/modules/auth";
 import type { Route } from "./+types/login";
+import type { LoginActionData } from "~/features/auth/login/types";
 
-import {
-  LoginView,
-  fetchAuthMeOrNull,
-  sendMagicLink,
-  startGoogleAuth,
-} from "~/modules/auth";
-import { safeRedirectTo } from "~/lib/auth";
+import { LoginView } from "~/features/auth/login/login-view";
+import { useLoginViewModel } from "~/features/auth/login/use-login-view-model";
+import { authStatus, requestMagicLink, signInWithGoogle } from "~/mock/api";
+
+function safeRedirectTo(value: string | null): string {
+  if (!value) return "/home";
+  if (value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/home";
+}
 
 export function meta() {
   return [{ title: "로그인" }];
 }
 
-export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const me = await fetchAuthMeOrNull();
-  if (me) throw redirect("/home");
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const { isAuthenticated } = authStatus();
+  if (isAuthenticated) {
+    throw redirect("/home");
+  }
 
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirectTo");
@@ -32,15 +38,15 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const redirectTo = safeRedirectTo(url.searchParams.get("redirectTo"));
 
   if (intent === "google") {
-    startGoogleAuth({ redirectPath: redirectTo });
-    return null;
+    signInWithGoogle();
+    throw redirect(redirectTo);
   }
 
   if (intent === "magiclink") {
     const email = String(formData.get("email") ?? "");
     try {
-      await sendMagicLink({ email, redirectPath: redirectTo });
-      return { status: "sent", email } satisfies LoginActionData;
+      const { email: validated } = requestMagicLink(email);
+      return { status: "sent", email: validated } satisfies LoginActionData;
     } catch {
       return {
         status: "error",
@@ -56,19 +62,16 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 }
 
 export default function LoginRoute() {
-  const actionData = useActionData<typeof clientAction>();
+  const actionData = useActionData<typeof clientAction>() as
+    | LoginActionData
+    | undefined;
   const navigation = useNavigation();
 
-  // 현재 제출 중인 intent를 추출 (google 또는 magiclink)
-  const submittingIntent =
-    navigation.state !== "idle"
-      ? (navigation.formData?.get("intent")?.toString() ?? null)
-      : null;
+  const model = useLoginViewModel({
+    actionData,
+    isSubmitting: navigation.state !== "idle",
+  });
 
-  return (
-    <LoginView
-      actionData={actionData ?? undefined}
-      submittingIntent={submittingIntent}
-    />
-  );
+  return <LoginView state={model.state} onChangeEmail={model.resetToIdle} />;
 }
+

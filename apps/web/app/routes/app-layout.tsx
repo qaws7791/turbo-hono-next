@@ -1,32 +1,22 @@
-import { AppShell } from "~/modules/app-shell";
-import {
-  useAuthMeQuery,
-  useRedirectToLoginOnUnauthorized,
-} from "~/modules/auth";
-import { useSpacesQuery } from "~/modules/spaces";
+import { redirect, useLoaderData } from "react-router";
+
+import type { Route } from "./+types/app-layout";
+
+import { AppShell } from "~/features/app-shell/app-shell";
+import { getRedirectTarget } from "~/lib/auth";
+import { authStatus, listSpaces } from "~/mock/api";
+
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const { isAuthenticated, user } = authStatus();
+  if (!isAuthenticated || !user) {
+    const redirectTo = getRedirectTarget(request.url);
+    throw redirect(`/login?redirectTo=${encodeURIComponent(redirectTo)}`);
+  }
+  return { user, spaces: listSpaces() };
+}
 
 export default function AppLayoutRoute() {
-  const me = useAuthMeQuery();
-  const spaces = useSpacesQuery();
-
-  useRedirectToLoginOnUnauthorized({ isError: me.isError, error: me.error });
-
-  if (me.isLoading) {
-    return null;
-  }
-
-  if (me.isError) {
-    return null;
-  }
-
-  if (!me.data) {
-    return null;
-  }
-
-  return (
-    <AppShell
-      user={me.data}
-      spaces={spaces.data ?? []}
-    />
-  );
+  const { user, spaces } = useLoaderData<typeof clientLoader>();
+  return <AppShell user={user} spaces={spaces} />;
 }
+

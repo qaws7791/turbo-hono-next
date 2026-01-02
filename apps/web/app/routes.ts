@@ -7,12 +7,9 @@ export default [
   route("login", "routes/login.tsx"),
   route("logout", "routes/logout.tsx"),
   route("session", "routes/session.tsx"),
-  route("review", "routes/review-queue.tsx"),
-  route("review/:conceptId", "routes/review.tsx"),
   layout("routes/app-layout.tsx", [
     route("home", "routes/home.tsx"),
     route("today", "routes/today.tsx"),
-    route("history", "routes/history.tsx"),
     route("spaces", "routes/spaces.tsx"),
     route("concepts", "routes/concepts.tsx"),
     route("concept/:conceptId", "routes/concept-detail.tsx"),

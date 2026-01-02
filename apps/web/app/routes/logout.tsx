@@ -1,13 +1,12 @@
 import { redirect } from "react-router";
 
-import { logoutAndClearCache } from "~/modules/auth";
+import { logout } from "~/mock/api";
 
 export async function clientAction() {
-  await logoutAndClearCache();
+  logout();
   throw redirect("/");
 }
 
-export async function clientLoader() {
-  await logoutAndClearCache();
+export function clientLoader() {
   throw redirect("/");
 }
