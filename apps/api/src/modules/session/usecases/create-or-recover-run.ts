@@ -75,6 +75,16 @@ export async function createOrRecoverRun(
       new ApiError(400, "SESSION_ALREADY_COMPLETED", "이미 완료된 세션입니다."),
     );
   }
+  if (session.status === "SKIPPED" || session.status === "CANCELED") {
+    return err(
+      new ApiError(
+        400,
+        "INVALID_REQUEST",
+        "건너뜀/취소된 세션은 시작할 수 없습니다. 다시 예정으로 변경해주세요.",
+        { status: session.status },
+      ),
+    );
+  }
 
   // 2. 진행 중인 Run 조회
   const existingResult = await sessionRepository.findRunningRun(

@@ -13,9 +13,9 @@ import { and, asc, desc, eq, ilike, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "../../lib/db";
 import { tryPromise } from "../../lib/result";
 
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
 import type { ConceptReviewStatus } from "./concept.dto";
-import type { ResultAsync } from "neverthrow";
 
 export const conceptRepository = {
   getTagMap(
@@ -82,7 +82,7 @@ export const conceptRepository = {
       }
 
       const rows = await db
-        .select({ total: sql<number>`count(*)` })
+        .select({ total: sql<number>`count(*)`.mapWith(Number) })
         .from(concepts)
         .where(and(...where));
       return rows[0]?.total ?? 0;

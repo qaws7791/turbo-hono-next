@@ -1,8 +1,15 @@
 import {
   abandonSessionRunRoute,
   completeSessionRunRoute,
+  createSessionActivityRoute,
+  createSessionCheckinRoute,
   createSessionRunRoute,
+  getSessionRunDetailRoute,
   homeQueueRoute,
+  listSessionActivitiesRoute,
+  listSessionCheckinsRoute,
+  listSessionRunsRoute,
+  updatePlanSessionRoute,
   updateSessionRunProgressRoute,
 } from "@repo/api-spec";
 
@@ -12,8 +19,15 @@ import {
   abandonRun,
   completeRun,
   createOrRecoverRun,
+  createRunActivity,
+  createRunCheckin,
   getHomeQueue,
+  getRunDetail,
+  listRunActivities,
+  listRunCheckins,
+  listSessionRuns,
   saveProgress,
+  updatePlanSession,
 } from "../modules/session";
 
 import type { OpenAPIHono } from "@hono/zod-openapi";
@@ -38,6 +52,76 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
         createOrRecoverRun(auth.user.id, sessionId, idempotencyKey),
         (created) => c.json({ data: created.data }, created.statusCode),
       );
+    },
+  );
+
+  app.openapi(
+    { ...updatePlanSessionRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { sessionId } = c.req.valid("param");
+      const body = c.req.valid("json");
+      return jsonResult(
+        c,
+        updatePlanSession(auth.user.id, sessionId, body),
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    { ...getSessionRunDetailRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { runId } = c.req.valid("param");
+      return jsonResult(c, getRunDetail(auth.user.id, runId), 200);
+    },
+  );
+
+  app.openapi(
+    { ...listSessionRunsRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const query = c.req.valid("query");
+      return jsonResult(c, listSessionRuns(auth.user.id, query), 200);
+    },
+  );
+
+  app.openapi(
+    { ...listSessionCheckinsRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { runId } = c.req.valid("param");
+      return jsonResult(c, listRunCheckins(auth.user.id, runId), 200);
+    },
+  );
+
+  app.openapi(
+    { ...createSessionCheckinRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { runId } = c.req.valid("param");
+      const body = c.req.valid("json");
+      return jsonResult(c, createRunCheckin(auth.user.id, runId, body), 201);
+    },
+  );
+
+  app.openapi(
+    { ...listSessionActivitiesRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { runId } = c.req.valid("param");
+      return jsonResult(c, listRunActivities(auth.user.id, runId), 200);
+    },
+  );
+
+  app.openapi(
+    { ...createSessionActivityRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { runId } = c.req.valid("param");
+      const body = c.req.valid("json");
+      return jsonResult(c, createRunActivity(auth.user.id, runId, body), 201);
     },
   );
 

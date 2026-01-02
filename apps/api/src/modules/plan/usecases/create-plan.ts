@@ -1,11 +1,12 @@
 import { err, ok } from "neverthrow";
 
+import { generatePlanWithAi } from "../../../ai/plan/generate";
 import { generatePublicId } from "../../../lib/public-id";
 import { ApiError } from "../../../middleware/error-handler";
 import { assertSpaceOwned } from "../../space";
 import { CreatePlanInput, CreatePlanResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
-import { addDays, buildPlanTitle, parseDateOnly } from "../plan.utils";
+import { addDays, parseDateOnly } from "../plan.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -86,89 +87,58 @@ export async function createPlan(
     }
   }
 
-  // 5. Plan 데이터 구성
+  // 5. AI를 통한 개인화된 학습 계획 생성
   const now = new Date();
   const planPublicId = generatePublicId();
-  const title = buildPlanTitle(validated.goalType, space.name);
   const targetDueDate = parseDateOnly(validated.targetDueDate);
+  const startDate = parseDateOnly(new Date().toISOString().slice(0, 10));
 
-  const moduleRows = ordered.map((material, index) => ({
+  let aiPlan;
+  try {
+    aiPlan = await generatePlanWithAi({
+      userId,
+      spaceId: space.id,
+      spaceName: space.name,
+      materialIds: validated.materialIds,
+      goalType: validated.goalType,
+      currentLevel: validated.currentLevel,
+      targetDueDate,
+      specialRequirements: validated.specialRequirements ?? null,
+    });
+  } catch (error) {
+    // AI 생성 실패 시 폴백: 기본 템플릿 사용
+    console.error("AI plan generation failed, using fallback:", error);
+    aiPlan = buildFallbackPlan({
+      materials: ordered,
+      goalType: validated.goalType,
+      spaceName: space.name,
+    });
+  }
+
+  // 6. AI 결과를 DB 형식으로 변환
+  const moduleRows = aiPlan.modules.map((mod) => ({
     id: crypto.randomUUID(),
-    title: material.title ?? `Module ${index + 1}`,
-    description: null,
-    orderIndex: index,
+    title: mod.title,
+    description: mod.description,
+    orderIndex: mod.orderIndex,
     createdAt: now,
   }));
 
-  const sessions: Array<{
-    publicId: string;
-    moduleId: string | null;
-    sessionType: "LEARN" | "REVIEW";
-    title: string;
-    objective: string | null;
-    orderIndex: number;
-    scheduledForDate: Date;
-    estimatedMinutes: number;
-    status: "SCHEDULED";
-    createdAt: Date;
-    updatedAt: Date;
-  }> = [];
-
-  const startDate = parseDateOnly(new Date().toISOString().slice(0, 10));
-  let sessionIndex = 0;
-
-  moduleRows.forEach((module) => {
-    const baseDate = addDays(startDate, sessionIndex);
-    const learnTitles = ["핵심 개념 정리", "심화 학습", "실습/정리"] as const;
-
-    learnTitles.forEach((label, idx) => {
-      sessions.push({
-        publicId: generatePublicId(),
-        moduleId: module.id,
-        sessionType: "LEARN",
-        title: `Session ${idx + 1}: ${label}`,
-        objective: null,
-        orderIndex: sessionIndex,
-        scheduledForDate: addDays(baseDate, idx),
-        estimatedMinutes: 25,
-        status: "SCHEDULED" as const,
-        createdAt: now,
-        updatedAt: now,
-      });
-      sessionIndex += 1;
-    });
-  });
-
-  sessions.push({
+  const sessions = aiPlan.sessions.map((sess, idx) => ({
     publicId: generatePublicId(),
-    moduleId: moduleRows.at(-1)?.id ?? null,
-    sessionType: "REVIEW",
-    title: "Review 1: 핵심 개념 복습",
-    objective: null,
-    orderIndex: sessionIndex,
-    scheduledForDate: addDays(startDate, sessionIndex),
-    estimatedMinutes: 20,
+    moduleId: moduleRows[sess.moduleIndex]?.id ?? moduleRows[0]?.id ?? null,
+    sessionType: sess.sessionType,
+    title: sess.title,
+    objective: sess.objective,
+    orderIndex: idx,
+    scheduledForDate: addDays(startDate, sess.dayOffset),
+    estimatedMinutes: sess.estimatedMinutes,
     status: "SCHEDULED" as const,
     createdAt: now,
     updatedAt: now,
-  });
-  sessionIndex += 1;
+  }));
 
-  sessions.push({
-    publicId: generatePublicId(),
-    moduleId: moduleRows.at(-1)?.id ?? null,
-    sessionType: "REVIEW",
-    title: "Review 2: 최종 점검",
-    objective: null,
-    orderIndex: sessionIndex,
-    scheduledForDate: addDays(startDate, sessionIndex),
-    estimatedMinutes: 20,
-    status: "SCHEDULED" as const,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  // 6. Plan 트랜잭션 생성
+  // 7. Plan 트랜잭션 생성
   const createResult = await planRepository.createPlanTransaction({
     userId,
     spaceId: space.id,
@@ -176,7 +146,7 @@ export async function createPlan(
       publicId: planPublicId,
       userId,
       spaceId: space.id,
-      title,
+      title: aiPlan.title,
       status: "ACTIVE",
       goalType: validated.goalType,
       currentLevel: validated.currentLevel,
@@ -203,7 +173,92 @@ export async function createPlan(
 
   return ok(
     CreatePlanResponse.parse({
-      data: { id: planPublicId, title, status: "ACTIVE" as const },
+      data: {
+        id: planPublicId,
+        title: aiPlan.title,
+        status: "ACTIVE" as const,
+      },
     }),
   );
+}
+
+/**
+ * AI 생성 실패 시 사용할 폴백 계획
+ */
+function buildFallbackPlan(params: {
+  readonly materials: ReadonlyArray<{
+    readonly id: string;
+    readonly title: string | null;
+  }>;
+  readonly goalType: string;
+  readonly spaceName: string;
+}) {
+  const goalLabels: Record<string, string> = {
+    JOB: "취업 준비",
+    CERT: "자격증 취득",
+    WORK: "업무 역량 강화",
+    HOBBY: "자기계발",
+    OTHER: "학습",
+  };
+
+  const title = `${params.spaceName} ${goalLabels[params.goalType] ?? "학습"} 계획`;
+
+  const modules = params.materials.map((mat, idx) => ({
+    title: mat.title ?? `Module ${idx + 1}`,
+    description: `${mat.title ?? "자료"} 학습 모듈`,
+    orderIndex: idx,
+    materialId: mat.id,
+  }));
+
+  const sessions: Array<{
+    sessionType: "LEARN" | "REVIEW";
+    title: string;
+    objective: string;
+    estimatedMinutes: number;
+    dayOffset: number;
+    moduleIndex: number;
+  }> = [];
+
+  let dayOffset = 0;
+  modules.forEach((mod, modIdx) => {
+    const learnLabels = ["핵심 개념 정리", "심화 학습", "실습 및 정리"];
+    learnLabels.forEach((label, sessIdx) => {
+      sessions.push({
+        sessionType: "LEARN",
+        title: `Session ${sessIdx + 1}: ${label}`,
+        objective: `${mod.title}의 ${label.toLowerCase()}을 완료합니다.`,
+        estimatedMinutes: 30,
+        dayOffset,
+        moduleIndex: modIdx,
+      });
+      dayOffset += 1;
+    });
+  });
+
+  // 복습 세션 추가
+  sessions.push({
+    sessionType: "REVIEW",
+    title: "Review 1: 핵심 개념 복습",
+    objective: "학습한 핵심 개념들을 복습하고 이해도를 점검합니다.",
+    estimatedMinutes: 25,
+    dayOffset,
+    moduleIndex: modules.length - 1,
+  });
+  dayOffset += 1;
+
+  sessions.push({
+    sessionType: "REVIEW",
+    title: "Review 2: 최종 점검",
+    objective: "전체 학습 내용을 정리하고 목표 달성 여부를 확인합니다.",
+    estimatedMinutes: 25,
+    dayOffset,
+    moduleIndex: modules.length - 1,
+  });
+
+  return {
+    title,
+    summary: `${params.spaceName}을(를) 위한 체계적인 학습 계획입니다.`,
+    modules,
+    sessions,
+  };
 }

@@ -43,7 +43,10 @@ export async function getPlanDetail(
   // 4. 진행률 계산
   const totalSessions = sessions.length;
   const completedSessions = sessions.filter(
-    (s) => s.status === "COMPLETED",
+    (s) =>
+      s.status === "COMPLETED" ||
+      s.status === "SKIPPED" ||
+      s.status === "CANCELED",
   ).length;
 
   return ok(

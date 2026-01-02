@@ -91,6 +91,25 @@ export const sessionProgressSnapshots = pgTable(
   ],
 );
 
+export const sessionRunBlueprints = pgTable(
+  "session_run_blueprints",
+  {
+    sessionRunId: bigint("session_run_id", { mode: "number" })
+      .primaryKey()
+      .references(() => sessionRuns.id, { onDelete: "cascade" }),
+    schemaVersion: integer("schema_version").notNull(),
+    blueprintJson: jsonb("blueprint_json")
+      .$type<Record<string, unknown>>()
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .$defaultFn(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("session_run_blueprints_run_id_idx").on(table.sessionRunId),
+  ],
+);
+
 export const sessionCheckins = pgTable(
   "session_checkins",
   {
