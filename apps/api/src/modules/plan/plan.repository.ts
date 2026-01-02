@@ -11,10 +11,10 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "../../lib/db";
 import { tryPromise } from "../../lib/result";
 
-import type { AppError } from "../../lib/result";
 import type { Database } from "@repo/database";
-import type { PlanStatus } from "./plan.dto";
 import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
+import type { PlanStatus } from "./plan.dto";
 
 export type PlanEntity = typeof plans.$inferSelect;
 export type InsertPlanEntity = typeof plans.$inferInsert;
@@ -35,7 +35,7 @@ export const planRepository = {
       if (status) where.push(eq(plans.status, status));
 
       const rows = await db
-        .select({ total: sql<number>`count(*)` })
+        .select({ total: sql<number>`count(*)`.mapWith(Number) })
         .from(plans)
         .where(and(...where));
       return rows[0]?.total ?? 0;
@@ -100,8 +100,11 @@ export const planRepository = {
       const rows = await db
         .select({
           planId: planSessions.planId,
-          totalSessions: sql<number>`count(*)`,
-          completedSessions: sql<number>`sum(case when ${planSessions.status} = 'COMPLETED' then 1 else 0 end)`,
+          totalSessions: sql<number>`count(*)`.mapWith(Number),
+          completedSessions:
+            sql<number>`sum(case when ${planSessions.status} = 'COMPLETED' then 1 else 0 end)`.mapWith(
+              Number,
+            ),
         })
         .from(planSessions)
         .where(inArray(planSessions.planId, [...planIds]))
@@ -126,6 +129,7 @@ export const planRepository = {
     planPublicId: string,
   ): ResultAsync<
     {
+      internalId: number;
       id: string;
       spaceId: string;
       title: string;
@@ -141,6 +145,7 @@ export const planRepository = {
       const db = getDb();
       const rows = await db
         .select({
+          internalId: plans.id,
           id: plans.publicId,
           spaceId: spaces.publicId,
           title: plans.title,
@@ -198,6 +203,70 @@ export const planRepository = {
         )
         .limit(1);
       return rows[0] ?? null;
+    });
+  },
+
+  listModulesByPlanId(planId: number): ResultAsync<
+    Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      orderIndex: number;
+    }>,
+    AppError
+  > {
+    return tryPromise(async () => {
+      const db = getDb();
+      const rows = await db
+        .select({
+          id: planModules.id,
+          title: planModules.title,
+          description: planModules.description,
+          orderIndex: planModules.orderIndex,
+        })
+        .from(planModules)
+        .where(eq(planModules.planId, planId))
+        .orderBy(planModules.orderIndex);
+
+      return rows;
+    });
+  },
+
+  listSessionsByPlanId(planId: number): ResultAsync<
+    Array<{
+      id: string;
+      moduleId: string | null;
+      sessionType: string;
+      title: string;
+      objective: string | null;
+      orderIndex: number;
+      scheduledForDate: Date;
+      estimatedMinutes: number;
+      status: string;
+      completedAt: Date | null;
+    }>,
+    AppError
+  > {
+    return tryPromise(async () => {
+      const db = getDb();
+      const rows = await db
+        .select({
+          id: planSessions.publicId,
+          moduleId: planSessions.moduleId,
+          sessionType: planSessions.sessionType,
+          title: planSessions.title,
+          objective: planSessions.objective,
+          orderIndex: planSessions.orderIndex,
+          scheduledForDate: planSessions.scheduledForDate,
+          estimatedMinutes: planSessions.estimatedMinutes,
+          status: planSessions.status,
+          completedAt: planSessions.completedAt,
+        })
+        .from(planSessions)
+        .where(eq(planSessions.planId, planId))
+        .orderBy(planSessions.orderIndex);
+
+      return rows;
     });
   },
 

@@ -3,7 +3,7 @@ import { err, ok } from "neverthrow";
 import { ApiError } from "../../../middleware/error-handler";
 import { PlanDetailResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
-import { formatIsoDate } from "../plan.utils";
+import { formatIsoDate, formatIsoDatetime } from "../plan.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -26,6 +26,26 @@ export async function getPlanDetail(
     );
   }
 
+  // 2. 모듈 목록 조회
+  const modulesResult = await planRepository.listModulesByPlanId(
+    plan.internalId,
+  );
+  if (modulesResult.isErr()) return err(modulesResult.error);
+  const modules = modulesResult.value;
+
+  // 3. 세션 목록 조회
+  const sessionsResult = await planRepository.listSessionsByPlanId(
+    plan.internalId,
+  );
+  if (sessionsResult.isErr()) return err(sessionsResult.error);
+  const sessions = sessionsResult.value;
+
+  // 4. 진행률 계산
+  const totalSessions = sessions.length;
+  const completedSessions = sessions.filter(
+    (s) => s.status === "COMPLETED",
+  ).length;
+
   return ok(
     PlanDetailResponse.parse({
       data: {
@@ -37,6 +57,28 @@ export async function getPlanDetail(
         currentLevel: plan.currentLevel,
         targetDueDate: formatIsoDate(plan.targetDueDate),
         specialRequirements: plan.specialRequirements ?? null,
+        progress: {
+          completedSessions,
+          totalSessions,
+        },
+        modules: modules.map((m) => ({
+          id: m.id,
+          title: m.title,
+          description: m.description,
+          orderIndex: m.orderIndex,
+        })),
+        sessions: sessions.map((s) => ({
+          id: s.id,
+          moduleId: s.moduleId,
+          sessionType: s.sessionType,
+          title: s.title,
+          objective: s.objective,
+          orderIndex: s.orderIndex,
+          scheduledForDate: formatIsoDate(s.scheduledForDate),
+          estimatedMinutes: s.estimatedMinutes,
+          status: s.status,
+          completedAt: s.completedAt ? formatIsoDatetime(s.completedAt) : null,
+        })),
       },
     }),
   );

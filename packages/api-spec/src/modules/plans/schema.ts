@@ -1,6 +1,10 @@
 import { z } from "@hono/zod-openapi";
 
 import { PublicIdSchema } from "../../common/schema";
+import {
+  PlanSessionStatusSchema,
+  PlanSessionTypeSchema,
+} from "../sessions/schema";
 
 export const PlanStatusSchema = z.enum([
   "ACTIVE",
@@ -58,6 +62,28 @@ export const CreatePlanResponseSchema = z.object({
   }),
 });
 
+// Plan Module 아이템 스키마
+export const PlanModuleItemSchema = z.object({
+  id: z.uuid(),
+  title: z.string().min(1),
+  description: z.string().nullable(),
+  orderIndex: z.number().int().nonnegative(),
+});
+
+// Plan Session 아이템 스키마
+export const PlanSessionItemSchema = z.object({
+  id: PublicIdSchema,
+  moduleId: z.uuid().nullable(),
+  sessionType: PlanSessionTypeSchema,
+  title: z.string().min(1),
+  objective: z.string().nullable(),
+  orderIndex: z.number().int().nonnegative(),
+  scheduledForDate: z.iso.date(),
+  estimatedMinutes: z.number().int().min(1),
+  status: PlanSessionStatusSchema,
+  completedAt: z.iso.datetime().nullable(),
+});
+
 export const PlanDetailResponseSchema = z.object({
   data: z.object({
     id: PublicIdSchema,
@@ -68,6 +94,9 @@ export const PlanDetailResponseSchema = z.object({
     currentLevel: PlanLevelSchema,
     targetDueDate: z.iso.date(),
     specialRequirements: z.string().nullable(),
+    progress: PlanProgressSchema,
+    modules: z.array(PlanModuleItemSchema),
+    sessions: z.array(PlanSessionItemSchema),
   }),
 });
 

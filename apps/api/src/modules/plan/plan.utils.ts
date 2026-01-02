@@ -16,6 +16,10 @@ export function formatIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+export function formatIsoDatetime(date: Date): string {
+  return date.toISOString();
+}
+
 export function buildPlanTitle(
   goalType: PlanGoalType,
   spaceName: string,

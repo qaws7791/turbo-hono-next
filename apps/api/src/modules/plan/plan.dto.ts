@@ -77,6 +77,43 @@ export const CreatePlanResponse = z.object({
 });
 export type CreatePlanResponse = z.infer<typeof CreatePlanResponse>;
 
+// Session 관련 Enum 스키마
+export const PlanSessionTypeSchema = z.enum(["LEARN", "REVIEW"]);
+export type PlanSessionType = z.infer<typeof PlanSessionTypeSchema>;
+
+export const PlanSessionStatusSchema = z.enum([
+  "SCHEDULED",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "SKIPPED",
+  "CANCELED",
+]);
+export type PlanSessionStatus = z.infer<typeof PlanSessionStatusSchema>;
+
+// Plan Module 아이템 스키마
+export const PlanModuleItem = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1),
+  description: z.string().nullable(),
+  orderIndex: z.number().int().nonnegative(),
+});
+export type PlanModuleItem = z.infer<typeof PlanModuleItem>;
+
+// Plan Session 아이템 스키마
+export const PlanSessionItem = z.object({
+  id: PublicIdSchema,
+  moduleId: z.string().uuid().nullable(),
+  sessionType: PlanSessionTypeSchema,
+  title: z.string().min(1),
+  objective: z.string().nullable(),
+  orderIndex: z.number().int().nonnegative(),
+  scheduledForDate: z.string().date(),
+  estimatedMinutes: z.number().int().min(1),
+  status: PlanSessionStatusSchema,
+  completedAt: z.string().datetime().nullable(),
+});
+export type PlanSessionItem = z.infer<typeof PlanSessionItem>;
+
 export const PlanDetailResponse = z.object({
   data: z.object({
     id: PublicIdSchema,
@@ -87,6 +124,9 @@ export const PlanDetailResponse = z.object({
     currentLevel: PlanLevelSchema,
     targetDueDate: z.string().date(),
     specialRequirements: z.string().nullable(),
+    progress: PlanProgress,
+    modules: z.array(PlanModuleItem),
+    sessions: z.array(PlanSessionItem),
   }),
 });
 export type PlanDetailResponse = z.infer<typeof PlanDetailResponse>;
