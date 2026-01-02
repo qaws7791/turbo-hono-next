@@ -35,10 +35,16 @@
     "@types/node": "^22",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "msw": "^2.12.7",
     "openapi-typescript": "^7.10.1",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

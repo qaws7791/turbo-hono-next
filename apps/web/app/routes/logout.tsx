@@ -1,9 +1,9 @@
 import { redirect } from "react-router";
 
-import { logout } from "~/mock/api";
+import { logout } from "~/api/auth";
 
 export async function clientAction() {
-  logout();
+  await logout();
   throw redirect("/");
 }
 

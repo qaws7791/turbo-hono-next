@@ -3,9 +3,10 @@ import { redirect, useActionData, useNavigation } from "react-router";
 import type { Route } from "./+types/login";
 import type { LoginActionData } from "~/features/auth/login/types";
 
+import { getAuthMe, requestMagicLink } from "~/api/auth";
 import { LoginView } from "~/features/auth/login/login-view";
 import { useLoginViewModel } from "~/features/auth/login/use-login-view-model";
-import { authStatus, requestMagicLink, signInWithGoogle } from "~/mock/api";
+import { signInWithGoogle } from "~/mock/api";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";
@@ -19,9 +20,9 @@ export function meta() {
   return [{ title: "로그인" }];
 }
 
-export function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const { isAuthenticated } = authStatus();
-  if (isAuthenticated) {
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const me = await getAuthMe();
+  if (me) {
     throw redirect("/home");
   }
 
@@ -45,8 +46,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   if (intent === "magiclink") {
     const email = String(formData.get("email") ?? "");
     try {
-      const { email: validated } = requestMagicLink(email);
-      return { status: "sent", email: validated } satisfies LoginActionData;
+      await requestMagicLink({ email, redirectPath: redirectTo });
+      return { status: "sent", email } satisfies LoginActionData;
     } catch {
       return {
         status: "error",
@@ -72,6 +73,10 @@ export default function LoginRoute() {
     isSubmitting: navigation.state !== "idle",
   });
 
-  return <LoginView state={model.state} onChangeEmail={model.resetToIdle} />;
+  return (
+    <LoginView
+      state={model.state}
+      onChangeEmail={model.resetToIdle}
+    />
+  );
 }
-
