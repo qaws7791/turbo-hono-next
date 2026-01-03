@@ -18,9 +18,9 @@ import { Link } from "react-router";
 
 import type {
   HomeQueueItem,
+  HomeStats,
   SessionSummaryCard,
-  statsForHome,
-} from "~/mock/api";
+} from "~/api/compat/home";
 import type { User } from "~/mock/schemas";
 
 import { PageBody } from "~/features/app-shell/page-body";
@@ -60,7 +60,7 @@ export function HomeView({
   recent,
 }: {
   user: User | null;
-  stats: ReturnType<typeof statsForHome>;
+  stats: HomeStats;
   queue: Array<HomeQueueItem>;
   recent: Array<SessionSummaryCard>;
 }) {
@@ -167,7 +167,7 @@ export function HomeView({
                   const colorData = getColorByName(item.spaceColor);
                   return (
                     <Link
-                      to={`/session?planId=${item.planId}&sessionId=${item.sessionId}`}
+                      to={item.href}
                       key={item.sessionId}
                     >
                       <Card className="hover:bg-muted h-full">

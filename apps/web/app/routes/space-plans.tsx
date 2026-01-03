@@ -6,8 +6,8 @@ import type { Route } from "./+types/space-plans";
 import { SpacePlansView } from "~/features/spaces/plans/space-plans-view";
 import { useSpacePlansModel } from "~/features/spaces/plans/use-space-plans-model";
 import { getSpaceForUi } from "~/api/compat/spaces";
+import { listPlansForUi } from "~/api/compat/plans";
 import { activatePlan, updatePlanStatus } from "~/api/plans";
-import { listPlans } from "~/mock/api";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
@@ -24,7 +24,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
   const space = await getSpaceForUi(spaceId.data);
-  const plans = listPlans(spaceId.data);
+  const plans = await listPlansForUi(spaceId.data);
 
   return { space, plans };
 }

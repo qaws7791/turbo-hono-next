@@ -114,13 +114,7 @@ export function PlanDetailView({
 
           <div className="flex gap-2 flex-row justify-between">
             {model.canStart && model.nextSession ? (
-              <Button
-                render={
-                  <Link
-                    to={`/session?planId=${plan.id}&sessionId=${model.nextSession.sessionId}`}
-                  />
-                }
-              >
+              <Button render={<Link to={model.nextSession.href} />}>
                 <IconPlayerPlayFilled />
                 세션 시작
               </Button>

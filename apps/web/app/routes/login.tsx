@@ -6,7 +6,6 @@ import type { LoginActionData } from "~/features/auth/login/types";
 import { getAuthMe, requestMagicLink } from "~/api/auth";
 import { LoginView } from "~/features/auth/login/login-view";
 import { useLoginViewModel } from "~/features/auth/login/use-login-view-model";
-import { signInWithGoogle } from "~/mock/api";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";
@@ -39,8 +38,10 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
   const redirectTo = safeRedirectTo(url.searchParams.get("redirectTo"));
 
   if (intent === "google") {
-    signInWithGoogle();
-    throw redirect(redirectTo);
+    return {
+      status: "error",
+      message: "현재는 이메일 매직 링크 로그인만 지원합니다.",
+    } satisfies LoginActionData;
   }
 
   if (intent === "magiclink") {

@@ -1,15 +1,15 @@
 import { useFetcher } from "react-router";
 
-import type { listPlans } from "~/mock/api";
+import type { PlanWithDerived } from "~/api/compat/plans";
 
 export type SpacePlansModel = {
   isSubmitting: boolean;
   fetcher: ReturnType<typeof useFetcher>;
-  plans: ReturnType<typeof listPlans>;
+  plans: Array<PlanWithDerived>;
 };
 
 export function useSpacePlansModel(input: {
-  plans: ReturnType<typeof listPlans>;
+  plans: Array<PlanWithDerived>;
 }): SpacePlansModel {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== "idle";

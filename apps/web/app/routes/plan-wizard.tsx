@@ -5,7 +5,8 @@ import type { Route } from "./+types/plan-wizard";
 
 import { PlanWizardView } from "~/features/plans/wizard/plan-wizard-view";
 import { usePlanWizardModel } from "~/features/plans/wizard/use-plan-wizard-model";
-import { createPlan, listDocuments } from "~/mock/api";
+import { listDocumentsForUi } from "~/api/compat/materials";
+import { createPlan } from "~/api/plans";
 import {
   PlanGoalSchema,
   PlanLevelSchema,
@@ -19,12 +20,12 @@ export function meta() {
   return [{ title: "학습 계획 생성" }];
 }
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  const documents = listDocuments(spaceId.data);
+  const documents = await listDocumentsForUi(spaceId.data);
   return { spaceId: spaceId.data, documents };
 }
 
@@ -72,21 +73,43 @@ export async function clientAction({
     throw new Response("Bad Request", { status: 400 });
   }
 
-  const plan = createPlan({
-    spaceId: spaceId.data,
-    sourceDocumentIds: parsed.data.sourceDocumentIds,
-    goal: parsed.data.goal,
-    level: parsed.data.level,
-    durationMode: parsed.data.durationMode,
-    durationValue:
-      parsed.data.durationMode === "custom"
-        ? parsed.data.durationValue
-        : undefined,
-    durationUnit:
-      parsed.data.durationMode === "custom"
-        ? parsed.data.durationUnit
-        : undefined,
-    notes: parsed.data.notes,
+  const goalType =
+    parsed.data.goal === "career"
+      ? "JOB"
+      : parsed.data.goal === "certificate"
+        ? "CERT"
+        : parsed.data.goal === "work"
+          ? "WORK"
+          : "HOBBY";
+
+  const currentLevel =
+    parsed.data.level === "advanced"
+      ? "ADVANCED"
+      : parsed.data.level === "intermediate"
+        ? "INTERMEDIATE"
+        : "BEGINNER";
+
+  const targetDueDate = (() => {
+    const base = new Date();
+    if (parsed.data.durationMode !== "custom") {
+      base.setDate(base.getDate() + 30);
+      return base.toISOString().slice(0, 10);
+    }
+
+    const value = parsed.data.durationValue ?? 30;
+    const unit = parsed.data.durationUnit ?? "days";
+    const days =
+      unit === "months" ? value * 30 : unit === "weeks" ? value * 7 : value;
+    base.setDate(base.getDate() + days);
+    return base.toISOString().slice(0, 10);
+  })();
+
+  const plan = await createPlan(spaceId.data, {
+    materialIds: parsed.data.sourceDocumentIds,
+    goalType,
+    currentLevel,
+    targetDueDate,
+    specialRequirements: parsed.data.notes,
   });
 
   throw redirect(`/spaces/${spaceId.data}/plan/${plan.id}`);

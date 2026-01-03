@@ -1,6 +1,6 @@
 import { useFetcher } from "react-router";
 
-import type { HomeQueueItem } from "~/mock/api";
+import type { HomeQueueItem } from "~/api/compat/home";
 import type { Plan } from "~/mock/schemas";
 
 export type PlanDetailModel = {
@@ -21,4 +21,3 @@ export function usePlanDetailModel(input: {
 
   return { canStart, isSubmitting, nextSession, fetcher };
 }
-

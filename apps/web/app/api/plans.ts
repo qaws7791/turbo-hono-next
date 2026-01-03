@@ -1,6 +1,8 @@
 import { apiClient } from "./client";
 import { ApiError } from "./error";
 
+import type { paths } from "~/types/api";
+
 export async function activatePlan(planId: string): Promise<void> {
   const { error, response } = await apiClient.POST(
     "/api/plans/{planId}/activate",
@@ -27,4 +29,28 @@ export async function updatePlanStatus(
   if (!response.ok) {
     throw new ApiError("Failed to update plan status", response.status, error);
   }
+}
+
+type PlanCreateBody = NonNullable<
+  paths["/api/spaces/{spaceId}/plans"]["post"]["requestBody"]
+>["content"]["application/json"];
+
+type PlanCreateCreated =
+  paths["/api/spaces/{spaceId}/plans"]["post"]["responses"]["201"]["content"]["application/json"]["data"];
+
+export async function createPlan(
+  spaceId: string,
+  body: PlanCreateBody,
+): Promise<PlanCreateCreated> {
+  const { data, error, response } = await apiClient.POST(
+    "/api/spaces/{spaceId}/plans",
+    {
+      params: { path: { spaceId } },
+      body,
+    },
+  );
+  if (!response.ok || !data) {
+    throw new ApiError("Failed to create plan", response.status, error);
+  }
+  return data.data;
 }

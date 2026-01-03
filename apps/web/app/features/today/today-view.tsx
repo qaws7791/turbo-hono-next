@@ -3,7 +3,7 @@ import { Card, CardContent } from "@repo/ui/card";
 import { IconCalendar, IconChevronLeft } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import type { HomeQueueItem } from "~/mock/api";
+import type { HomeQueueItem } from "~/api/compat/home";
 
 import { PageBody } from "~/features/app-shell/page-body";
 import { PageHeader } from "~/features/app-shell/page-header";
@@ -90,7 +90,7 @@ export function TodayView({ queue }: { queue: Array<HomeQueueItem> }) {
                       {/* 세션 제목 및 계획 정보 */}
                       <div className="pt-3">
                         <Link
-                          to={`/session?planId=${item.planId}&sessionId=${item.sessionId}`}
+                          to={item.href}
                           className="font-semibold hover:underline block text-base group-hover:text-primary transition-colors"
                         >
                           {item.sessionTitle}

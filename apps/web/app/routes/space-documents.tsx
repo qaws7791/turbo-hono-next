@@ -4,7 +4,11 @@ import type { Route } from "./+types/space-documents";
 
 import { SpaceDocumentsView } from "~/features/documents/space-documents/space-documents-view";
 import { useSpaceDocumentsModel } from "~/features/documents/space-documents/use-space-documents-model";
-import { deleteDocument, listDocuments, uploadDocument } from "~/mock/api";
+import {
+  deleteDocumentForUi,
+  listDocumentsForUi,
+  uploadFileDocumentForUi,
+} from "~/api/compat/materials";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
@@ -13,14 +17,14 @@ export function meta() {
   return [{ title: "문서" }];
 }
 
-export function clientLoader({ params }: Route.ClientLoaderArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const spaceId = SpaceIdSchema.safeParse(params.spaceId);
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
   return {
     spaceId: spaceId.data,
-    documents: listDocuments(spaceId.data),
+    documents: await listDocumentsForUi(spaceId.data),
   };
 }
 
@@ -38,31 +42,7 @@ export async function clientAction({
 
   if (intent === "delete") {
     const documentId = String(formData.get("documentId") ?? "");
-    deleteDocument({ spaceId: spaceId.data, documentId });
-    return null;
-  }
-
-  if (intent === "upload-url") {
-    const title = String(formData.get("title") ?? "").trim() || "URL 문서";
-    const url = String(formData.get("url") ?? "");
-    uploadDocument({
-      spaceId: spaceId.data,
-      kind: "url",
-      title,
-      source: { type: "url", url },
-    });
-    return null;
-  }
-
-  if (intent === "upload-text") {
-    const title = String(formData.get("title") ?? "").trim() || "텍스트 노트";
-    const text = String(formData.get("text") ?? "");
-    uploadDocument({
-      spaceId: spaceId.data,
-      kind: "text",
-      title,
-      source: { type: "text", text },
-    });
+    await deleteDocumentForUi(documentId);
     return null;
   }
 
@@ -72,12 +52,7 @@ export async function clientAction({
       throw new Response("Invalid file", { status: 400 });
     }
     const title = String(formData.get("title") ?? "").trim() || file.name;
-    uploadDocument({
-      spaceId: spaceId.data,
-      kind: "file",
-      title,
-      source: { type: "file", fileName: file.name, fileSizeBytes: file.size },
-    });
+    await uploadFileDocumentForUi({ spaceId: spaceId.data, file, title });
     return null;
   }
 

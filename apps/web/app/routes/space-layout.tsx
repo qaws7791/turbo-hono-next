@@ -5,7 +5,6 @@ import type { Route } from "./+types/space-layout";
 import { getSpaceForUi, updateSpaceForUi } from "~/api/compat/spaces";
 import { SpaceLayoutView } from "~/features/spaces/layout/space-layout-view";
 import { useSpaceLayoutModel } from "~/features/spaces/layout/use-space-layout-model";
-import { getPlanBySpaceActive } from "~/mock/api";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
@@ -37,7 +36,6 @@ export async function clientLoader({
 
   return {
     space: await getSpaceForUi(spaceId.data),
-    activePlan: getPlanBySpaceActive(spaceId.data),
   };
 }
 

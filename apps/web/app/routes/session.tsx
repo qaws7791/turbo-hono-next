@@ -10,26 +10,28 @@ import type { Route } from "./+types/session";
 
 import { SessionView } from "~/features/session/session-view";
 import { useSessionController } from "~/features/session/use-session-controller";
-import { authStatus, getSessionRun, startSession } from "~/mock/api";
+import { getAuthStatus } from "~/api/compat/auth";
+import {
+  createOrResumeSessionRun,
+  getSessionRunForUi,
+} from "~/api/compat/session";
 import { PublicIdSchema } from "~/mock/schemas";
 
 const RunIdSchema = PublicIdSchema;
-const PlanIdSchema = PublicIdSchema;
 const SessionIdSchema = PublicIdSchema;
 
 export function meta() {
   return [{ title: "학습 세션" }];
 }
 
-export function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const { isAuthenticated } = authStatus();
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
+  const { isAuthenticated } = await getAuthStatus();
   if (!isAuthenticated) {
     throw redirect(`/login?redirectTo=${encodeURIComponent("/session")}`);
   }
 
   const url = new URL(request.url);
   const runIdRaw = url.searchParams.get("runId");
-  const planIdRaw = url.searchParams.get("planId");
   const sessionIdRaw = url.searchParams.get("sessionId");
 
   if (runIdRaw) {
@@ -37,19 +39,15 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
     if (!runId.success) {
       throw new Response("Not Found", { status: 404 });
     }
-    return { run: getSessionRun(runId.data) };
+    return { run: await getSessionRunForUi(runId.data) };
   }
 
-  const planId = PlanIdSchema.safeParse(planIdRaw);
   const sessionId = SessionIdSchema.safeParse(sessionIdRaw);
-  if (!planId.success || !sessionId.success) {
+  if (!sessionId.success) {
     throw new Response("Bad Request", { status: 400 });
   }
 
-  const { runId } = startSession({
-    planId: planId.data,
-    sessionId: sessionId.data,
-  });
+  const { runId } = await createOrResumeSessionRun(sessionId.data);
   throw redirect(`/session?runId=${runId}`);
 }
 

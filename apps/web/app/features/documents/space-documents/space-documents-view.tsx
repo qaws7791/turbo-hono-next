@@ -57,8 +57,7 @@ export function SpaceDocumentsView({
           <CardHeader>
             <CardTitle className="text-base">자료를 업로드해보세요</CardTitle>
             <CardDescription>
-              PDF/URL/텍스트를 올리면 분석 후 학습 계획 생성을 시작할 수
-              있습니다.
+              파일을 올리면 분석 후 학습 계획 생성을 시작할 수 있습니다.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -161,12 +160,14 @@ export function SpaceDocumentsView({
               <TabsTrigger
                 value="url"
                 className="flex-1"
+                disabled
               >
                 URL
               </TabsTrigger>
               <TabsTrigger
                 value="text"
                 className="flex-1"
+                disabled
               >
                 텍스트
               </TabsTrigger>
@@ -218,82 +219,18 @@ export function SpaceDocumentsView({
               value="url"
               className="mt-4"
             >
-              <fetcher.Form
-                method="post"
-                className="space-y-4"
-              >
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="upload-url"
-                />
-                <div className="space-y-2">
-                  <Label htmlFor="url-title">제목</Label>
-                  <Input
-                    id="url-title"
-                    name="title"
-                    placeholder="문서 제목"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="url">URL</Label>
-                  <Input
-                    id="url"
-                    name="url"
-                    placeholder="https://..."
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  업로드
-                </Button>
-              </fetcher.Form>
+              <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
+                현재는 URL 업로드를 지원하지 않습니다.
+              </div>
             </TabsContent>
 
             <TabsContent
               value="text"
               className="mt-4"
             >
-              <fetcher.Form
-                method="post"
-                className="space-y-4"
-              >
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="upload-text"
-                />
-                <div className="space-y-2">
-                  <Label htmlFor="text-title">제목</Label>
-                  <Input
-                    id="text-title"
-                    name="title"
-                    placeholder="노트 제목"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="text">텍스트</Label>
-                  <textarea
-                    id="text"
-                    name="text"
-                    className="border-border bg-background w-full rounded-xl border p-3 text-sm outline-none"
-                    rows={8}
-                    placeholder="노트를 붙여넣으세요"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  업로드
-                </Button>
-              </fetcher.Form>
+              <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
+                현재는 텍스트 업로드를 지원하지 않습니다.
+              </div>
             </TabsContent>
           </Tabs>
         </DialogContent>

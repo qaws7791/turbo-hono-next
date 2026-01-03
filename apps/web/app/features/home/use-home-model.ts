@@ -1,4 +1,4 @@
-import type { HomeQueueItem } from "~/mock/api";
+import type { HomeQueueItem } from "~/api/compat/home";
 
 export type HomeModel = {
   nextQueueItem: HomeQueueItem | undefined;

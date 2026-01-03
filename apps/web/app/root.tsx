@@ -14,7 +14,10 @@ import type { Route } from "./+types/root";
 
 import "./app.css";
 
-if (import.meta.env.DEV || import.meta.env.VITE_MSW === "true") {
+if (
+  typeof window !== "undefined" &&
+  (import.meta.env.DEV || import.meta.env.VITE_MSW === "true")
+) {
   void import("~/mocks/browser");
 }
 

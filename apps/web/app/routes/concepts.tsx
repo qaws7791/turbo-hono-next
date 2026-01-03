@@ -5,7 +5,9 @@ import type { Route } from "./+types/concepts";
 
 import { ConceptLibraryView } from "~/features/concepts/library/concept-library-view";
 import { useConceptLibraryModel } from "~/features/concepts/library/use-concept-library-model";
-import { listConcepts } from "~/mock/api";
+import { toUiConceptFromListItem } from "~/api/compat/concepts";
+import { listSpacesForUi } from "~/api/compat/spaces";
+import { listSpaceConcepts } from "~/api/concepts";
 
 const SearchSchema = z.object({
   q: z.string().optional(),
@@ -15,7 +17,7 @@ export function meta() {
   return [{ title: "개념 라이브러리" }];
 }
 
-export function clientLoader({ request }: Route.ClientLoaderArgs) {
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const url = new URL(request.url);
   const parsed = SearchSchema.safeParse({
     q: url.searchParams.get("q") ?? undefined,
@@ -27,9 +29,20 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
         q: undefined,
       };
 
-  const concepts = listConcepts({
-    query: filters.q,
-  });
+  const spaces = await listSpacesForUi();
+  const conceptLists = await Promise.all(
+    spaces.map((space) =>
+      listSpaceConcepts(space.id, {
+        page: 1,
+        limit: 50,
+        search: filters.q?.trim().length ? filters.q.trim() : undefined,
+      }),
+    ),
+  );
+
+  const concepts = conceptLists.flatMap((list, index) =>
+    list.data.map((c) => toUiConceptFromListItem(spaces[index].id, c)),
+  );
 
   return {
     filters,
@@ -40,7 +53,6 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
 export default function ConceptsRoute() {
   const { filters, concepts } = useLoaderData<typeof clientLoader>();
   const model = useConceptLibraryModel({ filters });
-  console.log(model);
   return (
     <ConceptLibraryView
       concepts={concepts}

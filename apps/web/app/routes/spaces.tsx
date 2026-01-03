@@ -3,49 +3,51 @@ import { redirect, useLoaderData, useSearchParams } from "react-router";
 import type { SpaceCard } from "~/features/spaces/types";
 import type { Route } from "./+types/spaces";
 
-import { createSpaceForUi } from "~/api/compat/spaces";
+import { createSpaceForUi, listSpacesForUi } from "~/api/compat/spaces";
+import { getActivePlanForSpaceUi } from "~/api/compat/plans";
+import { listMaterials } from "~/api/materials";
+import { listSpaceConcepts } from "~/api/concepts";
 import { SpacesView } from "~/features/spaces/spaces-view";
 import { useSpacesModel } from "~/features/spaces/use-spaces-model";
-import {
-  getPlanBySpaceActive,
-  listConcepts,
-  listDocuments,
-  listSpaces,
-  planNextQueue,
-} from "~/mock/api";
 
 export function meta() {
   return [{ title: "스페이스" }];
 }
 
-export function clientLoader() {
-  const spaces = listSpaces();
-  const cards: Array<SpaceCard> = spaces.map((space) => {
-    const activePlan = getPlanBySpaceActive(space.id);
-    const queueCount = activePlan ? planNextQueue(activePlan.id, 3).length : 0;
-    const documents = listDocuments(space.id);
-    const concepts = listConcepts({ spaceId: space.id });
-    const lastStudiedConcept = concepts[0]; // sorted by lastStudiedAt desc
+export async function clientLoader() {
+  const spaces = await listSpacesForUi();
 
-    return {
-      id: space.id,
-      name: space.name,
-      description: space.description,
-      icon: space.icon,
-      color: space.color,
-      hasTodo: queueCount > 0,
-      documentCount: documents.length,
-      conceptCount: concepts.length,
-      lastStudiedAt: lastStudiedConcept?.lastStudiedAt,
-      activePlan: activePlan
-        ? {
-            id: activePlan.id,
-            title: activePlan.title,
-            progressPercent: activePlan.progressPercent,
-          }
-        : undefined,
-    };
-  });
+  const cards: Array<SpaceCard> = await Promise.all(
+    spaces.map(async (space) => {
+      const [materials, concepts, activePlan] = await Promise.all([
+        listMaterials(space.id, { page: 1, limit: 1 }),
+        listSpaceConcepts(space.id, { page: 1, limit: 1 }),
+        getActivePlanForSpaceUi(space.id),
+      ]);
+
+      const lastStudiedAt = concepts.data[0]?.lastLearnedAt ?? undefined;
+
+      return {
+        id: space.id,
+        name: space.name,
+        description: space.description,
+        icon: space.icon,
+        color: space.color,
+        hasTodo: Boolean(activePlan && activePlan.progressPercent < 100),
+        documentCount: materials.meta.total,
+        conceptCount: concepts.meta.total,
+        lastStudiedAt,
+        activePlan: activePlan
+          ? {
+              id: activePlan.id,
+              title: activePlan.title,
+              progressPercent: activePlan.progressPercent,
+            }
+          : undefined,
+      };
+    }),
+  );
+
   return { spaces: cards };
 }
 

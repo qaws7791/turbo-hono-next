@@ -1,4 +1,4 @@
-import type { HomeQueueItem } from "~/mock/api";
+import type { HomeQueueItem } from "~/api/compat/home";
 import type { Document, Plan, Space } from "~/mock/schemas";
 
 export type PlanDetailData = {

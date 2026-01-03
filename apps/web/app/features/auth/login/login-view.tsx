@@ -104,7 +104,7 @@ export function LoginView({
                   />
                   <Button
                     className="w-full"
-                    disabled={state.isSubmitting}
+                    disabled
                     nativeButton
                     type="submit"
                   >
@@ -114,7 +114,7 @@ export function LoginView({
                         로그인 중
                       </>
                     ) : (
-                      "Google로 계속하기"
+                      "Google로 계속하기 (준비중)"
                     )}
                   </Button>
                 </Form>

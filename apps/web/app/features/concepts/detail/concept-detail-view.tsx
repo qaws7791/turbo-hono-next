@@ -101,7 +101,7 @@ function HistoryTabContent({ concept }: { concept: Concept }) {
                 </TimelineDate>
                 <TimelineTitle>
                   <Link
-                    to={`/session?planId=${source.planId}&sessionId=${source.sessionId}`}
+                    to={`/session?runId=${source.sessionId}`}
                     className="hover:underline"
                   >
                     {source.sessionTitle}
