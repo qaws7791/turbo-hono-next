@@ -15,7 +15,7 @@ export function useSpaceLayoutModel(space: Space): SpaceLayoutModel {
   const basePath = `/spaces/${space.id}`;
   const pathname = location.pathname;
 
-  const isMaterials = pathname.startsWith(`${basePath}/documents`);
+  const isMaterials = pathname.startsWith(`${basePath}/materials`);
   const isPlans =
     pathname === basePath ||
     pathname.startsWith(`${basePath}/plans`) ||

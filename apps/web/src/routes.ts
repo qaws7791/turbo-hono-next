@@ -16,7 +16,7 @@ export default [
     route("concepts/:conceptId", "routes/concept-detail-alias.tsx"),
     route("spaces/:spaceId", "routes/space-layout.tsx", [
       index("routes/space-plans.tsx"),
-      route("documents", "routes/space-documents.tsx"),
+      route("materials", "routes/space-materials.tsx"),
       route("plans/new", "routes/plan-wizard.tsx"),
       route("concepts", "routes/space-concepts.tsx"),
     ]),

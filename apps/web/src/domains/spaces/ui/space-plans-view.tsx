@@ -121,7 +121,7 @@ export function SpacePlansView({
                         variant="outline"
                         className="text-xs"
                       >
-                        {plan.sourceDocumentIds.length}개의 문서
+                        {plan.sourceMaterialIds.length}개의 문서
                       </Badge>
                     </div>
 
@@ -170,7 +170,7 @@ export function SpacePlansView({
                           {getPlanLevelLabel(plan.level)}
                         </Badge>
                         <Badge variant="outline">
-                          {plan.sourceDocumentIds.length}개의 문서
+                          {plan.sourceMaterialIds.length}개의 문서
                         </Badge>
                       </div>
                     </div>

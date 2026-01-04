@@ -1,6 +1,6 @@
 import { toMaterialFromApi } from "../model";
 
-import type { Document } from "../model/types";
+import type { Material } from "../model/types";
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
@@ -9,7 +9,7 @@ import { nowIso } from "~/foundation/lib/time";
 
 export async function listMaterialsForUi(
   spaceId: string,
-): Promise<Array<Document>> {
+): Promise<Array<Material>> {
   const result = await listMaterials(spaceId, { page: 1, limit: 100 });
   return result.data.map((m) => toMaterialFromApi(spaceId, m));
 }

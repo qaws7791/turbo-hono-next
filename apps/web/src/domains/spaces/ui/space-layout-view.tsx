@@ -77,7 +77,7 @@ export function SpaceLayoutView({
             학습 계획
           </TabNavLink>
           <TabNavLink
-            render={<NavLink to={`${model.basePath}/documents`} />}
+            render={<NavLink to={`${model.basePath}/materials`} />}
             active={model.isMaterials}
           >
             <IconFileDescription />

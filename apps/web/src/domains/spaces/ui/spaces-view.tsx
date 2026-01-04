@@ -106,7 +106,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <IconFile className="size-3.5" />
-                        {space.documentCount} 문서
+                        {space.materialCount} 문서
                       </span>
                       <span className="flex items-center gap-1">
                         <IconBrain className="size-3.5" />

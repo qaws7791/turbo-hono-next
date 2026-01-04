@@ -29,18 +29,18 @@ export const SpaceSchema = z.object({
 });
 export type Space = z.infer<typeof SpaceSchema>;
 
-export const DocumentKindSchema = z.enum(["file", "url", "text"]);
-export type DocumentKind = z.infer<typeof DocumentKindSchema>;
+export const MaterialKindSchema = z.enum(["file", "url", "text"]);
+export type MaterialKind = z.infer<typeof MaterialKindSchema>;
 
-export const DocumentStatusSchema = z.enum([
+export const MaterialStatusSchema = z.enum([
   "pending",
   "analyzing",
   "completed",
   "error",
 ]);
-export type DocumentStatus = z.infer<typeof DocumentStatusSchema>;
+export type MaterialStatus = z.infer<typeof MaterialStatusSchema>;
 
-export const DocumentSourceSchema = z.discriminatedUnion("type", [
+export const MaterialSourceSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("file"),
     fileName: z.string().min(1).max(120),
@@ -55,22 +55,22 @@ export const DocumentSourceSchema = z.discriminatedUnion("type", [
     textPreview: z.string().min(1).max(200),
   }),
 ]);
-export type DocumentSource = z.infer<typeof DocumentSourceSchema>;
+export type MaterialSource = z.infer<typeof MaterialSourceSchema>;
 
-export const DocumentSchema = z.object({
+export const MaterialSchema = z.object({
   id: UuidSchema,
   spaceId: PublicIdSchema,
   title: z.string().min(1).max(120),
-  kind: DocumentKindSchema,
-  status: DocumentStatusSchema,
+  kind: MaterialKindSchema,
+  status: MaterialStatusSchema,
   summary: z.string().min(1).max(280).optional(),
   tags: z.array(z.string().min(1).max(24)).max(8),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
   analysisReadyAt: IsoDateTimeSchema.optional(),
-  source: DocumentSourceSchema.optional(),
+  source: MaterialSourceSchema.optional(),
 });
-export type Document = z.infer<typeof DocumentSchema>;
+export type Material = z.infer<typeof MaterialSchema>;
 
 export const PlanStatusSchema = z.enum(["active", "paused", "archived"]);
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
@@ -132,7 +132,7 @@ export const PlanSchema = z.object({
   status: PlanStatusSchema,
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
-  sourceDocumentIds: z.array(UuidSchema).min(1).max(5),
+  sourceMaterialIds: z.array(UuidSchema).min(1).max(5),
   modules: z.array(PlanModuleSchema).min(1),
 });
 export type Plan = z.infer<typeof PlanSchema>;
@@ -435,7 +435,7 @@ export const DbSchema = z.object({
   version: z.number().int().nonnegative(),
   user: UserSchema.optional(),
   spaces: z.array(SpaceSchema),
-  documents: z.array(DocumentSchema),
+  materials: z.array(MaterialSchema),
   plans: z.array(PlanSchema),
   concepts: z.array(ConceptSchema),
   sessionBlueprints: z.array(SessionBlueprintSchema),

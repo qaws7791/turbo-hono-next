@@ -3,24 +3,17 @@ import { z } from "zod";
 
 import type { paths } from "~/foundation/types/api";
 
-import { clearAuthSession, readAuthSession } from "~/foundation/lib/auth";
-import { nowIso } from "~/foundation/lib/time";
-import {
-  readJsonFromStorage,
-  writeJsonToStorage,
-} from "~/foundation/lib/storage";
-import { randomUuidV4 } from "~/foundation/lib/uuid";
 import {
   createPlan,
   createSpace,
-  deleteDocument,
+  deleteMaterial,
   getConcept,
   getPlan,
   getSessionRun,
   getSpace,
   homeQueue,
   listConcepts,
-  listDocuments,
+  listMaterials,
   listPlans,
   listSpaces,
   requestMagicLink,
@@ -28,9 +21,16 @@ import {
   setPlanStatus,
   startSession,
   updateSpace,
-  uploadDocument,
+  uploadMaterial,
 } from "~/app/mocks/api";
 import { readDbOrSeed, writeDb } from "~/app/mocks/store";
+import { clearAuthSession, readAuthSession } from "~/foundation/lib/auth";
+import {
+  readJsonFromStorage,
+  writeJsonToStorage,
+} from "~/foundation/lib/storage";
+import { nowIso } from "~/foundation/lib/time";
+import { randomUuidV4 } from "~/foundation/lib/uuid";
 
 type ErrorResponse =
   paths["/api/spaces"]["get"]["responses"]["default"]["content"]["application/json"];
@@ -218,7 +218,7 @@ function mapSpaceToApiSpace(space: ReturnType<typeof getSpace>) {
   return apiSpace;
 }
 
-function mapDocumentStatusToProcessingStatus(
+function mapMaterialStatusToProcessingStatus(
   status: "pending" | "analyzing" | "completed" | "error",
 ): "PENDING" | "PROCESSING" | "READY" | "FAILED" {
   if (status === "pending") return "PENDING";
@@ -227,25 +227,25 @@ function mapDocumentStatusToProcessingStatus(
   return "FAILED";
 }
 
-function mapDocumentToMaterialListItem(
-  document: ReturnType<typeof listDocuments>[number],
+function mapMaterialToMaterialListItem(
+  material: ReturnType<typeof listMaterials>[number],
 ): MaterialsListOk["data"][number] {
-  const sourceType = document.kind === "file" ? "FILE" : "TEXT";
+  const sourceType = material.kind === "file" ? "FILE" : "TEXT";
   const fileSize =
-    document.source?.type === "file"
-      ? (document.source.fileSizeBytes ?? null)
+    material.source?.type === "file"
+      ? (material.source.fileSizeBytes ?? null)
       : null;
 
   return {
-    id: document.id,
-    title: document.title,
+    id: material.id,
+    title: material.title,
     sourceType,
     mimeType: null,
     fileSize,
-    processingStatus: mapDocumentStatusToProcessingStatus(document.status),
-    summary: document.summary ?? null,
-    tags: document.tags,
-    createdAt: document.createdAt,
+    processingStatus: mapMaterialStatusToProcessingStatus(material.status),
+    summary: material.summary ?? null,
+    tags: material.tags,
+    createdAt: material.createdAt,
   };
 }
 
@@ -522,7 +522,7 @@ export const handlers = [
     }
 
     db.spaces = db.spaces.filter((s) => s.id !== spaceId);
-    db.documents = db.documents.filter((d) => d.spaceId !== spaceId);
+    db.materials = db.materials.filter((d) => d.spaceId !== spaceId);
     db.plans = db.plans.filter((p) => p.spaceId !== spaceId);
     db.concepts = db.concepts.filter((c) => c.spaceId !== spaceId);
     writeDb(db);
@@ -531,7 +531,7 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  // Materials (mapped from Document mock)
+  // Materials (mapped from Material mock)
   http.get("/api/spaces/:spaceId/materials", ({ params, request }) => {
     const unauthorized = requireAuthOr401();
     if (unauthorized) return unauthorized;
@@ -542,8 +542,8 @@ export const handlers = [
     const status = url.searchParams.get("status");
     const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
 
-    const mapped = listDocuments(spaceId)
-      .map(mapDocumentToMaterialListItem)
+    const mapped = listMaterials(spaceId)
+      .map(mapMaterialToMaterialListItem)
       .filter((m) => (status ? m.processingStatus === status : true))
       .filter((m) => {
         if (!search) return true;
@@ -570,7 +570,7 @@ export const handlers = [
 
     const materialId = String(params.materialId ?? "");
     const db = readDbOrSeed();
-    const doc = db.documents.find((d) => d.id === materialId);
+    const doc = db.materials.find((d) => d.id === materialId);
     if (!doc) {
       return HttpResponse.json(
         errorResponse("NOT_FOUND", "Material not found"),
@@ -595,7 +595,7 @@ export const handlers = [
         originalFilename,
         mimeType: null,
         fileSize,
-        processingStatus: mapDocumentStatusToProcessingStatus(doc.status),
+        processingStatus: mapMaterialStatusToProcessingStatus(doc.status),
         processedAt: doc.status === "completed" ? doc.updatedAt : null,
         summary: doc.summary ?? null,
         tags: doc.tags,
@@ -680,7 +680,7 @@ export const handlers = [
         );
       }
 
-      const created = uploadDocument({
+      const created = uploadMaterial({
         spaceId,
         kind: "file",
         title: body.title ?? upload.originalFilename,
@@ -695,7 +695,7 @@ export const handlers = [
         data: {
           id: created.id,
           title: created.title,
-          processingStatus: mapDocumentStatusToProcessingStatus(created.status),
+          processingStatus: mapMaterialStatusToProcessingStatus(created.status),
           summary: created.summary ?? null,
         },
       };
@@ -727,7 +727,7 @@ export const handlers = [
 
     const materialId = String(params.materialId ?? "");
     const db = readDbOrSeed();
-    const doc = db.documents.find((d) => d.id === materialId);
+    const doc = db.materials.find((d) => d.id === materialId);
     if (!doc) {
       return HttpResponse.json(
         errorResponse("NOT_FOUND", "Material not found"),
@@ -737,7 +737,7 @@ export const handlers = [
       );
     }
 
-    deleteDocument({ spaceId: doc.spaceId, documentId: materialId });
+    deleteMaterial({ spaceId: doc.spaceId, materialId: materialId });
     const response: MaterialDeleteOk = {
       message: "Deleted",
       data: { type: "soft" },
@@ -761,7 +761,7 @@ export const handlers = [
     }
 
     const db = readDbOrSeed();
-    const doc = db.documents.find((d) => d.id === materialId);
+    const doc = db.materials.find((d) => d.id === materialId);
     if (!doc) {
       return HttpResponse.json(
         errorResponse("NOT_FOUND", "Material not found"),
@@ -905,7 +905,7 @@ export const handlers = [
     try {
       const plan = createPlan({
         spaceId,
-        sourceDocumentIds: body.materialIds,
+        sourceMaterialIds: body.materialIds,
         goal: (() => {
           if (body.goalType === "JOB") return "career";
           if (body.goalType === "CERT") return "certificate";

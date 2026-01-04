@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { Document } from "~/app/mocks/schemas";
+import type { Material } from "~/app/mocks/schemas";
 
 export type SpaceMaterialsModel = {
   uploadOpen: boolean;
@@ -10,7 +10,7 @@ export type SpaceMaterialsModel = {
 };
 
 export function useSpaceMaterialsModel(
-  materials: Array<Document>,
+  materials: Array<Material>,
 ): SpaceMaterialsModel {
   const [uploadOpen, setUploadOpen] = React.useState(false);
 

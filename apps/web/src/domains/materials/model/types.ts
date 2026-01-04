@@ -1,21 +1,21 @@
-export type DocumentStatus = "pending" | "analyzing" | "completed" | "error";
+export type MaterialStatus = "pending" | "analyzing" | "completed" | "error";
 
-export type DocumentSource = {
+export type MaterialSource = {
   type: "file";
   fileName: string;
   fileSizeBytes?: number;
 };
 
-export type Document = {
+export type Material = {
   id: string;
   spaceId: string;
   title: string;
   kind: "text" | "file";
-  status: DocumentStatus;
+  status: MaterialStatus;
   summary?: string;
   tags: Array<string>;
   createdAt: string;
   updatedAt: string;
   analysisReadyAt?: string;
-  source?: DocumentSource;
+  source?: MaterialSource;
 };

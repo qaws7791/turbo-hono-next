@@ -37,7 +37,7 @@ export async function clientLoader() {
         icon: space.icon,
         color: space.color,
         hasTodo: Boolean(activePlan && activePlan.progressPercent < 100),
-        documentCount: materials.meta.total,
+        materialCount: materials.meta.total,
         conceptCount: concepts.meta.total,
         lastStudiedAt,
         activePlan: activePlan

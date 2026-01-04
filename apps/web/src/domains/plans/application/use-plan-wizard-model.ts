@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { Document, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
+import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 import type {
   PlanWizardModel,
   PlanWizardStep,
@@ -9,12 +9,12 @@ import type {
 
 import { PlanGoalSchema, PlanLevelSchema } from "~/app/mocks/schemas";
 
-function canSelectMaterial(doc: Document): boolean {
+function canSelectMaterial(doc: Material): boolean {
   return doc.status === "completed";
 }
 
 export function usePlanWizardModel(input: {
-  materials: Array<Document>;
+  materials: Array<Material>;
   submitPlan: (formData: FormData) => void;
 }): PlanWizardModel {
   const [step, setStep] = React.useState<PlanWizardStep>(1);

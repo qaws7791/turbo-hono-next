@@ -94,7 +94,7 @@ export function PlanDetailView({
             <div className="text-muted-foreground text-sm">
               목표 {getPlanGoalLabel(plan.goal)} · 수준
               {getPlanLevelLabel(plan.level)} · 문서
-              {plan.sourceDocumentIds.length}개
+              {plan.sourceMaterialIds.length}개
             </div>
           </div>
 

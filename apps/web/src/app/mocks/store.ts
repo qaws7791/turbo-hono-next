@@ -3,12 +3,12 @@ import { DbSchema } from "./schemas";
 
 import type { Db } from "./schemas";
 
+import { randomPublicId } from "~/foundation/lib/public-id";
 import {
   readJsonFromStorage,
   writeJsonToStorage,
 } from "~/foundation/lib/storage";
 import { nowIso, todayIsoDate } from "~/foundation/lib/time";
-import { randomPublicId } from "~/foundation/lib/public-id";
 import { randomUuidV4 } from "~/foundation/lib/uuid";
 
 const DB_KEY = "tlm_mock_db_v1";
@@ -18,7 +18,7 @@ function emptyDb(): Db {
     version: 0,
     user: undefined,
     spaces: [],
-    documents: [],
+    materials: [],
     plans: [],
     concepts: [],
     sessionBlueprints: [],
@@ -33,10 +33,10 @@ function seededDb(): Db {
   const spaceWorkId = randomPublicId();
   const spaceHobbyId = randomPublicId();
 
-  const document1Id = randomUuidV4();
-  const document2Id = randomUuidV4();
-  const document3Id = randomUuidV4();
-  const document4Id = randomUuidV4();
+  const material1Id = randomUuidV4();
+  const material2Id = randomUuidV4();
+  const material3Id = randomUuidV4();
+  const material4Id = randomUuidV4();
 
   // Plan 1: React Hooks 마스터
   const planId = randomPublicId();
@@ -208,9 +208,9 @@ function seededDb(): Db {
         activePlanId: plan2Id,
       },
     ],
-    documents: [
+    materials: [
       {
-        id: document1Id,
+        id: material1Id,
         spaceId: spaceWorkId,
         title: "React Hooks 정리 (URL)",
         kind: "url",
@@ -222,7 +222,7 @@ function seededDb(): Db {
         source: { type: "url", url: "https://react.dev/reference/react" },
       },
       {
-        id: document2Id,
+        id: material2Id,
         spaceId: spaceWorkId,
         title: "TypeScript 실전 노트 (텍스트)",
         kind: "text",
@@ -237,7 +237,7 @@ function seededDb(): Db {
         },
       },
       {
-        id: document3Id,
+        id: material3Id,
         spaceId: spaceHobbyId,
         title: "기타 코드 스케일 연습 (파일)",
         kind: "file",
@@ -253,7 +253,7 @@ function seededDb(): Db {
         },
       },
       {
-        id: document4Id,
+        id: material4Id,
         spaceId: spaceHobbyId,
         title: "TypeScript 핸드북 (URL)",
         kind: "url",
@@ -278,7 +278,7 @@ function seededDb(): Db {
         status: "active",
         createdAt,
         updatedAt: createdAt,
-        sourceDocumentIds: [document1Id, document2Id],
+        sourceMaterialIds: [material1Id, material2Id],
         modules: [
           {
             id: module1Id,
@@ -349,7 +349,7 @@ function seededDb(): Db {
         status: "active",
         createdAt,
         updatedAt: createdAt,
-        sourceDocumentIds: [document4Id],
+        sourceMaterialIds: [material4Id],
         modules: [
           {
             id: plan2Module1Id,

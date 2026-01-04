@@ -13,7 +13,7 @@ import {
 const SpaceIdSchema = PublicIdSchema;
 
 function tabToPath(spaceId: string, tab: string): string | null {
-  if (tab === "documents") return `/spaces/${spaceId}/documents`;
+  if (tab === "materials") return `/spaces/${spaceId}/materials`;
   if (tab === "plans") return `/spaces/${spaceId}`;
   if (tab === "concepts") return `/spaces/${spaceId}/concepts`;
   return null;

@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router";
 
-import type { Route } from "./+types/space-documents";
+import type { Route } from "./+types/space-materials";
 
 import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
@@ -59,7 +59,7 @@ export async function clientAction({
   return null;
 }
 
-export default function SpaceDocumentsRoute() {
+export default function SpaceMaterialsRoute() {
   const { materials } = useLoaderData<typeof clientLoader>();
   const model = useSpaceMaterialsModel(materials);
   return (

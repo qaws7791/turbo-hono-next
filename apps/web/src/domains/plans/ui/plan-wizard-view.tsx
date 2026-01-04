@@ -9,7 +9,7 @@ import { Separator } from "@repo/ui/separator";
 import { Textarea } from "@repo/ui/textarea";
 import { Link } from "react-router";
 
-import type { Document, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
+import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 import type { PlanWizardModel } from "~/domains/plans/model";
 
 import {
@@ -17,13 +17,13 @@ import {
   materialStatusLabel,
 } from "~/domains/materials/model";
 
-function materialStatusBadgeVariant(status: Document["status"]) {
+function materialStatusBadgeVariant(status: Material["status"]) {
   if (status === "completed") return "secondary" as const;
   if (status === "error") return "destructive" as const;
   return "outline" as const;
 }
 
-function canSelectMaterial(doc: Document): boolean {
+function canSelectMaterial(doc: Material): boolean {
   return doc.status === "completed";
 }
 
@@ -49,7 +49,7 @@ export function PlanWizardView({
   onCancel,
 }: {
   spaceId: string;
-  materials: Array<Document>;
+  materials: Array<Material>;
   model: PlanWizardModel;
   isSubmitting: boolean;
   onCancel: () => void;
@@ -105,7 +105,7 @@ export function PlanWizardView({
                   <div className="text-muted-foreground text-sm">
                     학습 계획을 만들려면 학습 자료가 필요합니다.
                   </div>
-                  <Button render={<Link to={`/spaces/${spaceId}/documents`} />}>
+                  <Button render={<Link to={`/spaces/${spaceId}/materials`} />}>
                     자료 업로드로 이동
                   </Button>
                 </div>

@@ -1,5 +1,5 @@
 import type { HomeQueueItem } from "~/domains/home";
-import type { Document } from "../../materials/model/types";
+import type { Material } from "../../materials/model/types";
 import type { Space } from "../../spaces/model/types";
 
 export type PlanStatus = "active" | "paused" | "archived";
@@ -37,7 +37,7 @@ export type Plan = {
   status: PlanStatus;
   createdAt: string;
   updatedAt: string;
-  sourceDocumentIds: Array<string>;
+  sourceMaterialIds: Array<string>;
   modules: Array<PlanModule>;
 };
 
@@ -55,5 +55,5 @@ export type PlanDetailData = {
   space: Space;
   plan: PlanWithDerived;
   nextQueue: Array<HomeQueueItem>;
-  sourceMaterials: Array<Document>;
+  sourceMaterials: Array<Material>;
 };

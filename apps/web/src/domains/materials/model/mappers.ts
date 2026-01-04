@@ -1,12 +1,12 @@
 import type { paths } from "~/foundation/types/api";
-import type { Document, DocumentStatus } from "./types";
+import type { Material, MaterialStatus } from "./types";
 
 type ApiMaterialListItem =
   paths["/api/spaces/{spaceId}/materials"]["get"]["responses"]["200"]["content"]["application/json"]["data"][number];
 
 export function mapProcessingStatus(
   status: ApiMaterialListItem["processingStatus"],
-): DocumentStatus {
+): MaterialStatus {
   if (status === "READY") return "completed";
   if (status === "FAILED") return "error";
   if (status === "PROCESSING") return "analyzing";
@@ -16,7 +16,7 @@ export function mapProcessingStatus(
 export function toMaterialFromApi(
   spaceId: string,
   item: ApiMaterialListItem,
-): Document {
+): Material {
   return {
     id: item.id,
     spaceId,

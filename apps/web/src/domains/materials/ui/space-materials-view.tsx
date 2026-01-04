@@ -26,14 +26,14 @@ import {
   materialStatusLabel,
 } from "../model";
 
-import type { Document } from "~/app/mocks/schemas";
+import type { Material } from "~/app/mocks/schemas";
 import type { SpaceMaterialsModel } from "../application/use-space-materials-model";
 
 export function SpaceMaterialsView({
   materials,
   model,
 }: {
-  materials: Array<Document>;
+  materials: Array<Material>;
   model: SpaceMaterialsModel;
 }) {
   const fetcher = useFetcher();

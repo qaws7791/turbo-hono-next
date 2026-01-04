@@ -1,4 +1,4 @@
-import type { Document, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
+import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 
 export type PlanWizardStep = 1 | 2 | 3;
 
@@ -14,7 +14,7 @@ export type PlanWizardValues = {
 };
 
 export type PlanWizardDerived = {
-  filteredMaterials: Array<Document>;
+  filteredMaterials: Array<Material>;
   selectedCount: number;
   hasInvalidSelection: boolean;
 };

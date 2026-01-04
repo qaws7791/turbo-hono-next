@@ -5,7 +5,7 @@ export type SpaceCard = {
   icon: string;
   color: string;
   hasTodo: boolean;
-  documentCount: number;
+  materialCount: number;
   conceptCount: number;
   lastStudiedAt?: string; // ISO datetime
   activePlan?: {

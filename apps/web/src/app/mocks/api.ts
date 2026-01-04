@@ -4,9 +4,9 @@ import { createSessionBlueprint } from "./blueprints";
 import {
   ConceptReviewStatusSchema,
   DbSchema,
-  DocumentKindSchema,
   IsoDateSchema,
   JsonValueSchema,
+  MaterialKindSchema,
   PlanGoalSchema,
   PlanLevelSchema,
   PlanSchema,
@@ -20,8 +20,8 @@ import type {
   Concept,
   ConceptReviewStatus,
   Db,
-  Document,
-  DocumentKind,
+  Material,
+  MaterialKind,
   Plan,
   PlanGoal,
   PlanLevel,
@@ -141,9 +141,9 @@ function requireSessionBlueprint(
   return blueprint;
 }
 
-function mutateDocumentsForAnalysis(db: Db, now: Date): boolean {
+function mutateMaterialsForAnalysis(db: Db, now: Date): boolean {
   let changed = false;
-  for (const doc of db.documents) {
+  for (const doc of db.materials) {
     if (doc.status !== "analyzing" || !doc.analysisReadyAt) {
       continue;
     }
@@ -321,43 +321,43 @@ export function getSpace(spaceId: string): Space {
   return SpaceSchema.parse(requireSpace(db, spaceId));
 }
 
-export function listDocuments(spaceId: string): Array<Document> {
+export function listMaterials(spaceId: string): Array<Material> {
   const db = readDb();
   requireUser(db);
   requireSpace(db, spaceId);
 
-  const changed = mutateDocumentsForAnalysis(db, new Date());
+  const changed = mutateMaterialsForAnalysis(db, new Date());
   if (changed) {
     commit(db);
   }
 
-  return db.documents
+  return db.materials
     .filter((d) => d.spaceId === spaceId)
     .slice()
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export function uploadDocument(input: {
+export function uploadMaterial(input: {
   spaceId: string;
-  kind: DocumentKind;
+  kind: MaterialKind;
   title: string;
   source:
     | { type: "file"; fileName: string; fileSizeBytes?: number }
     | { type: "url"; url: string }
     | { type: "text"; text: string };
-}): Document {
+}): Material {
   const db = readDb();
   requireUser(db);
   requireSpace(db, input.spaceId);
 
-  const kind = DocumentKindSchema.parse(input.kind);
+  const kind = MaterialKindSchema.parse(input.kind);
   const title = z.string().min(1).max(120).parse(input.title.trim());
 
   const now = nowIso();
   const analysisReadyAt = new Date();
   analysisReadyAt.setSeconds(analysisReadyAt.getSeconds() + 3);
 
-  const base: Omit<Document, "source"> = {
+  const base: Omit<Material, "source"> = {
     id: randomUuidV4(),
     spaceId: input.spaceId,
     title,
@@ -397,25 +397,25 @@ export function uploadDocument(input: {
     };
   })();
 
-  const document: Document = {
+  const material: Material = {
     ...base,
     source,
   };
 
-  db.documents.unshift(document);
+  db.materials.unshift(material);
   commit(db);
-  return document;
+  return material;
 }
 
-export function deleteDocument(input: {
+export function deleteMaterial(input: {
   spaceId: string;
-  documentId: string;
+  materialId: string;
 }): void {
   const db = readDb();
   requireUser(db);
   requireSpace(db, input.spaceId);
-  db.documents = db.documents.filter(
-    (d) => !(d.spaceId === input.spaceId && d.id === input.documentId),
+  db.materials = db.materials.filter(
+    (d) => !(d.spaceId === input.spaceId && d.id === input.materialId),
   );
   commit(db);
 }
@@ -489,7 +489,7 @@ export function setActivePlan(input: {
 
 export function createPlan(input: {
   spaceId: string;
-  sourceDocumentIds: Array<string>;
+  sourceMaterialIds: Array<string>;
   goal: PlanGoal;
   level: PlanLevel;
   durationMode: "custom" | "adaptive";
@@ -501,22 +501,22 @@ export function createPlan(input: {
   requireUser(db);
   const space = requireSpace(db, input.spaceId);
 
-  const sourceDocumentIds = z
+  const sourceMaterialIds = z
     .array(z.string().uuid())
     .min(1)
     .max(5)
-    .parse(input.sourceDocumentIds);
+    .parse(input.sourceMaterialIds);
   const goal = PlanGoalSchema.parse(input.goal);
   const level = PlanLevelSchema.parse(input.level);
 
-  const documents = db.documents.filter(
-    (d) => d.spaceId === input.spaceId && sourceDocumentIds.includes(d.id),
+  const materials = db.materials.filter(
+    (d) => d.spaceId === input.spaceId && sourceMaterialIds.includes(d.id),
   );
-  if (documents.length !== sourceDocumentIds.length) {
-    throw new Error("INVALID_DOCUMENT_SELECTION");
+  if (materials.length !== sourceMaterialIds.length) {
+    throw new Error("INVALID_Material_SELECTION");
   }
-  if (documents.some((d) => d.status !== "completed")) {
-    throw new Error("DOCUMENTS_NOT_READY");
+  if (materials.some((d) => d.status !== "completed")) {
+    throw new Error("MaterialS_NOT_READY");
   }
 
   const now = nowIso();
@@ -532,7 +532,7 @@ export function createPlan(input: {
     nextIsoDateAfter(3),
   ];
 
-  const tagSeed = documents.flatMap((d) => d.tags).slice(0, 4);
+  const tagSeed = materials.flatMap((d) => d.tags).slice(0, 4);
   const module1Title = tagSeed[0]
     ? `Module 1: ${tagSeed[0]}`
     : "Module 1: Foundations";
@@ -604,7 +604,7 @@ export function createPlan(input: {
     status: "active",
     createdAt: now,
     updatedAt: now,
-    sourceDocumentIds,
+    sourceMaterialIds,
     modules: [
       {
         id: module1Id,
