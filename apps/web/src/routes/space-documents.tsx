@@ -2,16 +2,14 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-documents";
 
+import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
+  SpaceDocumentsView,
   deleteDocumentForUi,
   listDocumentsForUi,
   uploadFileDocumentForUi,
-} from "~/foundation/api/compat/materials";
-import {
-  SpaceDocumentsView,
   useSpaceDocumentsModel,
 } from "~/domains/documents";
-import { PublicIdSchema } from "~/app/mocks/schemas";
 
 const SpaceIdSchema = PublicIdSchema;
 

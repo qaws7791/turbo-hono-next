@@ -3,10 +3,13 @@ import { z } from "zod";
 
 import type { Route } from "./+types/concepts";
 
-import { toUiConceptFromListItem } from "~/foundation/api/compat/concepts";
-import { listSpacesForUi } from "~/foundation/api/compat/spaces";
+import {
+  ConceptLibraryView,
+  toConceptFromListItem,
+  useConceptLibraryModel,
+} from "~/domains/concepts";
+import { listSpacesForUi } from "~/domains/spaces";
 import { listSpaceConcepts } from "~/foundation/api/concepts";
-import { ConceptLibraryView, useConceptLibraryModel } from "~/domains/concepts";
 
 const SearchSchema = z.object({
   q: z.string().optional(),
@@ -40,7 +43,7 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   );
 
   const concepts = conceptLists.flatMap((list, index) =>
-    list.data.map((c) => toUiConceptFromListItem(spaces[index].id, c)),
+    list.data.map((c) => toConceptFromListItem(spaces[index].id, c)),
   );
 
   return {

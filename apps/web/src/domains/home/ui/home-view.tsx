@@ -16,12 +16,12 @@ import {
 import { IconArrowRight, IconCalendar, IconFlame } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import type { User } from "~/app/mocks/schemas";
+import type { User } from "~/domains/auth";
 import type {
   HomeQueueItem,
   HomeStats,
   SessionSummaryCard,
-} from "~/foundation/api/compat/home";
+} from "~/domains/home";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 import { getColorByName, getIconByName } from "~/domains/spaces/ui";

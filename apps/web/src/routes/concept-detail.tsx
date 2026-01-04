@@ -1,16 +1,17 @@
 import { useLoaderData } from "react-router";
 
-import type { Concept } from "~/app/mocks/schemas";
+import type { Concept } from "~/domains/concepts";
 import type { Route } from "./+types/concept-detail";
 
-import {
-  toUiConceptFromDetail,
-  toUiConceptFromListItem,
-} from "~/foundation/api/compat/concepts";
-import { getSpaceForUi, listSpacesForUi } from "~/foundation/api/compat/spaces";
-import { getConceptDetail, listSpaceConcepts } from "~/foundation/api/concepts";
-import { ConceptDetailView, useConceptDetailModel } from "~/domains/concepts";
 import { PublicIdSchema } from "~/app/mocks/schemas";
+import {
+  ConceptDetailView,
+  toConceptFromDetail,
+  toConceptFromListItem,
+  useConceptDetailModel,
+} from "~/domains/concepts";
+import { getSpaceForUi, listSpacesForUi } from "~/domains/spaces";
+import { getConceptDetail, listSpaceConcepts } from "~/foundation/api/concepts";
 
 const ConceptIdSchema = PublicIdSchema;
 
@@ -51,12 +52,12 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
   const space = await getSpaceForUi(located.spaceId);
   const detail = await getConceptDetail(conceptId.data);
-  const concept = toUiConceptFromDetail(located.spaceId, detail.data);
+  const concept = toConceptFromDetail(located.spaceId, detail.data);
 
   const related = detail.data.relatedConcepts.slice(0, 6).map((r) => {
     const found = index.get(r.id);
     if (found) {
-      return toUiConceptFromListItem(found.spaceId, found.item);
+      return toConceptFromListItem(found.spaceId, found.item);
     }
 
     const fallback: Concept = {

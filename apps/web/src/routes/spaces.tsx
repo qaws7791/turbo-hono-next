@@ -3,14 +3,15 @@ import { redirect, useLoaderData, useSearchParams } from "react-router";
 import type { SpaceCard } from "~/domains/spaces";
 import type { Route } from "./+types/spaces";
 
-import { getActivePlanForSpaceUi } from "~/foundation/api/compat/plans";
+import { getActivePlanForSpaceUi } from "~/domains/plans";
 import {
+  SpacesView,
   createSpaceForUi,
   listSpacesForUi,
-} from "~/foundation/api/compat/spaces";
+  useSpacesModel,
+} from "~/domains/spaces";
 import { listSpaceConcepts } from "~/foundation/api/concepts";
 import { listMaterials } from "~/foundation/api/materials";
-import { SpacesView, useSpacesModel } from "~/domains/spaces";
 
 export function meta() {
   return [{ title: "스페이스" }];

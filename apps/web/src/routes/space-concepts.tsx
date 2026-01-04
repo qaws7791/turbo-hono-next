@@ -2,11 +2,10 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-concepts";
 
-import { toUiConceptFromListItem } from "~/foundation/api/compat/concepts";
-import { getSpaceForUi } from "~/foundation/api/compat/spaces";
-import { listSpaceConcepts } from "~/foundation/api/concepts";
-import { SpaceConceptsView } from "~/domains/concepts";
 import { PublicIdSchema } from "~/app/mocks/schemas";
+import { SpaceConceptsView, toConceptFromListItem } from "~/domains/concepts";
+import { getSpaceForUi } from "~/domains/spaces";
+import { listSpaceConcepts } from "~/foundation/api/concepts";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -27,9 +26,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
   return {
     space,
-    concepts: concepts.data.map((c) =>
-      toUiConceptFromListItem(spaceId.data, c),
-    ),
+    concepts: concepts.data.map((c) => toConceptFromListItem(spaceId.data, c)),
   };
 }
 

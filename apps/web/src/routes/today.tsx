@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router";
 
-import { homeQueue } from "~/foundation/api/compat/home";
+import { getHomeQueue } from "~/domains/home";
 import { TodayView } from "~/domains/today";
 
 export function meta() {
@@ -9,7 +9,7 @@ export function meta() {
 
 export async function clientLoader() {
   return {
-    queue: await homeQueue(),
+    queue: await getHomeQueue(),
   };
 }
 

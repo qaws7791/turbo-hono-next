@@ -1,6 +1,6 @@
-import { toMockSpace } from "./mappers";
+import { toSpaceFromApi } from "../model/mappers";
 
-import type { Space } from "~/app/mocks/schemas";
+import type { Space } from "../model/types";
 
 import {
   createSpace,
@@ -11,12 +11,12 @@ import {
 
 export async function listSpacesForUi(): Promise<Array<Space>> {
   const spaces = await listSpaces();
-  return spaces.map(toMockSpace);
+  return spaces.map(toSpaceFromApi);
 }
 
 export async function getSpaceForUi(spaceId: string): Promise<Space> {
   const space = await getSpace(spaceId);
-  return toMockSpace(space);
+  return toSpaceFromApi(space);
 }
 
 export async function createSpaceForUi(input: {
@@ -24,7 +24,7 @@ export async function createSpaceForUi(input: {
   description?: string;
 }): Promise<Space> {
   const created = await createSpace(input);
-  return toMockSpace(created);
+  return toSpaceFromApi(created);
 }
 
 export async function updateSpaceForUi(
@@ -37,5 +37,5 @@ export async function updateSpaceForUi(
   },
 ): Promise<Space> {
   const updated = await updateSpace(spaceId, input);
-  return toMockSpace(updated);
+  return toSpaceFromApi(updated);
 }

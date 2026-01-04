@@ -1,23 +1,15 @@
-import { apiClient } from "../client";
-import { ApiError } from "../error";
-
 import type { paths } from "~/foundation/types/api";
 import type {
-  Plan,
   PlanGoal,
   PlanLevel,
   PlanSessionStatus,
   PlanSessionType,
   PlanStatus,
-} from "~/app/mocks/schemas";
+  PlanWithDerived,
+} from "./types";
 
 import { nowIso } from "~/foundation/lib/time";
 import { randomUuidV4 } from "~/foundation/lib/uuid";
-
-export type PlanWithDerived = Plan & {
-  progressPercent: number;
-  totalSessions: number;
-};
 
 type PlanListOk =
   paths["/api/spaces/{spaceId}/plans"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -27,31 +19,33 @@ type PlanDetailOk =
   paths["/api/plans/{planId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type ApiPlanDetail = PlanDetailOk["data"];
 
-function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
+export function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
   if (goalType === "JOB") return "career";
   if (goalType === "CERT") return "certificate";
   if (goalType === "WORK") return "work";
   return "hobby";
 }
 
-function mapCurrentLevel(level: ApiPlanDetail["currentLevel"]): PlanLevel {
+export function mapCurrentLevel(
+  level: ApiPlanDetail["currentLevel"],
+): PlanLevel {
   if (level === "ADVANCED") return "advanced";
   if (level === "INTERMEDIATE") return "intermediate";
   return "novice";
 }
 
-function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
+export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
   if (status === "ACTIVE") return "active";
   if (status === "PAUSED") return "paused";
   if (status === "ARCHIVED") return "archived";
   return "archived";
 }
 
-function mapSessionType(type: "LEARN" | "REVIEW"): PlanSessionType {
+export function mapSessionType(type: "LEARN" | "REVIEW"): PlanSessionType {
   return type === "REVIEW" ? "review" : "session";
 }
 
-function mapSessionStatus(
+export function mapSessionStatus(
   status: "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "SKIPPED" | "CANCELED",
 ): PlanSessionStatus {
   if (status === "IN_PROGRESS") return "in_progress";
@@ -59,7 +53,7 @@ function mapSessionStatus(
   return "todo";
 }
 
-function computeProgressPercent(progress: {
+export function computeProgressPercent(progress: {
   completedSessions: number;
   totalSessions: number;
 }): number {
@@ -69,7 +63,7 @@ function computeProgressPercent(progress: {
   );
 }
 
-function mapPlanListItemToUiPlan(
+export function toPlanFromListItem(
   item: ApiPlanListItem,
   spaceId: string,
 ): PlanWithDerived {
@@ -91,7 +85,7 @@ function mapPlanListItemToUiPlan(
   };
 }
 
-function mapPlanDetailToUiPlan(detail: ApiPlanDetail): PlanWithDerived {
+export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
   const createdAt = nowIso();
   const updatedAt = createdAt;
 
@@ -152,41 +146,4 @@ function mapPlanDetailToUiPlan(detail: ApiPlanDetail): PlanWithDerived {
     totalSessions,
     progressPercent,
   };
-}
-
-export async function listPlansForUi(
-  spaceId: string,
-): Promise<Array<PlanWithDerived>> {
-  const { data, error, response } = await apiClient.GET(
-    "/api/spaces/{spaceId}/plans",
-    { params: { path: { spaceId } } },
-  );
-  if (!response.ok || !data) {
-    throw new ApiError("Failed to list plans", response.status, error);
-  }
-  return data.data.map((item) => mapPlanListItemToUiPlan(item, spaceId));
-}
-
-export async function getPlanForUi(planId: string): Promise<PlanWithDerived> {
-  const { data, error, response } = await apiClient.GET("/api/plans/{planId}", {
-    params: { path: { planId } },
-  });
-  if (!response.ok || !data) {
-    throw new ApiError("Failed to get plan", response.status, error);
-  }
-  return mapPlanDetailToUiPlan(data.data);
-}
-
-export async function getActivePlanForSpaceUi(
-  spaceId: string,
-): Promise<PlanWithDerived | null> {
-  const { data, error, response } = await apiClient.GET(
-    "/api/spaces/{spaceId}/plans",
-    { params: { path: { spaceId }, query: { status: "ACTIVE", limit: 1 } } },
-  );
-  if (!response.ok || !data) {
-    throw new ApiError("Failed to list active plans", response.status, error);
-  }
-  const first = data.data[0];
-  return first ? mapPlanListItemToUiPlan(first, spaceId) : null;
 }

@@ -1,6 +1,6 @@
 import { useFetcher } from "react-router";
 
-import type { PlanWithDerived } from "~/foundation/api/compat/plans";
+import type { PlanWithDerived } from "~/domains/plans";
 
 export type SpacePlansModel = {
   isSubmitting: boolean;

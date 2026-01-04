@@ -12,3 +12,15 @@ export type LoginViewState =
       secondsLeft: number;
       canResend: boolean;
     };
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  plan: "free" | "pro";
+};
+
+export type AuthStatus = {
+  isAuthenticated: boolean;
+  user: User | null;
+};

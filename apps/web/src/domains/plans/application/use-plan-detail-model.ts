@@ -1,7 +1,7 @@
 import { useFetcher } from "react-router";
 
-import type { HomeQueueItem } from "~/foundation/api/compat/home";
 import type { Plan } from "~/app/mocks/schemas";
+import type { HomeQueueItem } from "~/domains/home";
 
 export type PlanDetailModel = {
   canStart: boolean;

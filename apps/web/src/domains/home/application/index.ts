@@ -1,1 +1,2 @@
-export type { HomeModel } from "./use-home-model";
+export * from "./home";
+export * from "./use-home-model";

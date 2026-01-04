@@ -1,15 +1,18 @@
 import { redirect, useLoaderData } from "react-router";
 import { z } from "zod";
 
-import type { HomeQueueItem } from "~/foundation/api/compat/home";
+import type { HomeQueueItem } from "~/domains/home";
 import type { PlanDetailData } from "~/domains/plans";
 import type { Route } from "./+types/plan-detail";
 
-import { getPlanForUi } from "~/foundation/api/compat/plans";
-import { getSpaceForUi } from "~/foundation/api/compat/spaces";
-import { updatePlanStatus } from "~/foundation/api/plans";
-import { PlanDetailView, usePlanDetailModel } from "~/domains/plans";
 import { PublicIdSchema } from "~/app/mocks/schemas";
+import {
+  PlanDetailView,
+  getPlanForUi,
+  usePlanDetailModel,
+} from "~/domains/plans";
+import { getSpaceForUi } from "~/domains/spaces";
+import { updatePlanStatus } from "~/foundation/api/plans";
 
 const SpaceIdSchema = PublicIdSchema;
 const PlanIdSchema = PublicIdSchema;

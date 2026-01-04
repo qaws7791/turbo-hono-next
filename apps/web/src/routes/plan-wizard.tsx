@@ -3,15 +3,15 @@ import { z } from "zod";
 
 import type { Route } from "./+types/plan-wizard";
 
-import { listDocumentsForUi } from "~/foundation/api/compat/materials";
-import { createPlan } from "~/foundation/api/plans";
-import { PlanWizardView, usePlanWizardModel } from "~/domains/plans";
 import {
   PlanGoalSchema,
   PlanLevelSchema,
   PublicIdSchema,
   UuidSchema,
 } from "~/app/mocks/schemas";
+import { listDocumentsForUi } from "~/domains/documents";
+import { PlanWizardView, usePlanWizardModel } from "~/domains/plans";
+import { createPlan } from "~/foundation/api/plans";
 
 const SpaceIdSchema = PublicIdSchema;
 

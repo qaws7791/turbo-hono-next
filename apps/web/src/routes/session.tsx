@@ -9,13 +9,13 @@ import {
 import type { Route } from "./+types/session";
 
 import { PublicIdSchema } from "~/app/mocks/schemas";
+import { getAuthSession } from "~/domains/auth";
 import {
   SessionView,
   createOrResumeSessionRun,
   getSessionRunForUi,
   useSessionController,
 } from "~/domains/session";
-import { getAuthStatus } from "~/foundation/api/compat/auth";
 
 const RunIdSchema = PublicIdSchema;
 const SessionIdSchema = PublicIdSchema;
@@ -25,7 +25,7 @@ export function meta() {
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const { isAuthenticated } = await getAuthStatus();
+  const { isAuthenticated } = await getAuthSession();
   if (!isAuthenticated) {
     throw redirect(`/login?redirectTo=${encodeURIComponent("/session")}`);
   }

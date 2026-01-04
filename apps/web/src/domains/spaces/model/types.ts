@@ -14,3 +14,14 @@ export type SpaceCard = {
     progressPercent: number;
   };
 };
+
+export type Space = {
+  id: string;
+  name: string;
+  description?: string;
+  icon: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+  activePlanId?: string;
+};

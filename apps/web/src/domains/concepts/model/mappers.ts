@@ -1,5 +1,5 @@
-import type { Concept, ConceptReviewStatus } from "~/app/mocks/schemas";
 import type { paths } from "~/foundation/types/api";
+import type { Concept, ConceptReviewStatus } from "./types";
 
 import { nowIso } from "~/foundation/lib/time";
 
@@ -17,7 +17,7 @@ export function mapApiReviewStatus(
   return "good";
 }
 
-export function toUiConceptFromListItem(
+export function toConceptFromListItem(
   spaceId: string,
   item: ApiConceptListItem,
 ): Concept {
@@ -37,7 +37,7 @@ export function toUiConceptFromListItem(
   };
 }
 
-export function toUiConceptFromDetail(
+export function toConceptFromDetail(
   spaceId: string,
   detail: ApiConceptDetail,
 ): Concept {

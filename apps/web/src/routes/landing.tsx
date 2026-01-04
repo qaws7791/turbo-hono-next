@@ -1,6 +1,6 @@
 import { useLoaderData } from "react-router";
 
-import { getAuthStatus } from "~/foundation/api/compat/auth";
+import { getAuthSession } from "~/domains/auth";
 import { LandingView, useLandingModel } from "~/domains/landing";
 
 export function meta() {
@@ -14,7 +14,7 @@ export function meta() {
 }
 
 export async function clientLoader() {
-  const { isAuthenticated } = await getAuthStatus();
+  const { isAuthenticated } = await getAuthSession();
   return { isAuthenticated };
 }
 

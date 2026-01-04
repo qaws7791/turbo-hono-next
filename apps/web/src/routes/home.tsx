@@ -1,23 +1,23 @@
 import { useLoaderData } from "react-router";
 
-import { getAuthStatus } from "~/foundation/api/compat/auth";
+import { getAuthSession } from "~/domains/auth";
 import {
-  homeQueue,
-  recentSessions,
-  statsForHome,
-} from "~/foundation/api/compat/home";
-import { HomeView } from "~/domains/home";
+  HomeView,
+  getHomeQueue,
+  getHomeStats,
+  getRecentSessions,
+} from "~/domains/home";
 
 export function meta() {
   return [{ title: "Home" }];
 }
 
 export async function clientLoader() {
-  const { user } = await getAuthStatus();
+  const { user } = await getAuthSession();
   const [stats, queue, recent] = await Promise.all([
-    statsForHome(),
-    homeQueue(),
-    recentSessions(6),
+    getHomeStats(),
+    getHomeQueue(),
+    getRecentSessions(6),
   ]);
   return { user, stats, queue, recent };
 }

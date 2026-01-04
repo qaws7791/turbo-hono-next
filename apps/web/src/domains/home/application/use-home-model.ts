@@ -1,4 +1,4 @@
-import type { HomeQueueItem } from "~/foundation/api/compat/home";
+import type { HomeQueueItem } from "../model/types";
 
 export type HomeModel = {
   nextQueueItem: HomeQueueItem | undefined;
