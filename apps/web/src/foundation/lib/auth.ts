@@ -1,0 +1,38 @@
+import { z } from "zod";
+
+import {
+  readJsonFromStorage,
+  removeFromStorage,
+  writeJsonToStorage,
+} from "./storage";
+
+import { UuidSchema } from "~/app/mocks/schemas";
+
+const AUTH_KEY = "tlm_auth_v1";
+
+const AuthSessionSchema = z.object({
+  userId: UuidSchema,
+});
+
+export type AuthSession = z.infer<typeof AuthSessionSchema>;
+
+export function readAuthSession(): AuthSession | null {
+  return readJsonFromStorage(AUTH_KEY, AuthSessionSchema);
+}
+
+export function writeAuthSession(session: AuthSession): void {
+  writeJsonToStorage(AUTH_KEY, AuthSessionSchema, session);
+}
+
+export function clearAuthSession(): void {
+  removeFromStorage(AUTH_KEY);
+}
+
+export function getRedirectTarget(requestUrl: string): string {
+  try {
+    const url = new URL(requestUrl);
+    return `${url.pathname}${url.search}`;
+  } catch {
+    return "/home";
+  }
+}
