@@ -69,7 +69,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     space,
     plan,
     nextQueue,
-    sourceDocuments: [],
+    sourceMaterials: [],
   };
 }
 

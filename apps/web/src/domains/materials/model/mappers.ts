@@ -13,7 +13,7 @@ export function mapProcessingStatus(
   return "pending";
 }
 
-export function toDocumentFromApi(
+export function toMaterialFromApi(
   spaceId: string,
   item: ApiMaterialListItem,
 ): Document {

@@ -1,4 +1,4 @@
-// Documents Domain
+// Materials Domain
 export * from "./application";
 export * from "./model";
 export * from "./ui";

@@ -3,7 +3,7 @@ import type { Document, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 export type PlanWizardStep = 1 | 2 | 3;
 
 export type PlanWizardValues = {
-  selectedDocumentIds: Array<string>;
+  selectedMaterialIds: Array<string>;
   search: string;
   goal: PlanGoal;
   level: PlanLevel;
@@ -14,7 +14,7 @@ export type PlanWizardValues = {
 };
 
 export type PlanWizardDerived = {
-  filteredDocuments: Array<Document>;
+  filteredMaterials: Array<Document>;
   selectedCount: number;
   hasInvalidSelection: boolean;
 };
@@ -25,7 +25,7 @@ export type PlanWizardModel = {
   values: PlanWizardValues;
   derived: PlanWizardDerived;
   setSearch: (value: string) => void;
-  toggleDocument: (documentId: string) => void;
+  toggleMaterial: (materialId: string) => void;
   setGoal: (value: PlanGoal) => void;
   setLevel: (value: PlanLevel) => void;
   setDurationMode: (value: "custom" | "adaptive") => void;

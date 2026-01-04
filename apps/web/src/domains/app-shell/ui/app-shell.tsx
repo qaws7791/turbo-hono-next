@@ -7,10 +7,9 @@ import { useCommandActions } from "../application/use-command-actions";
 
 import { AppCommandPalette } from "./app-command-palette";
 import { AppSidebar } from "./app-sidebar";
+import { SettingsDialog } from "./settings-dialog";
 
 import type { AppShellData } from "../model/types";
-
-import { SettingsDialog } from "~/domains/settings";
 
 /**
  * 라우트 변경 시 모바일 사이드바를 자동으로 닫는 컴포넌트

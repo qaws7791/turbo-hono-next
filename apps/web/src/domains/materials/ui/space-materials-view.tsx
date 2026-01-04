@@ -20,21 +20,21 @@ import { Separator } from "@repo/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { useFetcher } from "react-router";
 
-import type { Document } from "~/app/mocks/schemas";
-import type { SpaceDocumentsModel } from "../application/use-space-documents-model";
-
 import {
-  documentKindLabel,
-  documentStatusBadgeVariant,
-  documentStatusLabel,
-} from "~/domains/documents/model";
+  materialKindLabel,
+  materialStatusBadgeVariant,
+  materialStatusLabel,
+} from "../model";
 
-export function SpaceDocumentsView({
-  documents,
+import type { Document } from "~/app/mocks/schemas";
+import type { SpaceMaterialsModel } from "../application/use-space-materials-model";
+
+export function SpaceMaterialsView({
+  materials,
   model,
 }: {
-  documents: Array<Document>;
-  model: SpaceDocumentsModel;
+  materials: Array<Document>;
+  model: SpaceMaterialsModel;
 }) {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== "idle";
@@ -43,7 +43,7 @@ export function SpaceDocumentsView({
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h2 className="text-foreground text-xl font-semibold">문서</h2>
+          <h2 className="text-foreground text-xl font-semibold">자료</h2>
           <p className="text-muted-foreground text-sm">
             자료를 업로드하면 AI가 자동으로 분석합니다. 학습 계획은 자동으로
             바뀌지 않습니다.
@@ -52,7 +52,7 @@ export function SpaceDocumentsView({
         <Button onClick={model.openUpload}>자료 업로드</Button>
       </div>
 
-      {documents.length === 0 ? (
+      {materials.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">자료를 업로드해보세요</CardTitle>
@@ -66,19 +66,19 @@ export function SpaceDocumentsView({
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {documents.map((doc) => (
+          {materials.map((doc) => (
             <Card key={doc.id}>
               <CardHeader className="space-y-1">
                 <div className="flex items-start justify-between gap-3">
                   <CardTitle className="text-base truncate">
                     {doc.title}
                   </CardTitle>
-                  <Badge variant={documentStatusBadgeVariant(doc.status)}>
-                    {documentStatusLabel(doc.status)}
+                  <Badge variant={materialStatusBadgeVariant(doc.status)}>
+                    {materialStatusLabel(doc.status)}
                   </Badge>
                 </div>
                 <CardDescription>
-                  {documentKindLabel(doc.kind)} · 태그 {doc.tags.length}개
+                  {materialKindLabel(doc.kind)} · 태그 {doc.tags.length}개
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -118,7 +118,7 @@ export function SpaceDocumentsView({
                   />
                   <input
                     type="hidden"
-                    name="documentId"
+                    name="materialId"
                     value={doc.id}
                   />
                   <Button

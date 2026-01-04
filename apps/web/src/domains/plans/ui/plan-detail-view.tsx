@@ -124,22 +124,22 @@ export function PlanDetailView({
               <Dialog>
                 <DialogTrigger render={<Button variant="secondary" />}>
                   <IconFileDescription />
-                  참조 문서
+                  참조 자료
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-lg">
                   <DialogHeader>
-                    <DialogTitle>참조 문서</DialogTitle>
+                    <DialogTitle>참조 자료</DialogTitle>
                     <DialogDescription>
-                      이 학습 계획이 참조하고 있는 문서 목록입니다.
+                      이 학습 계획이 참조하고 있는 자료 목록입니다.
                     </DialogDescription>
                   </DialogHeader>
                   <ul className="divide-y divide-border max-h-80 overflow-y-auto">
-                    {data.sourceDocuments.length === 0 ? (
+                    {data.sourceMaterials.length === 0 ? (
                       <li className="py-3 text-center text-muted-foreground text-sm">
-                        참조 문서가 없습니다.
+                        참조 자료가 없습니다.
                       </li>
                     ) : (
-                      data.sourceDocuments.map((doc) => (
+                      data.sourceMaterials.map((doc) => (
                         <li
                           key={doc.id}
                           className="py-3 first:pt-0 last:pb-0"
@@ -159,11 +159,7 @@ export function PlanDetailView({
                               variant="outline"
                               className="shrink-0"
                             >
-                              {doc.kind === "file"
-                                ? "파일"
-                                : doc.kind === "url"
-                                  ? "URL"
-                                  : "텍스트"}
+                              {doc.kind === "file" ? "파일" : "텍스트"}
                             </Badge>
                           </div>
                         </li>

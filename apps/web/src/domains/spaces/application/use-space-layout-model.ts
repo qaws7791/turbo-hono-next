@@ -4,7 +4,7 @@ import type { Space } from "~/app/mocks/schemas";
 
 export type SpaceLayoutModel = {
   basePath: string;
-  isDocuments: boolean;
+  isMaterials: boolean;
   isPlans: boolean;
   isConcepts: boolean;
 };
@@ -15,12 +15,12 @@ export function useSpaceLayoutModel(space: Space): SpaceLayoutModel {
   const basePath = `/spaces/${space.id}`;
   const pathname = location.pathname;
 
-  const isDocuments = pathname.startsWith(`${basePath}/documents`);
+  const isMaterials = pathname.startsWith(`${basePath}/documents`);
   const isPlans =
     pathname === basePath ||
     pathname.startsWith(`${basePath}/plans`) ||
     pathname.startsWith(`${basePath}/plan/`);
   const isConcepts = pathname.startsWith(`${basePath}/concepts`);
 
-  return { basePath, isDocuments, isPlans, isConcepts };
+  return { basePath, isMaterials, isPlans, isConcepts };
 }

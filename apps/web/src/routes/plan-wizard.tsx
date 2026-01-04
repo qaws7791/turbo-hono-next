@@ -9,7 +9,7 @@ import {
   PublicIdSchema,
   UuidSchema,
 } from "~/app/mocks/schemas";
-import { listDocumentsForUi } from "~/domains/documents";
+import { listMaterialsForUi } from "~/domains/materials";
 import { PlanWizardView, usePlanWizardModel } from "~/domains/plans";
 import { createPlan } from "~/foundation/api/plans";
 
@@ -24,8 +24,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  const documents = await listDocumentsForUi(spaceId.data);
-  return { spaceId: spaceId.data, documents };
+  const materials = await listMaterialsForUi(spaceId.data);
+  return { spaceId: spaceId.data, materials };
 }
 
 export async function clientAction({
@@ -44,7 +44,7 @@ export async function clientAction({
   }
 
   const ActionSchema = z.object({
-    sourceDocumentIds: z.array(UuidSchema).min(1).max(5),
+    sourceMaterialIds: z.array(UuidSchema).min(1).max(5),
     goal: PlanGoalSchema,
     level: PlanLevelSchema,
     durationMode: z.enum(["custom", "adaptive"]),
@@ -54,8 +54,8 @@ export async function clientAction({
   });
 
   const parsed = ActionSchema.safeParse({
-    sourceDocumentIds: formData
-      .getAll("sourceDocumentIds")
+    sourceMaterialIds: formData
+      .getAll("sourceMaterialIds")
       .map((v) => String(v)),
     goal: String(formData.get("goal") ?? ""),
     level: String(formData.get("level") ?? ""),
@@ -104,7 +104,7 @@ export async function clientAction({
   })();
 
   const plan = await createPlan(spaceId.data, {
-    materialIds: parsed.data.sourceDocumentIds,
+    materialIds: parsed.data.sourceMaterialIds,
     goalType,
     currentLevel,
     targetDueDate,
@@ -115,13 +115,13 @@ export async function clientAction({
 }
 
 export default function PlanWizardRoute() {
-  const { spaceId, documents } = useLoaderData<typeof clientLoader>();
+  const { spaceId, materials } = useLoaderData<typeof clientLoader>();
   const navigate = useNavigate();
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== "idle";
 
   const model = usePlanWizardModel({
-    documents,
+    materials,
     submitPlan: (formData) => {
       fetcher.submit(formData, { method: "post" });
     },
@@ -130,7 +130,7 @@ export default function PlanWizardRoute() {
   return (
     <PlanWizardView
       spaceId={spaceId}
-      documents={documents}
+      materials={materials}
       model={model}
       isSubmitting={isSubmitting}
       onCancel={() => navigate(`/spaces/${spaceId}/plans`)}

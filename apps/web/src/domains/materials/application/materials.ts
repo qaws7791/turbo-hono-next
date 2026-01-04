@@ -1,4 +1,4 @@
-import { toDocumentFromApi } from "../model/mappers";
+import { toMaterialFromApi } from "../model";
 
 import type { Document } from "../model/types";
 
@@ -7,14 +7,14 @@ import { ApiError } from "~/foundation/api/error";
 import { listMaterials } from "~/foundation/api/materials";
 import { nowIso } from "~/foundation/lib/time";
 
-export async function listDocumentsForUi(
+export async function listMaterialsForUi(
   spaceId: string,
 ): Promise<Array<Document>> {
   const result = await listMaterials(spaceId, { page: 1, limit: 100 });
-  return result.data.map((m) => toDocumentFromApi(spaceId, m));
+  return result.data.map((m) => toMaterialFromApi(spaceId, m));
 }
 
-export async function deleteDocumentForUi(materialId: string): Promise<void> {
+export async function deleteMaterialForUi(materialId: string): Promise<void> {
   const { error, response } = await apiClient.DELETE(
     "/api/materials/{materialId}",
     {
@@ -26,7 +26,7 @@ export async function deleteDocumentForUi(materialId: string): Promise<void> {
   }
 }
 
-export async function uploadFileDocumentForUi(input: {
+export async function uploadFileMaterialForUi(input: {
   spaceId: string;
   file: File;
   title: string;

@@ -1,7 +1,6 @@
 import { useLoaderData } from "react-router";
 
-import { getHomeQueue } from "~/domains/home";
-import { TodayView } from "~/domains/today";
+import { TodayView, getHomeQueue } from "~/domains/home";
 
 export function meta() {
   return [{ title: "오늘 할 일" }];

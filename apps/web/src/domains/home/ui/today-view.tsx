@@ -3,7 +3,7 @@ import { Card, CardContent } from "@repo/ui/card";
 import { IconCalendar, IconChevronLeft } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import type { HomeQueueItem } from "~/domains/home";
+import type { HomeQueueItem } from "../model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 import { getColorByName, getIconByName } from "~/domains/spaces/ui";

@@ -13,17 +13,17 @@ import type { Document, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 import type { PlanWizardModel } from "~/domains/plans/model";
 
 import {
-  documentKindLabel,
-  documentStatusLabel,
-} from "~/domains/documents/model";
+  materialKindLabel,
+  materialStatusLabel,
+} from "~/domains/materials/model";
 
-function docStatusBadgeVariant(status: Document["status"]) {
+function materialStatusBadgeVariant(status: Document["status"]) {
   if (status === "completed") return "secondary" as const;
   if (status === "error") return "destructive" as const;
   return "outline" as const;
 }
 
-function canSelectDocument(doc: Document): boolean {
+function canSelectMaterial(doc: Document): boolean {
   return doc.status === "completed";
 }
 
@@ -43,13 +43,13 @@ const levelOptions: Array<{ value: PlanLevel; label: string }> = [
 
 export function PlanWizardView({
   spaceId,
-  documents,
+  materials,
   model,
   isSubmitting,
   onCancel,
 }: {
   spaceId: string;
-  documents: Array<Document>;
+  materials: Array<Document>;
   model: PlanWizardModel;
   isSubmitting: boolean;
   onCancel: () => void;
@@ -86,9 +86,9 @@ export function PlanWizardView({
             <div className="space-y-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
-                  <div className="text-sm font-medium">문서 선택</div>
+                  <div className="text-sm font-medium">자료 선택</div>
                   <div className="text-muted-foreground text-sm">
-                    최소 1개, 최대 5개. 분석 완료 문서만 포함할 수 있습니다.
+                    최소 1개, 최대 5개. 분석 완료 자료만 포함할 수 있습니다.
                   </div>
                 </div>
                 <Badge variant="outline">{model.derived.selectedCount}/5</Badge>
@@ -97,26 +97,26 @@ export function PlanWizardView({
               <Input
                 value={model.values.search}
                 onChange={(e) => model.setSearch(e.target.value)}
-                placeholder="문서 제목/태그/요약 검색"
+                placeholder="자료 제목/태그/요약 검색"
               />
 
-              {documents.length === 0 ? (
+              {materials.length === 0 ? (
                 <div className="space-y-2">
                   <div className="text-muted-foreground text-sm">
                     학습 계획을 만들려면 학습 자료가 필요합니다.
                   </div>
                   <Button render={<Link to={`/spaces/${spaceId}/documents`} />}>
-                    문서 업로드로 이동
+                    자료 업로드로 이동
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {model.derived.filteredDocuments.map((doc) => {
-                    const checked = model.values.selectedDocumentIds.includes(
+                  {model.derived.filteredMaterials.map((doc) => {
+                    const checked = model.values.selectedMaterialIds.includes(
                       doc.id,
                     );
                     const disabled =
-                      !canSelectDocument(doc) ||
+                      !canSelectMaterial(doc) ||
                       (!checked && model.derived.selectedCount >= 5);
 
                     return (
@@ -124,7 +124,7 @@ export function PlanWizardView({
                         key={doc.id}
                         type="button"
                         className="border-border hover:bg-muted/50 flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors disabled:opacity-50"
-                        onClick={() => model.toggleDocument(doc.id)}
+                        onClick={() => model.toggleMaterial(doc.id)}
                         disabled={disabled}
                       >
                         <Checkbox
@@ -136,12 +136,14 @@ export function PlanWizardView({
                             <div className="truncate text-sm font-medium">
                               {doc.title}
                             </div>
-                            <Badge variant={docStatusBadgeVariant(doc.status)}>
-                              {documentStatusLabel(doc.status)}
+                            <Badge
+                              variant={materialStatusBadgeVariant(doc.status)}
+                            >
+                              {materialStatusLabel(doc.status)}
                             </Badge>
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {documentKindLabel(doc.kind)} · 태그{" "}
+                            {materialKindLabel(doc.kind)} · 태그{" "}
                             {doc.tags.length}개
                           </div>
                           {doc.summary ? (

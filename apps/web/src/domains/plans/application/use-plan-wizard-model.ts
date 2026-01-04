@@ -9,19 +9,19 @@ import type {
 
 import { PlanGoalSchema, PlanLevelSchema } from "~/app/mocks/schemas";
 
-function canSelectDocument(doc: Document): boolean {
+function canSelectMaterial(doc: Document): boolean {
   return doc.status === "completed";
 }
 
 export function usePlanWizardModel(input: {
-  documents: Array<Document>;
+  materials: Array<Document>;
   submitPlan: (formData: FormData) => void;
 }): PlanWizardModel {
   const [step, setStep] = React.useState<PlanWizardStep>(1);
   const [error, setError] = React.useState<string | null>(null);
 
   const [values, setValues] = React.useState<PlanWizardValues>({
-    selectedDocumentIds: [],
+    selectedMaterialIds: [],
     search: "",
     goal: "work",
     level: "basic",
@@ -32,41 +32,41 @@ export function usePlanWizardModel(input: {
   });
 
   const normalized = values.search.trim().toLowerCase();
-  const filteredDocuments = React.useMemo(() => {
-    return input.documents.filter((doc) => {
+  const filteredMaterials = React.useMemo(() => {
+    return input.materials.filter((doc) => {
       if (!normalized) return true;
       const hay =
         `${doc.title} ${doc.summary ?? ""} ${doc.tags.join(" ")}`.toLowerCase();
       return hay.includes(normalized);
     });
-  }, [input.documents, normalized]);
+  }, [input.materials, normalized]);
 
-  const selectedCount = values.selectedDocumentIds.length;
-  const hasInvalidSelection = values.selectedDocumentIds.some((id) => {
-    const doc = input.documents.find((d) => d.id === id);
-    return !doc || !canSelectDocument(doc);
+  const selectedCount = values.selectedMaterialIds.length;
+  const hasInvalidSelection = values.selectedMaterialIds.some((id) => {
+    const doc = input.materials.find((d) => d.id === id);
+    return !doc || !canSelectMaterial(doc);
   });
 
   const setSearch = React.useCallback((value: string) => {
     setValues((prev) => ({ ...prev, search: value }));
   }, []);
 
-  const toggleDocument = React.useCallback((documentId: string) => {
+  const toggleMaterial = React.useCallback((materialId: string) => {
     setValues((prev) => {
-      if (prev.selectedDocumentIds.includes(documentId)) {
+      if (prev.selectedMaterialIds.includes(materialId)) {
         return {
           ...prev,
-          selectedDocumentIds: prev.selectedDocumentIds.filter(
-            (id) => id !== documentId,
+          selectedMaterialIds: prev.selectedMaterialIds.filter(
+            (id) => id !== materialId,
           ),
         };
       }
-      if (prev.selectedDocumentIds.length >= 5) {
+      if (prev.selectedMaterialIds.length >= 5) {
         return prev;
       }
       return {
         ...prev,
-        selectedDocumentIds: [...prev.selectedDocumentIds, documentId],
+        selectedMaterialIds: [...prev.selectedMaterialIds, materialId],
       };
     });
   }, []);
@@ -105,16 +105,16 @@ export function usePlanWizardModel(input: {
   const goNext = React.useCallback(() => {
     setError(null);
     if (step === 1) {
-      if (values.selectedDocumentIds.length < 1) {
-        setError("최소 1개 문서를 선택하세요.");
+      if (values.selectedMaterialIds.length < 1) {
+        setError("최소 1개 자료를 선택하세요.");
         return;
       }
-      if (values.selectedDocumentIds.length > 5) {
+      if (values.selectedMaterialIds.length > 5) {
         setError("최대 5개까지 선택할 수 있습니다.");
         return;
       }
       if (hasInvalidSelection) {
-        setError("분석 완료 문서만 선택할 수 있습니다.");
+        setError("분석 완료 자료만 선택할 수 있습니다.");
         return;
       }
       setStep(2);
@@ -123,7 +123,7 @@ export function usePlanWizardModel(input: {
     if (step === 2) {
       setStep(3);
     }
-  }, [hasInvalidSelection, step, values.selectedDocumentIds.length]);
+  }, [hasInvalidSelection, step, values.selectedMaterialIds.length]);
 
   const goBack = React.useCallback(() => {
     setError(null);
@@ -134,13 +134,13 @@ export function usePlanWizardModel(input: {
   const submit = React.useCallback(() => {
     setError(null);
 
-    if (values.selectedDocumentIds.length < 1) {
-      setError("최소 1개 문서를 선택하세요.");
+    if (values.selectedMaterialIds.length < 1) {
+      setError("최소 1개 자료를 선택하세요.");
       setStep(1);
       return;
     }
     if (hasInvalidSelection) {
-      setError("분석 완료 문서만 선택할 수 있습니다.");
+      setError("분석 완료 자료만 선택할 수 있습니다.");
       setStep(1);
       return;
     }
@@ -154,8 +154,8 @@ export function usePlanWizardModel(input: {
 
     const fd = new FormData();
     fd.set("intent", "create-plan");
-    for (const id of values.selectedDocumentIds) {
-      fd.append("sourceDocumentIds", id);
+    for (const id of values.selectedMaterialIds) {
+      fd.append("sourceMaterialIds", id);
     }
     fd.set("goal", values.goal);
     fd.set("level", values.level);
@@ -176,12 +176,12 @@ export function usePlanWizardModel(input: {
     error,
     values,
     derived: {
-      filteredDocuments,
+      filteredMaterials,
       selectedCount,
       hasInvalidSelection,
     },
     setSearch,
-    toggleDocument,
+    toggleMaterial,
     setGoal,
     setLevel,
     setDurationMode,

@@ -4,12 +4,12 @@ import type { Route } from "./+types/space-documents";
 
 import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
-  SpaceDocumentsView,
-  deleteDocumentForUi,
-  listDocumentsForUi,
-  uploadFileDocumentForUi,
-  useSpaceDocumentsModel,
-} from "~/domains/documents";
+  SpaceMaterialsView,
+  deleteMaterialForUi,
+  listMaterialsForUi,
+  uploadFileMaterialForUi,
+  useSpaceMaterialsModel,
+} from "~/domains/materials";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -24,7 +24,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   }
   return {
     spaceId: spaceId.data,
-    documents: await listDocumentsForUi(spaceId.data),
+    materials: await listMaterialsForUi(spaceId.data),
   };
 }
 
@@ -41,8 +41,8 @@ export async function clientAction({
   const intent = String(formData.get("intent") ?? "");
 
   if (intent === "delete") {
-    const documentId = String(formData.get("documentId") ?? "");
-    await deleteDocumentForUi(documentId);
+    const materialId = String(formData.get("materialId") ?? "");
+    await deleteMaterialForUi(materialId);
     return null;
   }
 
@@ -52,7 +52,7 @@ export async function clientAction({
       throw new Response("Invalid file", { status: 400 });
     }
     const title = String(formData.get("title") ?? "").trim() || file.name;
-    await uploadFileDocumentForUi({ spaceId: spaceId.data, file, title });
+    await uploadFileMaterialForUi({ spaceId: spaceId.data, file, title });
     return null;
   }
 
@@ -60,11 +60,11 @@ export async function clientAction({
 }
 
 export default function SpaceDocumentsRoute() {
-  const { documents } = useLoaderData<typeof clientLoader>();
-  const model = useSpaceDocumentsModel(documents);
+  const { materials } = useLoaderData<typeof clientLoader>();
+  const model = useSpaceMaterialsModel(materials);
   return (
-    <SpaceDocumentsView
-      documents={documents}
+    <SpaceMaterialsView
+      materials={materials}
       model={model}
     />
   );
