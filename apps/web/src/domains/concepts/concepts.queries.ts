@@ -1,12 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getConceptDetailForUi, listSpaceConceptsForUi } from "./application";
+import { getConceptDetail, listSpaceConcepts } from "./api/concepts.api";
 
 import type { SpaceConceptsList } from "./api/concepts.api";
 import type { Concept } from "./model/concepts.types";
 import type { Space } from "~/domains/spaces/model/spaces.types";
 
-import { getSpaceForUi, listSpacesForUi } from "~/domains/spaces/application";
+import { getSpace, listSpaces } from "~/domains/spaces/api/spaces.api";
 
 export const conceptsQueries = {
   all: () => ["concepts"] as const,
@@ -17,12 +17,12 @@ export const conceptsQueries = {
 
   listForSpace: (
     spaceId: string,
-    query?: Parameters<typeof listSpaceConceptsForUi>[1],
+    query?: Parameters<typeof listSpaceConcepts>[1],
   ) =>
     queryOptions({
       queryKey: [...conceptsQueries.lists(), spaceId, query ?? null] as const,
       queryFn: (): Promise<SpaceConceptsList> =>
-        listSpaceConceptsForUi(spaceId, query),
+        listSpaceConcepts(spaceId, query),
       staleTime: 10_000,
       gcTime: 60_000,
     }),
@@ -30,7 +30,7 @@ export const conceptsQueries = {
   detail: (spaceId: string, conceptId: string) =>
     queryOptions({
       queryKey: [...conceptsQueries.details(), spaceId, conceptId] as const,
-      queryFn: () => getConceptDetailForUi(spaceId, conceptId),
+      queryFn: () => getConceptDetail(spaceId, conceptId),
       staleTime: 5_000,
       gcTime: 60_000,
     }),
@@ -42,10 +42,10 @@ export const conceptsQueries = {
     return queryOptions({
       queryKey: [...conceptsQueries.libraries(), { search }] as const,
       queryFn: async (): Promise<Array<Concept>> => {
-        const spaces = await listSpacesForUi();
+        const spaces = await listSpaces();
         const conceptLists = await Promise.all(
           spaces.map((space) =>
-            listSpaceConceptsForUi(space.id, {
+            listSpaceConcepts(space.id, {
               page: 1,
               limit: 50,
               search,
@@ -68,10 +68,10 @@ export const conceptsQueries = {
         space: Space;
         related: Array<Concept>;
       }> => {
-        const spaces = await listSpacesForUi();
+        const spaces = await listSpaces();
         const conceptLists = await Promise.all(
           spaces.map((space) =>
-            listSpaceConceptsForUi(space.id, { page: 1, limit: 200 }),
+            listSpaceConcepts(space.id, { page: 1, limit: 200 }),
           ),
         );
 
@@ -87,8 +87,8 @@ export const conceptsQueries = {
           throw new Response("Not Found", { status: 404 });
         }
 
-        const space = await getSpaceForUi(located.spaceId);
-        const detail = await getConceptDetailForUi(located.spaceId, conceptId);
+        const space = await getSpace(located.spaceId);
+        const detail = await getConceptDetail(located.spaceId, conceptId);
         const concept = detail.concept;
 
         const related = detail.relatedConcepts.slice(0, 6).map((r) => {

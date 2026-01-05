@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
 
-import { createSpaceForUi } from "./spaces";
+import { createSpace as createSpaceApi } from "../api/spaces.api";
 
 export function useCreateSpaceMutation(): {
   isSubmitting: boolean;
@@ -14,7 +14,7 @@ export function useCreateSpaceMutation(): {
     async (input: { name: string; description?: string }) => {
       setIsSubmitting(true);
       try {
-        const space = await createSpaceForUi(input);
+        const space = await createSpaceApi(input);
         navigate(`/spaces/${space.id}`);
       } finally {
         setIsSubmitting(false);

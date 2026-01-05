@@ -6,11 +6,6 @@ export {
   SpaceConceptsView,
 } from "./ui";
 
-export {
-  getConceptCountForSpaceUi,
-  getConceptDetailForUi,
-  listSpaceConceptsForUi,
-} from "./application/concepts";
 export { useConceptDetailModel } from "./application/use-concept-detail-model";
 export { useConceptLibraryModel } from "./application/use-concept-library-model";
 

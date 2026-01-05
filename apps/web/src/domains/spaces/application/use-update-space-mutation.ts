@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useRevalidator } from "react-router";
 
-import { updateSpaceForUi } from "./spaces";
+import { updateSpace as updateSpaceApi } from "../api/spaces.api";
 
 export function useUpdateSpaceMutation(): {
   isSubmitting: boolean;
@@ -17,7 +17,7 @@ export function useUpdateSpaceMutation(): {
     async (spaceId: string, input: { icon?: string; color?: string }) => {
       setIsSubmitting(true);
       try {
-        await updateSpaceForUi(spaceId, input);
+        await updateSpaceApi(spaceId, input);
         revalidator.revalidate();
       } finally {
         setIsSubmitting(false);

@@ -1,4 +1,3 @@
-export * from "./plans";
 export { useCreatePlanMutation } from "./use-create-plan-mutation";
 export type { CreatePlanInput } from "./use-create-plan-mutation";
 export { usePlanDetailModel } from "./use-plan-detail-model";

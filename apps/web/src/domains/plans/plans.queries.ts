@@ -1,14 +1,10 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import {
-  getActivePlanForSpaceUi,
-  getPlanForUi,
-  listPlansForUi,
-} from "./application/plans";
+import { getPlan, listSpacePlans } from "./api";
 
 import type { PlanDetailData, PlanWithDerived } from "./model/types";
 
-import { getSpaceForUi } from "~/domains/spaces/application";
+import { getSpace } from "~/domains/spaces/api/spaces.api";
 
 export const plansQueries = {
   all: () => ["plans"] as const,
@@ -20,7 +16,10 @@ export const plansQueries = {
   listForSpace: (spaceId: string) =>
     queryOptions({
       queryKey: [...plansQueries.lists(), spaceId] as const,
-      queryFn: (): Promise<Array<PlanWithDerived>> => listPlansForUi(spaceId),
+      queryFn: async (): Promise<Array<PlanWithDerived>> => {
+        const { data } = await listSpacePlans(spaceId);
+        return data;
+      },
       staleTime: 10_000,
       gcTime: 60_000,
     }),
@@ -28,7 +27,7 @@ export const plansQueries = {
   detail: (planId: string) =>
     queryOptions({
       queryKey: [...plansQueries.details(), planId] as const,
-      queryFn: (): Promise<PlanWithDerived> => getPlanForUi(planId),
+      queryFn: (): Promise<PlanWithDerived> => getPlan(planId),
       staleTime: 5_000,
       gcTime: 60_000,
     }),
@@ -36,8 +35,13 @@ export const plansQueries = {
   activeForSpace: (spaceId: string) =>
     queryOptions({
       queryKey: [...plansQueries.active(), spaceId] as const,
-      queryFn: (): Promise<PlanWithDerived | null> =>
-        getActivePlanForSpaceUi(spaceId),
+      queryFn: async (): Promise<PlanWithDerived | null> => {
+        const { data } = await listSpacePlans(spaceId, {
+          status: "ACTIVE",
+          limit: 1,
+        });
+        return data[0] ?? null;
+      },
       staleTime: 10_000,
       gcTime: 60_000,
     }),
@@ -47,8 +51,8 @@ export const plansQueries = {
       queryKey: [...plansQueries.pages(), "detail", spaceId, planId] as const,
       queryFn: async (): Promise<PlanDetailData> => {
         const [space, plan] = await Promise.all([
-          getSpaceForUi(spaceId),
-          getPlanForUi(planId),
+          getSpace(spaceId),
+          getPlan(planId),
         ]);
         if (plan.spaceId !== spaceId) {
           throw new Response("Not Found", { status: 404 });

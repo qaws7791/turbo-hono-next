@@ -7,7 +7,7 @@ import type {
   SessionSummaryCard,
 } from "../model/types";
 
-import { listSpacesForUi } from "~/domains/spaces";
+import { listSpaces } from "~/domains/spaces/api/spaces.api";
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
 
@@ -28,7 +28,7 @@ async function getHomeQueueApi(): Promise<{
 export async function getHomeQueue(): Promise<Array<HomeQueueItem>> {
   const [{ items }, spaces] = await Promise.all([
     getHomeQueueApi(),
-    listSpacesForUi(),
+    listSpaces(),
   ]);
 
   return items.map((item) => toHomeQueueItem(item, spaces));

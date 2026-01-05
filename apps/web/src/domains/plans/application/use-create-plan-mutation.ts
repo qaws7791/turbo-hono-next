@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
 
-import { createPlanForUi } from "./plans";
+import { createPlan as createPlanApi } from "../api";
+import { mapCurrentLevelToApi, mapGoalTypeToApi } from "../api/plans.mapper";
 
 import type { PlanGoal, PlanLevel } from "../model/types";
 
@@ -15,6 +16,26 @@ export type CreatePlanInput = {
   notes?: string;
 };
 
+function computeTargetDueDate(input: {
+  durationMode: "custom" | "adaptive";
+  durationValue?: number;
+  durationUnit?: "days" | "weeks" | "months";
+}): string {
+  const base = new Date();
+  if (input.durationMode !== "custom") {
+    base.setDate(base.getDate() + 30);
+    return base.toISOString().slice(0, 10);
+  }
+
+  const rawValue = input.durationValue ?? 30;
+  const value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 30;
+  const unit = input.durationUnit ?? "days";
+  const days =
+    unit === "months" ? value * 30 : unit === "weeks" ? value * 7 : value;
+  base.setDate(base.getDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
 export function useCreatePlanMutation(spaceId: string): {
   isSubmitting: boolean;
   createPlan: (input: CreatePlanInput) => void;
@@ -26,7 +47,16 @@ export function useCreatePlanMutation(spaceId: string): {
     async (input: CreatePlanInput) => {
       setIsSubmitting(true);
       try {
-        const plan = await createPlanForUi(spaceId, input);
+        const targetDueDate = computeTargetDueDate(input);
+
+        const plan = await createPlanApi(spaceId, {
+          materialIds: input.sourceMaterialIds,
+          goalType: mapGoalTypeToApi(input.goal),
+          currentLevel: mapCurrentLevelToApi(input.level),
+          targetDueDate,
+          specialRequirements: input.notes,
+        });
+
         navigate(`/spaces/${spaceId}/plan/${plan.id}`);
       } finally {
         setIsSubmitting(false);

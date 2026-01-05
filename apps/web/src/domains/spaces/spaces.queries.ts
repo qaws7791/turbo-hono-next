@@ -2,10 +2,10 @@ import { queryOptions } from "@tanstack/react-query";
 
 import type { Space, SpaceCard } from "./model/spaces.types";
 
-import { listSpaceConceptsForUi } from "~/domains/concepts/application";
-import { getMaterialCountForSpaceUi } from "~/domains/materials/application";
-import { getActivePlanForSpaceUi } from "~/domains/plans/application";
-import { getSpaceForUi, listSpacesForUi } from "~/domains/spaces/application";
+import { listSpaceConcepts } from "~/domains/concepts/api/concepts.api";
+import { listSpaceMaterials } from "~/domains/materials/api/materials.api";
+import { listSpacePlans } from "~/domains/plans/api";
+import { getSpace, listSpaces } from "~/domains/spaces/api/spaces.api";
 
 export const spacesQueries = {
   all: () => ["spaces"] as const,
@@ -16,7 +16,7 @@ export const spacesQueries = {
   list: () =>
     queryOptions({
       queryKey: spacesQueries.lists(),
-      queryFn: (): Promise<Array<Space>> => listSpacesForUi(),
+      queryFn: (): Promise<Array<Space>> => listSpaces(),
       staleTime: 10_000,
       gcTime: 60_000,
     }),
@@ -24,8 +24,8 @@ export const spacesQueries = {
   detail: (spaceId: string) =>
     queryOptions({
       queryKey: [...spacesQueries.details(), spaceId] as const,
-      queryFn: (): Promise<Awaited<ReturnType<typeof getSpaceForUi>>> =>
-        getSpaceForUi(spaceId),
+      queryFn: (): Promise<Awaited<ReturnType<typeof getSpace>>> =>
+        getSpace(spaceId),
       staleTime: 10_000,
       gcTime: 60_000,
     }),
@@ -34,17 +34,18 @@ export const spacesQueries = {
     queryOptions({
       queryKey: spacesQueries.cards(),
       queryFn: async (): Promise<Array<SpaceCard>> => {
-        const spaces = await listSpacesForUi();
+        const spaces = await listSpaces();
 
         const cards: Array<SpaceCard> = await Promise.all(
           spaces.map(async (space) => {
-            const [materialCount, concepts, activePlan] = await Promise.all([
-              getMaterialCountForSpaceUi(space.id),
-              listSpaceConceptsForUi(space.id, { page: 1, limit: 1 }),
-              getActivePlanForSpaceUi(space.id),
+            const [materials, concepts, plans] = await Promise.all([
+              listSpaceMaterials(space.id, { page: 1, limit: 1 }),
+              listSpaceConcepts(space.id, { page: 1, limit: 1 }),
+              listSpacePlans(space.id, { status: "ACTIVE", limit: 1 }),
             ]);
 
             const lastStudiedAt = concepts.data[0]?.lastStudiedAt;
+            const activePlan = plans.data[0] ?? null;
 
             return {
               id: space.id,
@@ -53,7 +54,7 @@ export const spacesQueries = {
               icon: space.icon,
               color: space.color,
               hasTodo: Boolean(activePlan && activePlan.progressPercent < 100),
-              materialCount,
+              materialCount: materials.meta.total,
               conceptCount: concepts.meta.total,
               lastStudiedAt,
               activePlan: activePlan

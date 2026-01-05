@@ -2,9 +2,12 @@ import * as React from "react";
 import { useRevalidator } from "react-router";
 
 import {
-  deleteMaterialForUi,
-  uploadFileMaterialForUi,
-} from "./materials.actions";
+  completeMaterialUpload,
+  deleteMaterial as deleteMaterialApi,
+  initMaterialUpload,
+} from "../api/materials.api";
+
+import { nowIso } from "~/foundation/lib/time";
 
 export function useMaterialMutations(spaceId: string): {
   isSubmitting: boolean;
@@ -18,7 +21,7 @@ export function useMaterialMutations(spaceId: string): {
     async (materialId: string) => {
       setIsSubmitting(true);
       try {
-        await deleteMaterialForUi(materialId);
+        await deleteMaterialApi(materialId);
         revalidator.revalidate();
       } finally {
         setIsSubmitting(false);
@@ -31,7 +34,18 @@ export function useMaterialMutations(spaceId: string): {
     async (file: File, title: string) => {
       setIsSubmitting(true);
       try {
-        await uploadFileMaterialForUi({ spaceId, file, title });
+        const init = await initMaterialUpload(spaceId, {
+          originalFilename: file.name,
+          mimeType: file.type || "application/octet-stream",
+          fileSize: file.size,
+        });
+
+        await completeMaterialUpload(spaceId, {
+          uploadId: init.uploadId,
+          title,
+          etag: nowIso(),
+        });
+
         revalidator.revalidate();
       } finally {
         setIsSubmitting(false);

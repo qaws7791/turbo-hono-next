@@ -12,8 +12,8 @@ import type { Route } from "./+types/session";
 import { authQueries } from "~/domains/auth";
 import {
   SessionView,
-  createOrResumeSessionRun,
   sessionQueries,
+  useCreateOrResumeSessionRunMutation,
   useSessionController,
 } from "~/domains/session";
 import { PublicIdSchema } from "~/foundation/lib";
@@ -71,6 +71,8 @@ export default function SessionRoute() {
 
 function SessionStart({ sessionId }: { sessionId: string }) {
   const navigate = useNavigate();
+  const { createOrResumeSessionRun } = useCreateOrResumeSessionRunMutation();
+
   React.useEffect(() => {
     createOrResumeSessionRun(sessionId)
       .then(({ runId }) => {
@@ -81,7 +83,7 @@ function SessionStart({ sessionId }: { sessionId: string }) {
       .catch(() => {
         navigate("/home", { replace: true });
       });
-  }, [navigate, sessionId]);
+  }, [createOrResumeSessionRun, navigate, sessionId]);
 
   return (
     <div className="flex min-h-svh items-center justify-center">
