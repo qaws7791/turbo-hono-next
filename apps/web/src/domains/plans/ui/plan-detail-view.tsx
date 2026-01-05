@@ -177,12 +177,7 @@ export function PlanDetailView({
                   {plan.status === "active" ? (
                     <DropdownMenuItem
                       disabled={model.isSubmitting}
-                      onSelect={() =>
-                        model.fetcher.submit(
-                          { intent: "pause" },
-                          { method: "post" },
-                        )
-                      }
+                      onSelect={() => model.executePlanAction(plan.id, "pause")}
                     >
                       일시정지하기
                     </DropdownMenuItem>
@@ -190,10 +185,7 @@ export function PlanDetailView({
                     <DropdownMenuItem
                       disabled={model.isSubmitting}
                       onSelect={() =>
-                        model.fetcher.submit(
-                          { intent: "resume" },
-                          { method: "post" },
-                        )
+                        model.executePlanAction(plan.id, "resume")
                       }
                     >
                       다시 시작하기
@@ -201,12 +193,7 @@ export function PlanDetailView({
                   ) : null}
                   <DropdownMenuItem
                     disabled={model.isSubmitting}
-                    onSelect={() =>
-                      model.fetcher.submit(
-                        { intent: "archive" },
-                        { method: "post" },
-                      )
-                    }
+                    onSelect={() => model.executePlanAction(plan.id, "archive")}
                   >
                     보관하기
                   </DropdownMenuItem>

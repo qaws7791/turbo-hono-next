@@ -10,7 +10,8 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { Spinner } from "@repo/ui/spinner";
-import { Form, Link } from "react-router";
+import * as React from "react";
+import { Link } from "react-router";
 
 import { formatSeconds } from "../model/format-seconds";
 
@@ -19,10 +20,25 @@ import type { LoginViewState } from "../model/types";
 export function LoginView({
   state,
   onChangeEmail,
+  onSendMagicLink,
 }: {
   state: LoginViewState;
   onChangeEmail: () => void;
+  onSendMagicLink: (email: string) => void;
 }) {
+  const [email, setEmail] = React.useState("");
+
+  const handleMagicLinkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSendMagicLink(email);
+  };
+
+  const handleResend = () => {
+    if (state.view === "sent") {
+      onSendMagicLink(state.email);
+    }
+  };
+
   return (
     <div className="bg-background text-foreground min-h-svh">
       <div className="mx-auto grid min-h-svh max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-2">
@@ -54,34 +70,20 @@ export function LoginView({
                 </div>
 
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <Form
-                    method="post"
+                  <Button
                     className="w-full"
+                    disabled={!state.canResend || state.isSubmitting}
+                    onClick={handleResend}
                   >
-                    <input
-                      type="hidden"
-                      name="intent"
-                      value="magiclink"
-                    />
-                    <input
-                      type="hidden"
-                      name="email"
-                      value={state.email}
-                    />
-                    <Button
-                      className="w-full"
-                      disabled={!state.canResend}
-                    >
-                      {state.isSubmitting ? (
-                        <>
-                          <Spinner className="mr-2" />
-                          전송 중
-                        </>
-                      ) : (
-                        "다시 보내기"
-                      )}
-                    </Button>
-                  </Form>
+                    {state.isSubmitting ? (
+                      <>
+                        <Spinner className="mr-2" />
+                        전송 중
+                      </>
+                    ) : (
+                      "다시 보내기"
+                    )}
+                  </Button>
                   <Button
                     className="w-full"
                     variant="outline"
@@ -93,30 +95,16 @@ export function LoginView({
               </div>
             ) : (
               <>
-                <Form
-                  method="post"
-                  className="space-y-3"
+                <Button
+                  className="w-full"
+                  nativeButton
+                  type="button"
+                  onClick={() => {
+                    window.location.href = "/api/auth/google";
+                  }}
                 >
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="google"
-                  />
-                  <Button
-                    className="w-full"
-                    nativeButton
-                    type="submit"
-                  >
-                    {state.isSubmitting ? (
-                      <>
-                        <Spinner className="mr-2" />
-                        로그인 중
-                      </>
-                    ) : (
-                      "Google로 계속하기"
-                    )}
-                  </Button>
-                </Form>
+                  Google로 계속하기
+                </Button>
 
                 <div className="flex items-center gap-3">
                   <Separator className="flex-1" />
@@ -124,15 +112,10 @@ export function LoginView({
                   <Separator className="flex-1" />
                 </div>
 
-                <Form
-                  method="post"
+                <form
+                  onSubmit={handleMagicLinkSubmit}
                   className="space-y-3"
                 >
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="magiclink"
-                  />
                   <div className="space-y-2">
                     <Label htmlFor="email">이메일</Label>
                     <Input
@@ -142,6 +125,8 @@ export function LoginView({
                       placeholder="you@example.com"
                       required
                       autoComplete="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                     {state.errorMessage ? (
                       <p className="text-destructive text-xs">
@@ -162,7 +147,7 @@ export function LoginView({
                       "매직링크 보내기"
                     )}
                   </Button>
-                </Form>
+                </form>
               </>
             )}
 

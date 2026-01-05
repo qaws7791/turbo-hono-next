@@ -1,5 +1,4 @@
-import { redirect, useLoaderData } from "react-router";
-import { z } from "zod";
+import { useLoaderData } from "react-router";
 
 import type { HomeQueueItem } from "~/domains/home";
 import type { PlanDetailData } from "~/domains/plans";
@@ -8,7 +7,6 @@ import type { Route } from "./+types/plan-detail";
 import {
   PlanDetailView,
   getPlanForUi,
-  updatePlanStatus,
   usePlanDetailModel,
 } from "~/domains/plans";
 import { getSpaceForUi } from "~/domains/spaces";
@@ -16,7 +14,6 @@ import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 const PlanIdSchema = PublicIdSchema;
-const IntentSchema = z.enum(["pause", "resume", "archive"]);
 
 export function meta() {
   return [{ title: "학습 계획 상세" }];
@@ -73,42 +70,12 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-export async function clientAction({
-  request,
-  params,
-}: Route.ClientActionArgs) {
-  const planId = PlanIdSchema.safeParse(params.planId);
-  const spaceId = SpaceIdSchema.safeParse(params.spaceId);
-  if (!planId.success || !spaceId.success) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  const formData = await request.formData();
-  const intent = IntentSchema.safeParse(String(formData.get("intent") ?? ""));
-  if (!intent.success) {
-    throw new Response("Bad Request", { status: 400 });
-  }
-
-  if (intent.data === "pause") {
-    await updatePlanStatus(planId.data, "PAUSED");
-    return null;
-  }
-  if (intent.data === "resume") {
-    await updatePlanStatus(planId.data, "ACTIVE");
-    return null;
-  }
-  if (intent.data === "archive") {
-    await updatePlanStatus(planId.data, "ARCHIVED");
-    throw redirect(`/spaces/${spaceId.data}/plans`);
-  }
-  return null;
-}
-
 export default function PlanDetailRoute() {
   const data: PlanDetailData = useLoaderData<typeof clientLoader>();
   const model = usePlanDetailModel({
     plan: data.plan,
     nextQueue: data.nextQueue,
+    spaceId: data.space.id,
   });
   return (
     <PlanDetailView

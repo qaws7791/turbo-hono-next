@@ -5,7 +5,6 @@ import type { Route } from "./+types/space-layout";
 import {
   SpaceLayoutView,
   getSpaceForUi,
-  updateSpaceForUi,
   useSpaceLayoutModel,
 } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
@@ -40,26 +39,6 @@ export async function clientLoader({
   return {
     space: await getSpaceForUi(spaceId.data),
   };
-}
-
-export async function clientAction({ request }: Route.ClientActionArgs) {
-  const formData = await request.formData();
-  const intent = formData.get("intent");
-
-  if (intent === "update-space") {
-    const spaceId = SpaceIdSchema.parse(formData.get("spaceId"));
-    const icon = formData.get("icon");
-    const color = formData.get("color");
-
-    await updateSpaceForUi(spaceId, {
-      icon: typeof icon === "string" ? icon : undefined,
-      color: typeof color === "string" ? color : undefined,
-    });
-
-    return { ok: true };
-  }
-
-  throw new Response("Bad Request", { status: 400 });
 }
 
 export default function SpaceLayoutRoute() {

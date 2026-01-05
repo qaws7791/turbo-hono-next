@@ -1,7 +1,9 @@
 import { TabNav, TabNavLink } from "@repo/ui/tab-nav";
 import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
 import * as React from "react";
-import { NavLink, Outlet, useFetcher } from "react-router";
+import { NavLink, Outlet } from "react-router";
+
+import { useUpdateSpaceMutation } from "../application";
 
 import { IconColorPicker } from "./icon-color-picker";
 
@@ -17,7 +19,7 @@ export function SpaceLayoutView({
   space: Space;
   model: SpaceLayoutModel;
 }) {
-  const fetcher = useFetcher();
+  const { updateSpace } = useUpdateSpaceMutation();
 
   // 아이콘/색상 선택 상태
   const [selectedIcon, setSelectedIcon] = React.useState(space.icon ?? "book");
@@ -28,17 +30,19 @@ export function SpaceLayoutView({
   // 아이콘/색상이 변경되면 자동 저장
   React.useEffect(() => {
     if (selectedIcon !== space.icon || selectedColor !== space.color) {
-      fetcher.submit(
-        {
-          intent: "update-space",
-          spaceId: space.id,
-          icon: selectedIcon,
-          color: selectedColor,
-        },
-        { method: "post" },
-      );
+      updateSpace(space.id, {
+        icon: selectedIcon,
+        color: selectedColor,
+      });
     }
-  }, [selectedIcon, selectedColor, fetcher, space.color, space.icon, space.id]);
+  }, [
+    selectedIcon,
+    selectedColor,
+    updateSpace,
+    space.color,
+    space.icon,
+    space.id,
+  ]);
 
   return (
     <>

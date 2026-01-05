@@ -18,12 +18,13 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
-import { useFetcher } from "react-router";
+import * as React from "react";
 
+import { useMaterialMutations } from "../application";
 import { materialKindLabel, materialStatusLabel } from "../model";
 
-import type { Material } from "../model/materials.types";
 import type { SpaceMaterialsModel } from "../application/use-space-materials-model";
+import type { Material } from "../model/materials.types";
 
 function materialStatusBadgeVariant(
   status: Material["status"],
@@ -34,14 +35,36 @@ function materialStatusBadgeVariant(
 }
 
 export function SpaceMaterialsView({
+  spaceId,
   materials,
   model,
 }: {
+  spaceId: string;
   materials: Array<Material>;
   model: SpaceMaterialsModel;
 }) {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== "idle";
+  const { isSubmitting, deleteMaterial, uploadFileMaterial } =
+    useMaterialMutations(spaceId);
+  const [title, setTitle] = React.useState("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleUploadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+
+    const finalTitle = title.trim() || file.name;
+    uploadFileMaterial(file, finalTitle);
+    model.closeUpload();
+    setTitle("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDelete = (materialId: string) => {
+    deleteMaterial(materialId);
+  };
 
   return (
     <div className="space-y-6">
@@ -111,28 +134,16 @@ export function SpaceMaterialsView({
 
                 <Separator />
 
-                <fetcher.Form
-                  method="post"
-                  className="flex justify-end"
-                >
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="delete"
-                  />
-                  <input
-                    type="hidden"
-                    name="materialId"
-                    value={doc.id}
-                  />
+                <div className="flex justify-end">
                   <Button
-                    type="submit"
+                    type="button"
                     variant="ghost"
                     disabled={isSubmitting}
+                    onClick={() => handleDelete(doc.id)}
                   >
                     삭제
                   </Button>
-                </fetcher.Form>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -181,27 +192,24 @@ export function SpaceMaterialsView({
               value="file"
               className="mt-4"
             >
-              <fetcher.Form
-                method="post"
-                encType="multipart/form-data"
+              <form
+                onSubmit={handleUploadSubmit}
                 className="space-y-4"
               >
-                <input
-                  type="hidden"
-                  name="intent"
-                  value="upload-file"
-                />
                 <div className="space-y-2">
                   <Label htmlFor="file-title">제목 (선택)</Label>
                   <Input
                     id="file-title"
                     name="title"
                     placeholder="문서 제목"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="file">파일</Label>
                   <input
+                    ref={fileInputRef}
                     id="file"
                     name="file"
                     type="file"
@@ -216,7 +224,7 @@ export function SpaceMaterialsView({
                 >
                   업로드
                 </Button>
-              </fetcher.Form>
+              </form>
             </TabsContent>
 
             <TabsContent

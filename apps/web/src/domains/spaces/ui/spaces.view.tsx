@@ -17,7 +17,10 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Progress } from "@repo/ui/progress";
 import { IconBrain, IconClock, IconFile } from "@tabler/icons-react";
-import { Link, useFetcher } from "react-router";
+import * as React from "react";
+import { Link } from "react-router";
+
+import { useCreateSpaceMutation } from "../application";
 
 import { getColorByName, getIconByName } from "./icon-color-picker";
 
@@ -27,8 +30,23 @@ import { PageBody, PageHeader } from "~/domains/app-shell";
 import { formatRelativeTime } from "~/foundation/lib/time";
 
 export function SpacesView({ model }: { model: SpacesModel }) {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state !== "idle";
+  const { isSubmitting, createSpace } = useCreateSpaceMutation();
+  const [name, setName] = React.useState("");
+  const [description, setDescription] = React.useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createSpace({
+      name,
+      description: description.trim().length > 0 ? description : undefined,
+    });
+  };
+
+  const handleDialogClose = () => {
+    model.closeCreate();
+    setName("");
+    setDescription("");
+  };
 
   return (
     <>
@@ -148,7 +166,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
         <Dialog
           open={model.createOpen}
           onOpenChange={(next) =>
-            next ? model.openCreate() : model.closeCreate()
+            next ? model.openCreate() : handleDialogClose()
           }
         >
           <DialogContent className="sm:max-w-md">
@@ -159,15 +177,10 @@ export function SpacesView({ model }: { model: SpacesModel }) {
               </DialogDescription>
             </DialogHeader>
 
-            <fetcher.Form
-              method="post"
+            <form
+              onSubmit={handleSubmit}
               className="space-y-4"
             >
-              <input
-                type="hidden"
-                name="intent"
-                value="create-space"
-              />
               <div className="space-y-2">
                 <Label htmlFor="name">이름</Label>
                 <Input
@@ -175,6 +188,8 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                   name="name"
                   placeholder="예: Work"
                   required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -183,6 +198,8 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                   id="description"
                   name="description"
                   placeholder="학습 의도"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
@@ -190,7 +207,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  onClick={model.closeCreate}
+                  onClick={handleDialogClose}
                 >
                   취소
                 </Button>
@@ -202,7 +219,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
                   {isSubmitting ? "생성 중" : "생성"}
                 </Button>
               </div>
-            </fetcher.Form>
+            </form>
           </DialogContent>
         </Dialog>
       </PageBody>

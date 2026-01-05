@@ -8,6 +8,7 @@ import type {
   PlanWizardStep,
   PlanWizardValues,
 } from "../model";
+import type { CreatePlanInput } from "./use-create-plan-mutation";
 
 function isPlanGoal(value: string): value is PlanGoal {
   return (
@@ -33,7 +34,7 @@ function canSelectMaterial(doc: PlanWizardMaterial): boolean {
 
 export function usePlanWizardModel(input: {
   materials: Array<PlanWizardMaterial>;
-  submitPlan: (formData: FormData) => void;
+  submitPlan: (input: CreatePlanInput) => void;
 }): PlanWizardModel {
   const [step, setStep] = React.useState<PlanWizardStep>(1);
   const [error, setError] = React.useState<string | null>(null);
@@ -168,23 +169,21 @@ export function usePlanWizardModel(input: {
       }
     }
 
-    const fd = new FormData();
-    fd.set("intent", "create-plan");
-    for (const id of values.selectedMaterialIds) {
-      fd.append("sourceMaterialIds", id);
-    }
-    fd.set("goal", values.goal);
-    fd.set("level", values.level);
-    fd.set("durationMode", values.durationMode);
-    if (values.durationMode === "custom") {
-      fd.set("durationValue", values.durationValue);
-      fd.set("durationUnit", values.durationUnit);
-    }
-    if (values.notes.trim().length > 0) {
-      fd.set("notes", values.notes);
-    }
+    const planInput: CreatePlanInput = {
+      sourceMaterialIds: values.selectedMaterialIds,
+      goal: values.goal,
+      level: values.level,
+      durationMode: values.durationMode,
+      durationValue:
+        values.durationMode === "custom"
+          ? Number(values.durationValue)
+          : undefined,
+      durationUnit:
+        values.durationMode === "custom" ? values.durationUnit : undefined,
+      notes: values.notes.trim().length > 0 ? values.notes : undefined,
+    };
 
-    input.submitPlan(fd);
+    input.submitPlan(planInput);
   }, [hasInvalidSelection, input, values]);
 
   return {
