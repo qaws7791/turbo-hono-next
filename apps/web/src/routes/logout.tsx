@@ -1,7 +1,8 @@
 import * as React from "react";
 import { redirect, useNavigate } from "react-router";
 
-import { logout } from "~/domains/auth";
+import { authQueries, logout } from "~/domains/auth";
+import { queryClient } from "~/foundation/query-client";
 
 export function clientLoader() {
   throw redirect("/");
@@ -11,7 +12,10 @@ export default function LogoutRoute() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    logout().finally(() => navigate("/"));
+    logout().finally(() => {
+      queryClient.removeQueries({ queryKey: authQueries.all() });
+      navigate("/");
+    });
   }, [navigate]);
 
   return (

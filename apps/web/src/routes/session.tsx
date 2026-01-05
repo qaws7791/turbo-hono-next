@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   redirect,
   useLoaderData,
@@ -8,14 +9,15 @@ import {
 
 import type { Route } from "./+types/session";
 
-import { getAuthSession } from "~/domains/auth";
+import { authQueries } from "~/domains/auth";
 import {
   SessionView,
   createOrResumeSessionRun,
-  getSessionRunForUi,
+  sessionQueries,
   useSessionController,
 } from "~/domains/session";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const RunIdSchema = PublicIdSchema;
 const SessionIdSchema = PublicIdSchema;
@@ -25,8 +27,10 @@ export function meta() {
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const { isAuthenticated } = await getAuthSession();
-  if (!isAuthenticated) {
+  const sessionQuery = authQueries.getSession();
+  await queryClient.prefetchQuery(sessionQuery);
+  const session = queryClient.getQueryData(sessionQuery.queryKey);
+  if (!session?.isAuthenticated) {
     throw redirect(`/login?redirectTo=${encodeURIComponent("/session")}`);
   }
 
@@ -39,7 +43,8 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
     if (!runId.success) {
       throw new Response("Not Found", { status: 404 });
     }
-    return { run: await getSessionRunForUi(runId.data) };
+    await queryClient.prefetchQuery(sessionQueries.run(runId.data));
+    return { mode: "run" as const, runId: runId.data };
   }
 
   const sessionId = SessionIdSchema.safeParse(sessionIdRaw);
@@ -47,8 +52,7 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
     throw new Response("Bad Request", { status: 400 });
   }
 
-  const { runId } = await createOrResumeSessionRun(sessionId.data);
-  throw redirect(`/session?runId=${runId}`);
+  return { mode: "start" as const, sessionId: sessionId.data };
 }
 
 function safeRedirectTo(value: string | null): string {
@@ -58,10 +62,38 @@ function safeRedirectTo(value: string | null): string {
 }
 
 export default function SessionRoute() {
-  const { run } = useLoaderData<typeof clientLoader>();
+  const data = useLoaderData<typeof clientLoader>();
+  if (data.mode === "start") {
+    return <SessionStart sessionId={data.sessionId} />;
+  }
+  return <SessionRun runId={data.runId} />;
+}
+
+function SessionStart({ sessionId }: { sessionId: string }) {
+  const navigate = useNavigate();
+  React.useEffect(() => {
+    createOrResumeSessionRun(sessionId)
+      .then(({ runId }) => {
+        navigate(`/session?runId=${encodeURIComponent(runId)}`, {
+          replace: true,
+        });
+      })
+      .catch(() => {
+        navigate("/home", { replace: true });
+      });
+  }, [navigate, sessionId]);
+
+  return (
+    <div className="flex min-h-svh items-center justify-center">
+      <p className="text-muted-foreground">세션 시작 중...</p>
+    </div>
+  );
+}
+
+function SessionRun({ runId }: { runId: string }) {
+  const { data: run } = useSuspenseQuery(sessionQueries.run(runId));
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
   const controller = useSessionController(run);
   const [closeDialogOpen, setCloseDialogOpen] = React.useState(false);
 

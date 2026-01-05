@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLoaderData } from "react-router";
 import { z } from "zod";
 
@@ -5,10 +6,10 @@ import type { Route } from "./+types/concepts";
 
 import {
   ConceptLibraryView,
-  listSpaceConceptsForUi,
+  conceptsQueries,
   useConceptLibraryModel,
 } from "~/domains/concepts";
-import { listSpacesForUi } from "~/domains/spaces";
+import { queryClient } from "~/foundation/query-client";
 
 const SearchSchema = z.object({
   q: z.string().optional(),
@@ -30,27 +31,14 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
         q: undefined,
       };
 
-  const spaces = await listSpacesForUi();
-  const conceptLists = await Promise.all(
-    spaces.map((space) =>
-      listSpaceConceptsForUi(space.id, {
-        page: 1,
-        limit: 50,
-        search: filters.q?.trim().length ? filters.q.trim() : undefined,
-      }),
-    ),
-  );
+  await queryClient.prefetchQuery(conceptsQueries.library(filters));
 
-  const concepts = conceptLists.flatMap((list) => list.data);
-
-  return {
-    filters,
-    concepts,
-  };
+  return { filters };
 }
 
 export default function ConceptsRoute() {
-  const { filters, concepts } = useLoaderData<typeof clientLoader>();
+  const { filters } = useLoaderData<typeof clientLoader>();
+  const { data: concepts } = useSuspenseQuery(conceptsQueries.library(filters));
   const model = useConceptLibraryModel({ filters });
   return (
     <ConceptLibraryView

@@ -1,7 +1,8 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { getAuthSession } from "~/domains/auth";
+import { authQueries } from "~/domains/auth";
 import { LandingView, useLandingModel } from "~/domains/landing";
+import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
   return [
@@ -14,12 +15,12 @@ export function meta() {
 }
 
 export async function clientLoader() {
-  const { isAuthenticated } = await getAuthSession();
-  return { isAuthenticated };
+  await queryClient.prefetchQuery(authQueries.getSession());
+  return {};
 }
 
 export default function LandingRoute() {
-  const { isAuthenticated } = useLoaderData<typeof clientLoader>();
-  const model = useLandingModel({ isAuthenticated });
+  const { data: session } = useSuspenseQuery(authQueries.getSession());
+  const model = useLandingModel({ isAuthenticated: session.isAuthenticated });
   return <LandingView model={model} />;
 }

@@ -1,14 +1,16 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-plans";
 
-import { listPlansForUi } from "~/domains/plans";
+import { plansQueries } from "~/domains/plans";
 import {
   SpacePlansView,
-  getSpaceForUi,
+  spacesQueries,
   useSpacePlansModel,
 } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -21,14 +23,18 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  const space = await getSpaceForUi(spaceId.data);
-  const plans = await listPlansForUi(spaceId.data);
+  await Promise.all([
+    queryClient.prefetchQuery(spacesQueries.detail(spaceId.data)),
+    queryClient.prefetchQuery(plansQueries.listForSpace(spaceId.data)),
+  ]);
 
-  return { space, plans };
+  return { spaceId: spaceId.data };
 }
 
 export default function SpacePlansRoute() {
-  const { space, plans } = useLoaderData<typeof clientLoader>();
+  const { spaceId } = useLoaderData<typeof clientLoader>();
+  const { data: space } = useSuspenseQuery(spacesQueries.detail(spaceId));
+  const { data: plans } = useSuspenseQuery(plansQueries.listForSpace(spaceId));
   const model = useSpacePlansModel({ plans });
   return (
     <SpacePlansView

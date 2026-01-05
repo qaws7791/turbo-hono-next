@@ -4,17 +4,20 @@ import type { Route } from "./+types/login";
 
 import {
   LoginView,
-  getAuthMe,
+  authQueries,
   useLoginViewModel,
   useMagicLinkMutation,
 } from "~/domains/auth";
+import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
   return [{ title: "로그인" }];
 }
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const me = await getAuthMe();
+  const meQuery = authQueries.getMe();
+  await queryClient.prefetchQuery(meQuery);
+  const me = queryClient.getQueryData(meQuery.queryKey);
   if (me) {
     throw redirect("/home");
   }

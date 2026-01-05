@@ -1,16 +1,15 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLoaderData } from "react-router";
 
-import type { Concept } from "~/domains/concepts";
 import type { Route } from "./+types/concept-detail";
 
 import {
   ConceptDetailView,
-  getConceptDetailForUi,
-  listSpaceConceptsForUi,
+  conceptsQueries,
   useConceptDetailModel,
 } from "~/domains/concepts";
-import { getSpaceForUi, listSpacesForUi } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const ConceptIdSchema = PublicIdSchema;
 
@@ -23,62 +22,19 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!conceptId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-
-  const spaces = await listSpacesForUi();
-  const conceptLists = await Promise.all(
-    spaces.map((space) =>
-      listSpaceConceptsForUi(space.id, { page: 1, limit: 200 }),
-    ),
-  );
-
-  const index = new Map<string, Concept>();
-  for (const list of conceptLists) {
-    for (const item of list.data) {
-      index.set(item.id, item);
-    }
-  }
-
-  const located = index.get(conceptId.data);
-  if (!located) {
-    throw new Response("Not Found", { status: 404 });
-  }
-
-  const space = await getSpaceForUi(located.spaceId);
-  const detail = await getConceptDetailForUi(located.spaceId, conceptId.data);
-  const concept = detail.concept;
-
-  const related = detail.relatedConcepts.slice(0, 6).map((r) => {
-    const found = index.get(r.id);
-    if (found) return found;
-
-    const fallback: Concept = {
-      id: r.id,
-      spaceId: concept.spaceId,
-      title: r.title,
-      oneLiner: "",
-      definition: "",
-      exampleCode: undefined,
-      gotchas: [],
-      tags: [],
-      reviewStatus: "good",
-      lastStudiedAt: undefined,
-      sources: [],
-      relatedConceptIds: [],
-    };
-    return fallback;
-  });
-
-  return { concept, space, related };
+  await queryClient.prefetchQuery(conceptsQueries.detailPage(conceptId.data));
+  return { conceptId: conceptId.data };
 }
 
 export default function ConceptDetailRoute() {
-  const { concept, space, related } = useLoaderData<typeof clientLoader>();
-  const model = useConceptDetailModel(concept);
+  const { conceptId } = useLoaderData<typeof clientLoader>();
+  const { data } = useSuspenseQuery(conceptsQueries.detailPage(conceptId));
+  const model = useConceptDetailModel(data.concept);
   return (
     <ConceptDetailView
-      concept={concept}
-      space={space}
-      related={related}
+      concept={data.concept}
+      space={data.space}
+      related={data.related}
       model={model}
     />
   );

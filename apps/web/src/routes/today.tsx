@@ -1,18 +1,18 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { TodayView, getHomeQueue } from "~/domains/home";
+import { TodayView, homeQueries } from "~/domains/home";
+import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
   return [{ title: "오늘 할 일" }];
 }
 
 export async function clientLoader() {
-  return {
-    queue: await getHomeQueue(),
-  };
+  await queryClient.prefetchQuery(homeQueries.getQueue());
+  return {};
 }
 
 export default function TodayRoute() {
-  const { queue } = useLoaderData<typeof clientLoader>();
+  const { data: queue } = useSuspenseQuery(homeQueries.getQueue());
   return <TodayView queue={queue} />;
 }

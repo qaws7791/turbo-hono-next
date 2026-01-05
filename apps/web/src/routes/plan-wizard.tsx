@@ -1,14 +1,16 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLoaderData, useNavigate } from "react-router";
 
 import type { Route } from "./+types/plan-wizard";
 
-import { listMaterialsForUi } from "~/domains/materials";
+import { materialsQueries } from "~/domains/materials";
 import {
   PlanWizardView,
   useCreatePlanMutation,
   usePlanWizardModel,
 } from "~/domains/plans";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -21,12 +23,15 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  const materials = await listMaterialsForUi(spaceId.data);
-  return { spaceId: spaceId.data, materials };
+  await queryClient.prefetchQuery(materialsQueries.listForSpace(spaceId.data));
+  return { spaceId: spaceId.data };
 }
 
 export default function PlanWizardRoute() {
-  const { spaceId, materials } = useLoaderData<typeof clientLoader>();
+  const { spaceId } = useLoaderData<typeof clientLoader>();
+  const { data: materials } = useSuspenseQuery(
+    materialsQueries.listForSpace(spaceId),
+  );
   const navigate = useNavigate();
   const { isSubmitting, createPlan } = useCreatePlanMutation(spaceId);
 

@@ -10,6 +10,8 @@ export { useMaterialMutations } from "./application/use-material-mutations";
 export { useSpaceMaterialsModel } from "./application/use-space-materials-model";
 export type { SpaceMaterialsModel } from "./application/use-space-materials-model";
 
+export { materialsQueries } from "./materials.queries";
+
 export {
   materialKindLabel,
   materialStatusLabel,

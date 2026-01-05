@@ -1,29 +1,32 @@
-import { useLoaderData } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
-import { getAuthSession } from "~/domains/auth";
-import {
-  HomeView,
-  getHomeQueue,
-  getHomeStats,
-  getRecentSessions,
-} from "~/domains/home";
+import { authQueries } from "~/domains/auth";
+import { HomeView, homeQueries } from "~/domains/home";
+import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
   return [{ title: "Home" }];
 }
 
 export async function clientLoader() {
-  const { user } = await getAuthSession();
-  const [stats, queue, recent] = await Promise.all([
-    getHomeStats(),
-    getHomeQueue(),
-    getRecentSessions(6),
+  await Promise.all([
+    queryClient.prefetchQuery(authQueries.getSession()),
+    queryClient.prefetchQuery(homeQueries.getStats()),
+    queryClient.prefetchQuery(homeQueries.getQueue()),
+    queryClient.prefetchQuery(homeQueries.getRecentSessions(6)),
   ]);
-  return { user, stats, queue, recent };
+  return {};
 }
 
 export default function HomeRoute() {
-  const { user, stats, queue, recent } = useLoaderData<typeof clientLoader>();
+  const { data: session } = useSuspenseQuery(authQueries.getSession());
+  const { data: stats } = useSuspenseQuery(homeQueries.getStats());
+  const { data: queue } = useSuspenseQuery(homeQueries.getQueue());
+  const { data: recent } = useSuspenseQuery(homeQueries.getRecentSessions(6));
+  const user = session.user;
+  if (!user) {
+    throw new Error("Authenticated session is required.");
+  }
 
   return (
     <HomeView

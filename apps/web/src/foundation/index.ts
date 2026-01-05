@@ -3,4 +3,5 @@
 
 export * from "./hooks";
 export * from "./lib";
+export * from "./query-client";
 export * from "./types";

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Toaster } from "@repo/ui/sonner";
@@ -13,6 +14,7 @@ import {
 import type { Route } from "./+types/root";
 
 import "~/app/styles/app.css";
+import { QueryProvider } from "~/app/providers/query-provider";
 
 if (
   typeof window !== "undefined" &&
@@ -47,8 +49,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <Toaster />
+        <QueryProvider>
+          <React.Suspense fallback={<div className="p-6">Loading…</div>}>
+            {children}
+          </React.Suspense>
+          <Toaster />
+        </QueryProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

@@ -1,13 +1,15 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { redirect, useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-layout";
 
 import {
   SpaceLayoutView,
-  getSpaceForUi,
+  spacesQueries,
   useSpaceLayoutModel,
 } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -36,13 +38,13 @@ export async function clientLoader({
     }
   }
 
-  return {
-    space: await getSpaceForUi(spaceId.data),
-  };
+  await queryClient.prefetchQuery(spacesQueries.detail(spaceId.data));
+  return { spaceId: spaceId.data };
 }
 
 export default function SpaceLayoutRoute() {
-  const { space } = useLoaderData<typeof clientLoader>();
+  const { spaceId } = useLoaderData<typeof clientLoader>();
+  const { data: space } = useSuspenseQuery(spacesQueries.detail(spaceId));
   const model = useSpaceLayoutModel(space);
   return (
     <SpaceLayoutView

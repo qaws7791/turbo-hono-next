@@ -1,13 +1,15 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-materials";
 
 import {
   SpaceMaterialsView,
-  listMaterialsForUi,
+  materialsQueries,
   useSpaceMaterialsModel,
 } from "~/domains/materials";
 import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -20,14 +22,17 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!spaceId.success) {
     throw new Response("Not Found", { status: 404 });
   }
+  await queryClient.prefetchQuery(materialsQueries.listForSpace(spaceId.data));
   return {
     spaceId: spaceId.data,
-    materials: await listMaterialsForUi(spaceId.data),
   };
 }
 
 export default function SpaceMaterialsRoute() {
-  const { spaceId, materials } = useLoaderData<typeof clientLoader>();
+  const { spaceId } = useLoaderData<typeof clientLoader>();
+  const { data: materials } = useSuspenseQuery(
+    materialsQueries.listForSpace(spaceId),
+  );
   const model = useSpaceMaterialsModel(materials);
   return (
     <SpaceMaterialsView
