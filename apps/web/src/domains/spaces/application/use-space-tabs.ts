@@ -1,18 +1,16 @@
 import { useLocation } from "react-router";
 
-import type { Space } from "../model/spaces.types";
-
-export type SpaceLayoutModel = {
+export type SpaceTabs = {
   basePath: string;
   isMaterials: boolean;
   isPlans: boolean;
   isConcepts: boolean;
 };
 
-export function useSpaceLayoutModel(space: Space): SpaceLayoutModel {
+export function useSpaceTabs(spaceId: string): SpaceTabs {
   const location = useLocation();
 
-  const basePath = `/spaces/${space.id}`;
+  const basePath = `/spaces/${spaceId}`;
   const pathname = location.pathname;
 
   const isMaterials = pathname.startsWith(`${basePath}/materials`);

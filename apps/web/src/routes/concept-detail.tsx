@@ -3,11 +3,7 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/concept-detail";
 
-import {
-  ConceptDetailView,
-  conceptsQueries,
-  useConceptDetailModel,
-} from "~/domains/concepts";
+import { ConceptDetailView, conceptsQueries } from "~/domains/concepts";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -29,13 +25,11 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function ConceptDetailRoute() {
   const { conceptId } = useLoaderData<typeof clientLoader>();
   const { data } = useSuspenseQuery(conceptsQueries.detailPage(conceptId));
-  const model = useConceptDetailModel(data.concept);
   return (
     <ConceptDetailView
       concept={data.concept}
       space={data.space}
       related={data.related}
-      model={model}
     />
   );
 }

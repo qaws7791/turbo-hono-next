@@ -7,7 +7,7 @@ import { materialsQueries } from "~/domains/materials";
 import {
   PlanWizardView,
   useCreatePlanMutation,
-  usePlanWizardModel,
+  usePlanWizardForm,
 } from "~/domains/plans";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
@@ -35,7 +35,7 @@ export default function PlanWizardRoute() {
   const navigate = useNavigate();
   const { isSubmitting, createPlan } = useCreatePlanMutation(spaceId);
 
-  const model = usePlanWizardModel({
+  const wizardForm = usePlanWizardForm({
     materials,
     submitPlan: createPlan,
   });
@@ -44,7 +44,7 @@ export default function PlanWizardRoute() {
     <PlanWizardView
       spaceId={spaceId}
       materials={materials}
-      model={model}
+      model={wizardForm}
       isSubmitting={isSubmitting}
       onCancel={() => navigate(`/spaces/${spaceId}/plans`)}
     />

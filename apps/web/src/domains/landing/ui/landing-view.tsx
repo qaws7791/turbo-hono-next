@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Separator } from "@repo/ui/separator";
 import { Link } from "react-router";
 
+import { getLandingHref } from "../model";
+
 import type { ReactNode } from "react";
-import type { LandingModel } from "../application/use-landing-model";
 
 function Section({
   title,
@@ -34,7 +35,8 @@ function Section({
   );
 }
 
-export function LandingView({ model }: { model: LandingModel }) {
+export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
+  const primaryHref = getLandingHref(isAuthenticated);
   return (
     <div className="bg-background text-foreground min-h-svh">
       <header className="bg-background/70 border-b border-border sticky top-0 z-10 backdrop-blur">
@@ -52,9 +54,7 @@ export function LandingView({ model }: { model: LandingModel }) {
             >
               요금제
             </Button>
-            <Button render={<Link to={model.primaryHref} />}>
-              무료로 시작하기
-            </Button>
+            <Button render={<Link to={primaryHref} />}>무료로 시작하기</Button>
           </nav>
         </div>
       </header>
@@ -76,7 +76,7 @@ export function LandingView({ model }: { model: LandingModel }) {
                 준비합니다. 당신은 매일 한 번만 “시작”을 누르면 됩니다.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Button render={<Link to={model.primaryHref} />}>
+                <Button render={<Link to={primaryHref} />}>
                   무료로 시작하기
                 </Button>
                 <Button
@@ -272,7 +272,7 @@ export function LandingView({ model }: { model: LandingModel }) {
                   </ul>
                   <Button
                     className="w-full"
-                    render={<Link to={model.primaryHref} />}
+                    render={<Link to={primaryHref} />}
                   >
                     {tier.cta}
                   </Button>
@@ -341,7 +341,7 @@ export function LandingView({ model }: { model: LandingModel }) {
               </div>
               <Button
                 size="lg"
-                render={<Link to={model.primaryHref} />}
+                render={<Link to={primaryHref} />}
               >
                 무료로 시작하기
               </Button>

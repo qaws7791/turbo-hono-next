@@ -21,11 +21,13 @@ import {
 } from "@repo/ui/timeline";
 import { Link, NavLink } from "react-router";
 
+import { useConceptTabs } from "../application";
+import { getLatestConceptSource } from "../model";
+
 import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
-import type { ConceptDetailModel } from "../application/use-concept-detail-model";
-import type { Concept } from "../model";
 import type { Space } from "~/domains/spaces";
+import type { Concept } from "../model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 import { formatLongDateTime } from "~/foundation/lib/time";
@@ -165,13 +167,17 @@ export function ConceptDetailView({
   concept,
   space,
   related,
-  model,
 }: {
   concept: Concept;
   space: Space;
   related: Array<Concept>;
-  model: ConceptDetailModel;
 }) {
+  const tabs = useConceptTabs(concept.id);
+  const latestSource = getLatestConceptSource(concept);
+  const reviewHref = latestSource
+    ? `/session?runId=${latestSource.sessionId}`
+    : null;
+
   return (
     <>
       <PageHeader>
@@ -206,8 +212,8 @@ export function ConceptDetailView({
           </div>
           <div className="flex items-center gap-2">
             <ConceptReviewBadge status={concept.reviewStatus} />
-            {model.reviewHref ? (
-              <Button render={<Link to={model.reviewHref} />}>복습 시작</Button>
+            {reviewHref ? (
+              <Button render={<Link to={reviewHref} />}>복습 시작</Button>
             ) : (
               <Button disabled>복습 시작</Button>
             )}
@@ -231,29 +237,29 @@ export function ConceptDetailView({
         {/* 탭 네비게이션 */}
         <TabNav>
           <TabNavLink
-            render={<NavLink to={model.basePath} />}
-            active={model.isNoteTab}
+            render={<NavLink to={tabs.basePath} />}
+            active={tabs.isNoteTab}
           >
             Ari 노트
           </TabNavLink>
           <TabNavLink
-            render={<NavLink to={`${model.basePath}?tab=history`} />}
-            active={model.isHistoryTab}
+            render={<NavLink to={`${tabs.basePath}?tab=history`} />}
+            active={tabs.isHistoryTab}
           >
             학습 이력
           </TabNavLink>
           <TabNavLink
-            render={<NavLink to={`${model.basePath}?tab=related`} />}
-            active={model.isRelatedTab}
+            render={<NavLink to={`${tabs.basePath}?tab=related`} />}
+            active={tabs.isRelatedTab}
           >
             연관 개념
           </TabNavLink>
         </TabNav>
 
         {/* 탭 컨텐츠 */}
-        {model.isNoteTab && <NoteTabContent concept={concept} />}
-        {model.isHistoryTab && <HistoryTabContent concept={concept} />}
-        {model.isRelatedTab && <RelatedTabContent related={related} />}
+        {tabs.isNoteTab && <NoteTabContent concept={concept} />}
+        {tabs.isHistoryTab && <HistoryTabContent concept={concept} />}
+        {tabs.isRelatedTab && <RelatedTabContent related={related} />}
       </PageBody>
     </>
   );

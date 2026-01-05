@@ -3,11 +3,7 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/plan-detail";
 
-import {
-  PlanDetailView,
-  plansQueries,
-  usePlanDetailModel,
-} from "~/domains/plans";
+import { PlanDetailView, plansQueries } from "~/domains/plans";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -34,15 +30,5 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function PlanDetailRoute() {
   const { spaceId, planId } = useLoaderData<typeof clientLoader>();
   const { data } = useSuspenseQuery(plansQueries.detailPage(spaceId, planId));
-  const model = usePlanDetailModel({
-    plan: data.plan,
-    nextQueue: data.nextQueue,
-    spaceId,
-  });
-  return (
-    <PlanDetailView
-      data={data}
-      model={model}
-    />
-  );
+  return <PlanDetailView data={data} />;
 }

@@ -1,11 +1,11 @@
 import { Badge } from "@repo/ui/badge";
 import { Card, CardContent } from "@repo/ui/card";
 import { IconCalendar, IconChevronLeft } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 
-import type { HomeQueueItem } from "../model";
-
 import { PageBody, PageHeader } from "~/domains/app-shell";
+import { homeQueries } from "~/domains/home/home.queries";
 import { getColorByName, getIconByName } from "~/domains/spaces";
 import { formatShortDate } from "~/foundation/lib/time";
 
@@ -17,7 +17,9 @@ function QueueTypeBadge({ type }: { type: "session" | "review" }) {
   );
 }
 
-export function TodayView({ queue }: { queue: Array<HomeQueueItem> }) {
+export function TodayView() {
+  const { data: queue } = useSuspenseQuery(homeQueries.getQueue());
+
   return (
     <>
       <PageHeader />

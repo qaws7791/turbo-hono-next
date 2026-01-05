@@ -3,11 +3,7 @@ import { redirect, useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-layout";
 
-import {
-  SpaceLayoutView,
-  spacesQueries,
-  useSpaceLayoutModel,
-} from "~/domains/spaces";
+import { SpaceLayoutView, spacesQueries } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -45,11 +41,5 @@ export async function clientLoader({
 export default function SpaceLayoutRoute() {
   const { spaceId } = useLoaderData<typeof clientLoader>();
   const { data: space } = useSuspenseQuery(spacesQueries.detail(spaceId));
-  const model = useSpaceLayoutModel(space);
-  return (
-    <SpaceLayoutView
-      space={space}
-      model={model}
-    />
-  );
+  return <SpaceLayoutView space={space} />;
 }

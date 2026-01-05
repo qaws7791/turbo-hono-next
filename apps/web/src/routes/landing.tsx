@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { authQueries } from "~/domains/auth";
-import { LandingView, useLandingModel } from "~/domains/landing";
+import { LandingView } from "~/domains/landing";
 import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
@@ -21,6 +21,5 @@ export async function clientLoader() {
 
 export default function LandingRoute() {
   const { data: session } = useSuspenseQuery(authQueries.getSession());
-  const model = useLandingModel({ isAuthenticated: session.isAuthenticated });
-  return <LandingView model={model} />;
+  return <LandingView isAuthenticated={session.isAuthenticated} />;
 }

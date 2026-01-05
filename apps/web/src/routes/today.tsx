@@ -1,5 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-
 import { TodayView, homeQueries } from "~/domains/home";
 import { queryClient } from "~/foundation/query-client";
 
@@ -13,6 +11,5 @@ export async function clientLoader() {
 }
 
 export default function TodayRoute() {
-  const { data: queue } = useSuspenseQuery(homeQueries.getQueue());
-  return <TodayView queue={queue} />;
+  return <TodayView />;
 }

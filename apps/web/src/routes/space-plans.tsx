@@ -4,11 +4,7 @@ import { useLoaderData } from "react-router";
 import type { Route } from "./+types/space-plans";
 
 import { plansQueries } from "~/domains/plans";
-import {
-  SpacePlansView,
-  spacesQueries,
-  useSpacePlansModel,
-} from "~/domains/spaces";
+import { SpacePlansView, spacesQueries } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -35,11 +31,10 @@ export default function SpacePlansRoute() {
   const { spaceId } = useLoaderData<typeof clientLoader>();
   const { data: space } = useSuspenseQuery(spacesQueries.detail(spaceId));
   const { data: plans } = useSuspenseQuery(plansQueries.listForSpace(spaceId));
-  const model = useSpacePlansModel({ plans });
   return (
     <SpacePlansView
       space={space}
-      model={model}
+      plans={plans}
     />
   );
 }

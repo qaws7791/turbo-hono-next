@@ -5,7 +5,7 @@ import type { Route } from "./+types/login";
 import {
   LoginView,
   authQueries,
-  useLoginViewModel,
+  useLoginState,
   useMagicLinkMutation,
 } from "~/domains/auth";
 import { queryClient } from "~/foundation/query-client";
@@ -30,15 +30,15 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 export default function LoginRoute() {
   const mutation = useMagicLinkMutation();
 
-  const model = useLoginViewModel({
+  const loginState = useLoginState({
     actionData: mutation.actionData,
     isSubmitting: mutation.isSubmitting,
   });
 
   return (
     <LoginView
-      state={model.state}
-      onChangeEmail={model.resetToIdle}
+      state={loginState.state}
+      onChangeEmail={loginState.resetToIdle}
       onSendMagicLink={mutation.sendMagicLink}
     />
   );

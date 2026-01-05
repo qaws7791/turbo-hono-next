@@ -1,8 +1,8 @@
 export { SpaceMaterialsView } from "./ui";
 
 export { useMaterialMutations } from "./application/use-material-mutations";
-export { useSpaceMaterialsModel } from "./application/use-space-materials-model";
-export type { SpaceMaterialsModel } from "./application/use-space-materials-model";
+export { useUploadMaterialDialog } from "./application/use-upload-material-dialog";
+export type { UploadMaterialDialog } from "./application/use-upload-material-dialog";
 
 export { materialsQueries } from "./materials.queries";
 

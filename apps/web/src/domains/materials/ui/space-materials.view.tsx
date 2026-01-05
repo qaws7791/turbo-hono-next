@@ -20,10 +20,9 @@ import { Separator } from "@repo/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import * as React from "react";
 
-import { useMaterialMutations } from "../application";
+import { useMaterialMutations, useUploadMaterialDialog } from "../application";
 import { materialKindLabel, materialStatusLabel } from "../model";
 
-import type { SpaceMaterialsModel } from "../application/use-space-materials-model";
 import type { Material } from "../model/materials.types";
 
 function materialStatusBadgeVariant(
@@ -37,12 +36,11 @@ function materialStatusBadgeVariant(
 export function SpaceMaterialsView({
   spaceId,
   materials,
-  model,
 }: {
   spaceId: string;
   materials: Array<Material>;
-  model: SpaceMaterialsModel;
 }) {
+  const uploadDialog = useUploadMaterialDialog();
   const { isSubmitting, deleteMaterial, uploadFileMaterial } =
     useMaterialMutations(spaceId);
   const [title, setTitle] = React.useState("");
@@ -55,7 +53,7 @@ export function SpaceMaterialsView({
 
     const finalTitle = title.trim() || file.name;
     uploadFileMaterial(file, finalTitle);
-    model.closeUpload();
+    uploadDialog.close();
     setTitle("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -76,7 +74,7 @@ export function SpaceMaterialsView({
             바뀌지 않습니다.
           </p>
         </div>
-        <Button onClick={model.openUpload}>자료 업로드</Button>
+        <Button onClick={uploadDialog.open}>자료 업로드</Button>
       </div>
 
       {materials.length === 0 ? (
@@ -88,7 +86,7 @@ export function SpaceMaterialsView({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={model.openUpload}>자료 업로드</Button>
+            <Button onClick={uploadDialog.open}>자료 업로드</Button>
           </CardContent>
         </Card>
       ) : (
@@ -151,9 +149,9 @@ export function SpaceMaterialsView({
       )}
 
       <Dialog
-        open={model.uploadOpen}
+        open={uploadDialog.isOpen}
         onOpenChange={(open) =>
-          open ? model.openUpload() : model.closeUpload()
+          open ? uploadDialog.open() : uploadDialog.close()
         }
       >
         <DialogContent className="sm:max-w-2xl">

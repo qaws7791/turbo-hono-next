@@ -1,18 +1,14 @@
 import { useSearchParams } from "react-router";
 
-import type { ConceptLibraryFilters } from "../model/concepts.types";
-
-export type ConceptLibraryModel = {
+export type ConceptSearch = {
   query: string;
   setQuery: (nextQuery: string) => void;
 };
 
-export function useConceptLibraryModel(input: {
-  filters: ConceptLibraryFilters;
-}): ConceptLibraryModel {
+export function useConceptSearch(initialQuery?: string): ConceptSearch {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const query = input.filters.q ?? "";
+  const query = initialQuery ?? "";
 
   function setQuery(nextQuery: string): void {
     const next = new URLSearchParams(searchParams);

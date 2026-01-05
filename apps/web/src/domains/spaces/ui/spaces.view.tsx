@@ -20,16 +20,22 @@ import { IconBrain, IconClock, IconFile } from "@tabler/icons-react";
 import * as React from "react";
 import { Link } from "react-router";
 
-import { useCreateSpaceMutation } from "../application";
+import {
+  useCreateSpaceDialog,
+  useCreateSpaceMutation,
+  useSpaceSearch,
+} from "../application";
 
 import { getColorByName, getIconByName } from "./icon-color-picker";
 
-import type { SpacesModel } from "../application/use-spaces-model";
+import type { SpaceCard } from "../model/spaces.types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 import { formatRelativeTime } from "~/foundation/lib/time";
 
-export function SpacesView({ model }: { model: SpacesModel }) {
+export function SpacesView({ spaces }: { spaces: Array<SpaceCard> }) {
+  const search = useSpaceSearch(spaces);
+  const createDialog = useCreateSpaceDialog();
   const { isSubmitting, createSpace } = useCreateSpaceMutation();
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
@@ -43,7 +49,7 @@ export function SpacesView({ model }: { model: SpacesModel }) {
   };
 
   const handleDialogClose = () => {
-    model.closeCreate();
+    createDialog.close();
     setName("");
     setDescription("");
   };
@@ -60,22 +66,22 @@ export function SpacesView({ model }: { model: SpacesModel }) {
               관리합니다.
             </p>
           </div>
-          <Button onClick={model.openCreate}>+ 스페이스 만들기</Button>
+          <Button onClick={createDialog.open}>+ 스페이스 만들기</Button>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between items-end">
           <div className="w-full sm:max-w-sm">
             <Input
-              value={model.query}
-              onChange={(e) => model.setQuery(e.target.value)}
+              value={search.query}
+              onChange={(e) => search.setQuery(e.target.value)}
               placeholder="스페이스 검색"
             />
           </div>
           <div className="text-muted-foreground text-sm">
-            {model.filtered.length}개 표시
+            {search.filtered.length}개 표시
           </div>
         </div>
 
-        {model.filtered.length === 0 ? (
+        {search.filtered.length === 0 ? (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">
@@ -87,12 +93,12 @@ export function SpacesView({ model }: { model: SpacesModel }) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={model.openCreate}>+ 스페이스 만들기</Button>
+              <Button onClick={createDialog.open}>+ 스페이스 만들기</Button>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {model.filtered.map((space) => (
+            {search.filtered.map((space) => (
               <Link
                 key={space.id}
                 to={`/spaces/${space.id}`}
@@ -164,9 +170,9 @@ export function SpacesView({ model }: { model: SpacesModel }) {
         )}
 
         <Dialog
-          open={model.createOpen}
+          open={createDialog.isOpen}
           onOpenChange={(next) =>
-            next ? model.openCreate() : handleDialogClose()
+            next ? createDialog.open() : handleDialogClose()
           }
         >
           <DialogContent className="sm:max-w-md">

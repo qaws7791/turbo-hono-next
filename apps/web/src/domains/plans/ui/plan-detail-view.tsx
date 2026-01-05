@@ -36,11 +36,11 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router";
 
+import { usePlanActions } from "../application";
 import { getPlanGoalLabel, getPlanLevelLabel } from "../model";
 
 import { PlanStatusBadge } from "./plan-status-badge";
 
-import type { PlanDetailModel } from "../application/use-plan-detail-model";
 import type { PlanDetailData } from "../model/types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
@@ -55,14 +55,11 @@ function SessionStatusBadge({
   return <Badge variant="outline">할 일</Badge>;
 }
 
-export function PlanDetailView({
-  data,
-  model,
-}: {
-  data: PlanDetailData;
-  model: PlanDetailModel;
-}) {
+export function PlanDetailView({ data }: { data: PlanDetailData }) {
   const { space, plan } = data;
+  const actions = usePlanActions(space.id);
+  const nextSession = data.nextQueue[0];
+  const canStart = plan.status === "active" && Boolean(nextSession);
 
   return (
     <>
@@ -110,8 +107,8 @@ export function PlanDetailView({
           </div>
 
           <div className="flex gap-2 flex-row justify-between">
-            {model.canStart && model.nextSession ? (
-              <Button render={<Link to={model.nextSession.href} />}>
+            {canStart && nextSession ? (
+              <Button render={<Link to={nextSession.href} />}>
                 <IconPlayerPlayFilled />
                 세션 시작
               </Button>
@@ -176,24 +173,28 @@ export function PlanDetailView({
                 <DropdownMenuContent align="end">
                   {plan.status === "active" ? (
                     <DropdownMenuItem
-                      disabled={model.isSubmitting}
-                      onSelect={() => model.executePlanAction(plan.id, "pause")}
+                      disabled={actions.isSubmitting}
+                      onSelect={() =>
+                        actions.executePlanAction(plan.id, "pause")
+                      }
                     >
                       일시정지하기
                     </DropdownMenuItem>
                   ) : plan.status === "paused" ? (
                     <DropdownMenuItem
-                      disabled={model.isSubmitting}
+                      disabled={actions.isSubmitting}
                       onSelect={() =>
-                        model.executePlanAction(plan.id, "resume")
+                        actions.executePlanAction(plan.id, "resume")
                       }
                     >
                       다시 시작하기
                     </DropdownMenuItem>
                   ) : null}
                   <DropdownMenuItem
-                    disabled={model.isSubmitting}
-                    onSelect={() => model.executePlanAction(plan.id, "archive")}
+                    disabled={actions.isSubmitting}
+                    onSelect={() =>
+                      actions.executePlanAction(plan.id, "archive")
+                    }
                   >
                     보관하기
                   </DropdownMenuItem>

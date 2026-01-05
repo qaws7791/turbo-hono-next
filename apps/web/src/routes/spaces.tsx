@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router";
 
-import { SpacesView, spacesQueries, useSpacesModel } from "~/domains/spaces";
+import { SpacesView, spacesQueries } from "~/domains/spaces";
 import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
@@ -15,13 +14,5 @@ export async function clientLoader() {
 
 export default function SpacesRoute() {
   const { data: spaces } = useSuspenseQuery(spacesQueries.listCards());
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const model = useSpacesModel({
-    spaces,
-    searchParams,
-    setSearchParams: (next) => setSearchParams(next, { replace: true }),
-  });
-
-  return <SpacesView model={model} />;
+  return <SpacesView spaces={spaces} />;
 }

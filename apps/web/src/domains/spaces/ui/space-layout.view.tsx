@@ -3,22 +3,16 @@ import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
 import * as React from "react";
 import { NavLink, Outlet } from "react-router";
 
-import { useUpdateSpaceMutation } from "../application";
+import { useSpaceTabs, useUpdateSpaceMutation } from "../application";
 
 import { IconColorPicker } from "./icon-color-picker";
 
-import type { SpaceLayoutModel } from "../application/use-space-layout-model";
 import type { Space } from "../model/spaces.types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 
-export function SpaceLayoutView({
-  space,
-  model,
-}: {
-  space: Space;
-  model: SpaceLayoutModel;
-}) {
+export function SpaceLayoutView({ space }: { space: Space }) {
+  const tabs = useSpaceTabs(space.id);
   const { updateSpace } = useUpdateSpaceMutation();
 
   // 아이콘/색상 선택 상태
@@ -75,22 +69,22 @@ export function SpaceLayoutView({
         </div>
         <TabNav>
           <TabNavLink
-            render={<NavLink to={model.basePath} />}
-            active={model.isPlans}
+            render={<NavLink to={tabs.basePath} />}
+            active={tabs.isPlans}
           >
             <IconSchool />
             학습 계획
           </TabNavLink>
           <TabNavLink
-            render={<NavLink to={`${model.basePath}/materials`} />}
-            active={model.isMaterials}
+            render={<NavLink to={`${tabs.basePath}/materials`} />}
+            active={tabs.isMaterials}
           >
             <IconFileDescription />
             학습 자료
           </TabNavLink>
           <TabNavLink
-            render={<NavLink to={`${model.basePath}/concepts`} />}
-            active={model.isConcepts}
+            render={<NavLink to={`${tabs.basePath}/concepts`} />}
+            active={tabs.isConcepts}
           >
             <IconBook />
             개념

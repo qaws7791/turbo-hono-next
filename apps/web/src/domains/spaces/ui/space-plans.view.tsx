@@ -19,7 +19,7 @@ import {
 import { IconPlus } from "@tabler/icons-react";
 import { Link } from "react-router";
 
-import type { SpacePlansModel } from "../application/use-space-plans-model";
+import type { PlanWithDerived } from "~/domains/plans";
 import type { Space } from "../model/spaces.types";
 
 import {
@@ -30,10 +30,10 @@ import {
 
 export function SpacePlansView({
   space,
-  model,
+  plans,
 }: {
   space: Space;
-  model: SpacePlansModel;
+  plans: Array<PlanWithDerived>;
 }) {
   return (
     <div className="space-y-8">
@@ -51,7 +51,7 @@ export function SpacePlansView({
         </Button>
       </div>
 
-      {model.plans.length === 0 ? (
+      {plans.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">
@@ -71,7 +71,7 @@ export function SpacePlansView({
         <>
           {/* 모바일: 카드 리스트 */}
           <div className="flex flex-col gap-3 md:hidden">
-            {model.plans.map((plan) => (
+            {plans.map((plan) => (
               <Link
                 key={plan.id}
                 to={`/spaces/${space.id}/plan/${plan.id}`}
@@ -136,7 +136,7 @@ export function SpacePlansView({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {model.plans.map((plan) => (
+              {plans.map((plan) => (
                 <TableRow key={plan.id}>
                   <TableCell>
                     <div className="space-y-1">

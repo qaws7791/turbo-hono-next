@@ -4,7 +4,7 @@ import type { LoginActionData, LoginViewState } from "../model/types";
 
 import { useCountdown } from "~/foundation/hooks/use-countdown";
 
-export function useLoginViewModel(input: {
+export function useLoginState(input: {
   actionData: LoginActionData | undefined;
   isSubmitting: boolean;
 }): {

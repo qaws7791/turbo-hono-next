@@ -32,7 +32,7 @@ function canSelectMaterial(doc: PlanWizardMaterial): boolean {
   return doc.status === "completed";
 }
 
-export function usePlanWizardModel(input: {
+export function usePlanWizardForm(input: {
   materials: Array<PlanWizardMaterial>;
   submitPlan: (input: CreatePlanInput) => void;
 }): PlanWizardModel {

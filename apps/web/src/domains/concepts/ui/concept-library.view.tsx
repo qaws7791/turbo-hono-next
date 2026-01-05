@@ -1,20 +1,22 @@
 import { Input } from "@repo/ui/input";
 import { IconSearch } from "@tabler/icons-react";
 
+import { useConceptSearch } from "../application";
+
 import { ConceptCard } from "./concept-card.card";
 
-import type { ConceptLibraryModel } from "../application/use-concept-library-model";
 import type { Concept } from "../model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
 
 export function ConceptLibraryView({
   concepts,
-  model,
+  initialQuery,
 }: {
   concepts: Array<Concept>;
-  model: ConceptLibraryModel;
+  initialQuery?: string;
 }) {
+  const search = useConceptSearch(initialQuery);
   return (
     <>
       <PageHeader />
@@ -24,8 +26,8 @@ export function ConceptLibraryView({
         </h1>
         <div className="relative">
           <Input
-            value={model.query}
-            onChange={(e) => model.setQuery(e.target.value)}
+            value={search.query}
+            onChange={(e) => search.setQuery(e.target.value)}
             placeholder="검색 (제목/요약/태그)"
             className="w-full px-4 h-10 bg-background peer ps-9"
           />

@@ -3,11 +3,7 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-materials";
 
-import {
-  SpaceMaterialsView,
-  materialsQueries,
-  useSpaceMaterialsModel,
-} from "~/domains/materials";
+import { SpaceMaterialsView, materialsQueries } from "~/domains/materials";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -33,12 +29,10 @@ export default function SpaceMaterialsRoute() {
   const { data: materials } = useSuspenseQuery(
     materialsQueries.listForSpace(spaceId),
   );
-  const model = useSpaceMaterialsModel(materials);
   return (
     <SpaceMaterialsView
       spaceId={spaceId}
       materials={materials}
-      model={model}
     />
   );
 }
