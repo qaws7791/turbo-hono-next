@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router";
 
 import { apiClient } from "~/foundation/api/client";
+import { env } from "~/foundation/lib/env";
 
 export function useGoogleLogin() {
   const navigate = useNavigate();
 
   const continueWithGoogle = async (redirectTo?: string) => {
     // MSW 환경일 때
-    if (import.meta.env.VITE_MSW === "true") {
+    if (env.VITE_MSW) {
       try {
         // MSW 핸들러가 /api/auth/google 을 가로채서
         // signInWithGoogle() 을 실행하고 성공을 반환하도록 할 것임
@@ -24,7 +25,7 @@ export function useGoogleLogin() {
     }
 
     // 실제 환경 또는 MSW 실패 시 백엔드 엔드포인트로 이동
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const baseUrl = env.VITE_API_BASE_URL;
     const url = new URL(
       "/api/auth/google",
       baseUrl.startsWith("http") ? baseUrl : window.location.origin,

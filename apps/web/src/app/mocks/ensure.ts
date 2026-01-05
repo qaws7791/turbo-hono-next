@@ -1,12 +1,12 @@
 import { worker } from "./worker";
 
+import { env } from "~/foundation/lib/env";
+
 declare global {
   var __mswStartPromise: Promise<unknown> | undefined;
 }
 
-const shouldStart =
-  typeof window !== "undefined" &&
-  (import.meta.env.DEV || import.meta.env.VITE_MSW === "true");
+const shouldStart = typeof window !== "undefined" && (env.DEV || env.VITE_MSW);
 
 export function ensureMswReady(): Promise<void> {
   if (!shouldStart) return Promise.resolve();

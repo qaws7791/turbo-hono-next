@@ -2,18 +2,18 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "~/foundation/types/api";
 
+import { env } from "~/foundation/lib/env";
+
 declare global {
   var __mswStartPromise: Promise<unknown> | undefined;
 }
 
 const baseUrl = (() => {
-  const raw = import.meta.env.VITE_API_BASE_URL;
-  if (!raw) return "";
-  return raw.endsWith("/") ? raw.slice(0, -1) : raw;
+  return env.VITE_API_BASE_URL;
 })();
 
 const apiFetch: typeof fetch = async (input, init) => {
-  if (import.meta.env.DEV || import.meta.env.VITE_MSW === "true") {
+  if (env.DEV || env.VITE_MSW) {
     await globalThis.__mswStartPromise;
   }
   return fetch(input, init);

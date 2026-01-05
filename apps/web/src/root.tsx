@@ -15,11 +15,9 @@ import type { Route } from "./+types/root";
 
 import "~/app/styles/app.css";
 import { QueryProvider } from "~/app/providers/query-provider";
+import { env } from "~/foundation/lib/env";
 
-if (
-  typeof window !== "undefined" &&
-  (import.meta.env.DEV || import.meta.env.VITE_MSW === "true")
-) {
+if (typeof window !== "undefined" && (env.DEV || env.VITE_MSW)) {
   void import("~/app/mocks/browser");
 }
 

@@ -1,4 +1,5 @@
 export * from "./auth";
+export * from "./env";
 export * from "./initials";
 export * from "./invariant";
 export * from "./public-id";
