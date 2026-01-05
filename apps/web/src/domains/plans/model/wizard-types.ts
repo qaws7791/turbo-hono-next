@@ -1,6 +1,15 @@
-import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
+import type { PlanGoal, PlanLevel } from "./types";
 
 export type PlanWizardStep = 1 | 2 | 3;
+
+export type PlanWizardMaterial = {
+  id: string;
+  title: string;
+  summary?: string;
+  tags: Array<string>;
+  kind: "file" | "url" | "text";
+  status: "pending" | "analyzing" | "completed" | "error";
+};
 
 export type PlanWizardValues = {
   selectedMaterialIds: Array<string>;
@@ -14,7 +23,7 @@ export type PlanWizardValues = {
 };
 
 export type PlanWizardDerived = {
-  filteredMaterials: Array<Material>;
+  filteredMaterials: Array<PlanWizardMaterial>;
   selectedCount: number;
   hasInvalidSelection: boolean;
 };

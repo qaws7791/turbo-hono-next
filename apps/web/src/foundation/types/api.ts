@@ -1779,8 +1779,7 @@ export interface paths {
           };
           content: {
             "application/json": {
-              data: Array<
-                | {
+              data: Array<| {
                     /** @enum {string} */
                     kind: "SESSION";
                     sessionId: string;
@@ -1814,8 +1813,7 @@ export interface paths {
                     reviewStatus: "GOOD" | "DUE" | "OVERDUE";
                     /** Format: date-time */
                     dueAt: string | null;
-                  }
-              >;
+                  }>;
               summary: {
                 total: number;
                 completed: number;
@@ -2212,8 +2210,7 @@ export interface paths {
                   schemaVersion: number;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<
-                    | {
+                  steps: Array<| {
                         id: string;
                         estimatedSeconds?: number;
                         /** @enum {string} */
@@ -2380,8 +2377,7 @@ export interface paths {
                           title: string;
                           description?: string;
                         };
-                      }
-                  >;
+                      }>;
                   /** @default 0 */
                   startStepIndex: number;
                 };

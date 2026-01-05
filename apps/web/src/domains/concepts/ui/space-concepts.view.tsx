@@ -1,9 +1,10 @@
 import { Input } from "@repo/ui/input";
 import { useState } from "react";
 
-import type { Concept, Space } from "~/app/mocks/schemas";
+import { ConceptCard } from "./concept-card.card";
 
-import { ConceptCard } from "~/domains/concepts/ui";
+import type { Space } from "~/domains/spaces";
+import type { Concept } from "../model";
 
 export function SpaceConceptsView({
   space,

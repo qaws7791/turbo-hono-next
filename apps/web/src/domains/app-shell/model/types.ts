@@ -1,8 +1,20 @@
-import type { Space, User } from "~/app/mocks/schemas";
+export type AppShellUser = {
+  id: string;
+  name: string;
+  email: string;
+  plan: "free" | "pro" | "team";
+};
+
+export type AppShellSpace = {
+  id: string;
+  name: string;
+  icon?: string;
+  color?: string;
+};
 
 export type AppShellData = {
-  user: User;
-  spaces: Array<Space>;
+  user: AppShellUser;
+  spaces: Array<AppShellSpace>;
 };
 
 export type CommandAction = {

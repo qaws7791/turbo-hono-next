@@ -1,5 +1,5 @@
 import type { paths } from "~/foundation/types/api";
-import type { Space } from "../../spaces/model/types";
+import type { Space } from "~/domains/spaces";
 import type { HomeQueueItem, SessionSummaryCard } from "./types";
 
 import { todayIsoDate } from "~/foundation/lib/time";

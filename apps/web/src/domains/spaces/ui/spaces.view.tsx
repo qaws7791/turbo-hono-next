@@ -19,13 +19,11 @@ import { Progress } from "@repo/ui/progress";
 import { IconBrain, IconClock, IconFile } from "@tabler/icons-react";
 import { Link, useFetcher } from "react-router";
 
+import { getColorByName, getIconByName } from "./icon-color-picker";
+
 import type { SpacesModel } from "../application/use-spaces-model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import {
-  getColorByName,
-  getIconByName,
-} from "~/domains/spaces/ui/icon-color-picker";
 import { formatRelativeTime } from "~/foundation/lib/time";
 
 export function SpacesView({ model }: { model: SpacesModel }) {

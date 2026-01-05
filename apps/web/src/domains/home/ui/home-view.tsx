@@ -24,7 +24,7 @@ import type {
 } from "~/domains/home";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { getColorByName, getIconByName } from "~/domains/spaces/ui";
+import { getColorByName, getIconByName } from "~/domains/spaces";
 import { formatLongDateTime, formatShortDate } from "~/foundation/lib/time";
 
 function QueueTypeBadge({ type }: { type: "session" | "review" }) {

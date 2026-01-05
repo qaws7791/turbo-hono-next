@@ -22,7 +22,7 @@ export type Concept = {
   gotchas: Array<string>;
   tags: Array<string>;
   reviewStatus: ConceptReviewStatus;
-  lastStudiedAt: string;
+  lastStudiedAt?: string;
   sources: Array<ConceptSource>;
   relatedConceptIds: Array<string>;
 };

@@ -5,14 +5,14 @@ import type { HomeQueueItem } from "~/domains/home";
 import type { PlanDetailData } from "~/domains/plans";
 import type { Route } from "./+types/plan-detail";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
   PlanDetailView,
   getPlanForUi,
+  updatePlanStatus,
   usePlanDetailModel,
 } from "~/domains/plans";
 import { getSpaceForUi } from "~/domains/spaces";
-import { updatePlanStatus } from "~/foundation/api/plans";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 const PlanIdSchema = PublicIdSchema;

@@ -1,10 +1,7 @@
-import type { paths } from "~/foundation/types/api";
-import type { Material, MaterialStatus } from "./types";
+import type { ApiMaterialListItem } from "./materials.dto";
+import type { Material, MaterialStatus } from "../model/materials.types";
 
-type ApiMaterialListItem =
-  paths["/api/spaces/{spaceId}/materials"]["get"]["responses"]["200"]["content"]["application/json"]["data"][number];
-
-export function mapProcessingStatus(
+function mapProcessingStatus(
   status: ApiMaterialListItem["processingStatus"],
 ): MaterialStatus {
   if (status === "READY") return "completed";

@@ -3,17 +3,17 @@ import { z } from "zod";
 
 import type { Route } from "./+types/plan-wizard";
 
-import {
-  PlanGoalSchema,
-  PlanLevelSchema,
-  PublicIdSchema,
-  UuidSchema,
-} from "~/app/mocks/schemas";
 import { listMaterialsForUi } from "~/domains/materials";
-import { PlanWizardView, usePlanWizardModel } from "~/domains/plans";
-import { createPlan } from "~/foundation/api/plans";
+import {
+  PlanWizardView,
+  createPlanForUi,
+  usePlanWizardModel,
+} from "~/domains/plans";
+import { PublicIdSchema, UuidSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
+const PlanGoalSchema = z.enum(["career", "certificate", "work", "hobby"]);
+const PlanLevelSchema = z.enum(["novice", "basic", "intermediate", "advanced"]);
 
 export function meta() {
   return [{ title: "학습 계획 생성" }];
@@ -72,43 +72,14 @@ export async function clientAction({
     throw new Response("Bad Request", { status: 400 });
   }
 
-  const goalType =
-    parsed.data.goal === "career"
-      ? "JOB"
-      : parsed.data.goal === "certificate"
-        ? "CERT"
-        : parsed.data.goal === "work"
-          ? "WORK"
-          : "HOBBY";
-
-  const currentLevel =
-    parsed.data.level === "advanced"
-      ? "ADVANCED"
-      : parsed.data.level === "intermediate"
-        ? "INTERMEDIATE"
-        : "BEGINNER";
-
-  const targetDueDate = (() => {
-    const base = new Date();
-    if (parsed.data.durationMode !== "custom") {
-      base.setDate(base.getDate() + 30);
-      return base.toISOString().slice(0, 10);
-    }
-
-    const value = parsed.data.durationValue ?? 30;
-    const unit = parsed.data.durationUnit ?? "days";
-    const days =
-      unit === "months" ? value * 30 : unit === "weeks" ? value * 7 : value;
-    base.setDate(base.getDate() + days);
-    return base.toISOString().slice(0, 10);
-  })();
-
-  const plan = await createPlan(spaceId.data, {
-    materialIds: parsed.data.sourceMaterialIds,
-    goalType,
-    currentLevel,
-    targetDueDate,
-    specialRequirements: parsed.data.notes,
+  const plan = await createPlanForUi(spaceId.data, {
+    sourceMaterialIds: parsed.data.sourceMaterialIds,
+    goal: parsed.data.goal,
+    level: parsed.data.level,
+    durationMode: parsed.data.durationMode,
+    durationValue: parsed.data.durationValue,
+    durationUnit: parsed.data.durationUnit,
+    notes: parsed.data.notes,
   });
 
   throw redirect(`/spaces/${spaceId.data}/plan/${plan.id}`);

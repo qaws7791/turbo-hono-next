@@ -1,3 +1,2 @@
-export * from "./mappers";
-export * from "./material-status";
-export * from "./types";
+export * from "./materials.selectors";
+export * from "./materials.types";

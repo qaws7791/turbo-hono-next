@@ -1,4 +1,4 @@
-import type { Concept } from "~/app/mocks/schemas";
+import type { Concept } from "./concepts.types";
 
 export type ConceptSource = Concept["sources"][number];
 

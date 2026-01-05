@@ -1,20 +1,38 @@
 import * as React from "react";
 
-import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
 import type {
+  PlanGoal,
+  PlanLevel,
+  PlanWizardMaterial,
   PlanWizardModel,
   PlanWizardStep,
   PlanWizardValues,
-} from "~/domains/plans/model";
+} from "../model";
 
-import { PlanGoalSchema, PlanLevelSchema } from "~/app/mocks/schemas";
+function isPlanGoal(value: string): value is PlanGoal {
+  return (
+    value === "career" ||
+    value === "certificate" ||
+    value === "work" ||
+    value === "hobby"
+  );
+}
 
-function canSelectMaterial(doc: Material): boolean {
+function isPlanLevel(value: string): value is PlanLevel {
+  return (
+    value === "novice" ||
+    value === "basic" ||
+    value === "intermediate" ||
+    value === "advanced"
+  );
+}
+
+function canSelectMaterial(doc: PlanWizardMaterial): boolean {
   return doc.status === "completed";
 }
 
 export function usePlanWizardModel(input: {
-  materials: Array<Material>;
+  materials: Array<PlanWizardMaterial>;
   submitPlan: (formData: FormData) => void;
 }): PlanWizardModel {
   const [step, setStep] = React.useState<PlanWizardStep>(1);
@@ -72,15 +90,13 @@ export function usePlanWizardModel(input: {
   }, []);
 
   const setGoal = React.useCallback((value: PlanGoal) => {
-    const parsed = PlanGoalSchema.safeParse(value);
-    if (!parsed.success) return;
-    setValues((prev) => ({ ...prev, goal: parsed.data }));
+    if (!isPlanGoal(value)) return;
+    setValues((prev) => ({ ...prev, goal: value }));
   }, []);
 
   const setLevel = React.useCallback((value: PlanLevel) => {
-    const parsed = PlanLevelSchema.safeParse(value);
-    if (!parsed.success) return;
-    setValues((prev) => ({ ...prev, level: parsed.data }));
+    if (!isPlanLevel(value)) return;
+    setValues((prev) => ({ ...prev, level: value }));
   }, []);
 
   const setDurationMode = React.useCallback((value: "custom" | "adaptive") => {

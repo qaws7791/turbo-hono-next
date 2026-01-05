@@ -3,11 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Separator } from "@repo/ui/separator";
 import { Link } from "react-router";
 
-import { ConceptReviewBadge } from "./concept-review-badge";
+import { getLatestConceptSource } from "../model";
 
-import type { Concept } from "~/app/mocks/schemas";
+import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
-import { getLatestConceptSource } from "~/domains/concepts/model";
+import type { Concept } from "../model";
 
 export function ConceptCard({
   concept,

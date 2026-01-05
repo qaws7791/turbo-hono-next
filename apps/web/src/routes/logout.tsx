@@ -1,6 +1,6 @@
 import { redirect } from "react-router";
 
-import { logout } from "~/foundation/api/auth";
+import { logout } from "~/domains/auth";
 
 export async function clientAction() {
   await logout();

@@ -153,6 +153,99 @@ pnpm --filter api dev
 pnpm --filter storybook dev
 ```
 
+## 프로젝트 아키텍처
+
+```mermaid
+%%{init: {
+  "theme": "base",
+  "flowchart": {
+    "curve": "basis",
+    "nodeSpacing": 40,
+    "rankSpacing": 55,
+    "padding": 12
+  },
+  "themeVariables": {
+    "fontFamily": "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
+    "fontSize": "14px",
+
+    "background": "#FFFFFF",
+    "primaryColor": "#FFFFFF",
+    "primaryTextColor": "#111827",
+
+    "lineColor": "#374151",
+    "tertiaryColor": "#F9FAFB",
+
+    "clusterBkg": "#F9FAFB",
+    "clusterBorder": "#D1D5DB"
+  }
+}}%%
+
+flowchart LR
+  %% Invisible links to force horizontal alignment
+  P ~~~ A ~~~ X
+
+  subgraph P["📦 packages/"]
+    direction TB
+    CFG["⚙️ @repo/config<br/>(ESLint/Prettier/TS)"]
+    DB["🗄️ @repo/database<br/>(Drizzle ORM)"]
+    UI["🧱 @repo/ui<br/>(Shared Components)"]
+    SPEC["📜 @repo/api-spec<br/>(Zod + OpenAPI)"]
+  end
+
+  subgraph A["🚀 apps/"]
+    direction TB
+    WEB["🌐 apps/web<br/>(React Router + Vite)"]
+    API["⚡ apps/api<br/>(Hono)"]
+    SB["📚 apps/storybook"]
+  end
+
+  subgraph X["☁️ External Services"]
+    direction TB
+    PG[("🟣 PostgreSQL<br/>(pgvector)")]
+    R2["🪣 Cloudflare R2<br/>(File Storage)"]
+    OAI["🤖 OpenAI API<br/>(Embedding/Chat)"]
+    GOOG["🔐 Google OAuth"]
+    RS["✉️ Resend<br/>(Email)"]
+  end
+
+  %% Internal dependencies
+  UI --> WEB
+  UI --> SB
+  SPEC --> WEB
+  SPEC --> API
+  DB --> API
+
+  %% External connections
+  DB -.->|"Drizzle 마이그레이션"| PG
+  API -->|"데이터 CRUD"| PG
+  API -->|"파일 업로드/다운로드"| R2
+  API -->|"임베딩 생성 & LLM 호출"| OAI
+  API -->|"소셜 로그인"| GOOG
+  API -->|"이메일 발송"| RS
+
+  %% Light-mode friendly styles (high-contrast outlines)
+  classDef group fill:#F9FAFB,stroke:#D1D5DB,stroke-width:1px,color:#111827;
+  classDef app   fill:#FFFFFF,stroke:#DB2777,stroke-width:1.5px,color:#111827;
+  classDef pkg   fill:#FFFFFF,stroke:#2563EB,stroke-width:1.5px,color:#111827;
+  classDef ext   fill:#FFFFFF,stroke:#16A34A,stroke-width:1.5px,color:#111827;
+  classDef db    fill:#FFFFFF,stroke:#7C3AED,stroke-width:1.5px,color:#111827;
+  classDef tool  fill:#FFFFFF,stroke:#B45309,stroke-width:1.5px,color:#111827;
+
+  class C,M,X,A,P group;
+  class WEB,API,SB app;
+  class SPEC,UI pkg;
+  class DB tool;
+  class CFG tool;
+  class PG db;
+  class R2,OAI,GOOG,RS ext;
+
+  %% Hide invisible alignment links (index 0, 1)
+  linkStyle 0 stroke:none,stroke-width:0;
+  linkStyle 1 stroke:none,stroke-width:0;
+  linkStyle default stroke:#374151,stroke-width:1.4px;
+
+```
+
 ## 모노레포 구조
 
 자세한 스냅샷/설명은 `docs/04-engineering/repo-structure.md`를 참고하세요.

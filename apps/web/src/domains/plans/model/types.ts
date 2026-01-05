@@ -1,7 +1,3 @@
-import type { HomeQueueItem } from "~/domains/home";
-import type { Material } from "../../materials/model/types";
-import type { Space } from "../../spaces/model/types";
-
 export type PlanStatus = "active" | "paused" | "archived";
 export type PlanGoal = "career" | "certificate" | "work" | "hobby";
 export type PlanLevel = "novice" | "basic" | "intermediate" | "advanced";
@@ -46,14 +42,25 @@ export type PlanWithDerived = Plan & {
   totalSessions: number;
 };
 
-// HomeQueueItem은 나중에 home 도메인에서 정의하겠지만,
-// 현재 plans에서 순환 참조 없이 사용하기 위해 임시로 정의하거나
-// types를 별도 도메인에서 가져와야 합니다.
-// 일단은 호환성을 위해 유지합니다.
+export type PlanDetailSpace = {
+  id: string;
+  name: string;
+};
+
+export type PlanDetailQueueItem = {
+  href: string;
+};
+
+export type PlanSourceMaterial = {
+  id: string;
+  title: string;
+  summary?: string;
+  kind: "file" | "url" | "text";
+};
 
 export type PlanDetailData = {
-  space: Space;
+  space: PlanDetailSpace;
   plan: PlanWithDerived;
-  nextQueue: Array<HomeQueueItem>;
-  sourceMaterials: Array<Material>;
+  nextQueue: Array<PlanDetailQueueItem>;
+  sourceMaterials: Array<PlanSourceMaterial>;
 };

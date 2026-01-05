@@ -1,6 +1,9 @@
-import type { SessionBlueprint, SessionStep } from "~/app/mocks/schemas";
 import type { paths } from "~/foundation/types/api";
-import type { SessionRunInput } from "../model/types";
+import type {
+  SessionBlueprint,
+  SessionRunInput,
+  SessionStep,
+} from "../model/types";
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";

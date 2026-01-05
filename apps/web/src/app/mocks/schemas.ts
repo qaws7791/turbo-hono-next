@@ -1,9 +1,8 @@
 import { z } from "zod";
 
-export const UuidSchema = z.string().uuid();
-export const PublicIdSchema = z
-  .string()
-  .regex(/^[0-9a-z]{12}$/, "Invalid public id");
+import { PublicIdSchema, UuidSchema } from "~/foundation/lib";
+
+export { PublicIdSchema, UuidSchema };
 export const IsoDateTimeSchema = z.string().datetime();
 export const IsoDateSchema = z
   .string()

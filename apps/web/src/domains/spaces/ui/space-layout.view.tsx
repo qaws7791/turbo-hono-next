@@ -3,11 +3,12 @@ import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
 import * as React from "react";
 import { NavLink, Outlet, useFetcher } from "react-router";
 
-import type { Space } from "~/app/mocks/schemas";
+import { IconColorPicker } from "./icon-color-picker";
+
 import type { SpaceLayoutModel } from "../application/use-space-layout-model";
+import type { Space } from "../model/spaces.types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { IconColorPicker } from "~/domains/spaces/ui/icon-color-picker";
 
 export function SpaceLayoutView({
   space,

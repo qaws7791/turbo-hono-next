@@ -1,6 +1,6 @@
 import { useLocation } from "react-router";
 
-import type { Space } from "~/app/mocks/schemas";
+import type { Space } from "../model/spaces.types";
 
 export type SpaceLayoutModel = {
   basePath: string;

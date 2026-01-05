@@ -19,6 +19,7 @@ import {
   requestMagicLink,
   setActivePlan,
   setPlanStatus,
+  signInWithGoogle,
   startSession,
   updateSpace,
   uploadMaterial,
@@ -423,6 +424,21 @@ export const handlers = [
     requestMagicLink(body.email);
     const response: MagicLinkOk = { message: "Magic link requested" };
     return HttpResponse.json(response);
+  }),
+
+  http.get("/api/auth/google/callback", () => {
+    const user = signInWithGoogle();
+    const response: AuthMeOk = {
+      data: {
+        id: user.id,
+        email: user.email,
+        displayName: user.name,
+        avatarUrl: null,
+        locale: "ko-KR",
+        timezone: "Asia/Seoul",
+      },
+    };
+    return HttpResponse.json(response, { status: 200 });
   }),
 
   // Spaces

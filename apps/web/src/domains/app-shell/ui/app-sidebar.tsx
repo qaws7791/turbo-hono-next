@@ -23,7 +23,7 @@ import { NavLink, useLocation } from "react-router";
 
 import { UserMenu } from "./user-menu";
 
-import type { Space, User } from "~/app/mocks/schemas";
+import type { AppShellSpace, AppShellUser } from "../model/types";
 
 import { getColorByName, getIconByName } from "~/domains/spaces";
 
@@ -33,8 +33,8 @@ export function AppSidebar({
   onOpenSettings,
   onOpenCommandPalette,
 }: {
-  user: User;
-  spaces: Array<Space>;
+  user: AppShellUser;
+  spaces: Array<AppShellSpace>;
   onOpenSettings: () => void;
   onOpenCommandPalette: () => void;
 }) {

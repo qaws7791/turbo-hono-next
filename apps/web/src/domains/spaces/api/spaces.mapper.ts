@@ -1,8 +1,5 @@
-import type { paths } from "~/foundation/types/api";
-import type { Space } from "./types";
-
-type ApiSpace =
-  paths["/api/spaces"]["get"]["responses"]["200"]["content"]["application/json"]["data"][number];
+import type { ApiSpace } from "./spaces.dto";
+import type { Space } from "../model/spaces.types";
 
 export function toSpaceFromApi(apiSpace: ApiSpace): Space {
   return {
@@ -13,6 +10,6 @@ export function toSpaceFromApi(apiSpace: ApiSpace): Space {
     color: apiSpace.color ?? "blue",
     createdAt: apiSpace.createdAt,
     updatedAt: apiSpace.updatedAt,
-    activePlanId: undefined, // TODO: 백엔드에서 제공 시 연결
+    activePlanId: undefined,
   };
 }

@@ -36,15 +36,14 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "react-router";
 
+import { getPlanGoalLabel, getPlanLevelLabel } from "../model";
+
+import { PlanStatusBadge } from "./plan-status-badge";
+
 import type { PlanDetailModel } from "../application/use-plan-detail-model";
 import type { PlanDetailData } from "../model/types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { PlanStatusBadge } from "~/domains/plans/ui/plan-status-badge";
-import {
-  getPlanGoalLabel,
-  getPlanLevelLabel,
-} from "~/domains/spaces/ui/space-plans-view";
 import { formatShortDate } from "~/foundation/lib/time";
 
 function SessionStatusBadge({

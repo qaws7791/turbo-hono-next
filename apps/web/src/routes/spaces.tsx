@@ -3,6 +3,8 @@ import { redirect, useLoaderData, useSearchParams } from "react-router";
 import type { SpaceCard } from "~/domains/spaces";
 import type { Route } from "./+types/spaces";
 
+import { listSpaceConceptsForUi } from "~/domains/concepts";
+import { getMaterialCountForSpaceUi } from "~/domains/materials";
 import { getActivePlanForSpaceUi } from "~/domains/plans";
 import {
   SpacesView,
@@ -10,8 +12,6 @@ import {
   listSpacesForUi,
   useSpacesModel,
 } from "~/domains/spaces";
-import { listSpaceConcepts } from "~/foundation/api/concepts";
-import { listMaterials } from "~/foundation/api/materials";
 
 export function meta() {
   return [{ title: "스페이스" }];
@@ -22,13 +22,13 @@ export async function clientLoader() {
 
   const cards: Array<SpaceCard> = await Promise.all(
     spaces.map(async (space) => {
-      const [materials, concepts, activePlan] = await Promise.all([
-        listMaterials(space.id, { page: 1, limit: 1 }),
-        listSpaceConcepts(space.id, { page: 1, limit: 1 }),
+      const [materialCount, concepts, activePlan] = await Promise.all([
+        getMaterialCountForSpaceUi(space.id),
+        listSpaceConceptsForUi(space.id, { page: 1, limit: 1 }),
         getActivePlanForSpaceUi(space.id),
       ]);
 
-      const lastStudiedAt = concepts.data[0]?.lastLearnedAt ?? undefined;
+      const lastStudiedAt = concepts.data[0]?.lastStudiedAt;
 
       return {
         id: space.id,
@@ -37,7 +37,7 @@ export async function clientLoader() {
         icon: space.icon,
         color: space.color,
         hasTodo: Boolean(activePlan && activePlan.progressPercent < 100),
-        materialCount: materials.meta.total,
+        materialCount,
         conceptCount: concepts.meta.total,
         lastStudiedAt,
         activePlan: activePlan

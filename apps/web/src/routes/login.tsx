@@ -3,8 +3,12 @@ import { redirect, useActionData, useNavigation } from "react-router";
 import type { LoginActionData } from "~/domains/auth";
 import type { Route } from "./+types/login";
 
-import { getAuthMe, requestMagicLink } from "~/foundation/api/auth";
-import { LoginView, useLoginViewModel } from "~/domains/auth";
+import {
+  LoginView,
+  getAuthMe,
+  requestMagicLink,
+  useLoginViewModel,
+} from "~/domains/auth";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";

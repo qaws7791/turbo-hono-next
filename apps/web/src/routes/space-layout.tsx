@@ -2,13 +2,13 @@ import { redirect, useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-layout";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
   SpaceLayoutView,
   getSpaceForUi,
   updateSpaceForUi,
   useSpaceLayoutModel,
 } from "~/domains/spaces";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 

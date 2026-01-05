@@ -24,8 +24,7 @@ import Markdown from "react-markdown";
 import { Link } from "react-router";
 import remarkGfm from "remark-gfm";
 
-import type { SessionStep } from "~/app/mocks/schemas";
-import type { SessionController } from "../model/types";
+import type { SessionController, SessionStep } from "../model/types";
 
 function stepLabel(stepType: string): string {
   switch (stepType) {

@@ -2,10 +2,9 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-concepts";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
-import { SpaceConceptsView, toConceptFromListItem } from "~/domains/concepts";
+import { SpaceConceptsView, listSpaceConceptsForUi } from "~/domains/concepts";
 import { getSpaceForUi } from "~/domains/spaces";
-import { listSpaceConcepts } from "~/foundation/api/concepts";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 
@@ -19,14 +18,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
   const space = await getSpaceForUi(spaceId.data);
-  const concepts = await listSpaceConcepts(spaceId.data, {
+  const concepts = await listSpaceConceptsForUi(spaceId.data, {
     page: 1,
     limit: 50,
   });
 
   return {
     space,
-    concepts: concepts.data.map((c) => toConceptFromListItem(spaceId.data, c)),
+    concepts: concepts.data,
   };
 }
 

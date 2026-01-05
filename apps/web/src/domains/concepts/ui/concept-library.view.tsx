@@ -1,11 +1,12 @@
 import { Input } from "@repo/ui/input";
 import { IconSearch } from "@tabler/icons-react";
 
-import type { Concept } from "~/app/mocks/schemas";
+import { ConceptCard } from "./concept-card.card";
+
 import type { ConceptLibraryModel } from "../application/use-concept-library-model";
+import type { Concept } from "../model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { ConceptCard } from "~/domains/concepts/ui/concept-card";
 
 export function ConceptLibraryView({
   concepts,

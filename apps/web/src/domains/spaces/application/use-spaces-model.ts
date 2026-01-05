@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { SpaceCard } from "../model/types";
+import type { SpaceCard } from "../model/spaces.types";
 
 export type SpacesModel = {
   query: string;

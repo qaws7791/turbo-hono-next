@@ -6,7 +6,7 @@ import { Link } from "react-router";
 import type { HomeQueueItem } from "../model";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { getColorByName, getIconByName } from "~/domains/spaces/ui";
+import { getColorByName, getIconByName } from "~/domains/spaces";
 import { formatShortDate } from "~/foundation/lib/time";
 
 function QueueTypeBadge({ type }: { type: "session" | "review" }) {

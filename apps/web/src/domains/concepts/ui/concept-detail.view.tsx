@@ -21,12 +21,13 @@ import {
 } from "@repo/ui/timeline";
 import { Link, NavLink } from "react-router";
 
-import type { Concept, Space } from "~/app/mocks/schemas";
-import type { ConceptDetailModel } from "../application/use-concept-detail-model";
+import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
-import { PageHeader } from "~/domains/app-shell";
-import { PageBody } from "~/domains/app-shell/";
-import { ConceptReviewBadge } from "~/domains/concepts/ui/concept-review-badge";
+import type { ConceptDetailModel } from "../application/use-concept-detail-model";
+import type { Concept } from "../model";
+import type { Space } from "~/domains/spaces";
+
+import { PageBody, PageHeader } from "~/domains/app-shell";
 import { formatLongDateTime } from "~/foundation/lib/time";
 
 // Ari 노트 탭 컨텐츠

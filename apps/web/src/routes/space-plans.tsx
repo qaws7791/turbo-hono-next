@@ -3,14 +3,17 @@ import { z } from "zod";
 
 import type { Route } from "./+types/space-plans";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
-import { listPlansForUi } from "~/domains/plans";
+import {
+  activatePlan,
+  listPlansForUi,
+  updatePlanStatus,
+} from "~/domains/plans";
 import {
   SpacePlansView,
   getSpaceForUi,
   useSpacePlansModel,
 } from "~/domains/spaces";
-import { activatePlan, updatePlanStatus } from "~/foundation/api/plans";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 const PlanIdSchema = PublicIdSchema;

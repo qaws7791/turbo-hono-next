@@ -1,18 +1,16 @@
 import * as React from "react";
 
-import type { SessionStep } from "~/app/mocks/schemas";
+import { completeSessionRun, saveSessionRunProgress } from "../api";
+
 import type {
   SessionAction,
   SessionController,
   SessionInputs,
   SessionRunInput,
+  SessionStep,
   SessionUiState,
 } from "../model/types";
 
-import {
-  completeSessionRun,
-  saveSessionRunProgress,
-} from "~/foundation/api/session-runs";
 import { useDebouncedEffect } from "~/foundation/hooks/use-debounced-effect";
 import { nowIso } from "~/foundation/lib/time";
 

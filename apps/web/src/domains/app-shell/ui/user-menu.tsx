@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Separator } from "@repo/ui/separator";
 import { Form } from "react-router";
 
-import type { User } from "~/app/mocks/schemas";
+import type { AppShellUser } from "../model/types";
 
 import { initials } from "~/foundation/lib/initials";
 
@@ -22,7 +22,7 @@ export function UserMenu({
   user,
   onOpenSettings,
 }: {
-  user: User;
+  user: AppShellUser;
   onOpenSettings: () => void;
 }) {
   return (

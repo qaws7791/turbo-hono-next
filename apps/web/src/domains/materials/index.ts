@@ -1,4 +1,21 @@
-// Materials Domain
-export * from "./application";
-export * from "./model";
-export * from "./ui";
+export { SpaceMaterialsView } from "./ui";
+
+export {
+  deleteMaterialForUi,
+  getMaterialCountForSpaceUi,
+  listMaterialsForUi,
+  uploadFileMaterialForUi,
+} from "./application/materials.actions";
+export { useSpaceMaterialsModel } from "./application/use-space-materials-model";
+export type { SpaceMaterialsModel } from "./application/use-space-materials-model";
+
+export {
+  materialKindLabel,
+  materialStatusLabel,
+} from "./model/materials.selectors";
+export type {
+  Material,
+  MaterialKind,
+  MaterialSource,
+  MaterialStatus,
+} from "./model/materials.types";

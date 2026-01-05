@@ -1,12 +1,9 @@
-import { apiClient } from "./client";
-import { ApiError } from "./error";
+import type { ApiAuthUser, MagicLinkBody } from "./auth.dto";
 
-import type { paths } from "~/foundation/types/api";
+import { apiClient } from "~/foundation/api/client";
+import { ApiError } from "~/foundation/api/error";
 
-type AuthUser =
-  paths["/api/auth/me"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
-
-export async function getAuthMe(): Promise<AuthUser | null> {
+export async function getAuthMe(): Promise<ApiAuthUser | null> {
   const { data, error, response } = await apiClient.GET("/api/auth/me");
   if (response.status === 401) return null;
   if (!response.ok || !data) {
@@ -15,10 +12,7 @@ export async function getAuthMe(): Promise<AuthUser | null> {
   return data.data;
 }
 
-export async function requestMagicLink(input: {
-  email: string;
-  redirectPath: string;
-}): Promise<void> {
+export async function requestMagicLink(input: MagicLinkBody): Promise<void> {
   const { error, response } = await apiClient.POST("/api/auth/magic-link", {
     body: input,
   });

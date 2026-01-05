@@ -1,8 +1,164 @@
-import type {
-  SessionBlueprint,
-  SessionRun,
-  SessionStep,
-} from "~/app/mocks/schemas";
+export type SessionStepType =
+  | "SESSION_INTRO"
+  | "SESSION_SUMMARY"
+  | "CONCEPT"
+  | "CHECK"
+  | "CLOZE"
+  | "MATCHING"
+  | "FLASHCARD"
+  | "SPEED_OX"
+  | "APPLICATION";
+
+export type SessionStepId = string;
+
+export type SessionStepIntent =
+  | "INTRO"
+  | "EXPLAIN"
+  | "RETRIEVAL"
+  | "PRACTICE"
+  | "WRAPUP";
+
+export type SessionStepGating = {
+  required?: boolean;
+  when?: string;
+};
+
+export type SessionStepNext =
+  | { default: SessionStepId }
+  | { branches: Array<{ when: string; to: SessionStepId }> };
+
+type SessionStepBase = {
+  id: SessionStepId;
+  estimatedSeconds?: number;
+  intent?: SessionStepIntent;
+  gating?: SessionStepGating;
+  next?: SessionStepNext;
+};
+
+export type SessionIntroStep = SessionStepBase & {
+  type: "SESSION_INTRO";
+  planTitle: string;
+  moduleTitle: string;
+  sessionTitle: string;
+  durationMinutes: number;
+  difficulty: "beginner" | "intermediate" | "advanced";
+  learningGoals: Array<string>;
+  questionsToCover: Array<string>;
+  prerequisites: Array<string>;
+};
+
+export type ConceptStep = SessionStepBase & {
+  type: "CONCEPT";
+  title: string;
+  content: string;
+  chapterIndex?: number;
+  totalChapters?: number;
+};
+
+export type CheckStep = SessionStepBase & {
+  type: "CHECK";
+  question: string;
+  options: Array<string>;
+  answerIndex: number;
+  explanation?: string;
+};
+
+export type ClozeStep = SessionStepBase & {
+  type: "CLOZE";
+  sentence: string;
+  blankId: string;
+  options: Array<string>;
+  answerIndex: number;
+  explanation?: string;
+};
+
+export type MatchingStep = SessionStepBase & {
+  type: "MATCHING";
+  instruction: string;
+  pairs: Array<{ id: string; left: string; right: string }>;
+};
+
+export type FlashcardStep = SessionStepBase & {
+  type: "FLASHCARD";
+  front: string;
+  back: string;
+};
+
+export type SpeedOxStep = SessionStepBase & {
+  type: "SPEED_OX";
+  statement: string;
+  isTrue: boolean;
+  explanation?: string;
+};
+
+export type ApplicationStep = SessionStepBase & {
+  type: "APPLICATION";
+  scenario: string;
+  question: string;
+  options: Array<string>;
+  correctIndex: number;
+  feedback?: string;
+};
+
+export type SessionSummaryStep = SessionStepBase & {
+  type: "SESSION_SUMMARY";
+  celebrationEmoji: string;
+  encouragement: string;
+  studyTimeMinutes?: number;
+  savedConceptCount?: number;
+  completedActivities: Array<string>;
+  keyTakeaways: Array<string>;
+  nextSessionPreview?: { title: string; description?: string };
+};
+
+export type SessionStep =
+  | SessionIntroStep
+  | ConceptStep
+  | CheckStep
+  | ClozeStep
+  | MatchingStep
+  | FlashcardStep
+  | SpeedOxStep
+  | ApplicationStep
+  | SessionSummaryStep;
+
+export type SessionBlueprint = {
+  schemaVersion: number;
+  blueprintId: string;
+  createdAt: string;
+  context: {
+    planId: string;
+    moduleId: string;
+    planSessionId: string;
+    sessionType: "session" | "review";
+  };
+  timeBudget: {
+    targetMinutes: number;
+    minMinutes: number;
+    maxMinutes: number;
+    profile: "MICRO" | "STANDARD" | "DEEP";
+  };
+  steps: Array<SessionStep>;
+  startStepId: SessionStepId;
+};
+
+export type SessionRunStatus = "ACTIVE" | "COMPLETING" | "COMPLETED";
+
+export type SessionRun = {
+  runId: string;
+  planId: string;
+  sessionId: string;
+  blueprintId: string;
+  isRecovery: boolean;
+  createdAt: string;
+  updatedAt: string;
+  currentStepId: SessionStepId;
+  stepHistory: Array<SessionStepId>;
+  historyIndex: number;
+  inputs: Record<string, unknown>;
+  createdConceptIds: Array<string>;
+  status: SessionRunStatus;
+};
 
 export type SessionInputs = {
   // CHECK, CLOZE, APPLICATION 답변 (stepId -> 선택한 인덱스)

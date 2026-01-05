@@ -2,7 +2,7 @@ import { redirect } from "react-router";
 
 import type { Route } from "./+types/concept-detail-alias";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const ConceptIdSchema = PublicIdSchema;
 

@@ -1,18 +1,17 @@
 import { useFetcher } from "react-router";
 
-import type { Plan } from "~/app/mocks/schemas";
-import type { HomeQueueItem } from "~/domains/home";
+import type { PlanWithDerived } from "../model";
 
 export type PlanDetailModel = {
   canStart: boolean;
   isSubmitting: boolean;
-  nextSession: HomeQueueItem | undefined;
+  nextSession: { href: string } | undefined;
   fetcher: ReturnType<typeof useFetcher>;
 };
 
 export function usePlanDetailModel(input: {
-  plan: Plan & { progressPercent: number; totalSessions: number };
-  nextQueue: Array<HomeQueueItem>;
+  plan: PlanWithDerived;
+  nextQueue: Array<{ href: string }>;
 }): PlanDetailModel {
   const fetcher = useFetcher();
   const isSubmitting = fetcher.state !== "idle";

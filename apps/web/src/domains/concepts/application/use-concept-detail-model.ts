@@ -1,8 +1,8 @@
 import { useSearchParams } from "react-router";
 
-import type { Concept } from "~/app/mocks/schemas";
+import { getLatestConceptSource } from "../model";
 
-import { getLatestConceptSource } from "~/domains/concepts/model";
+import type { Concept } from "../model";
 
 export type ConceptDetailTab = "note" | "history" | "related";
 
@@ -20,7 +20,7 @@ export function useConceptDetailModel(concept: Concept): ConceptDetailModel {
   const [searchParams] = useSearchParams();
   const latestSource = getLatestConceptSource(concept);
   const reviewHref = latestSource
-    ? `/session?planId=${latestSource.planId}&sessionId=${latestSource.sessionId}`
+    ? `/session?runId=${latestSource.sessionId}`
     : null;
 
   // URL에서 탭 상태 읽기 (기본값: note)

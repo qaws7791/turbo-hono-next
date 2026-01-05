@@ -2,7 +2,6 @@ import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/space-materials";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
   SpaceMaterialsView,
   deleteMaterialForUi,
@@ -10,6 +9,7 @@ import {
   uploadFileMaterialForUi,
   useSpaceMaterialsModel,
 } from "~/domains/materials";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const SpaceIdSchema = PublicIdSchema;
 

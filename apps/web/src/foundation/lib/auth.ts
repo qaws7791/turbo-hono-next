@@ -5,8 +5,7 @@ import {
   removeFromStorage,
   writeJsonToStorage,
 } from "./storage";
-
-import { UuidSchema } from "~/app/mocks/schemas";
+import { UuidSchema } from "./uuid";
 
 const AUTH_KEY = "tlm_auth_v1";
 

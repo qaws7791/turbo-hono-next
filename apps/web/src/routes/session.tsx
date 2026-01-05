@@ -8,7 +8,6 @@ import {
 
 import type { Route } from "./+types/session";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
 import { getAuthSession } from "~/domains/auth";
 import {
   SessionView,
@@ -16,6 +15,7 @@ import {
   getSessionRunForUi,
   useSessionController,
 } from "~/domains/session";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const RunIdSchema = PublicIdSchema;
 const SessionIdSchema = PublicIdSchema;

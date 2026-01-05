@@ -1,4 +1,8 @@
-import type { paths } from "~/foundation/types/api";
+import type {
+  ApiPlanDetail,
+  ApiPlanListItem,
+  PlanCreateBody,
+} from "./plans.dto";
 import type {
   PlanGoal,
   PlanLevel,
@@ -6,18 +10,10 @@ import type {
   PlanSessionType,
   PlanStatus,
   PlanWithDerived,
-} from "./types";
+} from "../model/types";
 
 import { nowIso } from "~/foundation/lib/time";
 import { randomUuidV4 } from "~/foundation/lib/uuid";
-
-type PlanListOk =
-  paths["/api/spaces/{spaceId}/plans"]["get"]["responses"]["200"]["content"]["application/json"];
-type ApiPlanListItem = PlanListOk["data"][number];
-
-type PlanDetailOk =
-  paths["/api/plans/{planId}"]["get"]["responses"]["200"]["content"]["application/json"];
-type ApiPlanDetail = PlanDetailOk["data"];
 
 export function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
   if (goalType === "JOB") return "career";
@@ -26,12 +22,27 @@ export function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
   return "hobby";
 }
 
+export function mapGoalTypeToApi(goal: PlanGoal): PlanCreateBody["goalType"] {
+  if (goal === "career") return "JOB";
+  if (goal === "certificate") return "CERT";
+  if (goal === "work") return "WORK";
+  return "HOBBY";
+}
+
 export function mapCurrentLevel(
   level: ApiPlanDetail["currentLevel"],
 ): PlanLevel {
   if (level === "ADVANCED") return "advanced";
   if (level === "INTERMEDIATE") return "intermediate";
   return "novice";
+}
+
+export function mapCurrentLevelToApi(
+  level: PlanLevel,
+): PlanCreateBody["currentLevel"] {
+  if (level === "advanced") return "ADVANCED";
+  if (level === "intermediate") return "INTERMEDIATE";
+  return "BEGINNER";
 }
 
 export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
@@ -69,6 +80,7 @@ export function toPlanFromListItem(
 ): PlanWithDerived {
   const createdAt = nowIso();
   const updatedAt = createdAt;
+
   return {
     id: item.id,
     spaceId,
@@ -96,9 +108,9 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
 
   for (const session of detail.sessions) {
     const moduleId = session.moduleId ?? "00000000-0000-0000-0000-000000000000";
-    const arr = sessionsByModuleId.get(moduleId) ?? [];
-    arr.push(session);
-    sessionsByModuleId.set(moduleId, arr);
+    const existing = sessionsByModuleId.get(moduleId) ?? [];
+    existing.push(session);
+    sessionsByModuleId.set(moduleId, existing);
   }
 
   const modules = detail.modules
@@ -108,16 +120,16 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
       const sessions = (sessionsByModuleId.get(module.id) ?? [])
         .slice()
         .sort((a, b) => a.orderIndex - b.orderIndex)
-        .map((s) => ({
-          id: s.id,
+        .map((session) => ({
+          id: session.id,
           moduleId: module.id,
           blueprintId: randomUuidV4(),
-          title: s.title,
-          type: mapSessionType(s.sessionType),
-          scheduledDate: s.scheduledForDate,
-          durationMinutes: s.estimatedMinutes,
-          status: mapSessionStatus(s.status),
-          completedAt: s.completedAt ?? undefined,
+          title: session.title,
+          type: mapSessionType(session.sessionType),
+          scheduledDate: session.scheduledForDate,
+          durationMinutes: session.estimatedMinutes,
+          status: mapSessionStatus(session.status),
+          completedAt: session.completedAt ?? undefined,
           conceptIds: [],
         }));
 

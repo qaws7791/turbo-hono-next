@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { Material } from "~/app/mocks/schemas";
+import type { Material } from "../model/materials.types";
 
 export type SpaceMaterialsModel = {
   uploadOpen: boolean;

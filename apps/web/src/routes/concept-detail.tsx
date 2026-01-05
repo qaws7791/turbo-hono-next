@@ -3,15 +3,14 @@ import { useLoaderData } from "react-router";
 import type { Concept } from "~/domains/concepts";
 import type { Route } from "./+types/concept-detail";
 
-import { PublicIdSchema } from "~/app/mocks/schemas";
 import {
   ConceptDetailView,
-  toConceptFromDetail,
-  toConceptFromListItem,
+  getConceptDetailForUi,
+  listSpaceConceptsForUi,
   useConceptDetailModel,
 } from "~/domains/concepts";
 import { getSpaceForUi, listSpacesForUi } from "~/domains/spaces";
-import { getConceptDetail, listSpaceConcepts } from "~/foundation/api/concepts";
+import { PublicIdSchema } from "~/foundation/lib";
 
 const ConceptIdSchema = PublicIdSchema;
 
@@ -27,21 +26,15 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
   const spaces = await listSpacesForUi();
   const conceptLists = await Promise.all(
-    spaces.map((space) => listSpaceConcepts(space.id, { page: 1, limit: 200 })),
+    spaces.map((space) =>
+      listSpaceConceptsForUi(space.id, { page: 1, limit: 200 }),
+    ),
   );
 
-  const index = new Map<
-    string,
-    {
-      spaceId: string;
-      item: (typeof conceptLists)[number]["data"][number];
-    }
-  >();
-
-  for (const [spaceIndex, list] of conceptLists.entries()) {
-    const spaceId = spaces[spaceIndex].id;
+  const index = new Map<string, Concept>();
+  for (const list of conceptLists) {
     for (const item of list.data) {
-      index.set(item.id, { spaceId, item });
+      index.set(item.id, item);
     }
   }
 
@@ -51,18 +44,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   }
 
   const space = await getSpaceForUi(located.spaceId);
-  const detail = await getConceptDetail(conceptId.data);
-  const concept = toConceptFromDetail(located.spaceId, detail.data);
+  const detail = await getConceptDetailForUi(located.spaceId, conceptId.data);
+  const concept = detail.concept;
 
-  const related = detail.data.relatedConcepts.slice(0, 6).map((r) => {
+  const related = detail.relatedConcepts.slice(0, 6).map((r) => {
     const found = index.get(r.id);
-    if (found) {
-      return toConceptFromListItem(found.spaceId, found.item);
-    }
+    if (found) return found;
 
     const fallback: Concept = {
       id: r.id,
-      spaceId: located.spaceId,
+      spaceId: concept.spaceId,
       title: r.title,
       oneLiner: "",
       definition: "",
@@ -70,7 +61,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       gotchas: [],
       tags: [],
       reviewStatus: "good",
-      lastStudiedAt: new Date().toISOString(),
+      lastStudiedAt: undefined,
       sources: [],
       relatedConceptIds: [],
     };

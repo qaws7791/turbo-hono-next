@@ -1,6 +1,6 @@
 import { Badge } from "@repo/ui/badge";
 
-import type { PlanStatus } from "~/app/mocks/schemas";
+import type { PlanStatus } from "../model/types";
 
 export function PlanStatusBadge({ status }: { status: PlanStatus }) {
   if (status === "active") return <Badge>활성</Badge>;

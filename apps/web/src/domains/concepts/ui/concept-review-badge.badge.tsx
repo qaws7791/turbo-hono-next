@@ -1,6 +1,6 @@
 import { Badge } from "@repo/ui/badge";
 
-import type { ConceptReviewStatus } from "~/app/mocks/schemas";
+import type { ConceptReviewStatus } from "../model";
 
 export function ConceptReviewBadge({
   status,

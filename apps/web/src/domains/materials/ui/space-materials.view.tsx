@@ -20,14 +20,18 @@ import { Separator } from "@repo/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
 import { useFetcher } from "react-router";
 
-import {
-  materialKindLabel,
-  materialStatusBadgeVariant,
-  materialStatusLabel,
-} from "../model";
+import { materialKindLabel, materialStatusLabel } from "../model";
 
-import type { Material } from "~/app/mocks/schemas";
+import type { Material } from "../model/materials.types";
 import type { SpaceMaterialsModel } from "../application/use-space-materials-model";
+
+function materialStatusBadgeVariant(
+  status: Material["status"],
+): "default" | "secondary" | "outline" | "destructive" {
+  if (status === "completed") return "secondary";
+  if (status === "error") return "destructive";
+  return "outline";
+}
 
 export function SpaceMaterialsView({
   materials,

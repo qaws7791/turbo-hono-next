@@ -1,1 +1,1 @@
-export { SpaceMaterialsView } from "./space-materials-view";
+export { SpaceMaterialsView } from "./space-materials.view";

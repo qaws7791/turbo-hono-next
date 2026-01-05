@@ -1,6 +1,6 @@
 import { useSearchParams } from "react-router";
 
-import type { ConceptLibraryFilters } from "../model/types";
+import type { ConceptLibraryFilters } from "../model/concepts.types";
 
 export type ConceptLibraryModel = {
   query: string;

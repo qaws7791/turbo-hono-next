@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { invariant } from "./invariant";
 
 const PUBLIC_ID_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -7,6 +9,10 @@ const PUBLIC_ID_MASK = 2 ** Math.ceil(Math.log2(PUBLIC_ID_ALPHABET.length)) - 1;
 const PUBLIC_ID_STEP = Math.ceil(
   (1.6 * PUBLIC_ID_MASK * PUBLIC_ID_LENGTH) / PUBLIC_ID_ALPHABET.length,
 );
+
+export const PublicIdSchema = z
+  .string()
+  .regex(/^[0-9a-z]{12}$/, "Invalid public id");
 
 export function randomPublicId(): string {
   invariant(

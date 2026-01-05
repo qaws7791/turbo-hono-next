@@ -1,5 +1,5 @@
-import { apiClient } from "./client";
-import { ApiError } from "./error";
+import { apiClient } from "~/foundation/api/client";
+import { ApiError } from "~/foundation/api/error";
 
 export async function saveSessionRunProgress(input: {
   runId: string;

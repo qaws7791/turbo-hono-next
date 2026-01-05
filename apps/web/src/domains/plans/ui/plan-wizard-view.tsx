@@ -9,21 +9,25 @@ import { Separator } from "@repo/ui/separator";
 import { Textarea } from "@repo/ui/textarea";
 import { Link } from "react-router";
 
-import type { Material, PlanGoal, PlanLevel } from "~/app/mocks/schemas";
-import type { PlanWizardModel } from "~/domains/plans/model";
+import type {
+  PlanGoal,
+  PlanLevel,
+  PlanWizardMaterial,
+  PlanWizardModel,
+} from "../model";
 
 import {
   materialKindLabel,
   materialStatusLabel,
 } from "~/domains/materials/model";
 
-function materialStatusBadgeVariant(status: Material["status"]) {
+function materialStatusBadgeVariant(status: PlanWizardMaterial["status"]) {
   if (status === "completed") return "secondary" as const;
   if (status === "error") return "destructive" as const;
   return "outline" as const;
 }
 
-function canSelectMaterial(doc: Material): boolean {
+function canSelectMaterial(doc: PlanWizardMaterial): boolean {
   return doc.status === "completed";
 }
 
@@ -49,7 +53,7 @@ export function PlanWizardView({
   onCancel,
 }: {
   spaceId: string;
-  materials: Array<Material>;
+  materials: Array<PlanWizardMaterial>;
   model: PlanWizardModel;
   isSubmitting: boolean;
   onCancel: () => void;

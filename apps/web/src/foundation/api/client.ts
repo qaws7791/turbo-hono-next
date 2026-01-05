@@ -2,6 +2,10 @@ import createClient from "openapi-fetch";
 
 import type { paths } from "~/foundation/types/api";
 
+declare global {
+  var __mswStartPromise: Promise<unknown> | undefined;
+}
+
 const baseUrl = (() => {
   const raw = import.meta.env.VITE_API_BASE_URL;
   if (!raw) return "";
@@ -10,8 +14,7 @@ const baseUrl = (() => {
 
 const apiFetch: typeof fetch = async (input, init) => {
   if (import.meta.env.DEV || import.meta.env.VITE_MSW === "true") {
-    const { ensureMswReady } = await import("~/app/mocks/ensure");
-    await ensureMswReady();
+    await globalThis.__mswStartPromise;
   }
   return fetch(input, init);
 };
