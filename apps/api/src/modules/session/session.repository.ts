@@ -31,6 +31,7 @@ import { getDb } from "../../lib/db";
 import { generatePublicId } from "../../lib/public-id";
 import { tryPromise } from "../../lib/result";
 
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
 import type {
   PlanSessionStatus,
@@ -40,7 +41,6 @@ import type {
   SessionExitReason,
   SessionRunStatus,
 } from "./session.dto";
-import type { ResultAsync } from "neverthrow";
 
 export const sessionRepository = {
   getHomeQueueRows(
@@ -54,7 +54,10 @@ export const sessionRepository = {
       estimatedMinutes: number;
       status: PlanSessionStatus;
       planTitle: string;
+      spaceId: string;
       spaceName: string;
+      spaceIcon: string | null;
+      spaceColor: string | null;
       moduleTitle: string | null;
     }>,
     AppError
@@ -69,7 +72,10 @@ export const sessionRepository = {
           estimatedMinutes: planSessions.estimatedMinutes,
           status: planSessions.status,
           planTitle: plans.title,
+          spaceId: spaces.publicId,
           spaceName: spaces.name,
+          spaceIcon: spaces.icon,
+          spaceColor: spaces.color,
           moduleTitle: planModules.title,
         })
         .from(planSessions)
@@ -103,9 +109,7 @@ export const sessionRepository = {
     });
   },
 
-  findRunBlueprint(
-    runId: number,
-  ): ResultAsync<
+  findRunBlueprint(runId: number): ResultAsync<
     {
       schemaVersion: number;
       blueprintJson: Record<string, unknown>;
@@ -213,6 +217,8 @@ export const sessionRepository = {
       dueAt: Date | null;
       spaceId: string;
       spaceName: string;
+      spaceIcon: string | null;
+      spaceColor: string | null;
     }>,
     AppError
   > {
@@ -233,6 +239,8 @@ export const sessionRepository = {
           dueAt: concepts.srsDueAt,
           spaceId: spaces.publicId,
           spaceName: spaces.name,
+          spaceIcon: spaces.icon,
+          spaceColor: spaces.color,
         })
         .from(concepts)
         .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
@@ -254,6 +262,8 @@ export const sessionRepository = {
         dueAt: row.dueAt ?? null,
         spaceId: row.spaceId,
         spaceName: row.spaceName,
+        spaceIcon: row.spaceIcon,
+        spaceColor: row.spaceColor,
       }));
     });
   },
@@ -652,9 +662,7 @@ export const sessionRepository = {
     });
   },
 
-  getLastProgressSnapshot(
-    runId: number,
-  ): ResultAsync<
+  getLastProgressSnapshot(runId: number): ResultAsync<
     {
       stepIndex: number;
       payloadJson: Record<string, unknown>;

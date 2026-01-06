@@ -66,7 +66,10 @@ export async function getHomeQueue(
     data.push({
       kind: "SESSION",
       sessionId: row.sessionId,
+      spaceId: row.spaceId,
       spaceName: row.spaceName,
+      spaceIcon: row.spaceIcon ?? "book",
+      spaceColor: row.spaceColor ?? "blue",
       planTitle: row.planTitle,
       moduleTitle: row.moduleTitle ?? "Module",
       sessionTitle: row.sessionTitle,
@@ -84,6 +87,8 @@ export async function getHomeQueue(
       oneLiner: concept.oneLiner,
       spaceId: concept.spaceId,
       spaceName: concept.spaceName,
+      spaceIcon: concept.spaceIcon ?? "book",
+      spaceColor: concept.spaceColor ?? "blue",
       sessionType: "REVIEW",
       estimatedMinutes: 5,
       reviewStatus:
