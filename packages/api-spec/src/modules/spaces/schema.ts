@@ -10,6 +10,16 @@ export const SpaceSchema = z.object({
   color: z.string().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  // Optional fields when include parameter is used
+  activePlan: z
+    .object({
+      id: PublicIdSchema,
+      title: z.string(),
+      progressPercent: z.number(),
+    })
+    .nullable()
+    .optional(),
+  lastStudiedAt: z.iso.datetime().nullable().optional(),
 });
 
 export const SpaceListResponseSchema = z.object({

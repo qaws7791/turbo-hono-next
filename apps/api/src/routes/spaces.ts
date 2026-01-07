@@ -23,7 +23,8 @@ export function registerSpaceRoutes(app: OpenAPIHono): void {
     { ...listSpacesRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      return jsonResult(c, listSpaces(auth.user.id), 200);
+      const { include } = c.req.valid("query");
+      return jsonResult(c, listSpaces(auth.user.id, { include }), 200);
     },
   );
 

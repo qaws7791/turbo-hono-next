@@ -1,11 +1,11 @@
-import { and, desc, eq, isNull } from "drizzle-orm";
-import { spaces } from "@repo/database/schema";
+import { concepts, planSessions, plans, spaces } from "@repo/database/schema";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { getDb } from "../../lib/db";
 import { tryPromise } from "../../lib/result";
 
-import type { AppError } from "../../lib/result";
 import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 
 export type SpaceEntity = typeof spaces.$inferSelect;
 
@@ -37,6 +37,114 @@ export const spaceRepository = {
         .from(spaces)
         .where(and(eq(spaces.userId, userId), isNull(spaces.deletedAt)))
         .orderBy(desc(spaces.createdAt));
+    });
+  },
+
+  listWithIncludes(
+    userId: string,
+    spaceIds: Array<string>,
+    options: {
+      includeActivePlan: boolean;
+      includeLastStudiedAt: boolean;
+    },
+  ): ResultAsync<
+    Map<
+      string,
+      {
+        activePlan?: { id: string; title: string; progressPercent: number };
+        lastStudiedAt?: Date;
+      }
+    >,
+    AppError
+  > {
+    return tryPromise(async () => {
+      if (spaceIds.length === 0) {
+        return new Map();
+      }
+
+      const db = getDb();
+      const result = new Map<
+        string,
+        {
+          activePlan?: { id: string; title: string; progressPercent: number };
+          lastStudiedAt?: Date;
+        }
+      >();
+
+      // 1. Active Plan 조회 (필요한 경우)
+      if (options.includeActivePlan) {
+        const activePlans = await db
+          .select({
+            spacePublicId: spaces.publicId,
+            planId: plans.publicId,
+            planTitle: plans.title,
+            totalSessions: sql<number>`count(${planSessions.id})`.mapWith(
+              Number,
+            ),
+            completedSessions:
+              sql<number>`sum(case when ${planSessions.status} = 'COMPLETED' then 1 else 0 end)`.mapWith(
+                Number,
+              ),
+          })
+          .from(plans)
+          .innerJoin(spaces, eq(spaces.id, plans.spaceId))
+          .leftJoin(planSessions, eq(planSessions.planId, plans.id))
+          .where(
+            and(
+              inArray(spaces.publicId, spaceIds),
+              eq(plans.userId, userId),
+              eq(plans.status, "ACTIVE"),
+              isNull(plans.deletedAt),
+            ),
+          )
+          .groupBy(spaces.publicId, plans.publicId, plans.title);
+
+        activePlans.forEach((row) => {
+          const progressPercent =
+            row.totalSessions > 0
+              ? Math.round((row.completedSessions / row.totalSessions) * 100)
+              : 0;
+
+          const existing = result.get(row.spacePublicId) || {};
+          result.set(row.spacePublicId, {
+            ...existing,
+            activePlan: {
+              id: row.planId,
+              title: row.planTitle,
+              progressPercent,
+            },
+          });
+        });
+      }
+
+      // 2. Last Studied At 조회 (필요한 경우)
+      if (options.includeLastStudiedAt) {
+        const lastStudied = await db
+          .select({
+            spacePublicId: spaces.publicId,
+            lastLearnedAt: sql<Date | null>`max(${concepts.lastLearnedAt})`,
+          })
+          .from(concepts)
+          .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
+          .where(
+            and(
+              inArray(spaces.publicId, spaceIds),
+              eq(concepts.userId, userId),
+              isNull(concepts.deletedAt),
+            ),
+          )
+          .groupBy(spaces.publicId);
+
+        lastStudied.forEach((row) => {
+          const existing = result.get(row.spacePublicId) || {};
+          result.set(row.spacePublicId, {
+            ...existing,
+            lastStudiedAt: row.lastLearnedAt ?? undefined,
+          });
+        });
+      }
+
+      return result;
     });
   },
 

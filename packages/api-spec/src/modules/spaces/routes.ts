@@ -18,6 +18,17 @@ export const listSpacesRoute = createRoute({
   path: "/api/spaces",
   summary: "Space 목록 조회",
   description: "현재 사용자가 소유한 모든 학습 공간 목록을 조회합니다.",
+  request: {
+    query: z.object({
+      include: z
+        .enum(["activePlan", "lastStudiedAt"])
+        .array()
+        .optional()
+        .describe(
+          "포함할 추가 정보. 'activePlan'은 활성 플랜 정보를, 'lastStudiedAt'는 마지막 학습 날짜를 포함합니다.",
+        ),
+    }),
+  },
   responses: {
     200: {
       description: "Space 목록을 반환합니다.",

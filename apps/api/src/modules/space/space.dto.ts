@@ -12,6 +12,16 @@ export const SpaceOutput = z.object({
   color: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  // Optional fields when include parameter is used
+  activePlan: z
+    .object({
+      id: PublicIdSchema,
+      title: z.string().min(1),
+      progressPercent: z.number(),
+    })
+    .nullable()
+    .optional(),
+  lastStudiedAt: z.string().datetime().nullable().optional(),
 });
 export type SpaceOutput = z.infer<typeof SpaceOutput>;
 
