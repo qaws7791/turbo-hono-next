@@ -13,12 +13,8 @@ export default [
     route("spaces", "routes/spaces.tsx"),
     route("concepts", "routes/concepts.tsx"),
     route("concept/:conceptId", "routes/concept-detail.tsx"),
-    route("concepts/:conceptId", "routes/concept-detail-alias.tsx"),
     route("spaces/:spaceId", "routes/space-layout.tsx", [
-      index("routes/space-plans.tsx"),
-      route("materials", "routes/space-materials.tsx"),
       route("plans/new", "routes/plan-wizard.tsx"),
-      route("concepts", "routes/space-concepts.tsx"),
     ]),
     // 학습 계획 상세는 스페이스 레이아웃과 분리하여 독립적인 UI 제공
     route("spaces/:spaceId/plan/:planId", "routes/plan-detail.tsx"),

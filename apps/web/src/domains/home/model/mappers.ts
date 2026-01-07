@@ -1,5 +1,4 @@
 import type { paths } from "~/foundation/types/api";
-import type { Space } from "~/domains/spaces";
 import type { HomeQueueItem, SessionSummaryCard } from "./types";
 
 import { todayIsoDate } from "~/foundation/lib/time";
@@ -31,20 +30,13 @@ export function isoDateFromMaybeDateTime(value: string | null): string {
   return date.toISOString().slice(0, 10);
 }
 
-export function toHomeQueueItem(
-  item: ApiQueueItem,
-  spaces: Array<Space>,
-): HomeQueueItem {
-  const byId = new Map(spaces.map((s) => [s.id, s]));
-  const byName = new Map(spaces.map((s) => [s.name, s]));
-
+export function toHomeQueueItem(item: ApiQueueItem): HomeQueueItem {
   if (item.kind === "SESSION") {
-    const space = byName.get(item.spaceName);
     return {
       href: `/session?sessionId=${encodeURIComponent(item.sessionId)}`,
       kind: "SESSION",
       sessionId: item.sessionId,
-      spaceId: space?.id ?? "",
+      spaceId: item.spaceId,
       spaceName: item.spaceName,
       planId: "",
       planTitle: item.planTitle,
@@ -54,12 +46,11 @@ export function toHomeQueueItem(
       status: mapSessionStatus(item.status),
       scheduledDate: todayIsoDate(),
       durationMinutes: item.estimatedMinutes,
-      spaceIcon: space?.icon ?? "book",
-      spaceColor: space?.color ?? "blue",
+      spaceIcon: item.spaceIcon,
+      spaceColor: item.spaceColor,
     };
   }
 
-  const space = byId.get(item.spaceId);
   return {
     href: `/concept/${encodeURIComponent(item.conceptId)}`,
     kind: "CONCEPT_REVIEW",
@@ -74,8 +65,8 @@ export function toHomeQueueItem(
     status: "todo",
     scheduledDate: isoDateFromMaybeDateTime(item.dueAt),
     durationMinutes: item.estimatedMinutes,
-    spaceIcon: space?.icon ?? "book",
-    spaceColor: space?.color ?? "blue",
+    spaceIcon: item.spaceIcon,
+    spaceColor: item.spaceColor,
   };
 }
 

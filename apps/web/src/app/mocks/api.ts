@@ -821,7 +821,15 @@ export function listConcepts(input?: {
 export function getConcept(conceptId: string): Concept {
   const db = readDb();
   requireUser(db);
-  return requireConcept(db, conceptId);
+  const concept = requireConcept(db, conceptId);
+
+  return {
+    ...concept,
+    sources: [...concept.sources].sort(
+      (a, b) =>
+        new Date(b.studiedAt).getTime() - new Date(a.studiedAt).getTime(),
+    ),
+  };
 }
 
 export function getPlanBySpaceActive(spaceId: string): PlanWithDerived | null {

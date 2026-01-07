@@ -1,4 +1,3 @@
-import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -7,61 +6,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/card";
+import { useSuspenseQuery } from "@tanstack/react-query";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@repo/ui/dialog";
-import { Input } from "@repo/ui/input";
-import { Label } from "@repo/ui/label";
-import { Separator } from "@repo/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
-import * as React from "react";
+  useDeleteMaterialMutation,
+  useUploadMaterialMutation,
+} from "../application";
+import { materialsQueries } from "../materials.queries";
 
-import { useMaterialMutations, useUploadMaterialDialog } from "../application";
-import { materialKindLabel, materialStatusLabel } from "../model";
+import { MaterialCard } from "./material-card";
+import { MaterialUploadDialog } from "./material-upload-dialog";
 
-import type { Material } from "../model/materials.types";
+import { useDialogState } from "~/foundation/hooks/use-dialog-state";
 
-function materialStatusBadgeVariant(
-  status: Material["status"],
-): "default" | "secondary" | "outline" | "destructive" {
-  if (status === "completed") return "secondary";
-  if (status === "error") return "destructive";
-  return "outline";
-}
+export function SpaceMaterialsView({ spaceId }: { spaceId: string }) {
+  const { data: materials } = useSuspenseQuery(
+    materialsQueries.listForSpace(spaceId),
+  );
+  const uploadDialog = useDialogState();
+  const uploadMaterialMutation = useUploadMaterialMutation(spaceId);
+  const deleteMaterialMutation = useDeleteMaterialMutation(spaceId);
 
-export function SpaceMaterialsView({
-  spaceId,
-  materials,
-}: {
-  spaceId: string;
-  materials: Array<Material>;
-}) {
-  const uploadDialog = useUploadMaterialDialog();
-  const { isSubmitting, deleteMaterial, uploadFileMaterial } =
-    useMaterialMutations(spaceId);
-  const [title, setTitle] = React.useState("");
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const isSubmitting =
+    uploadMaterialMutation.isPending || deleteMaterialMutation.isPending;
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) return;
-
-    const finalTitle = title.trim() || file.name;
-    uploadFileMaterial(file, finalTitle);
-    uploadDialog.close();
-    setTitle("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+  const handleUpload = (file: File, title: string) => {
+    uploadMaterialMutation.mutate(
+      { file, title },
+      {
+        onSuccess: () => {
+          uploadDialog.close();
+        },
+      },
+    );
   };
 
   const handleDelete = (materialId: string) => {
-    deleteMaterial(materialId);
+    deleteMaterialMutation.mutate(materialId);
   };
 
   return (
@@ -91,160 +72,25 @@ export function SpaceMaterialsView({
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {materials.map((doc) => (
-            <Card key={doc.id}>
-              <CardHeader className="space-y-1">
-                <div className="flex items-start justify-between gap-3">
-                  <CardTitle className="text-base truncate">
-                    {doc.title}
-                  </CardTitle>
-                  <Badge variant={materialStatusBadgeVariant(doc.status)}>
-                    {materialStatusLabel(doc.status)}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {materialKindLabel(doc.kind)} · 태그 {doc.tags.length}개
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {doc.summary ? (
-                  <div className="text-muted-foreground text-sm">
-                    {doc.summary}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-sm">
-                    요약은 분석 완료 후 표시됩니다.
-                  </div>
-                )}
-
-                {doc.tags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {doc.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : null}
-
-                <Separator />
-
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    disabled={isSubmitting}
-                    onClick={() => handleDelete(doc.id)}
-                  >
-                    삭제
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+          {materials.map((material) => (
+            <MaterialCard
+              key={material.id}
+              material={material}
+              isDeleting={isSubmitting}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
 
-      <Dialog
-        open={uploadDialog.isOpen}
+      <MaterialUploadDialog
+        isOpen={uploadDialog.isOpen}
         onOpenChange={(open) =>
           open ? uploadDialog.open() : uploadDialog.close()
         }
-      >
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>자료 업로드</DialogTitle>
-            <DialogDescription>
-              업로드 후 자동 분석됩니다. 분석 완료 문서만 학습 계획에 포함할 수
-              있습니다.
-            </DialogDescription>
-          </DialogHeader>
-          <Tabs defaultValue="file">
-            <TabsList className="w-full">
-              <TabsTrigger
-                value="file"
-                className="flex-1"
-              >
-                파일
-              </TabsTrigger>
-              <TabsTrigger
-                value="url"
-                className="flex-1"
-                disabled
-              >
-                URL
-              </TabsTrigger>
-              <TabsTrigger
-                value="text"
-                className="flex-1"
-                disabled
-              >
-                텍스트
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent
-              value="file"
-              className="mt-4"
-            >
-              <form
-                onSubmit={handleUploadSubmit}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="file-title">제목 (선택)</Label>
-                  <Input
-                    id="file-title"
-                    name="title"
-                    placeholder="문서 제목"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="file">파일</Label>
-                  <input
-                    ref={fileInputRef}
-                    id="file"
-                    name="file"
-                    type="file"
-                    className="w-full text-sm"
-                    required
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full"
-                >
-                  업로드
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent
-              value="url"
-              className="mt-4"
-            >
-              <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
-                현재는 URL 업로드를 지원하지 않습니다.
-              </div>
-            </TabsContent>
-
-            <TabsContent
-              value="text"
-              className="mt-4"
-            >
-              <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
-                현재는 텍스트 업로드를 지원하지 않습니다.
-              </div>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+        isSubmitting={isSubmitting}
+        onUpload={handleUpload}
+      />
     </div>
   );
 }

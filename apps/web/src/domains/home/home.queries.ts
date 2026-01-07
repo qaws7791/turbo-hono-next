@@ -7,7 +7,7 @@ import {
 } from "./application/home";
 
 import type {
-  HomeQueueItem,
+  HomeQueue, // Added HomeQueueItem to imports
   HomeStats,
   SessionSummaryCard,
 } from "./model/types";
@@ -21,17 +21,13 @@ export const homeQueries = {
   getQueue: () =>
     queryOptions({
       queryKey: homeQueries.queue(),
-      queryFn: (): Promise<Array<HomeQueueItem>> => getHomeQueue(),
-      staleTime: 10_000,
-      gcTime: 60_000,
+      queryFn: (): Promise<HomeQueue> => getHomeQueue(),
     }),
 
   getStats: () =>
     queryOptions({
       queryKey: homeQueries.stats(),
       queryFn: (): Promise<HomeStats> => getHomeStats(),
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   getRecentSessions: (limit: number) =>
@@ -39,7 +35,5 @@ export const homeQueries = {
       queryKey: [...homeQueries.recent(), limit] as const,
       queryFn: (): Promise<Array<SessionSummaryCard>> =>
         getRecentSessions(limit),
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 };

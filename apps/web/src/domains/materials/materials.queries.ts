@@ -19,8 +19,6 @@ export const materialsQueries = {
         });
         return data;
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   countForSpace: (spaceId: string) =>
@@ -33,7 +31,5 @@ export const materialsQueries = {
         });
         return meta.total;
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 };

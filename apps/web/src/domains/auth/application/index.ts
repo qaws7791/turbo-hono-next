@@ -1,4 +1,6 @@
 export { getAuthSession } from "./auth-session";
-export { useLoginState } from "./use-login-state";
+export { requireAuth } from "./require-auth";
+export { useGoogleLogin } from "./use-google-login";
 export { useLogoutMutation } from "./use-logout-mutation";
-export { useMagicLinkMutation } from "./use-magic-link-mutation";
+export { useMagicLinkLogin } from "./use-magic-link-login";
+export { useUser } from "./use-user";

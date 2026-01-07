@@ -1,28 +1,24 @@
-import { Input } from "@repo/ui/input";
-import { useState } from "react";
+import { useSuspenseQueries } from "@tanstack/react-query";
+import { Link } from "react-router";
+
+import { conceptsQueries } from "../concepts.queries";
 
 import { ConceptCard } from "./concept-card.card";
 
-import type { Space } from "~/domains/spaces";
-import type { Concept } from "../model";
+import type { Concept } from "../model/concepts.types";
 
-export function SpaceConceptsView({
-  space,
-  concepts,
-}: {
-  space: Space;
-  concepts: Array<Concept>;
-}) {
-  const [searchQuery, setSearchQuery] = useState("");
+import { spacesQueries } from "~/domains/spaces";
 
-  const filteredConcepts = concepts.filter((concept) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      concept.title.toLowerCase().includes(query) ||
-      concept.oneLiner.toLowerCase().includes(query)
-    );
+export function SpaceConceptsView({ spaceId }: { spaceId: string }) {
+  const [spaceQuery, conceptsDataQuery] = useSuspenseQueries({
+    queries: [
+      spacesQueries.detail(spaceId),
+      conceptsQueries.listForSpace(spaceId, { page: 1, limit: 50 }),
+    ],
   });
+
+  const space = spaceQuery.data;
+  const concepts = conceptsDataQuery.data.data;
 
   return (
     <div className="space-y-6">
@@ -33,30 +29,22 @@ export function SpaceConceptsView({
         </p>
       </div>
 
-      <div className="max-w-md">
-        <Input
-          type="text"
-          placeholder="개념 검색..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-
       <div className="grid gap-4">
-        {filteredConcepts.map((concept) => (
-          <ConceptCard
+        {concepts.map((concept: Concept) => (
+          <Link
             key={concept.id}
-            concept={concept}
-            showSource={false}
-          />
+            to={`/concept/${concept.id}`}
+            className="block focus:outline-none group"
+          >
+            <ConceptCard
+              concept={concept}
+              showSource={false}
+            />
+          </Link>
         ))}
       </div>
 
-      {filteredConcepts.length === 0 && searchQuery.trim() ? (
-        <div className="text-muted-foreground text-sm">
-          &quot;{searchQuery}&quot;에 해당하는 개념이 없습니다.
-        </div>
-      ) : concepts.length === 0 ? (
+      {concepts.length === 0 ? (
         <div className="text-muted-foreground text-sm">
           아직 개념이 없습니다. 세션을 완료하면 자동으로 저장됩니다.
         </div>

@@ -1,5 +1,5 @@
-import type { ApiSpace } from "./spaces.dto";
 import type { Space } from "../model/spaces.types";
+import type { ApiSpace } from "./spaces.dto";
 
 export function toSpaceFromApi(apiSpace: ApiSpace): Space {
   return {
@@ -10,6 +10,5 @@ export function toSpaceFromApi(apiSpace: ApiSpace): Space {
     color: apiSpace.color ?? "blue",
     createdAt: apiSpace.createdAt,
     updatedAt: apiSpace.updatedAt,
-    activePlanId: undefined,
   };
 }

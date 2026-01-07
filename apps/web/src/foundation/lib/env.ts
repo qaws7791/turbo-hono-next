@@ -18,7 +18,6 @@ export const env = (() => {
     VITE_MSW: import.meta.env.VITE_MSW,
     DEV: import.meta.env.DEV,
   });
-
   const frozen = Object.freeze({ ...parsed } as const);
   return frozen;
 })();

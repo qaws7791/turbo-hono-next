@@ -9,8 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Separator } from "@repo/ui/separator";
 import { Link } from "react-router";
 
-import { getLandingHref } from "../model";
-
 import type { ReactNode } from "react";
 
 function Section({
@@ -35,8 +33,7 @@ function Section({
   );
 }
 
-export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const primaryHref = getLandingHref(isAuthenticated);
+export function LandingView() {
   return (
     <div className="bg-background text-foreground min-h-svh">
       <header className="bg-background/70 border-b border-border sticky top-0 z-10 backdrop-blur">
@@ -54,7 +51,7 @@ export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
             >
               요금제
             </Button>
-            <Button render={<Link to={primaryHref} />}>무료로 시작하기</Button>
+            <Button render={<Link to="/login" />}>무료로 시작하기</Button>
           </nav>
         </div>
       </header>
@@ -76,9 +73,7 @@ export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
                 준비합니다. 당신은 매일 한 번만 “시작”을 누르면 됩니다.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Button render={<Link to={primaryHref} />}>
-                  무료로 시작하기
-                </Button>
+                <Button render={<Link to="/login" />}>무료로 시작하기</Button>
                 <Button
                   variant="outline"
                   render={<a href="#how" />}
@@ -272,7 +267,7 @@ export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
                   </ul>
                   <Button
                     className="w-full"
-                    render={<Link to={primaryHref} />}
+                    render={<Link to="/login" />}
                   >
                     {tier.cta}
                   </Button>
@@ -341,7 +336,7 @@ export function LandingView({ isAuthenticated }: { isAuthenticated: boolean }) {
               </div>
               <Button
                 size="lg"
-                render={<Link to={primaryHref} />}
+                render={<Link to="/login" />}
               >
                 무료로 시작하기
               </Button>

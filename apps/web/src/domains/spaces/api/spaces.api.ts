@@ -1,7 +1,7 @@
 import { toSpaceFromApi } from "./spaces.mapper";
 
-import type { CreateSpaceBody, UpdateSpaceBody } from "./spaces.dto";
 import type { Space } from "../model/spaces.types";
+import type { CreateSpaceBody, UpdateSpaceBody } from "./spaces.dto";
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
@@ -12,6 +12,24 @@ export async function listSpaces(): Promise<Array<Space>> {
     throw new ApiError("Failed to list spaces", response.status, error);
   }
   return data.data.map((item) => toSpaceFromApi(item));
+}
+
+export async function listSpacesWithCards() {
+  const { data, error, response } = await apiClient.GET("/api/spaces", {
+    params: {
+      query: {
+        include: ["activePlan", "lastStudiedAt"],
+      },
+    },
+  });
+  if (!response.ok || !data) {
+    throw new ApiError(
+      "Failed to list spaces with cards",
+      response.status,
+      error,
+    );
+  }
+  return data.data;
 }
 
 export async function createSpace(input: CreateSpaceBody): Promise<Space> {

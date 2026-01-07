@@ -1,13 +1,8 @@
 import { toHomeQueueItem, toSessionSummaryCard } from "../model/mappers";
 
 import type { paths } from "~/foundation/types/api";
-import type {
-  HomeQueueItem,
-  HomeStats,
-  SessionSummaryCard,
-} from "../model/types";
+import type { HomeQueue, HomeStats, SessionSummaryCard } from "../model/types";
 
-import { listSpaces } from "~/domains/spaces/api/spaces.api";
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
 
@@ -25,13 +20,13 @@ async function getHomeQueueApi(): Promise<{
   return { items: data.data, summary: data.summary };
 }
 
-export async function getHomeQueue(): Promise<Array<HomeQueueItem>> {
-  const [{ items }, spaces] = await Promise.all([
-    getHomeQueueApi(),
-    listSpaces(),
-  ]);
+export async function getHomeQueue(): Promise<HomeQueue> {
+  const { items, summary } = await getHomeQueueApi();
 
-  return items.map((item) => toHomeQueueItem(item, spaces));
+  return {
+    items: items.map((item) => toHomeQueueItem(item)),
+    summary,
+  };
 }
 
 export async function getHomeStats(): Promise<HomeStats> {

@@ -2,9 +2,9 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { getConceptDetail, listSpaceConcepts } from "./api/concepts.api";
 
+import type { Space } from "~/domains/spaces/model/spaces.types";
 import type { SpaceConceptsList } from "./api/concepts.api";
 import type { Concept } from "./model/concepts.types";
-import type { Space } from "~/domains/spaces/model/spaces.types";
 
 import { getSpace, listSpaces } from "~/domains/spaces/api/spaces.api";
 
@@ -23,24 +23,17 @@ export const conceptsQueries = {
       queryKey: [...conceptsQueries.lists(), spaceId, query ?? null] as const,
       queryFn: (): Promise<SpaceConceptsList> =>
         listSpaceConcepts(spaceId, query),
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   detail: (spaceId: string, conceptId: string) =>
     queryOptions({
       queryKey: [...conceptsQueries.details(), spaceId, conceptId] as const,
       queryFn: () => getConceptDetail(spaceId, conceptId),
-      staleTime: 5_000,
-      gcTime: 60_000,
     }),
 
-  library: (input: { q?: string }) => {
-    const q = input.q?.trim();
-    const search = q && q.length > 0 ? q : undefined;
-
+  library: () => {
     return queryOptions({
-      queryKey: [...conceptsQueries.libraries(), { search }] as const,
+      queryKey: [...conceptsQueries.libraries()] as const,
       queryFn: async (): Promise<Array<Concept>> => {
         const spaces = await listSpaces();
         const conceptLists = await Promise.all(
@@ -48,15 +41,12 @@ export const conceptsQueries = {
             listSpaceConcepts(space.id, {
               page: 1,
               limit: 50,
-              search,
             }),
           ),
         );
 
         return conceptLists.flatMap((list) => list.data);
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     });
   },
 
@@ -114,7 +104,5 @@ export const conceptsQueries = {
 
         return { concept, space, related };
       },
-      staleTime: 5_000,
-      gcTime: 60_000,
     }),
 };

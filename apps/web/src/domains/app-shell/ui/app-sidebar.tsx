@@ -13,12 +13,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from "@repo/ui/sidebar";
-import {
-  IconCalendar,
-  IconHome,
-  IconNotebook,
-  IconSearch,
-} from "@tabler/icons-react";
+import { IconCalendar, IconHome, IconNotebook } from "@tabler/icons-react";
 import { NavLink, useLocation } from "react-router";
 
 import { UserMenu } from "./user-menu";
@@ -31,12 +26,10 @@ export function AppSidebar({
   user,
   spaces,
   onOpenSettings,
-  onOpenCommandPalette,
 }: {
   user: AppShellUser;
   spaces: Array<AppShellSpace>;
   onOpenSettings: () => void;
-  onOpenCommandPalette: () => void;
 }) {
   const location = useLocation();
 
@@ -66,16 +59,7 @@ export function AppSidebar({
               <span className="font-medium">오늘 할 일</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={location.pathname.startsWith("/concepts")}
-              onClick={onOpenCommandPalette}
-              className="cursor-pointer"
-            >
-              <IconSearch />
-              <span className="font-medium">검색</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+
           <SidebarMenuItem>
             <SidebarMenuButton
               isActive={location.pathname.startsWith("/concepts")}

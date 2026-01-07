@@ -441,6 +441,11 @@ export const handlers = [
     return HttpResponse.json(response, { status: 200 });
   }),
 
+  http.get("/api/auth/google", () => {
+    signInWithGoogle();
+    return HttpResponse.json({ success: true }, { status: 200 });
+  }),
+
   // Spaces
   http.get("/api/spaces", () => {
     const unauthorized = requireAuthOr401();
@@ -1043,7 +1048,10 @@ export const handlers = [
     const items = homeQueue().map((i) => ({
       kind: "SESSION" as const,
       sessionId: i.sessionId,
+      spaceId: i.spaceId,
       spaceName: i.spaceName,
+      spaceIcon: i.spaceIcon,
+      spaceColor: i.spaceColor,
       planTitle: i.planTitle,
       moduleTitle: i.moduleTitle,
       sessionTitle: i.sessionTitle,

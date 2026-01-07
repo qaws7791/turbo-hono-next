@@ -14,16 +14,12 @@ import {
   TimelineTitle,
 } from "@repo/ui/timeline";
 import { IconArrowRight, IconCalendar, IconFlame } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
 
-import type { User } from "~/domains/auth";
-import type {
-  HomeQueueItem,
-  HomeStats,
-  SessionSummaryCard,
-} from "~/domains/home";
-
 import { PageBody, PageHeader } from "~/domains/app-shell";
+import { useUser } from "~/domains/auth";
+import { homeQueries } from "~/domains/home/home.queries";
 import { getColorByName, getIconByName } from "~/domains/spaces";
 import { formatLongDateTime, formatShortDate } from "~/foundation/lib/time";
 
@@ -49,19 +45,13 @@ function getGreetingMessage(): string {
   return "좋은 저녁입니다";
 }
 
-export function HomeView({
-  user,
-  stats,
-  queue,
-  recent,
-}: {
-  user: User | null;
-  stats: HomeStats;
-  queue: Array<HomeQueueItem>;
-  recent: Array<SessionSummaryCard>;
-}) {
+export function HomeView() {
+  const user = useUser();
+  const { data: stats } = useSuspenseQuery(homeQueries.getStats());
+  const { data: queue } = useSuspenseQuery(homeQueries.getQueue());
+  const { data: recent } = useSuspenseQuery(homeQueries.getRecentSessions(6));
+
   const greeting = getGreetingMessage();
-  const userName = user?.name ?? "학습자";
 
   return (
     <>
@@ -70,7 +60,7 @@ export function HomeView({
       <PageBody className="space-y-12 mt-24">
         <div>
           <h1 className="text-foreground text-3xl font-semibold">
-            {greeting}, {userName}
+            {greeting}, {user.name}
           </h1>
           <p className="text-muted-foreground mt-1 text-xl">
             {stats.coachingMessage}
@@ -129,13 +119,13 @@ export function HomeView({
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-2">
               <h2 className="text-xl font-semibold">할 일</h2>
-              {queue.length > 0 && (
+              {queue.summary.total > 0 && (
                 <span className="text-lg text-muted-foreground font-medium">
-                  {queue.length}
+                  {queue.summary.total}
                 </span>
               )}
             </div>
-            {queue.length > 0 && (
+            {queue.summary.total > 0 && (
               <Button
                 render={<Link to="/today" />}
                 variant="ghost"
@@ -147,7 +137,7 @@ export function HomeView({
             )}
           </div>
           <div className="mt-4">
-            {queue.length === 0 ? (
+            {queue.summary.total === 0 ? (
               <div className="text-muted-foreground space-y-2 text-sm">
                 <p>오늘 할 일이 없습니다.</p>
                 <p>
@@ -157,8 +147,8 @@ export function HomeView({
                 <Button render={<Link to="/spaces" />}>스페이스로</Button>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-                {queue.slice(0, 3).map((item) => {
+              <div className="grid gap-3 md:grid-cols-3">
+                {queue.items.slice(0, 3).map((item) => {
                   const SpaceIcon = getIconByName(item.spaceIcon);
                   const colorData = getColorByName(item.spaceColor);
                   return (

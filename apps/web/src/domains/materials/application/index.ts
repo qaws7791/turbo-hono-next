@@ -1,3 +1,2 @@
-export { useMaterialMutations } from "./use-material-mutations";
-export { useUploadMaterialDialog } from "./use-upload-material-dialog";
-export type { UploadMaterialDialog } from "./use-upload-material-dialog";
+export * from "./use-delete-material-mutation";
+export * from "./use-upload-material-mutation";

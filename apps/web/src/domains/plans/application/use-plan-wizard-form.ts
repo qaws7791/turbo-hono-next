@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { canSelectMaterial } from "../model";
+
 import type {
   PlanGoal,
   PlanLevel,
@@ -26,10 +28,6 @@ function isPlanLevel(value: string): value is PlanLevel {
     value === "intermediate" ||
     value === "advanced"
   );
-}
-
-function canSelectMaterial(doc: PlanWizardMaterial): boolean {
-  return doc.status === "completed";
 }
 
 export function usePlanWizardForm(input: {

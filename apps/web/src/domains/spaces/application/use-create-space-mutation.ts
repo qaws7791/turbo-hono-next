@@ -1,27 +1,19 @@
-import * as React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { createSpace as createSpaceApi } from "../api/spaces.api";
+import { spacesQueries } from "../spaces.queries";
 
-export function useCreateSpaceMutation(): {
-  isSubmitting: boolean;
-  createSpace: (input: { name: string; description?: string }) => void;
-} {
+export function useCreateSpaceMutation() {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const queryClient = useQueryClient();
 
-  const createSpace = React.useCallback(
-    async (input: { name: string; description?: string }) => {
-      setIsSubmitting(true);
-      try {
-        const space = await createSpaceApi(input);
-        navigate(`/spaces/${space.id}`);
-      } finally {
-        setIsSubmitting(false);
-      }
+  return useMutation({
+    mutationFn: (input: { name: string; description?: string }) =>
+      createSpaceApi(input),
+    onSuccess: (space) => {
+      queryClient.invalidateQueries({ queryKey: spacesQueries.all() });
+      navigate(`/spaces/${space.id}`);
     },
-    [navigate],
-  );
-
-  return { isSubmitting, createSpace };
+  });
 }

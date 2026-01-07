@@ -13,3 +13,11 @@ export function materialKindLabel(kind: MaterialKind): string {
   if (kind === "text") return "텍스트";
   return kind;
 }
+
+export function getMaterialStatusBadgeVariant(
+  status: MaterialStatus,
+): "default" | "secondary" | "outline" | "destructive" {
+  if (status === "completed") return "secondary";
+  if (status === "error") return "destructive";
+  return "outline";
+}

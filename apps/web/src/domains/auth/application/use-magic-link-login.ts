@@ -3,7 +3,9 @@ import { useSearchParams } from "react-router";
 
 import { requestMagicLink } from "../api";
 
-import type { LoginActionData } from "../model/types";
+import type { LoginActionData, LoginViewState } from "../model/types";
+
+import { useCountdown } from "~/foundation/hooks/use-countdown";
 
 function safeRedirectTo(value: string | null): string {
   if (!value) return "/home";
@@ -13,24 +15,19 @@ function safeRedirectTo(value: string | null): string {
   return "/home";
 }
 
-export type MagicLinkMutationState = {
-  isSubmitting: boolean;
-  actionData: LoginActionData | undefined;
-};
-
-export function useMagicLinkMutation(): MagicLinkMutationState & {
-  sendMagicLink: (email: string) => void;
-} {
+export function useMagicLinkLogin() {
   const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [actionData, setActionData] = React.useState<
     LoginActionData | undefined
   >(undefined);
+  const [forceIdle, setForceIdle] = React.useState(false);
 
   const sendMagicLink = React.useCallback(
     async (email: string) => {
       setIsSubmitting(true);
       setActionData(undefined);
+      setForceIdle(false);
 
       const redirectPath = safeRedirectTo(searchParams.get("redirectTo"));
 
@@ -49,5 +46,34 @@ export function useMagicLinkMutation(): MagicLinkMutationState & {
     [searchParams],
   );
 
-  return { isSubmitting, actionData, sendMagicLink };
+  const view = forceIdle ? "idle" : (actionData?.status ?? "idle");
+
+  const email =
+    !forceIdle && view === "sent"
+      ? (actionData as { email: string }).email
+      : "";
+
+  const errorMessage =
+    !forceIdle && actionData?.status === "error" ? actionData.message : null;
+
+  const secondsLeft = useCountdown(30, view === "sent");
+  const canResend =
+    view === "sent" && secondsLeft === 0 && isSubmitting === false;
+
+  const state: LoginViewState =
+    view === "sent"
+      ? {
+          view: "sent",
+          isSubmitting,
+          email,
+          secondsLeft,
+          canResend,
+        }
+      : { view: "idle", isSubmitting, errorMessage };
+
+  return {
+    state,
+    sendMagicLink,
+    resetToIdle: () => setForceIdle(true),
+  };
 }

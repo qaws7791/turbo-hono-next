@@ -9,6 +9,10 @@ declare global {
 }
 
 const baseUrl = (() => {
+  // MSW가 활성화된 경우, 모든 요청은 현재 도메인 상대 경로로 나가서 MSW 핸들러에 걸려야 합니다.
+  if (env.VITE_MSW) {
+    return "";
+  }
   return env.VITE_API_BASE_URL;
 })();
 

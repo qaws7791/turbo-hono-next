@@ -102,7 +102,5 @@ export const sessionQueries = {
     queryOptions({
       queryKey: [...sessionQueries.runs(), runId] as const,
       queryFn: (): Promise<SessionRunInput> => getSessionRun(runId),
-      staleTime: 5_000,
-      gcTime: 60_000,
     }),
 };

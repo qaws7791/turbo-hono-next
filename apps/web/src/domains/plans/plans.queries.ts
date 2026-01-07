@@ -20,16 +20,12 @@ export const plansQueries = {
         const { data } = await listSpacePlans(spaceId);
         return data;
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   detail: (planId: string) =>
     queryOptions({
       queryKey: [...plansQueries.details(), planId] as const,
       queryFn: (): Promise<PlanWithDerived> => getPlan(planId),
-      staleTime: 5_000,
-      gcTime: 60_000,
     }),
 
   activeForSpace: (spaceId: string) =>
@@ -42,8 +38,6 @@ export const plansQueries = {
         });
         return data[0] ?? null;
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   detailPage: (spaceId: string, planId: string) =>
@@ -74,7 +68,5 @@ export const plansQueries = {
           sourceMaterials: [],
         };
       },
-      staleTime: 5_000,
-      gcTime: 60_000,
     }),
 };

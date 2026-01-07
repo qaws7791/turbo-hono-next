@@ -1,4 +1,3 @@
-import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -7,34 +6,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/ui/card";
-import { Progress } from "@repo/ui/progress";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@repo/ui/table";
 import { IconPlus } from "@tabler/icons-react";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { Link } from "react-router";
 
-import type { PlanWithDerived } from "~/domains/plans";
-import type { Space } from "../model/spaces.types";
+import { spacesQueries } from "../spaces.queries";
 
-import {
-  PlanStatusBadge,
-  getPlanGoalLabel,
-  getPlanLevelLabel,
-} from "~/domains/plans";
+import { PlanMobileCard } from "./plan-mobile-card";
+import { PlanTableRow } from "./plan-table-row";
 
-export function SpacePlansView({
-  space,
-  plans,
-}: {
-  space: Space;
-  plans: Array<PlanWithDerived>;
-}) {
+import { plansQueries } from "~/domains/plans";
+
+export function SpacePlansView({ spaceId }: { spaceId: string }) {
+  const [spaceQuery, plansQuery] = useSuspenseQueries({
+    queries: [
+      spacesQueries.detail(spaceId),
+      plansQueries.listForSpace(spaceId),
+    ],
+  });
+
+  const space = spaceQuery.data;
+  const plans = plansQuery.data;
+
   return (
     <div className="space-y-8">
       {/* 학습 계획 목록 */}
@@ -72,57 +72,11 @@ export function SpacePlansView({
           {/* 모바일: 카드 리스트 */}
           <div className="flex flex-col gap-3 md:hidden">
             {plans.map((plan) => (
-              <Link
+              <PlanMobileCard
                 key={plan.id}
-                to={`/spaces/${space.id}/plan/${plan.id}`}
-                className="block"
-              >
-                <Card className="transition-colors hover:bg-muted/50 active:bg-muted">
-                  <CardContent className="p-4 space-y-3">
-                    {/* 1행: 제목 + 상태 */}
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-medium text-base leading-tight">
-                        {plan.title}
-                      </h3>
-                      <PlanStatusBadge status={plan.status} />
-                    </div>
-
-                    {/* 2행: 메타 배지들 */}
-                    <div className="flex flex-wrap gap-1">
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {getPlanGoalLabel(plan.goal)}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {getPlanLevelLabel(plan.level)}
-                      </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {plan.sourceMaterialIds.length}개의 문서
-                      </Badge>
-                    </div>
-
-                    {/* 3행: 진행률 */}
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{plan.totalSessions}개 세션</span>
-                        <span>{plan.progressPercent}%</span>
-                      </div>
-                      <Progress
-                        value={plan.progressPercent}
-                        className="h-1.5"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                plan={plan}
+                spaceId={space.id}
+              />
             ))}
           </div>
 
@@ -137,44 +91,11 @@ export function SpacePlansView({
             </TableHeader>
             <TableBody>
               {plans.map((plan) => (
-                <TableRow key={plan.id}>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <Link
-                        to={`/spaces/${space.id}/plan/${plan.id}`}
-                        className="font-medium text-base hover:underline block"
-                      >
-                        {plan.title}
-                      </Link>
-                      <div className="space-x-1">
-                        <Badge variant="outline">
-                          {getPlanGoalLabel(plan.goal)}
-                        </Badge>
-                        <Badge variant="outline">
-                          {getPlanLevelLabel(plan.level)}
-                        </Badge>
-                        <Badge variant="outline">
-                          {plan.sourceMaterialIds.length}개의 문서
-                        </Badge>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1 min-w-32">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{plan.totalSessions}개 세션</span>
-                        <span>{plan.progressPercent}%</span>
-                      </div>
-                      <Progress
-                        value={plan.progressPercent}
-                        className="h-1.5"
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <PlanStatusBadge status={plan.status} />
-                  </TableCell>
-                </TableRow>
+                <PlanTableRow
+                  key={plan.id}
+                  plan={plan}
+                  spaceId={space.id}
+                />
               ))}
             </TableBody>
           </Table>

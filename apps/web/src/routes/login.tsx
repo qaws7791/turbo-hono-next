@@ -2,12 +2,7 @@ import { redirect } from "react-router";
 
 import type { Route } from "./+types/login";
 
-import {
-  LoginView,
-  authQueries,
-  useLoginState,
-  useMagicLinkMutation,
-} from "~/domains/auth";
+import { LoginView, authQueries } from "~/domains/auth";
 import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
@@ -16,8 +11,7 @@ export function meta() {
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   const meQuery = authQueries.getMe();
-  await queryClient.prefetchQuery(meQuery);
-  const me = queryClient.getQueryData(meQuery.queryKey);
+  const me = await queryClient.ensureQueryData(meQuery);
   if (me) {
     throw redirect("/home");
   }
@@ -28,18 +22,5 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 }
 
 export default function LoginRoute() {
-  const mutation = useMagicLinkMutation();
-
-  const loginState = useLoginState({
-    actionData: mutation.actionData,
-    isSubmitting: mutation.isSubmitting,
-  });
-
-  return (
-    <LoginView
-      state={loginState.state}
-      onChangeEmail={loginState.resetToIdle}
-      onSendMagicLink={mutation.sendMagicLink}
-    />
-  );
+  return <LoginView />;
 }

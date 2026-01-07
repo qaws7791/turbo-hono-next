@@ -6,8 +6,6 @@ export {
   SpaceConceptsView,
 } from "./ui";
 
-export { useConceptSearch } from "./application/use-concept-search";
-export type { ConceptSearch } from "./application/use-concept-search";
 export { useConceptTabs } from "./application/use-concept-tabs";
 export type { ConceptTab, ConceptTabs } from "./application/use-concept-tabs";
 

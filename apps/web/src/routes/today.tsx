@@ -6,8 +6,7 @@ export function meta() {
 }
 
 export async function clientLoader() {
-  await queryClient.prefetchQuery(homeQueries.getQueue());
-  return {};
+  await queryClient.ensureQueryData(homeQueries.getQueue());
 }
 
 export default function TodayRoute() {

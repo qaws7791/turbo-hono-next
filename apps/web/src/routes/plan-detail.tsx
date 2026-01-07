@@ -1,6 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useLoaderData } from "react-router";
-
 import type { Route } from "./+types/plan-detail";
 
 import { PlanDetailView, plansQueries } from "~/domains/plans";
@@ -21,14 +18,16 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  await queryClient.prefetchQuery(
+  await queryClient.ensureQueryData(
     plansQueries.detailPage(spaceId.data, planId.data),
   );
-  return { spaceId: spaceId.data, planId: planId.data };
 }
 
-export default function PlanDetailRoute() {
-  const { spaceId, planId } = useLoaderData<typeof clientLoader>();
-  const { data } = useSuspenseQuery(plansQueries.detailPage(spaceId, planId));
-  return <PlanDetailView data={data} />;
+export default function PlanDetailRoute({ params }: Route.ComponentProps) {
+  return (
+    <PlanDetailView
+      spaceId={params.spaceId}
+      planId={params.planId}
+    />
+  );
 }

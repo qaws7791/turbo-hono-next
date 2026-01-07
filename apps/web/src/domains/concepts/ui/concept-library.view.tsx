@@ -1,22 +1,15 @@
-import { Input } from "@repo/ui/input";
-import { IconSearch } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link } from "react-router";
 
-import { useConceptSearch } from "../application";
+import { conceptsQueries } from "../concepts.queries";
 
 import { ConceptCard } from "./concept-card.card";
 
-import type { Concept } from "../model";
-
 import { PageBody, PageHeader } from "~/domains/app-shell";
 
-export function ConceptLibraryView({
-  concepts,
-  initialQuery,
-}: {
-  concepts: Array<Concept>;
-  initialQuery?: string;
-}) {
-  const search = useConceptSearch(initialQuery);
+export function ConceptLibraryView() {
+  const { data: concepts } = useSuspenseQuery(conceptsQueries.library());
+
   return (
     <>
       <PageHeader />
@@ -24,31 +17,25 @@ export function ConceptLibraryView({
         <h1 className="text-foreground text-2xl font-medium">
           개념 라이브러리
         </h1>
-        <div className="relative">
-          <Input
-            value={search.query}
-            onChange={(e) => search.setQuery(e.target.value)}
-            placeholder="검색 (제목/요약/태그)"
-            className="w-full px-4 h-10 bg-background peer ps-9"
-          />
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <IconSearch className="h-5 w-5 text-muted-foreground" />
-          </div>
-        </div>
 
         <div className="grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))]">
           {concepts.map((concept) => (
-            <ConceptCard
+            <Link
               key={concept.id}
-              concept={concept}
-              showSource
-            />
+              to={`/concept/${concept.id}`}
+              className="block focus:outline-none group"
+            >
+              <ConceptCard
+                concept={concept}
+                showSource
+              />
+            </Link>
           ))}
         </div>
 
         {concepts.length === 0 ? (
           <div className="text-muted-foreground text-sm">
-            조건에 맞는 개념이 없습니다.
+            저장된 개념이 없습니다.
           </div>
         ) : null}
       </PageBody>

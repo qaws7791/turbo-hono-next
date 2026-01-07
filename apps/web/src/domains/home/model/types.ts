@@ -1,3 +1,11 @@
+export type HomeQueue = {
+  items: Array<HomeQueueItem>;
+  summary: {
+    total: number;
+    completed: number;
+  };
+};
+
 export type HomeQueueItem = {
   href: string;
   kind: "SESSION" | "CONCEPT_REVIEW";

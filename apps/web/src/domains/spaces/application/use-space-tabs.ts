@@ -1,24 +1,19 @@
-import { useLocation } from "react-router";
+import { useSearchParams } from "react-router";
+import { z } from "zod";
+
+export const SpaceTabSchema = z
+  .enum(["plans", "materials", "concepts"])
+  .catch("plans");
+
+export type SpaceTab = z.infer<typeof SpaceTabSchema>;
 
 export type SpaceTabs = {
-  basePath: string;
-  isMaterials: boolean;
-  isPlans: boolean;
-  isConcepts: boolean;
+  tab: SpaceTab;
 };
 
-export function useSpaceTabs(spaceId: string): SpaceTabs {
-  const location = useLocation();
+export function useSpaceTabs(): SpaceTabs {
+  const [searchParams] = useSearchParams();
+  const tab = SpaceTabSchema.parse(searchParams.get("tab"));
 
-  const basePath = `/spaces/${spaceId}`;
-  const pathname = location.pathname;
-
-  const isMaterials = pathname.startsWith(`${basePath}/materials`);
-  const isPlans =
-    pathname === basePath ||
-    pathname.startsWith(`${basePath}/plans`) ||
-    pathname.startsWith(`${basePath}/plan/`);
-  const isConcepts = pathname.startsWith(`${basePath}/concepts`);
-
-  return { basePath, isMaterials, isPlans, isConcepts };
+  return { tab };
 }

@@ -18,15 +18,11 @@ export const authQueries = {
         const me = await getAuthMe();
         return me ? toUserFromApi(me) : null;
       },
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 
   getSession: () =>
     queryOptions({
       queryKey: authQueries.session(),
       queryFn: (): Promise<AuthStatus> => getAuthSession(),
-      staleTime: 10_000,
-      gcTime: 60_000,
     }),
 };

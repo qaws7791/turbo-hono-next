@@ -3,10 +3,11 @@ import { Button } from "@repo/ui/button";
 import { CommandShortcut } from "@repo/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/popover";
 import { Separator } from "@repo/ui/separator";
-import { Form } from "react-router";
+import { Spinner } from "@repo/ui/spinner";
 
 import type { AppShellUser } from "../model/types";
 
+import { useLogoutMutation } from "~/domains/auth";
 import { initials } from "~/foundation/lib/initials";
 
 function getPlanLabel(plan: string): string {
@@ -25,6 +26,8 @@ export function UserMenu({
   user: AppShellUser;
   onOpenSettings: () => void;
 }) {
+  const { logout, isSubmitting } = useLogoutMutation();
+
   return (
     <Popover>
       <PopoverTrigger
@@ -71,18 +74,15 @@ export function UserMenu({
               <CommandShortcut>⌘ ,</CommandShortcut>
             </span>
           </Button>
-          <Form
-            method="post"
-            action="/logout"
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+            onClick={logout}
+            disabled={isSubmitting}
           >
-            <Button
-              variant="ghost"
-              className="w-full justify-start"
-              type="submit"
-            >
-              로그아웃
-            </Button>
-          </Form>
+            {isSubmitting ? <Spinner className="mr-2 size-4" /> : null}
+            로그아웃
+          </Button>
         </div>
       </PopoverContent>
     </Popover>

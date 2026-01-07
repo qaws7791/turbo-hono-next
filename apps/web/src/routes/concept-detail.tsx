@@ -1,6 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useLoaderData } from "react-router";
-
 import type { Route } from "./+types/concept-detail";
 
 import { ConceptDetailView, conceptsQueries } from "~/domains/concepts";
@@ -18,18 +15,9 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!conceptId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  await queryClient.prefetchQuery(conceptsQueries.detailPage(conceptId.data));
-  return { conceptId: conceptId.data };
+  await queryClient.ensureQueryData(conceptsQueries.detailPage(conceptId.data));
 }
 
-export default function ConceptDetailRoute() {
-  const { conceptId } = useLoaderData<typeof clientLoader>();
-  const { data } = useSuspenseQuery(conceptsQueries.detailPage(conceptId));
-  return (
-    <ConceptDetailView
-      concept={data.concept}
-      space={data.space}
-      related={data.related}
-    />
-  );
+export default function ConceptDetailRoute({ params }: Route.ComponentProps) {
+  return <ConceptDetailView conceptId={params.conceptId} />;
 }

@@ -410,7 +410,10 @@ export interface paths {
      */
     get: {
       parameters: {
-        query?: never;
+        query?: {
+          /** @description 포함할 추가 정보. 'activePlan'은 활성 플랜 정보를, 'lastStudiedAt'는 마지막 학습 날짜를 포함합니다. */
+          include?: Array<"activePlan" | "lastStudiedAt">;
+        };
         header?: never;
         path?: never;
         cookie?: never;
@@ -434,6 +437,13 @@ export interface paths {
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                activePlan?: {
+                  id: string;
+                  title: string;
+                  progressPercent: number;
+                } | null;
+                /** Format: date-time */
+                lastStudiedAt?: string | null;
               }>;
             };
           };
@@ -500,6 +510,13 @@ export interface paths {
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                activePlan?: {
+                  id: string;
+                  title: string;
+                  progressPercent: number;
+                } | null;
+                /** Format: date-time */
+                lastStudiedAt?: string | null;
               };
             };
           };
@@ -573,6 +590,13 @@ export interface paths {
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                activePlan?: {
+                  id: string;
+                  title: string;
+                  progressPercent: number;
+                } | null;
+                /** Format: date-time */
+                lastStudiedAt?: string | null;
               };
             };
           };
@@ -696,6 +720,13 @@ export interface paths {
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
+                activePlan?: {
+                  id: string;
+                  title: string;
+                  progressPercent: number;
+                } | null;
+                /** Format: date-time */
+                lastStudiedAt?: string | null;
               };
             };
           };
@@ -1783,7 +1814,10 @@ export interface paths {
                     /** @enum {string} */
                     kind: "SESSION";
                     sessionId: string;
+                    spaceId: string;
                     spaceName: string;
+                    spaceIcon: string;
+                    spaceColor: string;
                     planTitle: string;
                     moduleTitle: string;
                     sessionTitle: string;
@@ -1806,6 +1840,8 @@ export interface paths {
                     oneLiner: string;
                     spaceId: string;
                     spaceName: string;
+                    spaceIcon: string;
+                    spaceColor: string;
                     /** @enum {string} */
                     sessionType: "REVIEW";
                     estimatedMinutes: number;
