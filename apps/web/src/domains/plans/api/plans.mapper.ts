@@ -1,9 +1,4 @@
 import type {
-  ApiPlanDetail,
-  ApiPlanListItem,
-  PlanCreateBody,
-} from "./plans.dto";
-import type {
   PlanGoal,
   PlanLevel,
   PlanSessionStatus,
@@ -11,9 +6,11 @@ import type {
   PlanStatus,
   PlanWithDerived,
 } from "../model/types";
-
-import { nowIso } from "~/foundation/lib/time";
-import { randomUuidV4 } from "~/foundation/lib/uuid";
+import type {
+  ApiPlanDetail,
+  ApiPlanListItem,
+  PlanCreateBody,
+} from "./plans.dto";
 
 export function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
   if (goalType === "JOB") return "career";
@@ -78,19 +75,16 @@ export function toPlanFromListItem(
   item: ApiPlanListItem,
   spaceId: string,
 ): PlanWithDerived {
-  const createdAt = nowIso();
-  const updatedAt = createdAt;
-
   return {
     id: item.id,
     spaceId,
     title: item.title,
     goal: mapGoalType(item.goalType),
-    level: "novice",
+    level: mapCurrentLevel(item.currentLevel),
     status: mapPlanStatus(item.status),
-    createdAt,
-    updatedAt,
-    sourceMaterialIds: [],
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    sourceMaterialIds: item.sourceMaterialIds,
     modules: [],
     totalSessions: item.progress.totalSessions,
     progressPercent: computeProgressPercent(item.progress),
@@ -98,19 +92,16 @@ export function toPlanFromListItem(
 }
 
 export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
-  const createdAt = nowIso();
-  const updatedAt = createdAt;
-
   const sessionsByModuleId = new Map<
     string,
     Array<ApiPlanDetail["sessions"][number]>
   >();
 
   for (const session of detail.sessions) {
-    const moduleId = session.moduleId ?? "00000000-0000-0000-0000-000000000000";
-    const existing = sessionsByModuleId.get(moduleId) ?? [];
+    const moduleId = session.moduleId;
+    const existing = sessionsByModuleId.get(moduleId ?? "no-module") ?? [];
     existing.push(session);
-    sessionsByModuleId.set(moduleId, existing);
+    sessionsByModuleId.set(moduleId ?? "no-module", existing);
   }
 
   const modules = detail.modules
@@ -122,15 +113,14 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
         .sort((a, b) => a.orderIndex - b.orderIndex)
         .map((session) => ({
           id: session.id,
-          moduleId: module.id,
-          blueprintId: randomUuidV4(),
+          moduleId: session.moduleId,
           title: session.title,
           type: mapSessionType(session.sessionType),
           scheduledDate: session.scheduledForDate,
           durationMinutes: session.estimatedMinutes,
           status: mapSessionStatus(session.status),
           completedAt: session.completedAt ?? undefined,
-          conceptIds: [],
+          conceptIds: session.conceptIds,
         }));
 
       return {
@@ -151,9 +141,9 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
     goal: mapGoalType(detail.goalType),
     level: mapCurrentLevel(detail.currentLevel),
     status: mapPlanStatus(detail.status),
-    createdAt,
-    updatedAt,
-    sourceMaterialIds: [],
+    createdAt: detail.createdAt,
+    updatedAt: detail.updatedAt,
+    sourceMaterialIds: detail.sourceMaterialIds,
     modules,
     totalSessions,
     progressPercent,

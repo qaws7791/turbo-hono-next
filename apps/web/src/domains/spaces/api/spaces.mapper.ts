@@ -6,8 +6,8 @@ export function toSpaceFromApi(apiSpace: ApiSpace): Space {
     id: apiSpace.id,
     name: apiSpace.name,
     description: apiSpace.description ?? undefined,
-    icon: apiSpace.icon ?? "book",
-    color: apiSpace.color ?? "blue",
+    icon: apiSpace.icon,
+    color: apiSpace.color,
     createdAt: apiSpace.createdAt,
     updatedAt: apiSpace.updatedAt,
   };

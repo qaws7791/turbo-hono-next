@@ -1,5 +1,10 @@
 import type { paths } from "~/foundation/types/api";
-import type { HomeQueueItem, SessionSummaryCard } from "./types";
+import type {
+  HomeQueueConceptReviewItem,
+  HomeQueueItem,
+  HomeQueueSessionItem,
+  SessionSummaryCard,
+} from "./types";
 
 import { todayIsoDate } from "~/foundation/lib/time";
 
@@ -32,13 +37,13 @@ export function isoDateFromMaybeDateTime(value: string | null): string {
 
 export function toHomeQueueItem(item: ApiQueueItem): HomeQueueItem {
   if (item.kind === "SESSION") {
-    return {
+    const mapped: HomeQueueSessionItem = {
       href: `/session?sessionId=${encodeURIComponent(item.sessionId)}`,
       kind: "SESSION",
       sessionId: item.sessionId,
       spaceId: item.spaceId,
       spaceName: item.spaceName,
-      planId: "",
+      planId: item.planId,
       planTitle: item.planTitle,
       moduleTitle: item.moduleTitle,
       sessionTitle: item.sessionTitle,
@@ -49,25 +54,24 @@ export function toHomeQueueItem(item: ApiQueueItem): HomeQueueItem {
       spaceIcon: item.spaceIcon,
       spaceColor: item.spaceColor,
     };
+    return mapped;
   }
 
-  return {
+  const mapped: HomeQueueConceptReviewItem = {
     href: `/concept/${encodeURIComponent(item.conceptId)}`,
     kind: "CONCEPT_REVIEW",
-    sessionId: item.conceptId,
+    conceptId: item.conceptId,
+    conceptTitle: item.conceptTitle,
+    oneLiner: item.oneLiner,
     spaceId: item.spaceId,
     spaceName: item.spaceName,
-    planId: "",
-    planTitle: "개념 복습",
-    moduleTitle: "복습",
-    sessionTitle: item.conceptTitle,
     type: "review",
-    status: "todo",
     scheduledDate: isoDateFromMaybeDateTime(item.dueAt),
     durationMinutes: item.estimatedMinutes,
     spaceIcon: item.spaceIcon,
     spaceColor: item.spaceColor,
   };
+  return mapped;
 }
 
 export function toSessionSummaryCard(run: ApiSessionRun): SessionSummaryCard {
@@ -78,7 +82,7 @@ export function toSessionSummaryCard(run: ApiSessionRun): SessionSummaryCard {
     moduleTitle: run.planTitle,
     sessionTitle: run.sessionTitle,
     completedAt: run.endedAt ?? run.startedAt,
-    durationMinutes: 0,
+    durationMinutes: run.durationMinutes,
     conceptCount:
       (run.summary?.conceptsCreatedCount ?? 0) +
       (run.summary?.conceptsUpdatedCount ?? 0),

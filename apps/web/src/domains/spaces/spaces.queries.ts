@@ -37,8 +37,8 @@ export const spacesQueries = {
           id: space.id,
           name: space.name,
           description: space.description ?? undefined,
-          icon: space.icon ?? "book",
-          color: space.color ?? "blue",
+          icon: space.icon,
+          color: space.color,
           hasTodo: Boolean(
             space.activePlan && space.activePlan.progressPercent < 100,
           ),

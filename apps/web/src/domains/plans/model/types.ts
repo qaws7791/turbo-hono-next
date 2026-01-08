@@ -6,8 +6,7 @@ export type PlanSessionStatus = "todo" | "in_progress" | "completed";
 
 export type PlanSession = {
   id: string;
-  moduleId: string;
-  blueprintId: string;
+  moduleId: string | null;
   title: string;
   type: PlanSessionType;
   scheduledDate: string;
@@ -56,11 +55,4 @@ export type PlanSourceMaterial = {
   title: string;
   summary?: string;
   kind: "file" | "url" | "text";
-};
-
-export type PlanDetailData = {
-  space: PlanDetailSpace;
-  plan: PlanWithDerived;
-  nextQueue: Array<PlanDetailQueueItem>;
-  sourceMaterials: Array<PlanSourceMaterial>;
 };

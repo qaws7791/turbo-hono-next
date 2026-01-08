@@ -1,6 +1,7 @@
 import type { Route } from "./+types/plan-detail";
 
 import { PlanDetailView, plansQueries } from "~/domains/plans";
+import { spacesQueries } from "~/domains/spaces";
 import { PublicIdSchema } from "~/foundation/lib";
 import { queryClient } from "~/foundation/query-client";
 
@@ -18,9 +19,10 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  await queryClient.ensureQueryData(
-    plansQueries.detailPage(spaceId.data, planId.data),
-  );
+  await Promise.all([
+    queryClient.ensureQueryData(spacesQueries.detail(spaceId.data)),
+    queryClient.ensureQueryData(plansQueries.detail(planId.data)),
+  ]);
 }
 
 export default function PlanDetailRoute({ params }: Route.ComponentProps) {

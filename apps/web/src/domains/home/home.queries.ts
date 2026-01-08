@@ -6,11 +6,7 @@ import {
   getRecentSessions,
 } from "./application/home";
 
-import type {
-  HomeQueue, // Added HomeQueueItem to imports
-  HomeStats,
-  SessionSummaryCard,
-} from "./model/types";
+import type { HomeQueue, HomeStats, SessionSummaryCard } from "./model/types";
 
 export const homeQueries = {
   all: () => ["home"] as const,

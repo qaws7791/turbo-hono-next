@@ -1,5 +1,5 @@
-import type { ApiMaterialListItem } from "./materials.dto";
 import type { Material, MaterialStatus } from "../model/materials.types";
+import type { ApiMaterialListItem } from "./materials.dto";
 
 function mapProcessingStatus(
   status: ApiMaterialListItem["processingStatus"],
@@ -23,8 +23,7 @@ export function toMaterialFromApi(
     summary: item.summary ?? undefined,
     tags: item.tags,
     createdAt: item.createdAt,
-    updatedAt: item.createdAt,
-    analysisReadyAt: undefined,
+    updatedAt: item.updatedAt,
     source:
       item.sourceType === "FILE"
         ? {

@@ -6,9 +6,9 @@ export type HomeQueue = {
   };
 };
 
-export type HomeQueueItem = {
+export type HomeQueueSessionItem = {
   href: string;
-  kind: "SESSION" | "CONCEPT_REVIEW";
+  kind: "SESSION";
   sessionId: string;
   spaceId: string;
   spaceName: string;
@@ -23,6 +23,23 @@ export type HomeQueueItem = {
   spaceIcon: string;
   spaceColor: string;
 };
+
+export type HomeQueueConceptReviewItem = {
+  href: string;
+  kind: "CONCEPT_REVIEW";
+  conceptId: string;
+  conceptTitle: string;
+  oneLiner: string;
+  spaceId: string;
+  spaceName: string;
+  type: "review";
+  scheduledDate: string;
+  durationMinutes: number;
+  spaceIcon: string;
+  spaceColor: string;
+};
+
+export type HomeQueueItem = HomeQueueSessionItem | HomeQueueConceptReviewItem;
 
 export type HomeStats = {
   coachingMessage: string;

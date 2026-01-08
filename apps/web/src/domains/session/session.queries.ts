@@ -9,7 +9,6 @@ import type {
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
-import { randomUuidV4 } from "~/foundation/lib/uuid";
 
 type SessionRunDetail =
   paths["/api/session-runs/{runId}"]["get"]["responses"]["200"]["content"]["application/json"]["data"];
@@ -24,12 +23,11 @@ function mapApiBlueprintToUiBlueprint(
   );
   const startStepId = steps[startIndex]?.id ?? steps[0]?.id ?? "start";
 
-  const moduleId =
-    detail.session.module?.id ?? "00000000-0000-0000-0000-000000000000";
+  const moduleId = detail.session.module?.id ?? null;
 
   return {
     schemaVersion: detail.blueprint.schemaVersion,
-    blueprintId: "00000000-0000-0000-0000-000000000000",
+    blueprintId: detail.blueprint.blueprintId,
     createdAt: detail.blueprint.createdAt,
     context: {
       planId: detail.session.plan.id,
@@ -77,7 +75,7 @@ async function getSessionRun(runId: string): Promise<SessionRunInput> {
     runId: detail.runId,
     planId: detail.session.plan.id,
     sessionId: detail.session.sessionId,
-    blueprintId: randomUuidV4(),
+    blueprintId: detail.blueprint.blueprintId,
     isRecovery: false,
     createdAt: detail.startedAt,
     updatedAt: detail.progress.savedAt ?? detail.startedAt,
@@ -85,7 +83,7 @@ async function getSessionRun(runId: string): Promise<SessionRunInput> {
     stepHistory,
     historyIndex: Math.max(0, stepHistory.length - 1),
     inputs: detail.progress.inputs,
-    createdConceptIds: [],
+    createdConceptIds: detail.createdConceptIds,
     status: detail.status === "RUNNING" ? "ACTIVE" : "COMPLETED",
     planTitle: detail.session.plan.title,
     moduleTitle: detail.session.module?.title ?? "",

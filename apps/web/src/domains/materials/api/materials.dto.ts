@@ -33,3 +33,6 @@ export type MaterialUploadCompleteAccepted =
 
 export type MaterialUploadCompleteCreated =
   paths["/api/spaces/{spaceId}/materials/uploads/complete"]["post"]["responses"]["201"]["content"]["application/json"];
+
+export type JobStatusOk =
+  paths["/api/jobs/{jobId}"]["get"]["responses"]["200"]["content"]["application/json"];

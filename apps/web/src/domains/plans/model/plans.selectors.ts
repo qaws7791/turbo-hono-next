@@ -1,4 +1,10 @@
-import type { PlanGoal, PlanLevel, PlanSession } from "./types";
+import type {
+  PlanDetailQueueItem,
+  PlanGoal,
+  PlanLevel,
+  PlanSession,
+  PlanWithDerived,
+} from "./types";
 
 /**
  * 세션 목록에서 모듈 진행률(%)을 계산합니다.
@@ -28,4 +34,23 @@ export function getPlanLevelLabel(level: PlanLevel): string {
     advanced: "고급",
   };
   return labels[level];
+}
+
+/**
+ * 플랜에서 다음 수행할 세션 큐를 계산합니다.
+ * - 완료되지 않은 세션만 필터링
+ * - 예정일 기준 정렬
+ * - 최대 3개까지 반환
+ */
+export function selectNextQueue(
+  plan: PlanWithDerived,
+): Array<PlanDetailQueueItem> {
+  return plan.modules
+    .flatMap((m) => m.sessions)
+    .filter((session) => session.status !== "completed")
+    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
+    .slice(0, 3)
+    .map((session) => ({
+      href: `/session?sessionId=${encodeURIComponent(session.id)}`,
+    }));
 }

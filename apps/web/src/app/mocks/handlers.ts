@@ -115,6 +115,8 @@ type CreateConceptReviewCreated =
   paths["/api/concepts/{conceptId}/reviews"]["post"]["responses"]["201"]["content"]["application/json"];
 type ConceptSearchOk =
   paths["/api/concepts/search"]["get"]["responses"]["200"]["content"]["application/json"];
+type ConceptLibraryListOk =
+  paths["/api/concepts"]["get"]["responses"]["200"]["content"]["application/json"];
 
 type CreateChatThreadCreated =
   paths["/api/chat/threads"]["post"]["responses"]["201"]["content"]["application/json"];
@@ -247,6 +249,7 @@ function mapMaterialToMaterialListItem(
     summary: material.summary ?? null,
     tags: material.tags,
     createdAt: material.createdAt,
+    updatedAt: material.updatedAt,
   };
 }
 
@@ -399,6 +402,7 @@ export const handlers = [
         avatarUrl: null,
         locale: "ko-KR",
         timezone: "Asia/Seoul",
+        subscriptionPlan: "FREE",
       },
     };
     return HttpResponse.json(response);
@@ -436,6 +440,7 @@ export const handlers = [
         avatarUrl: null,
         locale: "ko-KR",
         timezone: "Asia/Seoul",
+        subscriptionPlan: "FREE",
       },
     };
     return HttpResponse.json(response, { status: 200 });
@@ -674,6 +679,16 @@ export const handlers = [
     },
   ),
 
+  // Presigned upload URL (MSW 전용)
+  http.put(/^https:\/\/example\.invalid\/mock-upload\/.+$/, async () => {
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        ETag: '"mock-etag"',
+      },
+    });
+  }),
+
   http.post(
     "/api/spaces/:spaceId/materials/uploads/complete",
     async ({ params, request }) => {
@@ -835,7 +850,11 @@ export const handlers = [
         title: p.title,
         status: mapPlanStatus(p.status),
         goalType: mapPlanGoalType(p.goal),
+        currentLevel: mapPlanLevel(p.level),
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
         progress: { completedSessions, totalSessions },
+        sourceMaterialIds: p.sourceMaterialIds,
       } satisfies PlanListOk["data"][number];
     });
 
@@ -882,7 +901,10 @@ export const handlers = [
           .toISOString()
           .slice(0, 10),
         specialRequirements: null,
+        createdAt: plan.createdAt,
+        updatedAt: plan.updatedAt,
         progress: { completedSessions, totalSessions },
+        sourceMaterialIds: plan.sourceMaterialIds,
         modules: plan.modules.map((m, orderIndex) => ({
           id: m.id,
           title: m.title,
@@ -948,6 +970,8 @@ export const handlers = [
           id: plan.id,
           title: plan.title,
           status: mapPlanStatus(plan.status),
+          createdAt: plan.createdAt,
+          updatedAt: plan.updatedAt,
         },
       };
       return HttpResponse.json(response, { status: 201 });
@@ -1048,6 +1072,7 @@ export const handlers = [
     const items = homeQueue().map((i) => ({
       kind: "SESSION" as const,
       sessionId: i.sessionId,
+      planId: i.planId,
       spaceId: i.spaceId,
       spaceName: i.spaceName,
       spaceIcon: i.spaceIcon,
@@ -1060,11 +1085,29 @@ export const handlers = [
       status: mapPlanSessionStatus(i.status),
     }));
 
+    const completedCount = items.filter(
+      (it) => it.status === "COMPLETED",
+    ).length;
+    const remainingCount = Math.max(0, items.length - completedCount);
+    const estimatedMinutes = items
+      .filter((it) => it.status !== "COMPLETED")
+      .reduce((acc, it) => acc + it.estimatedMinutes, 0);
+
+    const coachingMessage =
+      remainingCount === 0
+        ? "오늘 할 일을 모두 끝냈어요. 잘했어요!"
+        : remainingCount <= 2
+          ? "조금만 더 하면 오늘 목표를 달성할 수 있어요."
+          : "오늘 할 일부터 차근차근 진행해보세요.";
+
     const response: HomeQueueOk = {
       data: items,
       summary: {
         total: items.length,
-        completed: items.filter((it) => it.status === "COMPLETED").length,
+        completed: completedCount,
+        estimatedMinutes,
+        coachingMessage,
+        streakDays: 3, // Mock streak
       },
     };
     return HttpResponse.json(response);
@@ -1524,6 +1567,17 @@ export const handlers = [
         startedAt: r.createdAt,
         endedAt: r.status === "COMPLETED" ? r.updatedAt : null,
         exitReason: null,
+        durationMinutes:
+          r.status === "COMPLETED" && r.updatedAt
+            ? Math.max(
+                0,
+                Math.round(
+                  (new Date(r.updatedAt).getTime() -
+                    new Date(r.createdAt).getTime()) /
+                    60000,
+                ),
+              )
+            : 0,
         sessionId: r.sessionId,
         sessionTitle: found?.session.title ?? "",
         sessionType: found ? mapPlanSessionType(found.session.type) : "LEARN",
@@ -1705,10 +1759,77 @@ export const handlers = [
   ),
 
   // Concepts
+  http.get("/api/concepts", ({ request }) => {
+    const unauthorized = requireAuthOr401();
+    if (unauthorized) return unauthorized;
+
+    const db = readDbOrSeed();
+    const url = new URL(request.url);
+    const { page, limit } = parsePagination(url);
+    const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
+    const reviewStatus = url.searchParams.get("reviewStatus");
+    const spaceIds = url.searchParams.getAll("spaceIds");
+
+    const all = listConcepts().filter((c) => {
+      if (spaceIds.length && !spaceIds.includes(c.spaceId)) return false;
+      if (reviewStatus) {
+        if (mapConceptReviewStatus(c.reviewStatus) !== reviewStatus)
+          return false;
+      }
+      if (search) {
+        const hay =
+          `${c.title} ${c.oneLiner} ${c.definition} ${c.tags.join(" ")}`.toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+
+    const total = all.length;
+    const totalPages = Math.ceil(total / limit);
+    const start = (page - 1) * limit;
+    const data = all.slice(start, start + limit).map((c) => {
+      const latest =
+        c.sources
+          .slice()
+          .sort((a, b) => b.studiedAt.localeCompare(a.studiedAt))[0] ?? null;
+
+      return {
+        id: c.id,
+        spaceId: c.spaceId,
+        title: c.title,
+        oneLiner: c.oneLiner,
+        tags: c.tags,
+        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
+        srsDueAt: null,
+        lastLearnedAt: c.lastStudiedAt,
+        latestSource: latest
+          ? {
+              sessionRunId: latest.sessionId,
+              linkType: "CREATED" as const,
+              date: latest.studiedAt,
+              planId: latest.planId,
+              planTitle:
+                db.plans.find((p) => p.id === latest.planId)?.title ??
+                "학습 계획",
+              moduleTitle: latest.moduleTitle ?? null,
+              sessionTitle: latest.sessionTitle,
+            }
+          : null,
+      };
+    });
+
+    const response: ConceptLibraryListOk = {
+      data,
+      meta: { total, page, limit, totalPages },
+    };
+    return HttpResponse.json(response);
+  }),
+
   http.get("/api/spaces/:spaceId/concepts", ({ params, request }) => {
     const unauthorized = requireAuthOr401();
     if (unauthorized) return unauthorized;
 
+    const db = readDbOrSeed();
     const spaceId = String(params.spaceId ?? "");
     const url = new URL(request.url);
     const { page, limit } = parsePagination(url);
@@ -1731,15 +1852,35 @@ export const handlers = [
     const total = all.length;
     const totalPages = Math.ceil(total / limit);
     const start = (page - 1) * limit;
-    const data = all.slice(start, start + limit).map((c) => ({
-      id: c.id,
-      title: c.title,
-      oneLiner: c.oneLiner,
-      tags: c.tags,
-      reviewStatus: mapConceptReviewStatus(c.reviewStatus),
-      srsDueAt: null,
-      lastLearnedAt: c.lastStudiedAt,
-    }));
+    const data = all.slice(start, start + limit).map((c) => {
+      const latest =
+        c.sources
+          .slice()
+          .sort((a, b) => b.studiedAt.localeCompare(a.studiedAt))[0] ?? null;
+
+      return {
+        id: c.id,
+        title: c.title,
+        oneLiner: c.oneLiner,
+        tags: c.tags,
+        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
+        srsDueAt: null,
+        lastLearnedAt: c.lastStudiedAt,
+        latestSource: latest
+          ? {
+              sessionRunId: latest.sessionId,
+              linkType: "CREATED" as const,
+              date: latest.studiedAt,
+              planId: latest.planId,
+              planTitle:
+                db.plans.find((p) => p.id === latest.planId)?.title ??
+                "학습 계획",
+              moduleTitle: latest.moduleTitle ?? null,
+              sessionTitle: latest.sessionTitle,
+            }
+          : null,
+      };
+    });
 
     const response: ConceptListOk = {
       data,
@@ -1769,20 +1910,32 @@ export const handlers = [
     const relatedConcepts = concept.relatedConceptIds
       .map((id) => db.concepts.find((c) => c.id === id))
       .filter((c): c is NonNullable<typeof c> => Boolean(c))
-      .map((c) => ({ id: c.id, title: c.title }));
+      .map((c) => ({
+        id: c.id,
+        title: c.title,
+        oneLiner: c.oneLiner,
+        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
+      }));
 
     const response: ConceptDetailOk = {
       data: {
         id: concept.id,
+        spaceId: concept.spaceId,
         title: concept.title,
         oneLiner: concept.oneLiner,
         ariNoteMd: concept.definition,
         tags: concept.tags,
+        reviewStatus: mapConceptReviewStatus(concept.reviewStatus),
         relatedConcepts,
         learningHistory: concept.sources.map((s) => ({
           sessionRunId: s.sessionId,
-          linkType: "CREATED",
+          linkType: "CREATED" as const,
           date: s.studiedAt,
+          planId: s.planId,
+          planTitle:
+            db.plans.find((p) => p.id === s.planId)?.title ?? "학습 계획",
+          moduleTitle: s.moduleTitle ?? null,
+          sessionTitle: s.sessionTitle,
         })),
         srsState: null,
       },

@@ -38,7 +38,7 @@ export function useGoogleLogin() {
     );
 
     if (redirectTo) {
-      url.searchParams.set("redirectTo", redirectTo);
+      url.searchParams.set("redirectPath", redirectTo);
     }
 
     window.location.href = url.toString();

@@ -25,35 +25,22 @@ export async function getHomeQueue(): Promise<HomeQueue> {
 
   return {
     items: items.map((item) => toHomeQueueItem(item)),
-    summary,
+    summary: {
+      total: summary.total,
+      completed: summary.completed,
+    },
   };
 }
 
 export async function getHomeStats(): Promise<HomeStats> {
-  const { items, summary } = await getHomeQueueApi();
-
-  const estimatedMinutes = items.reduce((acc, item) => {
-    if (item.kind === "SESSION") {
-      if (item.status === "COMPLETED") return acc;
-      return acc + item.estimatedMinutes;
-    }
-    return acc + item.estimatedMinutes;
-  }, 0);
-
-  const remainingCount = Math.max(0, summary.total - summary.completed);
-  const coachingMessage =
-    remainingCount === 0
-      ? "오늘 할 일을 모두 끝냈어요. 잘했어요!"
-      : remainingCount <= 2
-        ? "조금만 더 하면 오늘 목표를 달성할 수 있어요."
-        : "오늘 할 일부터 차근차근 진행해보세요.";
+  const { summary } = await getHomeQueueApi();
 
   return {
-    coachingMessage,
-    remainingCount,
+    coachingMessage: summary.coachingMessage,
+    remainingCount: Math.max(0, summary.total - summary.completed),
     completedCountToday: summary.completed,
-    estimatedMinutes,
-    streakDays: 0,
+    estimatedMinutes: summary.estimatedMinutes,
+    streakDays: summary.streakDays,
   };
 }
 

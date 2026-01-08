@@ -2,16 +2,13 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { getPlan, listSpacePlans } from "./api";
 
-import type { PlanDetailData, PlanWithDerived } from "./model/types";
-
-import { getSpace } from "~/domains/spaces/api/spaces.api";
+import type { PlanWithDerived } from "./model/types";
 
 export const plansQueries = {
   all: () => ["plans"] as const,
   lists: () => [...plansQueries.all(), "list"] as const,
   details: () => [...plansQueries.all(), "detail"] as const,
   active: () => [...plansQueries.all(), "active"] as const,
-  pages: () => [...plansQueries.all(), "page"] as const,
 
   listForSpace: (spaceId: string) =>
     queryOptions({
@@ -37,36 +34,6 @@ export const plansQueries = {
           limit: 1,
         });
         return data[0] ?? null;
-      },
-    }),
-
-  detailPage: (spaceId: string, planId: string) =>
-    queryOptions({
-      queryKey: [...plansQueries.pages(), "detail", spaceId, planId] as const,
-      queryFn: async (): Promise<PlanDetailData> => {
-        const [space, plan] = await Promise.all([
-          getSpace(spaceId),
-          getPlan(planId),
-        ]);
-        if (plan.spaceId !== spaceId) {
-          throw new Response("Not Found", { status: 404 });
-        }
-
-        const nextQueue = plan.modules
-          .flatMap((m) => m.sessions)
-          .filter((session) => session.status !== "completed")
-          .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))
-          .slice(0, 3)
-          .map((session) => ({
-            href: `/session?sessionId=${encodeURIComponent(session.id)}`,
-          }));
-
-        return {
-          space: { id: space.id, name: space.name },
-          plan,
-          nextQueue,
-          sourceMaterials: [],
-        };
       },
     }),
 };

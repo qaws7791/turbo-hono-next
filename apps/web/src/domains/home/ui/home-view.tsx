@@ -151,10 +151,22 @@ export function HomeView() {
                 {queue.items.slice(0, 3).map((item) => {
                   const SpaceIcon = getIconByName(item.spaceIcon);
                   const colorData = getColorByName(item.spaceColor);
+                  const title =
+                    item.kind === "SESSION"
+                      ? item.sessionTitle
+                      : item.conceptTitle;
+                  const subtitle =
+                    item.kind === "SESSION"
+                      ? `${item.planTitle} · ${item.durationMinutes}분`
+                      : `개념 복습 · ${item.durationMinutes}분`;
                   return (
                     <Link
                       to={item.href}
-                      key={item.sessionId}
+                      key={
+                        item.kind === "SESSION"
+                          ? item.sessionId
+                          : item.conceptId
+                      }
                     >
                       <Card className="hover:bg-muted h-full">
                         <CardContent className="h-full flex flex-col justify-between">
@@ -166,10 +178,10 @@ export function HomeView() {
                             {/* 세션 제목 및 계획 정보 */}
                             <div className="mt-4">
                               <span className="font-semibold block text-base">
-                                {item.sessionTitle}
+                                {title}
                               </span>
                               <div className="text-muted-foreground text-sm">
-                                {item.planTitle} · {item.durationMinutes}분
+                                {subtitle}
                               </div>
                             </div>
                           </div>
