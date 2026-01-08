@@ -26,6 +26,7 @@ export const MaterialListItemSchema = z.object({
   summary: z.string().nullable(),
   tags: z.array(z.string()).default([]),
   createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export const PaginationMetaSchema = z.object({

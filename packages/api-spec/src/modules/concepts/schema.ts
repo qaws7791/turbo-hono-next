@@ -10,6 +10,16 @@ export const ConceptReviewRatingSchema = z.enum([
   "EASY",
 ]);
 
+export const ConceptLearningHistoryItemSchema = z.object({
+  sessionRunId: PublicIdSchema,
+  linkType: z.enum(["CREATED", "UPDATED", "REVIEWED"]),
+  date: z.iso.datetime(),
+  planId: PublicIdSchema,
+  planTitle: z.string().min(1),
+  moduleTitle: z.string().min(1).nullable(),
+  sessionTitle: z.string().min(1),
+});
+
 export const ConceptListItemSchema = z.object({
   id: PublicIdSchema,
   title: z.string().min(1),
@@ -18,6 +28,11 @@ export const ConceptListItemSchema = z.object({
   reviewStatus: ConceptReviewStatusSchema,
   srsDueAt: z.iso.datetime().nullable(),
   lastLearnedAt: z.iso.datetime().nullable(),
+  latestSource: ConceptLearningHistoryItemSchema.nullable(),
+});
+
+export const ConceptLibraryListItemSchema = ConceptListItemSchema.extend({
+  spaceId: PublicIdSchema,
 });
 
 export const PaginationMetaSchema = z.object({
@@ -35,21 +50,19 @@ export const ConceptListResponseSchema = z.object({
 export const RelatedConceptSchema = z.object({
   id: PublicIdSchema,
   title: z.string().min(1),
-});
-
-export const ConceptLearningHistoryItemSchema = z.object({
-  sessionRunId: PublicIdSchema,
-  linkType: z.enum(["CREATED", "UPDATED", "REVIEWED"]),
-  date: z.iso.datetime(),
+  oneLiner: z.string().min(1),
+  reviewStatus: ConceptReviewStatusSchema,
 });
 
 export const ConceptDetailResponseSchema = z.object({
   data: z.object({
     id: PublicIdSchema,
+    spaceId: PublicIdSchema,
     title: z.string().min(1),
     oneLiner: z.string().min(1),
     ariNoteMd: z.string().min(1),
     tags: z.array(z.string()).default([]),
+    reviewStatus: ConceptReviewStatusSchema,
     relatedConcepts: z.array(RelatedConceptSchema).default([]),
     learningHistory: z.array(ConceptLearningHistoryItemSchema).default([]),
     srsState: z
@@ -60,6 +73,11 @@ export const ConceptDetailResponseSchema = z.object({
       })
       .nullable(),
   }),
+});
+
+export const ConceptLibraryListResponseSchema = z.object({
+  data: z.array(ConceptLibraryListItemSchema),
+  meta: PaginationMetaSchema,
 });
 
 export const CreateConceptReviewRequestSchema = z.object({

@@ -6,8 +6,8 @@ export const SpaceSchema = z.object({
   id: PublicIdSchema,
   name: z.string().min(1),
   description: z.string().nullable(),
-  icon: z.string().nullable(),
-  color: z.string().nullable(),
+  icon: z.string(),
+  color: z.string(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   // Optional fields when include parameter is used

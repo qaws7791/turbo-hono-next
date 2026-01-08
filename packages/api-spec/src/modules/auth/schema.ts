@@ -1,5 +1,7 @@
 import { z } from "@hono/zod-openapi";
 
+export const SubscriptionPlanSchema = z.enum(["FREE", "PRO"]);
+
 export const AuthUserSchema = z.object({
   id: z.uuid(),
   email: z.email(),
@@ -7,6 +9,7 @@ export const AuthUserSchema = z.object({
   avatarUrl: z.url().nullable(),
   locale: z.string().min(1),
   timezone: z.string().min(1),
+  subscriptionPlan: SubscriptionPlanSchema,
 });
 
 export const MagicLinkRequestSchema = z.object({

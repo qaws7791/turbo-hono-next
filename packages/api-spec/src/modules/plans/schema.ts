@@ -32,7 +32,11 @@ export const PlanListItemSchema = z.object({
   title: z.string().min(1),
   status: PlanStatusSchema,
   goalType: PlanGoalTypeSchema,
+  currentLevel: PlanLevelSchema,
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
   progress: PlanProgressSchema,
+  sourceMaterialIds: z.array(z.uuid()),
 });
 
 export const PaginationMetaSchema = z.object({
@@ -59,6 +63,8 @@ export const CreatePlanResponseSchema = z.object({
     id: PublicIdSchema,
     title: z.string().min(1),
     status: PlanStatusSchema,
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
   }),
 });
 
@@ -82,6 +88,7 @@ export const PlanSessionItemSchema = z.object({
   estimatedMinutes: z.number().int().min(1),
   status: PlanSessionStatusSchema,
   completedAt: z.iso.datetime().nullable(),
+  conceptIds: z.array(PublicIdSchema).default([]),
 });
 
 export const PlanDetailResponseSchema = z.object({
@@ -94,7 +101,10 @@ export const PlanDetailResponseSchema = z.object({
     currentLevel: PlanLevelSchema,
     targetDueDate: z.iso.date(),
     specialRequirements: z.string().nullable(),
+    createdAt: z.iso.datetime(),
+    updatedAt: z.iso.datetime(),
     progress: PlanProgressSchema,
+    sourceMaterialIds: z.array(z.uuid()),
     modules: z.array(PlanModuleItemSchema),
     sessions: z.array(PlanSessionItemSchema),
   }),

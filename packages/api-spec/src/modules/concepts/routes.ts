@@ -4,12 +4,44 @@ import { ErrorResponseSchema, PublicIdSchema } from "../../common/schema";
 
 import {
   ConceptDetailResponseSchema,
+  ConceptLibraryListResponseSchema,
   ConceptListResponseSchema,
   ConceptReviewStatusSchema,
   ConceptSearchResponseSchema,
   CreateConceptReviewRequestSchema,
   CreateConceptReviewResponseSchema,
 } from "./schema";
+
+export const listConceptLibraryRoute = createRoute({
+  tags: ["concepts"],
+  method: "get",
+  path: "/api/concepts",
+  summary: "Concept 전체 목록 조회",
+  description:
+    "현재 사용자의 모든 학습 공간에 걸친 개념 목록을 조회합니다.\n\n**필터링**: `search`, `reviewStatus`, `spaceIds`",
+  request: {
+    query: z.object({
+      page: z.coerce.number().int().min(1).default(1).optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
+      search: z.string().optional(),
+      reviewStatus: ConceptReviewStatusSchema.optional(),
+      spaceIds: z.array(PublicIdSchema).optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: "Concept 목록을 반환합니다.",
+      content: {
+        "application/json": { schema: ConceptLibraryListResponseSchema },
+      },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
 
 export const listConceptsRoute = createRoute({
   tags: ["concepts"],
@@ -120,6 +152,7 @@ export const searchConceptsRoute = createRoute({
 });
 
 export const conceptRoutes = [
+  listConceptLibraryRoute,
   listConceptsRoute,
   getConceptDetailRoute,
   createConceptReviewRoute,
