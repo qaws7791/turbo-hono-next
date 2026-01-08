@@ -298,6 +298,8 @@ export interface paths {
                 avatarUrl: string | null;
                 locale: string;
                 timezone: string;
+                /** @enum {string} */
+                subscriptionPlan: "FREE" | "PRO";
               };
             };
           };
@@ -431,8 +433,8 @@ export interface paths {
                 id: string;
                 name: string;
                 description: string | null;
-                icon: string | null;
-                color: string | null;
+                icon: string;
+                color: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -504,8 +506,8 @@ export interface paths {
                 id: string;
                 name: string;
                 description: string | null;
-                icon: string | null;
-                color: string | null;
+                icon: string;
+                color: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -584,8 +586,8 @@ export interface paths {
                 id: string;
                 name: string;
                 description: string | null;
-                icon: string | null;
-                color: string | null;
+                icon: string;
+                color: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -714,8 +716,8 @@ export interface paths {
                 id: string;
                 name: string;
                 description: string | null;
-                icon: string | null;
-                color: string | null;
+                icon: string;
+                color: string;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -809,6 +811,8 @@ export interface paths {
                 tags: Array<string>;
                 /** Format: date-time */
                 createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
               }>;
               meta: {
                 total: number;
@@ -1364,10 +1368,17 @@ export interface paths {
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
                 /** @enum {string} */
                 goalType: "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
+                /** @enum {string} */
+                currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
                 progress: {
                   completedSessions: number;
                   totalSessions: number;
                 };
+                sourceMaterialIds: Array<string>;
               }>;
               meta: {
                 total: number;
@@ -1442,6 +1453,10 @@ export interface paths {
                 title: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
               };
             };
           };
@@ -1518,10 +1533,15 @@ export interface paths {
                 /** Format: date */
                 targetDueDate: string;
                 specialRequirements: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
                 progress: {
                   completedSessions: number;
                   totalSessions: number;
                 };
+                sourceMaterialIds: Array<string>;
                 modules: Array<{
                   /** Format: uuid */
                   id: string;
@@ -1814,6 +1834,7 @@ export interface paths {
                     /** @enum {string} */
                     kind: "SESSION";
                     sessionId: string;
+                    planId: string;
                     spaceId: string;
                     spaceName: string;
                     spaceIcon: string;
@@ -1853,6 +1874,9 @@ export interface paths {
               summary: {
                 total: number;
                 completed: number;
+                estimatedMinutes: number;
+                coachingMessage: string;
+                streakDays: number;
               };
             };
           };
@@ -2119,6 +2143,7 @@ export interface paths {
                   | "ERROR"
                   | "TIMEOUT"
                   | null;
+                durationMinutes: number;
                 sessionId: string;
                 sessionTitle: string;
                 /** @enum {string} */
@@ -2983,6 +3008,107 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/concepts": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Concept 전체 목록 조회
+     * @description 현재 사용자의 모든 학습 공간에 걸친 개념 목록을 조회합니다.
+     *
+     *     **필터링**: `search`, `reviewStatus`, `spaceIds`
+     */
+    get: {
+      parameters: {
+        query?: {
+          page?: number;
+          limit?: number;
+          search?: string;
+          reviewStatus?: "GOOD" | "DUE" | "OVERDUE";
+          spaceIds?: Array<string>;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Concept 목록을 반환합니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              data: Array<{
+                id: string;
+                title: string;
+                oneLiner: string;
+                /** @default [] */
+                tags: Array<string>;
+                /** @enum {string} */
+                reviewStatus: "GOOD" | "DUE" | "OVERDUE";
+                /** Format: date-time */
+                srsDueAt: string | null;
+                /** Format: date-time */
+                lastLearnedAt: string | null;
+                latestSource: {
+                  sessionRunId: string;
+                  /** @enum {string} */
+                  linkType: "CREATED" | "UPDATED" | "REVIEWED";
+                  /** Format: date-time */
+                  date: string;
+                  planId: string;
+                  planTitle: string;
+                  moduleTitle: string | null;
+                  sessionTitle: string;
+                } | null;
+                spaceId: string;
+              }>;
+              meta: {
+                total: number;
+                page: number;
+                limit: number;
+                totalPages: number;
+              };
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                code: string;
+                message: string;
+                details?: {
+                  [key: string]: unknown;
+                };
+                validation?: Array<{
+                  field: string;
+                  code: string;
+                  message: string;
+                }>;
+              };
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/spaces/{spaceId}/concepts": {
     parameters: {
       query?: never;
@@ -3031,6 +3157,17 @@ export interface paths {
                 srsDueAt: string | null;
                 /** Format: date-time */
                 lastLearnedAt: string | null;
+                latestSource: {
+                  sessionRunId: string;
+                  /** @enum {string} */
+                  linkType: "CREATED" | "UPDATED" | "REVIEWED";
+                  /** Format: date-time */
+                  date: string;
+                  planId: string;
+                  planTitle: string;
+                  moduleTitle: string | null;
+                  sessionTitle: string;
+                } | null;
               }>;
               meta: {
                 total: number;
@@ -3104,15 +3241,21 @@ export interface paths {
             "application/json": {
               data: {
                 id: string;
+                spaceId: string;
                 title: string;
                 oneLiner: string;
                 ariNoteMd: string;
                 /** @default [] */
                 tags: Array<string>;
+                /** @enum {string} */
+                reviewStatus: "GOOD" | "DUE" | "OVERDUE";
                 /** @default [] */
                 relatedConcepts: Array<{
                   id: string;
                   title: string;
+                  oneLiner: string;
+                  /** @enum {string} */
+                  reviewStatus: "GOOD" | "DUE" | "OVERDUE";
                 }>;
                 /** @default [] */
                 learningHistory: Array<{
@@ -3121,6 +3264,10 @@ export interface paths {
                   linkType: "CREATED" | "UPDATED" | "REVIEWED";
                   /** Format: date-time */
                   date: string;
+                  planId: string;
+                  planTitle: string;
+                  moduleTitle: string | null;
+                  sessionTitle: string;
                 }>;
                 srsState: {
                   interval: number;

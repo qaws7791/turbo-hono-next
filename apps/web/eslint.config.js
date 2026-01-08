@@ -5,7 +5,7 @@ import { reactConfig } from "@repo/config/eslint/react";
 export default [
   ...reactConfig,
   {
-    ignores: ["app/types/api.ts"],
+    ignores: ["app/types/api.ts", "src/foundation/types/api.ts"],
   },
   {
     files: ["app/modules/**/*.{ts,tsx}"],

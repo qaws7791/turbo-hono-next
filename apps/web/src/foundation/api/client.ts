@@ -23,4 +23,10 @@ const apiFetch: typeof fetch = async (input, init) => {
   return fetch(input, init);
 };
 
-export const apiClient = createClient<paths>({ baseUrl, fetch: apiFetch });
+// NOTE: 쿠키 기반 인증을 위해 cross-origin 요청에도 쿠키가 포함되어야 합니다.
+// openapi-fetch는 createClient 옵션을 RequestInit으로 전달합니다.
+export const apiClient = createClient<paths>({
+  baseUrl,
+  fetch: apiFetch,
+  credentials: "include",
+});
