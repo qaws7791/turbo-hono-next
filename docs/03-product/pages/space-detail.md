@@ -2,14 +2,14 @@
 
 ## 개요
 
-Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 안에서 문서 업로드, Plan 생성/관리, 개념(지식 아카이브)을 탭으로 전환하며 운영합니다.
+Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 안에서 문서 업로드, Plan 생성/관리를 탭으로 전환하며 운영합니다.
 
 ---
 
 ## 의사결정 근거
 
 - Space는 한 가지 학습 목표의 맥락을 고정해 혼재를 줄임
-- Space 내부에서 문서/계획/개념이 함께 돌아야 흐름이 단순해짐
+- Space 내부에서 문서/계획이 함께 돌아야 흐름이 단순해짐
 - 탭 구조로 기능을 묶어 이동 비용을 낮춤
 
 ---
@@ -19,7 +19,7 @@ Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 
 ### 탭 네비게이션
 
 ```
-[학습 계획] [문서] [개념]
+[학습 계획] [문서]
 ```
 
 ---
@@ -52,20 +52,6 @@ Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 
 
 ---
 
-## 3) 개념 탭
-
-**목적**: 해당 Space에서 생성된 Concept 목록 확인
-
-> 전역 아카이브는 [Concept Library](./concept-library.md) 참조
-
-### 주요 기능
-
-- Space에 속한 Concept 카드 목록
-- 간단 검색
-- Concept 클릭 시 → Concept 상세로 이동
-
----
-
 ## UI 원칙
 
 ### 헤더
@@ -90,7 +76,6 @@ Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 
 | ------------------------------- | ------------------ |
 | `/spaces/:spaceId`              | 학습 계획 탭(기본) |
 | `/spaces/:spaceId/documents`    | 문서 탭            |
-| `/spaces/:spaceId/concepts`     | 개념 탭            |
 | `/spaces/:spaceId/plans/new`    | Plan 생성 위저드   |
 | `/spaces/:spaceId/plan/:planId` | Plan 상세          |
 
@@ -100,4 +85,3 @@ Space 상세는 **단일 학습 의도/목표의 컨테이너**입니다. Space 
 
 - `/spaces/:spaceId?tab=plans` → `/spaces/:spaceId`
 - `/spaces/:spaceId?tab=documents` → `/spaces/:spaceId/documents`
-- `/spaces/:spaceId?tab=concepts` → `/spaces/:spaceId/concepts`

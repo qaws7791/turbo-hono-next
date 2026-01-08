@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
 
 import { generateSessionBlueprintWithAi } from "../../../ai/session/generate-blueprint";
-import { retrieveTopChunks } from "../../../ai/rag/retrieve";
 import { ApiError } from "../../../middleware/error-handler";
 import { buildSessionBlueprint } from "../session.blueprint";
 import { SessionBlueprint, SessionRunDetailResponse } from "../session.dto";
@@ -10,63 +9,10 @@ import { isoDateTime } from "../session.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
-import type { RagSearchResult } from "../../../ai/rag/types";
 import type {
   PlanSessionType,
   SessionRunDetailResponse as SessionRunDetailResponseType,
 } from "../session.dto";
-
-function truncateText(value: string, maxLength: number): string {
-  if (value.length <= maxLength) return value;
-  if (maxLength <= 1) return "…";
-  return `${value.slice(0, maxLength - 1)}…`;
-}
-
-function quoteMarkdown(value: string): string {
-  const lines = value.split("\n");
-  return lines.map((line) => `> ${line}`).join("\n");
-}
-
-function buildRagConceptMarkdown(input: {
-  sessionTitle: string;
-  objective: string | null;
-  chunks: ReadonlyArray<RagSearchResult>;
-}): string {
-  const objective = input.objective?.trim().length
-    ? input.objective.trim()
-    : null;
-
-  const objectiveSection = objective ? `\n\n## 목표\n\n- ${objective}\n` : "";
-
-  const excerpts = input.chunks.slice(0, 6).map((chunk, index) => {
-    const source =
-      typeof chunk.metadata.pageNumber === "number"
-        ? `${chunk.metadata.materialTitle} p.${chunk.metadata.pageNumber}`
-        : chunk.metadata.materialTitle;
-
-    const trimmed = truncateText(chunk.content.trim(), 700);
-    return [`### ${index + 1}. ${source}`, "", quoteMarkdown(trimmed), ""].join(
-      "\n",
-    );
-  });
-
-  const excerptSection = excerpts.length
-    ? `\n\n## 자료 발췌\n\n${excerpts.join("\n")}`
-    : "\n\n## 자료 발췌\n\n(관련 내용을 찾지 못했습니다.)\n";
-
-  return truncateText(
-    [
-      `# ${input.sessionTitle}`,
-      objectiveSection,
-      "",
-      "## 핵심",
-      "",
-      "이 세션은 업로드한 자료에서 관련 부분을 발췌해 빠르게 읽고 정리합니다.",
-      excerptSection,
-    ].join("\n"),
-    10_000,
-  );
-}
 
 function isBlueprintCompatibleWithTemplate(input: {
   readonly blueprint: SessionBlueprint;
@@ -134,46 +80,6 @@ export async function getRunDetail(
       createdAt: detail.run.startedAt,
     });
 
-    let ragConceptContent: string | null = null;
-    try {
-      const materialIdsResult =
-        await sessionRepository.listPlanSourceMaterialIds(detail.plan.id);
-      if (materialIdsResult.isOk()) {
-        const materialIds = materialIdsResult.value;
-        if (materialIds.length > 0) {
-          const query = detail.session.objective?.trim().length
-            ? `${detail.session.title} - ${detail.session.objective}`
-            : detail.session.title;
-
-          const chunks = await retrieveTopChunks({
-            userId,
-            spaceId: detail.space.id,
-            materialIds,
-            query,
-            topK: 8,
-          });
-
-          ragConceptContent = buildRagConceptMarkdown({
-            sessionTitle: detail.session.title,
-            objective: detail.session.objective,
-            chunks,
-          });
-        }
-      }
-    } catch {
-      ragConceptContent = null;
-    }
-
-    const templateWithRag = ragConceptContent
-      ? {
-          ...template,
-          steps: template.steps.map((step) => {
-            if (step.type !== "CONCEPT") return step;
-            return { ...step, content: ragConceptContent };
-          }),
-        }
-      : template;
-
     try {
       const generated = await generateSessionBlueprintWithAi({
         sessionType,
@@ -182,24 +88,24 @@ export async function getRunDetail(
         sessionTitle: detail.session.title,
         objective: detail.session.objective,
         estimatedMinutes: detail.session.estimatedMinutes,
-        template: templateWithRag,
+        template,
       });
 
       const parse = SessionBlueprint.safeParse({
         ...generated,
-        blueprintId: templateWithRag.blueprintId, // 템플릿의 ID 유지
+        blueprintId: template.blueprintId, // 템플릿의 ID 유지
       });
       blueprint =
         parse.success &&
         isBlueprintCompatibleWithTemplate({
           blueprint: parse.data,
-          template: templateWithRag,
+          template,
         })
           ? {
               ...parse.data,
-              schemaVersion: templateWithRag.schemaVersion,
-              createdAt: templateWithRag.createdAt,
-              startStepIndex: templateWithRag.startStepIndex,
+              schemaVersion: template.schemaVersion,
+              createdAt: template.createdAt,
+              startStepIndex: template.startStepIndex,
             }
           : null;
     } catch {
@@ -207,7 +113,7 @@ export async function getRunDetail(
     }
 
     if (!blueprint) {
-      blueprint = SessionBlueprint.parse(templateWithRag);
+      blueprint = SessionBlueprint.parse(template);
     }
 
     const insertBlueprintResult = await sessionRepository.upsertRunBlueprint({
@@ -226,9 +132,6 @@ export async function getRunDetail(
       (endedAtForStats.getTime() - detail.run.startedAt.getTime()) / 60_000,
     ),
   );
-  const savedConceptCount = detail.summary
-    ? detail.summary.conceptsCreatedCount + detail.summary.conceptsUpdatedCount
-    : undefined;
 
   const blueprintWithStats = {
     ...blueprint,
@@ -237,7 +140,6 @@ export async function getRunDetail(
       return {
         ...step,
         studyTimeMinutes,
-        savedConceptCount,
       };
     }),
   };
@@ -267,14 +169,11 @@ export async function getRunDetail(
           space: { id: detail.space.publicId, name: detail.space.name },
         },
         blueprint: blueprintWithStats,
-        createdConceptIds: detail.createdConceptIds,
         progress: { stepIndex, inputs, savedAt },
         summary: detail.summary
           ? {
               id: detail.summary.id,
               summaryMd: detail.summary.summaryMd,
-              conceptsCreatedCount: detail.summary.conceptsCreatedCount,
-              conceptsUpdatedCount: detail.summary.conceptsUpdatedCount,
               reviewsScheduledCount: detail.summary.reviewsScheduledCount,
               createdAt: isoDateTime(detail.summary.createdAt),
             }

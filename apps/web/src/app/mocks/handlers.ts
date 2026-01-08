@@ -7,12 +7,10 @@ import {
   createPlan,
   createSpace,
   deleteMaterial,
-  getConcept,
   getPlan,
   getSessionRun,
   getSpace,
   homeQueue,
-  listConcepts,
   listMaterials,
   listPlans,
   listSpaces,
@@ -107,17 +105,6 @@ type ListSessionActivitiesOk =
 type CreateSessionActivityCreated =
   paths["/api/session-runs/{runId}/activities"]["post"]["responses"]["201"]["content"]["application/json"];
 
-type ConceptListOk =
-  paths["/api/spaces/{spaceId}/concepts"]["get"]["responses"]["200"]["content"]["application/json"];
-type ConceptDetailOk =
-  paths["/api/concepts/{conceptId}"]["get"]["responses"]["200"]["content"]["application/json"];
-type CreateConceptReviewCreated =
-  paths["/api/concepts/{conceptId}/reviews"]["post"]["responses"]["201"]["content"]["application/json"];
-type ConceptSearchOk =
-  paths["/api/concepts/search"]["get"]["responses"]["200"]["content"]["application/json"];
-type ConceptLibraryListOk =
-  paths["/api/concepts"]["get"]["responses"]["200"]["content"]["application/json"];
-
 type CreateChatThreadCreated =
   paths["/api/chat/threads"]["post"]["responses"]["201"]["content"]["application/json"];
 type CreateChatMessageOk =
@@ -175,10 +162,6 @@ type CreateCheckinBody = NonNullable<
 
 type CreateActivityBody = NonNullable<
   paths["/api/session-runs/{runId}/activities"]["post"]["requestBody"]
->["content"]["application/json"];
-
-type CreateConceptReviewBody = NonNullable<
-  paths["/api/concepts/{conceptId}/reviews"]["post"]["requestBody"]
 >["content"]["application/json"];
 
 type CreateChatThreadBody = NonNullable<
@@ -289,14 +272,6 @@ function mapPlanSessionStatus(
   if (status === "in_progress") return "IN_PROGRESS";
   if (status === "completed") return "COMPLETED";
   return "SCHEDULED";
-}
-
-function mapConceptReviewStatus(
-  status: "good" | "soon" | "due",
-): "GOOD" | "DUE" | "OVERDUE" {
-  if (status === "good") return "GOOD";
-  if (status === "soon") return "DUE";
-  return "OVERDUE";
 }
 
 const UploadSessionSchema = z.object({
@@ -550,7 +525,6 @@ export const handlers = [
     db.spaces = db.spaces.filter((s) => s.id !== spaceId);
     db.materials = db.materials.filter((d) => d.spaceId !== spaceId);
     db.plans = db.plans.filter((p) => p.spaceId !== spaceId);
-    db.concepts = db.concepts.filter((c) => c.spaceId !== spaceId);
     writeDb(db);
 
     const response: SpaceDeleteOk = { message: "Deleted" };
@@ -1232,23 +1206,6 @@ export const handlers = [
         };
       }
 
-      if (type === "CONCEPT") {
-        return {
-          ...common,
-          type: "CONCEPT",
-          title: String(step.title ?? ""),
-          content: String(step.content ?? ""),
-          chapterIndex:
-            typeof step.chapterIndex === "number"
-              ? step.chapterIndex
-              : undefined,
-          totalChapters:
-            typeof step.totalChapters === "number"
-              ? step.totalChapters
-              : undefined,
-        };
-      }
-
       if (type === "CHECK") {
         return {
           ...common,
@@ -1337,10 +1294,6 @@ export const handlers = [
           typeof step.studyTimeMinutes === "number"
             ? step.studyTimeMinutes
             : undefined,
-        savedConceptCount:
-          typeof step.savedConceptCount === "number"
-            ? step.savedConceptCount
-            : undefined,
         completedActivities: Array.isArray(step.completedActivities)
           ? step.completedActivities.map(String)
           : [],
@@ -1399,6 +1352,7 @@ export const handlers = [
         },
         blueprint: {
           schemaVersion: run.blueprint.schemaVersion,
+          blueprintId: run.blueprintId,
           createdAt: run.blueprint.createdAt,
           steps,
           startStepIndex,
@@ -1617,7 +1571,6 @@ export const handlers = [
       data: {
         runId,
         status: "COMPLETED",
-        conceptsCreated: 0,
         summary: null,
       },
     };
@@ -1757,245 +1710,6 @@ export const handlers = [
       return HttpResponse.json(response, { status: 201 });
     },
   ),
-
-  // Concepts
-  http.get("/api/concepts", ({ request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const db = readDbOrSeed();
-    const url = new URL(request.url);
-    const { page, limit } = parsePagination(url);
-    const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
-    const reviewStatus = url.searchParams.get("reviewStatus");
-    const spaceIds = url.searchParams.getAll("spaceIds");
-
-    const all = listConcepts().filter((c) => {
-      if (spaceIds.length && !spaceIds.includes(c.spaceId)) return false;
-      if (reviewStatus) {
-        if (mapConceptReviewStatus(c.reviewStatus) !== reviewStatus)
-          return false;
-      }
-      if (search) {
-        const hay =
-          `${c.title} ${c.oneLiner} ${c.definition} ${c.tags.join(" ")}`.toLowerCase();
-        if (!hay.includes(search)) return false;
-      }
-      return true;
-    });
-
-    const total = all.length;
-    const totalPages = Math.ceil(total / limit);
-    const start = (page - 1) * limit;
-    const data = all.slice(start, start + limit).map((c) => {
-      const latest =
-        c.sources
-          .slice()
-          .sort((a, b) => b.studiedAt.localeCompare(a.studiedAt))[0] ?? null;
-
-      return {
-        id: c.id,
-        spaceId: c.spaceId,
-        title: c.title,
-        oneLiner: c.oneLiner,
-        tags: c.tags,
-        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
-        srsDueAt: null,
-        lastLearnedAt: c.lastStudiedAt,
-        latestSource: latest
-          ? {
-              sessionRunId: latest.sessionId,
-              linkType: "CREATED" as const,
-              date: latest.studiedAt,
-              planId: latest.planId,
-              planTitle:
-                db.plans.find((p) => p.id === latest.planId)?.title ??
-                "학습 계획",
-              moduleTitle: latest.moduleTitle ?? null,
-              sessionTitle: latest.sessionTitle,
-            }
-          : null,
-      };
-    });
-
-    const response: ConceptLibraryListOk = {
-      data,
-      meta: { total, page, limit, totalPages },
-    };
-    return HttpResponse.json(response);
-  }),
-
-  http.get("/api/spaces/:spaceId/concepts", ({ params, request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const db = readDbOrSeed();
-    const spaceId = String(params.spaceId ?? "");
-    const url = new URL(request.url);
-    const { page, limit } = parsePagination(url);
-    const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
-    const reviewStatus = url.searchParams.get("reviewStatus");
-
-    const all = listConcepts({ spaceId }).filter((c) => {
-      if (reviewStatus) {
-        if (mapConceptReviewStatus(c.reviewStatus) !== reviewStatus)
-          return false;
-      }
-      if (search) {
-        const hay =
-          `${c.title} ${c.oneLiner} ${c.definition} ${c.tags.join(" ")}`.toLowerCase();
-        if (!hay.includes(search)) return false;
-      }
-      return true;
-    });
-
-    const total = all.length;
-    const totalPages = Math.ceil(total / limit);
-    const start = (page - 1) * limit;
-    const data = all.slice(start, start + limit).map((c) => {
-      const latest =
-        c.sources
-          .slice()
-          .sort((a, b) => b.studiedAt.localeCompare(a.studiedAt))[0] ?? null;
-
-      return {
-        id: c.id,
-        title: c.title,
-        oneLiner: c.oneLiner,
-        tags: c.tags,
-        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
-        srsDueAt: null,
-        lastLearnedAt: c.lastStudiedAt,
-        latestSource: latest
-          ? {
-              sessionRunId: latest.sessionId,
-              linkType: "CREATED" as const,
-              date: latest.studiedAt,
-              planId: latest.planId,
-              planTitle:
-                db.plans.find((p) => p.id === latest.planId)?.title ??
-                "학습 계획",
-              moduleTitle: latest.moduleTitle ?? null,
-              sessionTitle: latest.sessionTitle,
-            }
-          : null,
-      };
-    });
-
-    const response: ConceptListOk = {
-      data,
-      meta: { total, page, limit, totalPages },
-    };
-    return HttpResponse.json(response);
-  }),
-
-  http.get("/api/concepts/:conceptId", ({ params }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const conceptId = String(params.conceptId ?? "");
-    let concept: ReturnType<typeof getConcept>;
-    try {
-      concept = getConcept(conceptId);
-    } catch {
-      return HttpResponse.json(
-        errorResponse("NOT_FOUND", "Concept not found"),
-        {
-          status: 404,
-        },
-      );
-    }
-
-    const db = readDbOrSeed();
-    const relatedConcepts = concept.relatedConceptIds
-      .map((id) => db.concepts.find((c) => c.id === id))
-      .filter((c): c is NonNullable<typeof c> => Boolean(c))
-      .map((c) => ({
-        id: c.id,
-        title: c.title,
-        oneLiner: c.oneLiner,
-        reviewStatus: mapConceptReviewStatus(c.reviewStatus),
-      }));
-
-    const response: ConceptDetailOk = {
-      data: {
-        id: concept.id,
-        spaceId: concept.spaceId,
-        title: concept.title,
-        oneLiner: concept.oneLiner,
-        ariNoteMd: concept.definition,
-        tags: concept.tags,
-        reviewStatus: mapConceptReviewStatus(concept.reviewStatus),
-        relatedConcepts,
-        learningHistory: concept.sources.map((s) => ({
-          sessionRunId: s.sessionId,
-          linkType: "CREATED" as const,
-          date: s.studiedAt,
-          planId: s.planId,
-          planTitle:
-            db.plans.find((p) => p.id === s.planId)?.title ?? "학습 계획",
-          moduleTitle: s.moduleTitle ?? null,
-          sessionTitle: s.sessionTitle,
-        })),
-        srsState: null,
-      },
-    };
-    return HttpResponse.json(response);
-  }),
-
-  http.post("/api/concepts/:conceptId/reviews", async ({ params, request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const conceptId = String(params.conceptId ?? "");
-    const body = (await request
-      .json()
-      .catch(() => null)) as CreateConceptReviewBody | null;
-    if (!body) {
-      return HttpResponse.json(
-        errorResponse("BAD_REQUEST", "Invalid JSON body"),
-        { status: 400 },
-      );
-    }
-
-    void conceptId;
-    void body;
-    const nextDueAt = new Date(
-      Date.now() + 3 * 24 * 60 * 60 * 1000,
-    ).toISOString();
-    const response: CreateConceptReviewCreated = {
-      data: { nextDueAt, newInterval: 3 },
-    };
-    return HttpResponse.json(response, { status: 201 });
-  }),
-
-  http.get("/api/concepts/search", ({ request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const url = new URL(request.url);
-    const q = (url.searchParams.get("q") ?? "").trim().toLowerCase();
-    const spaceIds = url.searchParams.getAll("spaceIds");
-
-    const db = readDbOrSeed();
-    const results = db.concepts
-      .filter((c) => (spaceIds.length ? spaceIds.includes(c.spaceId) : true))
-      .filter((c) => {
-        if (!q) return false;
-        const hay = `${c.title} ${c.oneLiner} ${c.definition}`.toLowerCase();
-        return hay.includes(q);
-      })
-      .slice(0, 20)
-      .map((c) => ({
-        id: c.id,
-        spaceId: c.spaceId,
-        title: c.title,
-        oneLiner: c.oneLiner,
-      }));
-
-    const response: ConceptSearchOk = { data: results };
-    return HttpResponse.json(response);
-  }),
 
   // Chat
   http.post("/api/chat/threads", async ({ request }) => {

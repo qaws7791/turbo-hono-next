@@ -1,6 +1,5 @@
 import type { paths } from "~/foundation/types/api";
 import type {
-  HomeQueueConceptReviewItem,
   HomeQueueItem,
   HomeQueueSessionItem,
   SessionSummaryCard,
@@ -57,21 +56,9 @@ export function toHomeQueueItem(item: ApiQueueItem): HomeQueueItem {
     return mapped;
   }
 
-  const mapped: HomeQueueConceptReviewItem = {
-    href: `/concept/${encodeURIComponent(item.conceptId)}`,
-    kind: "CONCEPT_REVIEW",
-    conceptId: item.conceptId,
-    conceptTitle: item.conceptTitle,
-    oneLiner: item.oneLiner,
-    spaceId: item.spaceId,
-    spaceName: item.spaceName,
-    type: "review",
-    scheduledDate: isoDateFromMaybeDateTime(item.dueAt),
-    durationMinutes: item.estimatedMinutes,
-    spaceIcon: item.spaceIcon,
-    spaceColor: item.spaceColor,
-  };
-  return mapped;
+  // API가 SESSION 이외의 타입을 반환할 경우를 대비해 기본값 반환
+  // 실제로는 타입 가드나 에러 처리가 더 적절할 수 있음
+  throw new Error(`Unsupported queue item kind: ${item.kind}`);
 }
 
 export function toSessionSummaryCard(run: ApiSessionRun): SessionSummaryCard {
@@ -83,8 +70,5 @@ export function toSessionSummaryCard(run: ApiSessionRun): SessionSummaryCard {
     sessionTitle: run.sessionTitle,
     completedAt: run.endedAt ?? run.startedAt,
     durationMinutes: run.durationMinutes,
-    conceptCount:
-      (run.summary?.conceptsCreatedCount ?? 0) +
-      (run.summary?.conceptsUpdatedCount ?? 0),
   };
 }

@@ -110,7 +110,6 @@ export const PlanSessionSchema = z.object({
   durationMinutes: z.number().int().min(5).max(120),
   status: PlanSessionStatusSchema,
   completedAt: IsoDateTimeSchema.optional(),
-  conceptIds: z.array(PublicIdSchema).default([]),
 });
 export type PlanSession = z.infer<typeof PlanSessionSchema>;
 
@@ -136,35 +135,6 @@ export const PlanSchema = z.object({
 });
 export type Plan = z.infer<typeof PlanSchema>;
 
-export const ConceptReviewStatusSchema = z.enum(["good", "soon", "due"]);
-export type ConceptReviewStatus = z.infer<typeof ConceptReviewStatusSchema>;
-
-export const ConceptSchema = z.object({
-  id: PublicIdSchema,
-  spaceId: PublicIdSchema,
-  title: z.string().min(1).max(120),
-  oneLiner: z.string().min(1).max(200),
-  definition: z.string().min(1).max(2_000),
-  exampleCode: z.string().min(1).max(2_000).optional(),
-  gotchas: z.array(z.string().min(1).max(200)).max(8).default([]),
-  tags: z.array(z.string().min(1).max(24)).max(8).default([]),
-  reviewStatus: ConceptReviewStatusSchema,
-  lastStudiedAt: IsoDateTimeSchema,
-  sources: z
-    .array(
-      z.object({
-        planId: PublicIdSchema,
-        sessionId: PublicIdSchema,
-        moduleTitle: z.string().min(1).max(120),
-        sessionTitle: z.string().min(1).max(120),
-        studiedAt: IsoDateTimeSchema,
-      }),
-    )
-    .min(1),
-  relatedConceptIds: z.array(PublicIdSchema).max(8).default([]),
-});
-export type Concept = z.infer<typeof ConceptSchema>;
-
 export const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
   z.union([
     z.string(),
@@ -183,8 +153,6 @@ export const SessionStepTypeSchema = z.enum([
   // 고정 스텝
   "SESSION_INTRO", // 세션 인트로 (항상 첫 번째)
   "SESSION_SUMMARY", // 세션 요약 (항상 마지막)
-  // 개념 학습
-  "CONCEPT", // 마크다운 기반 개념 설명 (챕터 분리 가능)
   // 이해도 체크 (키보드 입력 없이 클릭만으로)
   "CHECK", // 4지선다 퀴즈
   "CLOZE", // 빈칸 맞히기 (4지선다)
@@ -256,15 +224,6 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     prerequisites: z.array(z.string().min(1).max(100)).max(5).default([]),
   }),
 
-  // === 2. 개념 학습 (마크다운 지원, 챕터 분리) ===
-  SessionStepBaseSchema.extend({
-    type: z.literal("CONCEPT"),
-    title: z.string().min(1).max(120),
-    content: z.string().min(1).max(10_000), // 마크다운 (mermaid 포함)
-    chapterIndex: z.number().int().min(1).optional(), // 현재 챕터 번호
-    totalChapters: z.number().int().min(1).optional(), // 전체 챕터 수
-  }),
-
   // === 3. 이해도 체크 ===
   // 4지선다 퀴즈
   SessionStepBaseSchema.extend({
@@ -332,7 +291,6 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     celebrationEmoji: z.string().min(1).max(10).default("🎉"),
     encouragement: z.string().min(1).max(200),
     studyTimeMinutes: z.number().int().min(0).optional(), // 런타임에 계산
-    savedConceptCount: z.number().int().min(0).optional(), // 런타임에 계산
     completedActivities: z
       .array(z.string().min(1).max(100))
       .max(10)
@@ -425,7 +383,6 @@ export const SessionRunSchema = z.object({
   stepHistory: z.array(SessionStepIdSchema).min(1),
   historyIndex: z.number().int().min(0),
   inputs: z.record(z.string(), JsonValueSchema).default({}),
-  createdConceptIds: z.array(PublicIdSchema).max(10).default([]),
   status: SessionRunStatusSchema,
 });
 export type SessionRun = z.infer<typeof SessionRunSchema>;
@@ -436,7 +393,6 @@ export const DbSchema = z.object({
   spaces: z.array(SpaceSchema),
   materials: z.array(MaterialSchema),
   plans: z.array(PlanSchema),
-  concepts: z.array(ConceptSchema),
   sessionBlueprints: z.array(SessionBlueprintSchema),
   sessionRuns: z.array(SessionRunSchema),
 });

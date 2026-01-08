@@ -151,22 +151,11 @@ export function HomeView() {
                 {queue.items.slice(0, 3).map((item) => {
                   const SpaceIcon = getIconByName(item.spaceIcon);
                   const colorData = getColorByName(item.spaceColor);
-                  const title =
-                    item.kind === "SESSION"
-                      ? item.sessionTitle
-                      : item.conceptTitle;
-                  const subtitle =
-                    item.kind === "SESSION"
-                      ? `${item.planTitle} · ${item.durationMinutes}분`
-                      : `개념 복습 · ${item.durationMinutes}분`;
+
                   return (
                     <Link
                       to={item.href}
-                      key={
-                        item.kind === "SESSION"
-                          ? item.sessionId
-                          : item.conceptId
-                      }
+                      key={item.sessionId}
                     >
                       <Card className="hover:bg-muted h-full">
                         <CardContent className="h-full flex flex-col justify-between">
@@ -178,10 +167,10 @@ export function HomeView() {
                             {/* 세션 제목 및 계획 정보 */}
                             <div className="mt-4">
                               <span className="font-semibold block text-base">
-                                {title}
+                                {item.sessionTitle}
                               </span>
                               <div className="text-muted-foreground text-sm">
-                                {subtitle}
+                                {item.planTitle} · {item.durationMinutes}분
                               </div>
                             </div>
                           </div>
@@ -235,12 +224,7 @@ export function HomeView() {
                         {formatLongDateTime(item.completedAt)}
                       </TimelineDate>
                       <TimelineTitle>
-                        <Link
-                          to={`/concepts?sessionId=${item.sessionId}`}
-                          className="hover:underline"
-                        >
-                          {item.moduleTitle} · {item.sessionTitle}
-                        </Link>
+                        {item.moduleTitle} · {item.sessionTitle}
                       </TimelineTitle>
                     </TimelineHeader>
                     <TimelineContent>
@@ -252,8 +236,7 @@ export function HomeView() {
             )}
             <Separator className="mt-6" />
             <div className="text-muted-foreground text-xs mt-4">
-              세션 상세 페이지 대신, 세션 요약 카드와 개념 라이브러리로
-              복습합니다.
+              완료된 세션은 학습 기록에서 확인할 수 있습니다.
             </div>
           </div>
         </section>

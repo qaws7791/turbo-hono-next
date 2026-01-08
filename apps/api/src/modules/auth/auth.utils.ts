@@ -1,12 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 
-const ALLOWED_REDIRECT_PATHS = [
-  "/home",
-  "/spaces",
-  "/session",
-  "/today",
-  "/concepts",
-];
+const ALLOWED_REDIRECT_PATHS = ["/home", "/spaces", "/session", "/today"];
 
 export function validateRedirectPath(path: string): boolean {
   if (!path.startsWith("/")) return false;

@@ -1,13 +1,10 @@
 import {
   chatMessages,
   chatThreads,
-  conceptSessionLinks,
-  concepts,
   materials,
   planSessions,
   planSourceMaterials,
   plans,
-  sessionRuns,
   spaces,
 } from "@repo/database/schema";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
@@ -116,28 +113,9 @@ export const chatRepository = {
       });
     }
 
-    return tryPromise(async () => {
-      const db = getDb();
-      const rows = await db
-        .select({ id: concepts.id, spaceId: concepts.spaceId })
-        .from(concepts)
-        .where(
-          and(
-            eq(concepts.publicId, scopeId),
-            eq(concepts.userId, userId),
-            isNull(concepts.deletedAt),
-          ),
-        )
-        .limit(1);
-      return rows[0] ?? null;
-    }).andThen((concept) => {
-      if (!concept) {
-        return errAsync(
-          new ApiError(404, "CONCEPT_NOT_FOUND", "Concept를 찾을 수 없습니다."),
-        );
-      }
-      return okAsync({ spaceId: concept.spaceId, scopeId: concept.id });
-    });
+    return errAsync(
+      new ApiError(400, "INVALID_SCOPE", "유효하지 않은 채팅 범위입니다."),
+    );
   },
 
   getMaterialIdsForScope(
@@ -185,30 +163,6 @@ export const chatRepository = {
           userId,
           "PLAN",
           session.planId,
-        );
-      });
-    }
-
-    if (scopeType === "CONCEPT") {
-      return tryPromise(async () => {
-        const db = getDb();
-        const runRows = await db
-          .select({ planId: sessionRuns.planId })
-          .from(conceptSessionLinks)
-          .innerJoin(
-            sessionRuns,
-            eq(sessionRuns.id, conceptSessionLinks.sessionRunId),
-          )
-          .where(eq(conceptSessionLinks.conceptId, scopeId))
-          .orderBy(desc(conceptSessionLinks.createdAt))
-          .limit(1);
-        return runRows[0] ?? null;
-      }).andThen((run) => {
-        if (!run) return okAsync<Array<string>, AppError>([]);
-        return chatRepository.getMaterialIdsForScope(
-          userId,
-          "PLAN",
-          run.planId,
         );
       });
     }

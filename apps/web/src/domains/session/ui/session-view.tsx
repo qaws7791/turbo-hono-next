@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@repo/ui/dialog";
 import {
-  BookOpen,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -20,9 +19,6 @@ import {
   XCircle,
 } from "lucide-react";
 import * as React from "react";
-import Markdown from "react-markdown";
-import { Link } from "react-router";
-import remarkGfm from "remark-gfm";
 
 import type { SessionController, SessionStep } from "../model/types";
 
@@ -30,8 +26,6 @@ function stepLabel(stepType: string): string {
   switch (stepType) {
     case "SESSION_INTRO":
       return "오늘 배울 내용이에요 🎯";
-    case "CONCEPT":
-      return "함께 살펴봐요 📖";
     case "CHECK":
       return "확인해볼까요? ✏️";
     case "CLOZE":
@@ -235,25 +229,6 @@ export function SessionView({
             </div>
           ) : null}
 
-          {/* === CONCEPT === */}
-          {activeStep.type === "CONCEPT" ? (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold">{activeStep.title}</h1>
-                {activeStep.totalChapters && activeStep.totalChapters > 1 ? (
-                  <Badge variant="outline">
-                    {activeStep.chapterIndex} / {activeStep.totalChapters}
-                  </Badge>
-                ) : null}
-              </div>
-              <div className="prose dark:prose-invert max-w-none">
-                <Markdown remarkPlugins={[remarkGfm]}>
-                  {activeStep.content}
-                </Markdown>
-              </div>
-            </div>
-          ) : null}
-
           {/* === CHECK (4지선다) === */}
           {activeStep.type === "CHECK" ? (
             <CheckStep
@@ -364,16 +339,6 @@ export function SessionView({
                       ))}
                     </ul>
                   </div>
-
-                  {/* 저장된 개념 */}
-                  {state.createdConceptIds.length > 0 ? (
-                    <div className="flex items-center gap-2 text-sm">
-                      <BookOpen className="w-4 h-4 text-primary" />
-                      <span>
-                        저장된 개념: {state.createdConceptIds.length}개
-                      </span>
-                    </div>
-                  ) : null}
                 </CardContent>
               </Card>
 
@@ -405,14 +370,6 @@ export function SessionView({
 
               {/* 액션 버튼 */}
               <div className="flex gap-3 sm:flex-row">
-                <Button
-                  className="flex-1 h-12"
-                  render={
-                    <Link to={`/concepts?sessionId=${state.sessionId}`} />
-                  }
-                >
-                  아카이브 보기
-                </Button>
                 <Button
                   className="flex-1 h-12"
                   variant="outline"

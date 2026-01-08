@@ -88,13 +88,12 @@ interface ValidationError {
 
 리소스 없음
 
-| 코드               | 메시지                     |
-| ------------------ | -------------------------- |
-| SPACE_NOT_FOUND    | Space를 찾을 수 없습니다   |
-| MATERIAL_NOT_FOUND | 자료를 찾을 수 없습니다    |
-| PLAN_NOT_FOUND     | Plan을 찾을 수 없습니다    |
-| SESSION_NOT_FOUND  | 세션을 찾을 수 없습니다    |
-| CONCEPT_NOT_FOUND  | Concept을 찾을 수 없습니다 |
+| 코드               | 메시지                   |
+| ------------------ | ------------------------ |
+| SPACE_NOT_FOUND    | Space를 찾을 수 없습니다 |
+| MATERIAL_NOT_FOUND | 자료를 찾을 수 없습니다  |
+| PLAN_NOT_FOUND     | Plan을 찾을 수 없습니다  |
+| SESSION_NOT_FOUND  | 세션을 찾을 수 없습니다  |
 
 ### 409 Conflict
 

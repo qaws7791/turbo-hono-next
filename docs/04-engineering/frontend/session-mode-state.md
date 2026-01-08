@@ -18,7 +18,6 @@
 - `inputs`: 스텝별 입력(선택/연결/플래시카드 결과 등)
 - `status`: `ACTIVE | COMPLETING | COMPLETED`
 - `isRecovery`: 기존 실행 복구 여부
-- `createdConceptIds`: 완료 시 생성된 Concept ID
 
 실제 타입 정의: `apps/web/app/features/session/types.ts`
 
@@ -29,7 +28,7 @@
 프로토타입 세션은 아래 스텝 타입을 조합해 구성합니다.
 
 - `SESSION_INTRO`
-- `CONCEPT` (Markdown)
+- `LEARN_CONTENT` (Markdown)
 - `CHECK` (4지선다)
 - `CLOZE` (빈칸 4지선다)
 - `MATCHING` (연결)
@@ -46,7 +45,7 @@
 
 - `Prev`: `stepHistory/historyIndex` 기반으로 이전 스텝으로 이동
 - `Next`: 현재 스텝의 입력이 “진행 가능” 조건을 만족할 때만 이동
-- `SESSION_SUMMARY` 진입 직전에 완료 처리를 수행(Concept 생성/세션 완료 마킹)
+- `SESSION_SUMMARY` 진입 직전에 완료 처리를 수행(세션 완료 마킹)
 
 구현: `apps/web/app/features/session/use-session-controller.ts`
 

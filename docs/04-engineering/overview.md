@@ -29,9 +29,8 @@
 
 1. **핵심 기능**
    - 사용자 인증 (Google OAuth + 매직링크)
-   - Space/Document/Plan/Session/Concept CRUD
+   - Space/Document/Plan/Session CRUD
    - RAG 기반 AI 대화
-   - Spaced Repetition 기반 복습
 
 2. **동기 처리 우선**
    - 문서 인덱싱: 동기 처리
@@ -87,7 +86,7 @@ GET /jobs/{jobId} → { status, progress, result }
 
 ### 데이터 모델
 
-- [x] 핵심 엔티티 정의 (User, Space, Material, Plan, Session, Concept)
+- [x] 핵심 엔티티 정의 (User, Space, Material, Plan, Session)
 - [x] 좀비 데이터 전략 수립
 - [x] Session/SessionRun 분리
 
@@ -119,12 +118,10 @@ GET /jobs/{jobId} → { status, progress, result }
 - Material 업로드 및 인덱싱
 - Plan 생성 및 운영
 - Session 실행 및 복구
-- Concept 자동 저장
 
 ### P1 (중요)
 
 - RAG 기반 AI 대화
-- Spaced Repetition
 - 세션 요약 생성
 
 ### P2 (개선)

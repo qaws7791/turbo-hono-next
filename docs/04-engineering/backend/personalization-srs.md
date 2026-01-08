@@ -49,12 +49,8 @@ const nextDueAt = dayjs().add(newInterval, "day").startOf("day").toDate();
 
 ```typescript
 async function getDueReviews(userId: string, date: Date) {
-  return db
-    .select()
-    .from(concepts)
-    .where(and(eq(concepts.userId, userId), lte(concepts.srsDueAt, date)))
-    .orderBy(asc(concepts.srsDueAt))
-    .limit(10);
+  // TODO: 복습 대상 리소스(예: Session, Material)에 대한 조회 로직 구현
+  return [];
 }
 ```
 
@@ -74,10 +70,3 @@ Plan 생성 시 자동으로 복습 세션 배치:
 | GOOD    | dueAt > today + 3         | 🟢   |
 | DUE     | today ≤ dueAt ≤ today + 3 | 🟡   |
 | OVERDUE | dueAt < today             | 🔴   |
-
----
-
-## 관련 문서
-
-- [Concepts API](../api/concepts.md)
-- [Concept Library](../../03-product/pages/concept-library.md)

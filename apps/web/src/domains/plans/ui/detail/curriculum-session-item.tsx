@@ -39,15 +39,7 @@ export function CurriculumSessionItem({
         </div>
         <div className="flex items-center gap-2">
           <SessionStatusBadge status={session.status} />
-          {isCompleted ? (
-            <Button
-              size="sm"
-              variant="outline"
-              render={<Link to={`/concepts?sessionId=${session.id}`} />}
-            >
-              요약 보기
-            </Button>
-          ) : (
+          {!isCompleted && (
             <Button
               size="sm"
               disabled={!canStart}

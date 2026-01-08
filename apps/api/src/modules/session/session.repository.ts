@@ -1,31 +1,17 @@
 import {
-  conceptReviews,
-  conceptSessionLinks,
-  concepts,
   planModules,
   planSessions,
   planSourceMaterials,
   plans,
   sessionActivities,
   sessionCheckins,
-  sessionConcepts,
   sessionProgressSnapshots,
   sessionRunBlueprints,
   sessionRuns,
   sessionSummaries,
   spaces,
 } from "@repo/database/schema";
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  gte,
-  isNull,
-  lte,
-  notInArray,
-  sql,
-} from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
 import { getDb } from "../../lib/db";
 import { generatePublicId } from "../../lib/public-id";
@@ -159,114 +145,6 @@ export const sessionRepository = {
             createdAt: params.createdAt,
           },
         });
-    });
-  },
-
-  listReviewedConceptIdsToday(
-    userId: string,
-    todayStart: Date,
-  ): ResultAsync<Array<number>, AppError> {
-    return tryPromise(async () => {
-      const db = getDb();
-      const rows = await db
-        .selectDistinct({ conceptId: conceptReviews.conceptId })
-        .from(conceptReviews)
-        .innerJoin(concepts, eq(concepts.id, conceptReviews.conceptId))
-        .where(
-          and(
-            eq(concepts.userId, userId),
-            isNull(concepts.deletedAt),
-            gte(conceptReviews.reviewedAt, todayStart),
-          ),
-        );
-
-      return rows.map((r) => r.conceptId);
-    });
-  },
-
-  countReviewedConceptsToday(
-    userId: string,
-    todayStart: Date,
-  ): ResultAsync<number, AppError> {
-    return tryPromise(async () => {
-      const db = getDb();
-      const rows = await db
-        .select({
-          count: sql<number>`count(distinct ${conceptReviews.conceptId})`,
-        })
-        .from(conceptReviews)
-        .innerJoin(concepts, eq(concepts.id, conceptReviews.conceptId))
-        .where(
-          and(
-            eq(concepts.userId, userId),
-            isNull(concepts.deletedAt),
-            gte(conceptReviews.reviewedAt, todayStart),
-          ),
-        );
-      return rows[0]?.count ?? 0;
-    });
-  },
-
-  listDueConceptReviews(
-    userId: string,
-    dueWindowEnd: Date,
-    excludeConceptIds: ReadonlyArray<number>,
-  ): ResultAsync<
-    Array<{
-      conceptId: string;
-      conceptTitle: string;
-      oneLiner: string;
-      dueAt: Date | null;
-      spaceId: string;
-      spaceName: string;
-      spaceIcon: string | null;
-      spaceColor: string | null;
-    }>,
-    AppError
-  > {
-    return tryPromise(async () => {
-      const db = getDb();
-
-      const whereClauses = [
-        eq(concepts.userId, userId),
-        isNull(concepts.deletedAt),
-        lte(concepts.srsDueAt, dueWindowEnd),
-      ] as const;
-
-      const rows = await db
-        .select({
-          conceptId: concepts.publicId,
-          conceptTitle: concepts.title,
-          oneLiner: concepts.oneLiner,
-          dueAt: concepts.srsDueAt,
-          spaceId: spaces.publicId,
-          spaceName: spaces.name,
-          spaceIcon: spaces.icon,
-          spaceColor: spaces.color,
-        })
-        .from(concepts)
-        .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
-        .where(
-          excludeConceptIds.length > 0
-            ? and(
-                ...whereClauses,
-                notInArray(concepts.id, [...excludeConceptIds]),
-              )
-            : and(...whereClauses),
-        )
-        .orderBy(asc(concepts.srsDueAt), desc(concepts.lastLearnedAt))
-        .limit(20);
-
-      return rows.map((row) => ({
-        conceptId: row.conceptId,
-        conceptTitle: row.conceptTitle,
-        oneLiner: row.oneLiner,
-        dueAt: row.dueAt ?? null,
-        spaceId: row.spaceId,
-        spaceName: row.spaceName,
-        spaceIcon: row.spaceIcon,
-        spaceColor: row.spaceColor,
-      }));
     });
   },
 
@@ -579,12 +457,9 @@ export const sessionRepository = {
       module: { id: string; title: string } | null;
       plan: { id: number; publicId: string; title: string };
       space: { id: number; publicId: string; name: string };
-      createdConceptIds: Array<string>;
       summary: {
         id: string;
         summaryMd: string;
-        conceptsCreatedCount: number;
-        conceptsUpdatedCount: number;
         reviewsScheduledCount: number;
         createdAt: Date;
       } | null;
@@ -627,8 +502,6 @@ export const sessionRepository = {
           summary: {
             id: sessionSummaries.id,
             summaryMd: sessionSummaries.summaryMd,
-            conceptsCreatedCount: sessionSummaries.conceptsCreatedCount,
-            conceptsUpdatedCount: sessionSummaries.conceptsUpdatedCount,
             reviewsScheduledCount: sessionSummaries.reviewsScheduledCount,
             createdAt: sessionSummaries.createdAt,
           },
@@ -650,17 +523,6 @@ export const sessionRepository = {
       const row = rows[0];
       if (!row) return null;
 
-      const conceptRows = await db
-        .select({ publicId: concepts.publicId })
-        .from(conceptSessionLinks)
-        .innerJoin(concepts, eq(concepts.id, conceptSessionLinks.conceptId))
-        .where(
-          and(
-            eq(conceptSessionLinks.sessionRunId, row.run.id),
-            eq(conceptSessionLinks.linkType, "CREATED"),
-          ),
-        );
-
       return {
         run: {
           ...row.run,
@@ -671,7 +533,6 @@ export const sessionRepository = {
         module: row.module && row.module.id ? row.module : null,
         plan: row.plan,
         space: row.space,
-        createdConceptIds: conceptRows.map((r) => r.publicId),
         summary: row.summary && row.summary.id ? row.summary : null,
       };
     });
@@ -844,8 +705,6 @@ export const sessionRepository = {
       spaceName: string;
       summary: {
         id: string;
-        conceptsCreatedCount: number;
-        conceptsUpdatedCount: number;
         reviewsScheduledCount: number;
         createdAt: Date;
       } | null;
@@ -876,8 +735,6 @@ export const sessionRepository = {
           spaceId: spaces.publicId,
           spaceName: spaces.name,
           summaryId: sessionSummaries.id,
-          conceptsCreatedCount: sessionSummaries.conceptsCreatedCount,
-          conceptsUpdatedCount: sessionSummaries.conceptsUpdatedCount,
           reviewsScheduledCount: sessionSummaries.reviewsScheduledCount,
           summaryCreatedAt: sessionSummaries.createdAt,
         })
@@ -910,8 +767,6 @@ export const sessionRepository = {
         summary: row.summaryId
           ? {
               id: row.summaryId,
-              conceptsCreatedCount: row.conceptsCreatedCount ?? 0,
-              conceptsUpdatedCount: row.conceptsUpdatedCount ?? 0,
               reviewsScheduledCount: row.reviewsScheduledCount ?? 0,
               createdAt: row.summaryCreatedAt ?? row.startedAt,
             }
@@ -999,12 +854,9 @@ export const sessionRepository = {
       startedAt: Date;
     };
     userId: string;
-    conceptTitle: string;
     now: Date;
   }): ResultAsync<
     {
-      conceptsCreated: number;
-      conceptsUpdated: number;
       summaryId: string;
     },
     AppError
@@ -1012,9 +864,6 @@ export const sessionRepository = {
     return tryPromise(async () => {
       const db = getDb();
       const summaryId = crypto.randomUUID();
-      let conceptsCreated = 0;
-      let conceptsUpdated = 0;
-      let reviewsScheduled = 0;
 
       const durationMinutes = Math.max(
         0,
@@ -1024,126 +873,6 @@ export const sessionRepository = {
       );
 
       await db.transaction(async (tx) => {
-        const existingConceptRows = await tx
-          .select({
-            id: concepts.id,
-            srsDueAt: concepts.srsDueAt,
-            srsStateJson: concepts.srsStateJson,
-          })
-          .from(concepts)
-          .where(
-            and(
-              eq(concepts.userId, params.userId),
-              eq(concepts.spaceId, params.run.spaceId),
-              eq(concepts.title, params.conceptTitle),
-              isNull(concepts.deletedAt),
-            ),
-          )
-          .limit(1);
-
-        const createdAt = params.now;
-        const tomorrow = new Date(params.now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-
-        const existingConcept = existingConceptRows[0] ?? null;
-        let conceptId = existingConcept?.id ?? null;
-        let dueAtForSummary: Date | null = null;
-
-        if (!conceptId) {
-          conceptsCreated = 1;
-          reviewsScheduled = 1;
-          dueAtForSummary = tomorrow;
-          const insertedConceptRows = await tx
-            .insert(concepts)
-            .values({
-              publicId: generatePublicId(),
-              userId: params.userId,
-              spaceId: params.run.spaceId,
-              title: params.conceptTitle,
-              oneLiner: "학습 세션에서 생성된 개념",
-              ariNoteMd: `## ${params.conceptTitle}\n\n세션 완료 시 자동으로 생성된 개념입니다.`,
-              lastLearnedAt: params.now,
-              srsDueAt: tomorrow,
-              srsStateJson: { interval: 1, ease: 2.5 },
-              createdAt,
-              updatedAt: createdAt,
-            })
-            .returning({ id: concepts.id });
-
-          const insertedConcept = insertedConceptRows[0];
-          if (!insertedConcept) {
-            throw new Error("Concept 생성에 실패했습니다.");
-          }
-
-          conceptId = insertedConcept.id;
-
-          await tx.insert(conceptSessionLinks).values({
-            conceptId,
-            sessionRunId: params.run.id,
-            linkType: "CREATED",
-            createdAt,
-          });
-
-          await tx
-            .insert(sessionConcepts)
-            .values({
-              sessionId: params.run.sessionId,
-              conceptId,
-              role: "NEW",
-              weight: null,
-              createdAt,
-            })
-            .onConflictDoNothing();
-        } else {
-          if (!existingConcept) {
-            throw new Error("Concept 조회에 실패했습니다.");
-          }
-          conceptsUpdated = 1;
-          const conceptUpdate: Partial<typeof concepts.$inferInsert> = {
-            lastLearnedAt: params.now,
-            updatedAt: params.now,
-          };
-
-          if (
-            !existingConcept.srsDueAt ||
-            existingConcept.srsDueAt.getTime() > tomorrow.getTime()
-          ) {
-            conceptUpdate.srsDueAt = tomorrow;
-            reviewsScheduled = 1;
-            dueAtForSummary = tomorrow;
-          } else {
-            dueAtForSummary = existingConcept.srsDueAt;
-          }
-
-          if (!existingConcept.srsStateJson) {
-            conceptUpdate.srsStateJson = { interval: 1, ease: 2.5 };
-          }
-
-          await tx
-            .update(concepts)
-            .set(conceptUpdate)
-            .where(eq(concepts.id, conceptId));
-
-          await tx.insert(conceptSessionLinks).values({
-            conceptId,
-            sessionRunId: params.run.id,
-            linkType: "UPDATED",
-            createdAt,
-          });
-
-          await tx
-            .insert(sessionConcepts)
-            .values({
-              sessionId: params.run.sessionId,
-              conceptId,
-              role: "REVIEW",
-              weight: null,
-              createdAt,
-            })
-            .onConflictDoNothing();
-        }
-
         await tx
           .update(sessionRuns)
           .set({ status: "COMPLETED", endedAt: params.now })
@@ -1159,12 +888,9 @@ export const sessionRepository = {
           .where(eq(planSessions.id, params.run.sessionId));
 
         const summaryMd = [
-          `# ${params.conceptTitle}`,
+          `# 세션 완료`,
           "",
           `- 학습 시간: ${durationMinutes}분`,
-          `- 생성된 개념: ${conceptsCreated}`,
-          `- 업데이트된 개념: ${conceptsUpdated}`,
-          `- 다음 복습: ${dueAtForSummary ? dueAtForSummary.toISOString().slice(0, 10) : "미설정"}`,
           "",
           "세션이 완료되었습니다.",
         ].join("\n");
@@ -1173,14 +899,12 @@ export const sessionRepository = {
           id: summaryId,
           sessionRunId: params.run.id,
           summaryMd,
-          conceptsCreatedCount: conceptsCreated,
-          conceptsUpdatedCount: conceptsUpdated,
-          reviewsScheduledCount: reviewsScheduled,
+          reviewsScheduledCount: 0,
           createdAt: params.now,
         });
       });
 
-      return { conceptsCreated, conceptsUpdated, summaryId };
+      return { summaryId };
     });
   },
 

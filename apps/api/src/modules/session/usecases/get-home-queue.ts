@@ -3,7 +3,6 @@ import { err, ok } from "neverthrow";
 import { HomeQueueResponse } from "../session.dto";
 import { sessionRepository } from "../session.repository";
 import {
-  addDays,
   computeStreakDays,
   generateCoachingMessage,
   parseDateOnly,
@@ -17,32 +16,11 @@ export async function getHomeQueue(
   userId: string,
 ): Promise<Result<HomeQueueResponseType, AppError>> {
   const today = parseDateOnly(new Date().toISOString().slice(0, 10));
-  const dueWindowEnd = addDays(today, 3);
 
   // 1. 홈 큐 데이터 조회
   const rowsResult = await sessionRepository.getHomeQueueRows(userId, today);
   if (rowsResult.isErr()) return err(rowsResult.error);
   const rows = rowsResult.value;
-
-  const reviewedConceptIdsResult =
-    await sessionRepository.listReviewedConceptIdsToday(userId, today);
-  if (reviewedConceptIdsResult.isErr())
-    return err(reviewedConceptIdsResult.error);
-  const reviewedConceptIds = reviewedConceptIdsResult.value;
-
-  const dueConceptsResult = await sessionRepository.listDueConceptReviews(
-    userId,
-    dueWindowEnd,
-    reviewedConceptIds,
-  );
-  if (dueConceptsResult.isErr()) return err(dueConceptsResult.error);
-  const dueConcepts = dueConceptsResult.value;
-
-  const reviewedConceptsCountResult =
-    await sessionRepository.countReviewedConceptsToday(userId, today);
-  if (reviewedConceptsCountResult.isErr())
-    return err(reviewedConceptsCountResult.error);
-  const reviewedConceptsCount = Number(reviewedConceptsCountResult.value);
 
   // 2. Streak 계산을 위한 학습 날짜 조회
   const studyDatesResult = await sessionRepository.listDistinctStudyDates(
@@ -52,19 +30,14 @@ export async function getHomeQueue(
   if (studyDatesResult.isErr()) return err(studyDatesResult.error);
   const studyDates = studyDatesResult.value;
 
-  const sessionTotal = rows.length;
-  const sessionCompleted = rows.filter(
+  const total = rows.length;
+  const completed = rows.filter(
     (row) =>
       row.status === "COMPLETED" ||
       row.status === "SKIPPED" ||
       row.status === "CANCELED",
   ).length;
 
-  const conceptTotal = dueConcepts.length + reviewedConceptsCount;
-  const conceptCompleted = reviewedConceptsCount;
-
-  const total = Number(sessionTotal + conceptTotal);
-  const completed = Number(sessionCompleted + conceptCompleted);
   const remainingCount = Math.max(0, total - completed);
 
   // 3. estimatedMinutes 계산 (미완료 항목만)
@@ -78,8 +51,6 @@ export async function getHomeQueue(
       estimatedMinutes += row.estimatedMinutes;
     }
   }
-  // Concept review는 각 5분으로 계산
-  estimatedMinutes += dueConcepts.length * 5;
 
   // 4. Streak 및 coaching message 계산
   const streakDays = computeStreakDays(studyDates, today);
@@ -109,26 +80,6 @@ export async function getHomeQueue(
       sessionType: row.sessionType,
       estimatedMinutes: row.estimatedMinutes,
       status: row.status,
-    });
-  }
-
-  for (const concept of dueConcepts) {
-    data.push({
-      kind: "CONCEPT_REVIEW",
-      conceptId: concept.conceptId,
-      conceptTitle: concept.conceptTitle,
-      oneLiner: concept.oneLiner,
-      spaceId: concept.spaceId,
-      spaceName: concept.spaceName,
-      spaceIcon: concept.spaceIcon ?? "book",
-      spaceColor: concept.spaceColor ?? "blue",
-      sessionType: "REVIEW",
-      estimatedMinutes: 5,
-      reviewStatus:
-        concept.dueAt && concept.dueAt.getTime() < today.getTime()
-          ? "OVERDUE"
-          : "DUE",
-      dueAt: concept.dueAt ? concept.dueAt.toISOString() : null,
     });
   }
 

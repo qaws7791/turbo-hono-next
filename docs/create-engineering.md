@@ -58,9 +58,6 @@
 - **`04-engineering/api/sessions.md`**
   오늘 할 일 큐 조회, SessionRun 생성/재개/완료, 중간 저장, idempotency 키 정책.
 
-- **`04-engineering/api/concepts.md`**
-  Concept CRUD가 아니라 **업서트/병합/관계** 중심의 API(검색/필터/그래프 조회 포함).
-
 - **`04-engineering/api/chat.md`**
   RAG 기반 대화 API, citation 포함 응답 스키마, thread/scope 규칙.
 
@@ -88,9 +85,6 @@
 
 - **`04-engineering/backend/session-engine.md`**
   세션 진행 상태 머신(스텝 전이, 체크인/활동 기록), 중간 저장/복구, 동시성/중복 호출 방지.
-
-- **`04-engineering/backend/concept-engine.md`**
-  Concept 생성/업데이트/병합 규칙, 관계(RELATED/PREREQUISITE 등) 생성/재계산 트리거.
 
 - **`04-engineering/backend/personalization-srs.md`**
   SRS 알고리즘(파라미터, rating→interval 규칙), due_at 계산, 복습 세션 편성 로직.

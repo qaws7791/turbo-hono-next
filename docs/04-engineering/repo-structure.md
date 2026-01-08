@@ -145,7 +145,7 @@ AI 관련 **타입/스키마만** 공유(실행 로직은 `apps/api`에 존재).
 
 - `docs/04-engineering/api/*`: API 규약/엔드포인트 스펙(예: `/api/materials`, `/api/plans`).
 - `docs/04-engineering/backend/*`: ingestion/RAG/session 엔진 등 구현 규칙.
-- `docs/04-engineering/data-models.md`: v2 데이터 모델(Spaces/Materials/Plans/Sessions/Concepts/Chat 등).
+- `docs/04-engineering/data-models.md`: v2 데이터 모델(Spaces/Materials/Plans/Sessions/Chat 등).
 
 ## 코딩/아키텍처 컨벤션(요약)
 
@@ -158,7 +158,7 @@ AI 관련 **타입/스키마만** 공유(실행 로직은 `apps/api`에 존재).
 
 현 `apps/api`의 도메인/경로/인증/AI 스택은 `docs/04-engineering/`이 전제하는 v2 구조와 차이가 있습니다.
 
-- docs는 `Materials/Plans/Sessions/Concepts/Chat` 중심 경로를 사용.
+- docs는 `Materials/Plans/Sessions/Chat` 중심 경로를 사용.
 - 현 구현은 `learning-plan`, `documents`, `ai`, `ai-chat` 등 모듈 중심 + 경로 구조가 상이.
 
 이 문서는 **“현재 상태의 지도”**로 유지하고, v2 구현 단계에서 docs 스펙에 맞춰 재정렬합니다.

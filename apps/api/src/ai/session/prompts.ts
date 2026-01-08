@@ -13,8 +13,7 @@ export function buildSystemPrompt(): string {
 - 응답은 반드시 JSON 객체 1개만 반환합니다. JSON 외 텍스트를 포함하지 마세요.
 - 모든 텍스트는 한국어로 작성합니다.
 - 제공된 템플릿 JSON의 steps[].id 와 steps[].type, 그리고 schemaVersion/createdAt/startStepIndex는 그대로 유지합니다.
-- 선택지형 스텝(CHECK/CLOZE/APPLICATION)은 정답 인덱스(answerIndex/correctIndex)가 실제 정답을 가리키도록 맞춥니다.
-- CONCEPT.content는 Markdown 문자열이며 10,000자를 넘지 않게 작성합니다.`;
+- 선택지형 스텝(CHECK/CLOZE/APPLICATION)은 정답 인덱스(answerIndex/correctIndex)가 실제 정답을 가리키도록 맞춥니다.`;
 }
 
 export function buildUserPrompt(params: {

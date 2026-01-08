@@ -67,7 +67,6 @@ modules/{module-name}/
 
 - `plans` - 전체 레이어 (api, keys, mutations, policy, queries, types, flows, components, views, utils)
 - `spaces` - 전체 레이어 (api, keys, mutations, queries, types, flows, components, views)
-- `concepts` - 전체 레이어 (api, keys, mutations, policy, queries, types, components, views)
 - `materials` - 전체 레이어 (api, keys, mutations, policy, queries, types, flows, map)
 - `auth` - 전체 레이어 (api, keys, mutations, queries, types, flows, utils, views)
 - `app-shell` - 특수 모듈 (components, hooks, types)
@@ -89,14 +88,13 @@ modules/{module-name}/
   - 가장 복잡한 모듈로 모든 레이어 패턴 검증
   - 예상 소요: 30분
 
-### Phase 2: Full 복잡도 모듈 (4개)
+### Phase 2: Full 복잡도 모듈 (3개)
 
 **목표**: 전체 레이어가 필요한 모듈 완료
 
 - [ ] **Milestone 2.1**: `spaces` 모듈 마이그레이션
-- [ ] **Milestone 2.2**: `concepts` 모듈 마이그레이션
-- [ ] **Milestone 2.3**: `materials` 모듈 마이그레이션
-- [ ] **Milestone 2.4**: `auth` 모듈 마이그레이션
+- [ ] **Milestone 2.2**: `materials` 모듈 마이그레이션
+- [ ] **Milestone 2.3**: `auth` 모듈 마이그레이션
 
 ### Phase 3: Medium 복잡도 모듈 (5개)
 
@@ -297,14 +295,14 @@ ui → application → api → domain
 
 ## 📅 예상 소요 시간
 
-| Phase            | 모듈 수  | 예상 시간    |
-| ---------------- | -------- | ------------ |
-| Phase 1 (파일럿) | 1개      | 30분         |
-| Phase 2 (Full)   | 4개      | 1시간 30분   |
-| Phase 3 (Medium) | 5개      | 1시간        |
-| Phase 4 (Simple) | 3개      | 30분         |
-| Phase 5 (검증)   | -        | 30분         |
-| **총계**         | **13개** | **약 4시간** |
+| Phase            | 모듈 수  | 예상 시간         |
+| ---------------- | -------- | ----------------- |
+| Phase 1 (파일럿) | 1개      | 30분              |
+| Phase 2 (Full)   | 3개      | 1시간 10분        |
+| Phase 3 (Medium) | 5개      | 1시간             |
+| Phase 4 (Simple) | 3개      | 30분              |
+| Phase 5 (검증)   | -        | 30분              |
+| **총계**         | **12개** | **약 3시간 40분** |
 
 ---
 

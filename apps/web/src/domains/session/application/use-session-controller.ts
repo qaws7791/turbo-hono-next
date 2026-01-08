@@ -96,7 +96,6 @@ function initFromRun(run: SessionRunInput): SessionUiState {
     inputs,
     isRecovery: run.isRecovery,
     status: run.status === "COMPLETED" ? "COMPLETED" : "ACTIVE",
-    createdConceptIds: run.createdConceptIds,
     startedAt: nowIso(),
   };
 }
@@ -221,7 +220,6 @@ function reducer(state: SessionUiState, action: SessionAction): SessionUiState {
     return {
       ...state,
       status: "COMPLETED",
-      createdConceptIds: action.createdConceptIds,
     };
   }
 
@@ -234,9 +232,6 @@ function canProceed(step: SessionStep, state: SessionUiState): boolean {
   switch (step.type) {
     case "SESSION_INTRO":
       return true; // 항상 진행 가능
-
-    case "CONCEPT":
-      return true; // 읽기만 하면 됨
 
     case "CHECK":
     case "CLOZE":
@@ -474,7 +469,7 @@ export function useSessionController(run: SessionRunInput): SessionController {
     if (isBeforeSummary) {
       saveNow();
       dispatch({ type: "SET_COMPLETING" });
-      dispatch({ type: "SET_COMPLETED", createdConceptIds: [] });
+      dispatch({ type: "SET_COMPLETED" });
       void completeSessionRun(state.runId);
     }
 

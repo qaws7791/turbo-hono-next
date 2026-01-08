@@ -35,8 +35,6 @@ export async function completeRun(
     );
   }
 
-  const conceptTitle = run.sessionTitle;
-
   // 2. Run 완료 트랜잭션 실행
   const completeResult = await sessionRepository.completeRunTransaction({
     run: {
@@ -48,11 +46,10 @@ export async function completeRun(
       startedAt: run.startedAt,
     },
     userId,
-    conceptTitle,
     now,
   });
   if (completeResult.isErr()) return err(completeResult.error);
-  const { conceptsCreated, summaryId } = completeResult.value;
+  const { summaryId } = completeResult.value;
 
   // 3. 남은 세션 수 확인
   const remainingResult = await sessionRepository.countRemainingSessions(
@@ -75,7 +72,6 @@ export async function completeRun(
       data: {
         runId: run.publicId,
         status: "COMPLETED",
-        conceptsCreated,
         summary: { id: summaryId },
       },
     }),

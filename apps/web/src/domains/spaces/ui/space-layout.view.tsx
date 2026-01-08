@@ -1,5 +1,5 @@
 import { TabNav, TabNavLink } from "@repo/ui/tab-nav";
-import { IconBook, IconFileDescription, IconSchool } from "@tabler/icons-react";
+import { IconFileDescription, IconSchool } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { NavLink, Outlet, useOutlet } from "react-router";
 
@@ -10,7 +10,6 @@ import { SpaceIconEditor } from "./space-icon-editor";
 import { SpacePlansView } from "./space-plans.view";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { SpaceConceptsView } from "~/domains/concepts";
 import { SpaceMaterialsView } from "~/domains/materials";
 
 export function SpaceLayoutView({ spaceId }: { spaceId: string }) {
@@ -57,18 +56,10 @@ export function SpaceLayoutView({ spaceId }: { spaceId: string }) {
                 <IconFileDescription />
                 학습 자료
               </TabNavLink>
-              <TabNavLink
-                render={<NavLink to="?tab=concepts" />}
-                active={tab === "concepts"}
-              >
-                <IconBook />
-                개념
-              </TabNavLink>
             </TabNav>
 
             {tab === "plans" && <SpacePlansView spaceId={spaceId} />}
             {tab === "materials" && <SpaceMaterialsView spaceId={spaceId} />}
-            {tab === "concepts" && <SpaceConceptsView spaceId={spaceId} />}
           </>
         )}
       </PageBody>

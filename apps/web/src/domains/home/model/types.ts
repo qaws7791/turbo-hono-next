@@ -24,22 +24,7 @@ export type HomeQueueSessionItem = {
   spaceColor: string;
 };
 
-export type HomeQueueConceptReviewItem = {
-  href: string;
-  kind: "CONCEPT_REVIEW";
-  conceptId: string;
-  conceptTitle: string;
-  oneLiner: string;
-  spaceId: string;
-  spaceName: string;
-  type: "review";
-  scheduledDate: string;
-  durationMinutes: number;
-  spaceIcon: string;
-  spaceColor: string;
-};
-
-export type HomeQueueItem = HomeQueueSessionItem | HomeQueueConceptReviewItem;
+export type HomeQueueItem = HomeQueueSessionItem;
 
 export type HomeStats = {
   coachingMessage: string;
@@ -57,5 +42,4 @@ export type SessionSummaryCard = {
   sessionTitle: string;
   completedAt: string;
   durationMinutes: number;
-  conceptCount: number;
 };

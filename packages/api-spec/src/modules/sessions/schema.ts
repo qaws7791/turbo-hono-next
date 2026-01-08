@@ -18,8 +18,6 @@ export const SessionExitReasonSchema = z.enum([
   "TIMEOUT",
 ]);
 
-export const ConceptReviewStatusSchema = z.enum(["GOOD", "DUE", "OVERDUE"]);
-
 export const HomeQueueSessionItemSchema = z.object({
   kind: z.literal("SESSION"),
   sessionId: PublicIdSchema,
@@ -36,25 +34,7 @@ export const HomeQueueSessionItemSchema = z.object({
   status: PlanSessionStatusSchema,
 });
 
-export const HomeQueueConceptReviewItemSchema = z.object({
-  kind: z.literal("CONCEPT_REVIEW"),
-  conceptId: PublicIdSchema,
-  conceptTitle: z.string().min(1),
-  oneLiner: z.string().min(1),
-  spaceId: PublicIdSchema,
-  spaceName: z.string().min(1),
-  spaceIcon: z.string().min(1).max(50),
-  spaceColor: z.string().min(1).max(50),
-  sessionType: z.literal("REVIEW"),
-  estimatedMinutes: z.number().int().min(1),
-  reviewStatus: ConceptReviewStatusSchema,
-  dueAt: z.iso.datetime().nullable(),
-});
-
-export const HomeQueueItemSchema = z.discriminatedUnion("kind", [
-  HomeQueueSessionItemSchema,
-  HomeQueueConceptReviewItemSchema,
-]);
+export const HomeQueueItemSchema = HomeQueueSessionItemSchema;
 
 export const HomeQueueResponseSchema = z.object({
   data: z.array(HomeQueueItemSchema),
@@ -92,7 +72,6 @@ export const SessionActivityKindSchema = z.enum([
 
 export const SessionStepTypeSchema = z.enum([
   "SESSION_INTRO",
-  "CONCEPT",
   "CHECK",
   "CLOZE",
   "MATCHING",
@@ -140,14 +119,6 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     learningGoals: z.array(z.string().min(1).max(200)).min(1).max(5),
     questionsToCover: z.array(z.string().min(1).max(200)).min(1).max(5),
     prerequisites: z.array(z.string().min(1).max(100)).max(5).default([]),
-  }),
-
-  SessionStepBaseSchema.extend({
-    type: z.literal("CONCEPT"),
-    title: z.string().min(1).max(120),
-    content: z.string().min(1).max(10_000),
-    chapterIndex: z.number().int().min(1).optional(),
-    totalChapters: z.number().int().min(1).optional(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -209,7 +180,6 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     celebrationEmoji: z.string().min(1).max(10).default("🎉"),
     encouragement: z.string().min(1).max(200),
     studyTimeMinutes: z.number().int().min(0).optional(),
-    savedConceptCount: z.number().int().min(0).optional(),
     completedActivities: z
       .array(z.string().min(1).max(100))
       .max(10)
@@ -258,7 +228,6 @@ export const CompleteSessionRunResponseSchema = z.object({
   data: z.object({
     runId: PublicIdSchema,
     status: SessionRunStatusSchema,
-    conceptsCreated: z.number().int().nonnegative(),
     summary: z.object({ id: z.uuid() }).nullable(),
   }),
 });
@@ -316,7 +285,6 @@ export const SessionRunDetailResponseSchema = z.object({
       }),
     }),
     blueprint: SessionBlueprintSchema,
-    createdConceptIds: z.array(PublicIdSchema).default([]),
     progress: z.object({
       stepIndex: z.number().int().nonnegative(),
       inputs: z.record(z.string(), z.unknown()),
@@ -326,8 +294,6 @@ export const SessionRunDetailResponseSchema = z.object({
       .object({
         id: z.uuid(),
         summaryMd: z.string().min(1),
-        conceptsCreatedCount: z.number().int().nonnegative(),
-        conceptsUpdatedCount: z.number().int().nonnegative(),
         reviewsScheduledCount: z.number().int().nonnegative(),
         createdAt: z.iso.datetime(),
       })
@@ -358,8 +324,6 @@ export const SessionRunListItemSchema = z.object({
   summary: z
     .object({
       id: z.uuid(),
-      conceptsCreatedCount: z.number().int().nonnegative(),
-      conceptsUpdatedCount: z.number().int().nonnegative(),
       reviewsScheduledCount: z.number().int().nonnegative(),
       createdAt: z.iso.datetime(),
     })

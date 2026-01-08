@@ -1,11 +1,9 @@
 import {
-  concepts,
   materials,
   planModules,
   planSessions,
   planSourceMaterials,
   plans,
-  sessionConcepts,
   spaces,
 } from "@repo/database/schema";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -256,7 +254,6 @@ export const planRepository = {
       estimatedMinutes: number;
       status: string;
       completedAt: Date | null;
-      conceptIds: Array<string>;
     }>,
     AppError
   > {
@@ -274,39 +271,12 @@ export const planRepository = {
           estimatedMinutes: planSessions.estimatedMinutes,
           status: planSessions.status,
           completedAt: planSessions.completedAt,
-          conceptPublicId: concepts.publicId,
         })
         .from(planSessions)
-        .leftJoin(
-          sessionConcepts,
-          eq(sessionConcepts.sessionId, planSessions.id),
-        )
-        .leftJoin(concepts, eq(concepts.id, sessionConcepts.conceptId))
         .where(eq(planSessions.planId, planId))
         .orderBy(planSessions.orderIndex);
 
-      const sessionMap = new Map<
-        string,
-        Omit<(typeof rows)[number], "conceptPublicId"> & {
-          conceptIds: Array<string>;
-        }
-      >();
-      rows.forEach((row) => {
-        const existing = sessionMap.get(row.id);
-        if (existing) {
-          if (row.conceptPublicId) {
-            existing.conceptIds.push(row.conceptPublicId);
-          }
-        } else {
-          sessionMap.set(row.id, {
-            ...row,
-            conceptPublicId: undefined,
-            conceptIds: row.conceptPublicId ? [row.conceptPublicId] : [],
-          });
-        }
-      });
-
-      return Array.from(sessionMap.values());
+      return rows;
     });
   },
 

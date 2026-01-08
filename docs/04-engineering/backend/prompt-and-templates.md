@@ -12,8 +12,7 @@
 packages/ai/prompts/
 ├── system/
 │   ├── chat.ts
-│   ├── plan-generation.ts
-│   └── concept-extraction.ts
+│   └── plan-generation.ts
 ├── versions/
 │   └── v1/
 └── index.ts
@@ -47,7 +46,6 @@ export const chatSystemPrompt = `
 export const PROMPT_VERSIONS = {
   chat: "v1.2.0",
   planGeneration: "v1.0.0",
-  conceptExtraction: "v1.1.0",
 };
 ```
 

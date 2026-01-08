@@ -72,7 +72,7 @@ function TodayQueueList({ items }: { items: Array<HomeQueueItem> }) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <TodayQueueItem
-            key={item.kind === "SESSION" ? item.sessionId : item.conceptId}
+            key={item.sessionId}
             item={item}
           />
         ))}
@@ -93,11 +93,6 @@ function TodayEmptyState() {
 function TodayQueueItem({ item }: { item: HomeQueueItem }) {
   const SpaceIcon = getIconByName(item.spaceIcon);
   const colorData = getColorByName(item.spaceColor);
-  const title = item.kind === "SESSION" ? item.sessionTitle : item.conceptTitle;
-  const subtitle =
-    item.kind === "SESSION"
-      ? `${item.planTitle} · ${item.durationMinutes}분`
-      : `개념 복습 · ${item.durationMinutes}분`;
 
   return (
     <Card className="group">
@@ -113,9 +108,11 @@ function TodayQueueItem({ item }: { item: HomeQueueItem }) {
             to={item.href}
             className="font-semibold hover:underline block text-base group-hover:text-primary transition-colors"
           >
-            {title}
+            {item.sessionTitle}
           </Link>
-          <div className="text-muted-foreground text-sm">{subtitle}</div>
+          <div className="text-muted-foreground text-sm">
+            {item.planTitle} · {item.durationMinutes}분
+          </div>
         </div>
 
         {/* 스페이스 및 예정일 */}

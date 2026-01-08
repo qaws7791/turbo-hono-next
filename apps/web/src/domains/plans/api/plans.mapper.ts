@@ -120,7 +120,6 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
           durationMinutes: session.estimatedMinutes,
           status: mapSessionStatus(session.status),
           completedAt: session.completedAt ?? undefined,
-          conceptIds: session.conceptIds,
         }));
 
       return {

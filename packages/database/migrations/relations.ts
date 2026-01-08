@@ -7,12 +7,6 @@ import {
   chatMessages,
   chatThreads,
   coachMessages,
-  conceptRelations,
-  conceptReviews,
-  conceptSessionLinks,
-  conceptTags,
-  conceptTopicLinks,
-  concepts,
   materialChunks,
   materialEmbeddings,
   materialJobs,
@@ -30,7 +24,6 @@ import {
   ragDocuments,
   sessionActivities,
   sessionCheckins,
-  sessionConcepts,
   sessionProgressSnapshots,
   sessionRuns,
   sessionSummaries,
@@ -55,7 +48,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   materials: many(materials),
   sessionRuns: many(sessionRuns),
   plans: many(plans),
-  concepts: many(concepts),
   chatThreads: many(chatThreads),
   coachMessages: many(coachMessages),
   materialUploads: many(materialUploads),
@@ -78,8 +70,6 @@ export const spacesRelations = relations(spaces, ({ one, many }) => ({
   materials: many(materials),
   sessionRuns: many(sessionRuns),
   plans: many(plans),
-  conceptRelations: many(conceptRelations),
-  concepts: many(concepts),
   chatThreads: many(chatThreads),
   materialUploads: many(materialUploads),
 }));
@@ -109,13 +99,8 @@ export const materialsRelations = relations(materials, ({ one, many }) => ({
   planSourceMaterials: many(planSourceMaterials),
 }));
 
-export const tagsRelations = relations(tags, ({ one, many }) => ({
-  user: one(users, {
-    fields: [tags.userId],
-    references: [users.id],
-  }),
+export const tagsRelations = relations(tags, ({ many }) => ({
   materialTags: many(materialTags),
-  conceptTags: many(conceptTags),
 }));
 
 export const materialChunksRelations = relations(
@@ -130,20 +115,16 @@ export const materialChunksRelations = relations(
   }),
 );
 
-export const outlineNodesRelations = relations(
-  outlineNodes,
-  ({ one, many }) => ({
-    material: one(materials, {
-      fields: [outlineNodes.materialId],
-      references: [materials.id],
-    }),
-    space: one(spaces, {
-      fields: [outlineNodes.spaceId],
-      references: [spaces.id],
-    }),
-    conceptTopicLinks: many(conceptTopicLinks),
+export const outlineNodesRelations = relations(outlineNodes, ({ one }) => ({
+  material: one(materials, {
+    fields: [outlineNodes.materialId],
+    references: [materials.id],
   }),
-);
+  space: one(spaces, {
+    fields: [outlineNodes.spaceId],
+    references: [spaces.id],
+  }),
+}));
 
 export const planGenerationRequestsRelations = relations(
   planGenerationRequests,
@@ -173,7 +154,6 @@ export const planSessionsRelations = relations(
       references: [planModules.id],
     }),
     sessionRuns: many(sessionRuns),
-    sessionConcepts: many(sessionConcepts),
   }),
 );
 
@@ -234,9 +214,7 @@ export const sessionRunsRelations = relations(sessionRuns, ({ one, many }) => ({
     fields: [sessionRuns.planId],
     references: [plans.id],
   }),
-  conceptReviews: many(conceptReviews),
   sessionActivities: many(sessionActivities),
-  conceptSessionLinks: many(conceptSessionLinks),
 }));
 
 export const sessionProgressSnapshotsRelations = relations(
@@ -258,39 +236,6 @@ export const sessionSummariesRelations = relations(
     }),
   }),
 );
-
-export const conceptReviewsRelations = relations(conceptReviews, ({ one }) => ({
-  concept: one(concepts, {
-    fields: [conceptReviews.conceptId],
-    references: [concepts.id],
-  }),
-  sessionRun: one(sessionRuns, {
-    fields: [conceptReviews.sessionRunId],
-    references: [sessionRuns.id],
-  }),
-}));
-
-export const conceptsRelations = relations(concepts, ({ one, many }) => ({
-  conceptReviews: many(conceptReviews),
-  conceptRelations_fromConceptId: many(conceptRelations, {
-    relationName: "conceptRelations_fromConceptId_concepts_id",
-  }),
-  conceptRelations_toConceptId: many(conceptRelations, {
-    relationName: "conceptRelations_toConceptId_concepts_id",
-  }),
-  user: one(users, {
-    fields: [concepts.userId],
-    references: [users.id],
-  }),
-  space: one(spaces, {
-    fields: [concepts.spaceId],
-    references: [spaces.id],
-  }),
-  conceptTopicLinks: many(conceptTopicLinks),
-  conceptSessionLinks: many(conceptSessionLinks),
-  conceptTags: many(conceptTags),
-  sessionConcepts: many(sessionConcepts),
-}));
 
 export const chatMessagesRelations = relations(
   chatMessages,
@@ -314,26 +259,6 @@ export const chatThreadsRelations = relations(chatThreads, ({ one, many }) => ({
     references: [spaces.id],
   }),
 }));
-
-export const conceptRelationsRelations = relations(
-  conceptRelations,
-  ({ one }) => ({
-    space: one(spaces, {
-      fields: [conceptRelations.spaceId],
-      references: [spaces.id],
-    }),
-    concept_fromConceptId: one(concepts, {
-      fields: [conceptRelations.fromConceptId],
-      references: [concepts.id],
-      relationName: "conceptRelations_fromConceptId_concepts_id",
-    }),
-    concept_toConceptId: one(concepts, {
-      fields: [conceptRelations.toConceptId],
-      references: [concepts.id],
-      relationName: "conceptRelations_toConceptId_concepts_id",
-    }),
-  }),
-);
 
 export const materialEmbeddingsRelations = relations(
   materialEmbeddings,
@@ -405,34 +330,6 @@ export const ragCollectionsRelations = relations(
   }),
 );
 
-export const conceptTopicLinksRelations = relations(
-  conceptTopicLinks,
-  ({ one }) => ({
-    concept: one(concepts, {
-      fields: [conceptTopicLinks.conceptId],
-      references: [concepts.id],
-    }),
-    outlineNode: one(outlineNodes, {
-      fields: [conceptTopicLinks.outlineNodeId],
-      references: [outlineNodes.id],
-    }),
-  }),
-);
-
-export const conceptSessionLinksRelations = relations(
-  conceptSessionLinks,
-  ({ one }) => ({
-    concept: one(concepts, {
-      fields: [conceptSessionLinks.conceptId],
-      references: [concepts.id],
-    }),
-    sessionRun: one(sessionRuns, {
-      fields: [conceptSessionLinks.sessionRunId],
-      references: [sessionRuns.id],
-    }),
-  }),
-);
-
 export const planGenerationRequestMaterialsRelations = relations(
   planGenerationRequestMaterials,
   ({ one }) => ({
@@ -468,31 +365,6 @@ export const planSourceMaterialsRelations = relations(
     material: one(materials, {
       fields: [planSourceMaterials.materialId],
       references: [materials.id],
-    }),
-  }),
-);
-
-export const conceptTagsRelations = relations(conceptTags, ({ one }) => ({
-  concept: one(concepts, {
-    fields: [conceptTags.conceptId],
-    references: [concepts.id],
-  }),
-  tag: one(tags, {
-    fields: [conceptTags.tagId],
-    references: [tags.id],
-  }),
-}));
-
-export const sessionConceptsRelations = relations(
-  sessionConcepts,
-  ({ one }) => ({
-    planSession: one(planSessions, {
-      fields: [sessionConcepts.sessionId],
-      references: [planSessions.id],
-    }),
-    concept: one(concepts, {
-      fields: [sessionConcepts.conceptId],
-      references: [concepts.id],
     }),
   }),
 );

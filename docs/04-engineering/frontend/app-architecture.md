@@ -29,12 +29,9 @@
 - `/home` 홈
 - `/today` 오늘 할 일
 - `/spaces` 스페이스 목록
-- `/concepts` 전역 개념 라이브러리
-- `/concept/:conceptId` 개념 상세
 - `/spaces/:spaceId` Space 상세(기본: 학습 계획 탭)
   - `/spaces/:spaceId/documents` 문서 탭
   - `/spaces/:spaceId/plans/new` Plan 생성 위저드
-  - `/spaces/:spaceId/concepts` 개념 탭
   - `/spaces/:spaceId/plan/:planId` Plan 상세
 
 ---

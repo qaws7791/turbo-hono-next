@@ -9,8 +9,7 @@
 - **Document(=Material)**: 업로드/입력된 학습 자료
 - **Plan**: 문서 스냅샷 기반의 학습 실행 단위
 - **Module / Session**: 커리큘럼과 일일 실행 단위(학습/복습)
-- **Concept**: 세션 종료 후 자동 저장되는 지식 단위(Concept Library)
-- **AI Chat**: Plan/Session/Concept 범위의 대화 및 근거(청크) 인용
+- **AI Chat**: Plan/Session 범위의 대화 및 근거(청크) 인용
 - **Zombie Data(좀비 데이터)**: `deleted_at` 기반 소프트 삭제 + GC(가비지 컬렉션)
 
 > 기술 스택 가정: PostgreSQL + Drizzle ORM + pgvector + R2(Object Storage)
@@ -20,7 +19,7 @@
 ### 1) 스코프 규칙 (User → Space → 리소스)
 
 - 모든 핵심 데이터는 `user_id`를 통해 소유권을 명확히 합니다.
-- 대부분의 학습 리소스는 `space_id`에 종속됩니다(문서/플랜/세션/컨셉/토픽).
+- 대부분의 학습 리소스는 `space_id`에 종속됩니다(문서/플랜/세션/토픽).
 
 ### 2) “Documents”는 UI 용어, DB는 `materials`
 
@@ -85,12 +84,6 @@ erDiagram
     enum status
   }
 
-  CONCEPTS {
-    uuid id PK
-    text title
-    timestamptz srs_due_at
-  }
-
   CHAT_THREADS {
     uuid id PK
     enum scope_type
@@ -105,7 +98,6 @@ erDiagram
 
   SPACES ||--o{ MATERIALS : contains
   SPACES ||--o{ PLANS : contains
-  SPACES ||--o{ CONCEPTS : stores
 
   MATERIALS ||--o{ PLAN_SOURCE_MATERIALS : referenced_by
   PLANS ||--o{ PLAN_SOURCE_MATERIALS : references
@@ -114,8 +106,6 @@ erDiagram
   PLAN_MODULES ||--o{ PLAN_SESSIONS : schedules
 
   PLAN_SESSIONS ||--o{ SESSION_RUNS : executed_as
-  SESSION_RUNS ||--o{ CONCEPT_SESSION_LINKS : yields
-  CONCEPTS ||--o{ CONCEPT_SESSION_LINKS : learned_in
 
   CHAT_THREADS ||--o{ CHAT_MESSAGES : contains
   CHAT_MESSAGES ||--o{ CHAT_CITATIONS : cites
@@ -129,7 +119,6 @@ erDiagram
   classDef material fill:#FFF3E0,stroke:#EF6C00,stroke-width:2px
   classDef plan fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px
   classDef session fill:#E1F5FE,stroke:#0277BD,stroke-width:2px
-  classDef concept fill:#FFFDE7,stroke:#F9A825,stroke-width:2px
   classDef chat fill:#FCE4EC,stroke:#AD1457,stroke-width:2px
 
   class USERS identity
@@ -141,8 +130,6 @@ erDiagram
   class PLAN_MODULES plan
   class PLAN_SESSIONS session
   class SESSION_RUNS session
-
-  class CONCEPTS concept
 
   class CHAT_THREADS chat
   class CHAT_MESSAGES chat
@@ -262,16 +249,6 @@ erDiagram
 | confidence  | numeric     | AI 태그 신뢰도(선택) |
 | created_at  | timestamptz | 생성                 |
 
-## CONCEPT_TAGS
-
-| 필드       | 타입        | 설명        |
-| ---------- | ----------- | ----------- |
-| concept_id | uuid (FK)   | 개념        |
-| tag_id     | uuid (FK)   | 태그        |
-| source     | enum        | `AI / USER` |
-| confidence | numeric     | 선택        |
-| created_at | timestamptz | 생성        |
-
 ---
 
 # 4. Materials (Documents) + 처리 파이프라인
@@ -309,17 +286,17 @@ erDiagram
 
 ## MATERIAL_JOBS (비동기 처리 작업)
 
-| 필드        | 타입        | 설명                                                               |
-| ----------- | ----------- | ------------------------------------------------------------------ |
-| id          | uuid (PK)   | 작업 ID                                                            |
-| material_id | uuid (FK)   | 대상 문서                                                          |
-| job_type    | enum        | `TEXT_EXTRACT / OUTLINE / CHUNK / EMBED / TAG / CONCEPT_CANDIDATE` |
-| status      | enum        | `QUEUED / RUNNING / SUCCEEDED / FAILED`                            |
-| progress    | numeric     | 0~1 (선택)                                                         |
-| started_at  | timestamptz | 시작                                                               |
-| finished_at | timestamptz | 종료                                                               |
-| error_json  | jsonb       | 실패 상세                                                          |
-| created_at  | timestamptz | 생성                                                               |
+| 필드        | 타입        | 설명                                           |
+| ----------- | ----------- | ---------------------------------------------- |
+| id          | uuid (PK)   | 작업 ID                                        |
+| material_id | uuid (FK)   | 대상 문서                                      |
+| job_type    | enum        | `TEXT_EXTRACT / OUTLINE / CHUNK / EMBED / TAG` |
+| status      | enum        | `QUEUED / RUNNING / SUCCEEDED / FAILED`        |
+| progress    | numeric     | 0~1 (선택)                                     |
+| started_at  | timestamptz | 시작                                           |
+| finished_at | timestamptz | 종료                                           |
+| error_json  | jsonb       | 실패 상세                                      |
+| created_at  | timestamptz | 생성                                           |
 
 ## MATERIAL_CHUNKS (RAG 청킹)
 
@@ -475,16 +452,6 @@ Plan이 생성될 때 선택한 문서를 고정 참조합니다. 좀비 데이�
 | updated_at         | timestamptz | 수정                                                       |
 | completed_at       | timestamptz | 완료                                                       |
 
-## SESSION_CONCEPTS (복습/학습 대상 개념 연결)
-
-| 필드       | 타입        | 설명                    |
-| ---------- | ----------- | ----------------------- |
-| session_id | uuid (FK)   | 세션                    |
-| concept_id | uuid (FK)   | 개념                    |
-| role       | enum        | `NEW / REVIEW / PREREQ` |
-| weight     | numeric     | 중요도(선택)            |
-| created_at | timestamptz | 생성                    |
-
 ---
 
 # 7. Session Execution (풀스크린 세션 실행/복구/신호)
@@ -541,103 +508,29 @@ Plan이 생성될 때 선택한 문서를 고정 참조합니다. 좀비 데이�
 
 ## SESSION_SUMMARIES (홈 카드/아카이브 진입점)
 
-| 필드                    | 타입        | 설명               |
-| ----------------------- | ----------- | ------------------ |
-| id                      | uuid (PK)   | 요약 ID            |
-| session_run_id          | uuid (FK)   | 실행               |
-| summary_md              | text        | 요약 마크다운      |
-| concepts_created_count  | int         | 생성된 개념 수     |
-| concepts_updated_count  | int         | 업데이트된 개념 수 |
-| reviews_scheduled_count | int         | 생성된 복습 수     |
-| created_at              | timestamptz | 생성               |
+| 필드                    | 타입        | 설명           |
+| ----------------------- | ----------- | -------------- |
+| id                      | uuid (PK)   | 요약 ID        |
+| session_run_id          | uuid (FK)   | 실행           |
+| summary_md              | text        | 요약 마크다운  |
+| reviews_scheduled_count | int         | 생성된 복습 수 |
+| created_at              | timestamptz | 생성           |
 
 ---
 
-# 8. Concepts (Concept Library) + 관계/복습
-
-## CONCEPTS
-
-Ari 노트(시스템 레이어)는 읽기 전용이며, AI가 갱신합니다.
-
-| 필드             | 타입        | 설명                                     |
-| ---------------- | ----------- | ---------------------------------------- |
-| id               | uuid (PK)   | Concept ID                               |
-| user_id          | uuid (FK)   | 사용자                                   |
-| space_id         | uuid (FK)   | Space (기본 소속)                        |
-| title            | text        | 개념명                                   |
-| one_liner        | text        | 핵심 1줄                                 |
-| ari_note_md      | text        | **읽기 전용 노트(정의/예제/팁/실수 등)** |
-| difficulty       | enum        | `EASY / MEDIUM / HARD` (선택)            |
-| last_learned_at  | timestamptz | 마지막 학습                              |
-| last_reviewed_at | timestamptz | 마지막 복습                              |
-| srs_due_at       | timestamptz | 다음 복습 권장 시점                      |
-| srs_state_json   | jsonb       | interval/ease 등(선택)                   |
-| created_at       | timestamptz | 생성                                     |
-| updated_at       | timestamptz | 수정                                     |
-| deleted_at       | timestamptz | 선택(개념 삭제 정책 도입 시)             |
-
-## CONCEPT_SESSION_LINKS (학습 이력: 세션 ↔ 개념)
-
-| 필드           | 타입        | 설명                           |
-| -------------- | ----------- | ------------------------------ |
-| concept_id     | uuid (FK)   | 개념                           |
-| session_run_id | uuid (FK)   | 세션 실행                      |
-| link_type      | enum        | `CREATED / UPDATED / REVIEWED` |
-| created_at     | timestamptz | 생성                           |
-
-## CONCEPT_RELATIONS (연관/선행 관계)
-
-| 필드            | 타입        | 설명                                          |
-| --------------- | ----------- | --------------------------------------------- |
-| id              | uuid (PK)   | 관계 ID                                       |
-| space_id        | uuid (FK)   | 공간                                          |
-| from_concept_id | uuid (FK)   | 시작                                          |
-| to_concept_id   | uuid (FK)   | 대상                                          |
-| relation_type   | enum        | `RELATED / PREREQUISITE / SIMILAR / CONTRAST` |
-| weight          | numeric     | 관련도(선택)                                  |
-| created_at      | timestamptz | 생성                                          |
-
-## CONCEPT_REVIEWS (Spaced Repetition 기록)
-
-개념의 복습 상태(🟢/🟡/🔴)를 계산하기 위한 근거 데이터입니다.
-
-| 필드           | 타입        | 설명                         |
-| -------------- | ----------- | ---------------------------- |
-| id             | uuid (PK)   | 리뷰 ID                      |
-| concept_id     | uuid (FK)   | 개념                         |
-| session_run_id | uuid (FK)   | 복습 세션 수행과 연결(선택)  |
-| rating         | enum        | `AGAIN / HARD / GOOD / EASY` |
-| reviewed_at    | timestamptz | 복습 시각                    |
-| next_due_at    | timestamptz | 다음 권장                    |
-| interval_days  | int         | 간격                         |
-| ease_factor    | numeric     | 난이도 계수                  |
-| created_at     | timestamptz | 생성                         |
-
-## CONCEPT_TOPIC_LINKS (연관 토픽)
-
-문서 구조(토픽)와 Concept를 연결해 “연관 토픽” UI 및 커리큘럼 설명력을 강화합니다.
-
-| 필드            | 타입                         | 설명      |
-| --------------- | ---------------------------- | --------- |
-| concept_id      | uuid (FK)                    | 개념      |
-| outline_node_id | uuid (FK → outline_nodes.id) | 토픽/섹션 |
-| created_at      | timestamptz                  | 생성      |
-
----
-
-# 9. AI Chat (Plan/Session/Concept 범위 대화 + 근거 인용)
+# 9. AI Chat (Plan/Session 범위 대화 + 근거 인용)
 
 ## CHAT_THREADS
 
-| 필드       | 타입        | 설명                               |
-| ---------- | ----------- | ---------------------------------- |
-| id         | uuid (PK)   | 스레드 ID                          |
-| user_id    | uuid (FK)   | 사용자                             |
-| space_id   | uuid (FK)   | Space                              |
-| scope_type | enum        | `SPACE / PLAN / SESSION / CONCEPT` |
-| scope_id   | uuid        | 해당 리소스 ID                     |
-| created_at | timestamptz | 생성                               |
-| updated_at | timestamptz | 수정                               |
+| 필드       | 타입        | 설명                     |
+| ---------- | ----------- | ------------------------ |
+| id         | uuid (PK)   | 스레드 ID                |
+| user_id    | uuid (FK)   | 사용자                   |
+| space_id   | uuid (FK)   | Space                    |
+| scope_type | enum        | `SPACE / PLAN / SESSION` |
+| scope_id   | uuid        | 해당 리소스 ID           |
+| created_at | timestamptz | 생성                     |
+| updated_at | timestamptz | 수정                     |
 
 ## CHAT_MESSAGES
 
@@ -724,7 +617,6 @@ Ari 노트(시스템 레이어)는 읽기 전용이며, AI가 갱신합니다.
 - Plan 운영: Active/Pause/Resume/Archive/Complete
 - Session: 학습/복습 스케줄(오늘 큐), 실행 기록(Session Run), 이해도 신호/활동/요약 카드
 - Session Recovery(선택): 서버 스냅샷
-- Concept Library: 개념 저장/업데이트, 태그/검색, 학습 이력, 연관 개념, 복습(SRS)
 - AI Chat: Plan 범위 대화, 문서 청크 인용 저장
 - Zombie Data: deleted_at 기반 문서 삭제 + GC
 

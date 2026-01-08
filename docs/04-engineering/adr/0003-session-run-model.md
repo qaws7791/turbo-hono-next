@@ -177,7 +177,7 @@ async function completeSession(runId: string) {
     .set({ status: "COMPLETED", completedAt: new Date() })
     .where(eq(planSessions.id, run.sessionId));
 
-  // Concept 저장, 요약 생성 등 후처리
+  // 요약 생성 등 후처리
   await postSessionProcessing(run);
 }
 ```

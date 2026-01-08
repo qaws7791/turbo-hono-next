@@ -61,8 +61,6 @@ export async function listSessionRuns(
           summary: row.summary
             ? {
                 id: row.summary.id,
-                conceptsCreatedCount: row.summary.conceptsCreatedCount,
-                conceptsUpdatedCount: row.summary.conceptsUpdatedCount,
                 reviewsScheduledCount: row.summary.reviewsScheduledCount,
                 createdAt: isoDateTime(row.summary.createdAt),
               }

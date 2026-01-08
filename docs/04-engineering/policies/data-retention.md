@@ -28,7 +28,7 @@
 ### 30일 후 삭제 (소프트 삭제 후)
 
 - Spaces, Materials, Plans
-- Concepts, Sessions
+- Sessions
 - Chat Threads
 
 ### 파기 순서

@@ -539,7 +539,7 @@ Phase 3: 핵심 모듈 (1-2주)
    └─ Material, Plan 모듈 마이그레이션
 
 Phase 4: 나머지 모듈 (1주)
-   └─ Space, Concept, Chat, Auth 모듈 마이그레이션
+   └─ Space, Chat, Auth 모듈 마이그레이션
 
 Phase 5: 레거시 정리 (2-3일)
    └─ throw 기반 코드 제거 및 문서 업데이트
@@ -634,7 +634,6 @@ export function unwrapOrThrow<T>(result: Result<T, AppError>): T {
 #### Phase 5: 나머지 모듈
 
 - [ ] Space 모듈
-- [ ] Concept 모듈
 - [ ] Chat 모듈
 - [ ] Auth 모듈
 

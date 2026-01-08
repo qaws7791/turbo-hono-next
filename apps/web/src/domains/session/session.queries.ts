@@ -83,7 +83,6 @@ async function getSessionRun(runId: string): Promise<SessionRunInput> {
     stepHistory,
     historyIndex: Math.max(0, stepHistory.length - 1),
     inputs: detail.progress.inputs,
-    createdConceptIds: detail.createdConceptIds,
     status: detail.status === "RUNNING" ? "ACTIVE" : "COMPLETED",
     planTitle: detail.session.plan.title,
     moduleTitle: detail.session.module?.title ?? "",

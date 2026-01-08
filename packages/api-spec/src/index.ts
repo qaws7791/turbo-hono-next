@@ -2,7 +2,6 @@ export * from "./common/schema";
 export * from "./openapi";
 export * from "./modules/auth/routes";
 export * from "./modules/chat/routes";
-export * from "./modules/concepts/routes";
 export * from "./modules/materials/routes";
 export * from "./modules/plans/routes";
 export * from "./modules/sessions/routes";

@@ -159,12 +159,6 @@ export const sessionSummaries = pgTable(
       .notNull()
       .references(() => sessionRuns.id, { onDelete: "cascade" }),
     summaryMd: text("summary_md").notNull(),
-    conceptsCreatedCount: integer("concepts_created_count")
-      .notNull()
-      .default(0),
-    conceptsUpdatedCount: integer("concepts_updated_count")
-      .notNull()
-      .default(0),
     reviewsScheduledCount: integer("reviews_scheduled_count")
       .notNull()
       .default(0),

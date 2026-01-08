@@ -285,7 +285,6 @@ GET /openapi.json  # OpenAPI 스펙
 | Materials | [materials.md](./materials.md) |
 | Plans     | [plans.md](./plans.md)         |
 | Sessions  | [sessions.md](./sessions.md)   |
-| Concepts  | [concepts.md](./concepts.md)   |
 | Chat      | [chat.md](./chat.md)           |
 
 ---

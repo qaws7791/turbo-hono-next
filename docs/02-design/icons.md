@@ -57,7 +57,6 @@
 | 검색      | `search`      | 검색 입력              |
 | 추가      | `plus`        | 새 항목 생성           |
 | 홈        | `home`        | 홈 네비게이션          |
-| 개념      | `bulb`        | Concept Library        |
 | 경로      | `map`         | Curriculum (모듈 구조) |
 
 ---

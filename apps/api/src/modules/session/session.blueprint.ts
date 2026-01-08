@@ -70,22 +70,6 @@ function buildLearnSteps(
       intent: "INTRO",
     },
     {
-      id: "concept-1",
-      type: "CONCEPT",
-      title: `개념 학습: ${input.sessionTitle}`,
-      content: buildConceptMarkdown({
-        sessionTitle: input.sessionTitle,
-        objective,
-      }),
-      chapterIndex: 1,
-      totalChapters: 1,
-      estimatedSeconds: Math.min(
-        60 * 10,
-        Math.max(60, input.estimatedMinutes * 30),
-      ),
-      intent: "EXPLAIN",
-    },
-    {
       id: "check-1",
       type: "CHECK",
       question: `${input.sessionTitle}에 대한 설명으로 가장 적절한 것은?`,
@@ -199,25 +183,4 @@ function buildReviewSteps(
       intent: "WRAPUP",
     },
   ];
-}
-
-function buildConceptMarkdown(input: {
-  sessionTitle: string;
-  objective: string | null;
-}): string {
-  const objectiveSection = input.objective
-    ? `\n\n## 목표\n\n- ${input.objective}\n`
-    : "";
-
-  return `# ${input.sessionTitle}${objectiveSection}
-
-## 핵심
-
-이 세션은 **${input.sessionTitle}**의 핵심 정의와 사용 맥락을 빠르게 잡는 것을 목표로 합니다.
-
-## 체크포인트
-
-- 정의(무엇) → 이유(왜) → 예시(어디) 순서로 설명해보세요.
-- “언제 쓰는가”와 “언제 피하는가”를 같이 기억하세요.
-`;
 }

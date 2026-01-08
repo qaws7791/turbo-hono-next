@@ -5,12 +5,6 @@ import type {
   chatMessages,
   chatThreads,
   coachMessages,
-  conceptRelations,
-  conceptReviews,
-  conceptSessionLinks,
-  conceptTags,
-  conceptTopicLinks,
-  concepts,
   domainEvents,
   magicLinkTokens,
   materialChunks,
@@ -27,7 +21,6 @@ import type {
   plans,
   sessionActivities,
   sessionCheckins,
-  sessionConcepts,
   sessionProgressSnapshots,
   sessionRuns,
   sessionSummaries,
@@ -109,27 +102,6 @@ export type NewSessionActivity = typeof sessionActivities.$inferInsert;
 
 export type SessionSummary = typeof sessionSummaries.$inferSelect;
 export type NewSessionSummary = typeof sessionSummaries.$inferInsert;
-
-export type Concept = typeof concepts.$inferSelect;
-export type NewConcept = typeof concepts.$inferInsert;
-
-export type ConceptTag = typeof conceptTags.$inferSelect;
-export type NewConceptTag = typeof conceptTags.$inferInsert;
-
-export type ConceptSessionLink = typeof conceptSessionLinks.$inferSelect;
-export type NewConceptSessionLink = typeof conceptSessionLinks.$inferInsert;
-
-export type ConceptRelation = typeof conceptRelations.$inferSelect;
-export type NewConceptRelation = typeof conceptRelations.$inferInsert;
-
-export type ConceptReview = typeof conceptReviews.$inferSelect;
-export type NewConceptReview = typeof conceptReviews.$inferInsert;
-
-export type ConceptTopicLink = typeof conceptTopicLinks.$inferSelect;
-export type NewConceptTopicLink = typeof conceptTopicLinks.$inferInsert;
-
-export type SessionConcept = typeof sessionConcepts.$inferSelect;
-export type NewSessionConcept = typeof sessionConcepts.$inferInsert;
 
 export type ChatThread = typeof chatThreads.$inferSelect;
 export type NewChatThread = typeof chatThreads.$inferInsert;

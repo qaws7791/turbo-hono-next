@@ -1,7 +1,6 @@
 export type SessionStepType =
   | "SESSION_INTRO"
   | "SESSION_SUMMARY"
-  | "CONCEPT"
   | "CHECK"
   | "CLOZE"
   | "MATCHING"
@@ -45,14 +44,6 @@ export type SessionIntroStep = SessionStepBase & {
   learningGoals: Array<string>;
   questionsToCover: Array<string>;
   prerequisites: Array<string>;
-};
-
-export type ConceptStep = SessionStepBase & {
-  type: "CONCEPT";
-  title: string;
-  content: string;
-  chapterIndex?: number;
-  totalChapters?: number;
 };
 
 export type CheckStep = SessionStepBase & {
@@ -105,7 +96,6 @@ export type SessionSummaryStep = SessionStepBase & {
   celebrationEmoji: string;
   encouragement: string;
   studyTimeMinutes?: number;
-  savedConceptCount?: number;
   completedActivities: Array<string>;
   keyTakeaways: Array<string>;
   nextSessionPreview?: { title: string; description?: string };
@@ -113,7 +103,6 @@ export type SessionSummaryStep = SessionStepBase & {
 
 export type SessionStep =
   | SessionIntroStep
-  | ConceptStep
   | CheckStep
   | ClozeStep
   | MatchingStep
@@ -128,7 +117,7 @@ export type SessionBlueprint = {
   createdAt: string;
   context: {
     planId: string;
-    moduleId: string;
+    moduleId: string | null;
     planSessionId: string;
     sessionType: "session" | "review";
   };
@@ -156,7 +145,6 @@ export type SessionRun = {
   stepHistory: Array<SessionStepId>;
   historyIndex: number;
   inputs: Record<string, unknown>;
-  createdConceptIds: Array<string>;
   status: SessionRunStatus;
 };
 
@@ -187,7 +175,6 @@ export type SessionUiState = {
   inputs: SessionInputs;
   isRecovery: boolean;
   status: "ACTIVE" | "COMPLETING" | "COMPLETED";
-  createdConceptIds: Array<string>;
   // 정답 체크 결과 (stepId -> correct 여부)
   checkResults?: Record<string, boolean>;
   // 시작 시간 (분 계산용)
@@ -210,7 +197,7 @@ export type SessionAction =
   | { type: "CLEAR_MATCHING"; stepId: string }
   | { type: "SET_CHECK_RESULT"; stepId: string; correct: boolean }
   | { type: "SET_COMPLETING" }
-  | { type: "SET_COMPLETED"; createdConceptIds: Array<string> };
+  | { type: "SET_COMPLETED" };
 
 export type SessionController = {
   state: SessionUiState;

@@ -2,12 +2,7 @@ import { z } from "@hono/zod-openapi";
 
 import { PublicIdSchema } from "../../common/schema";
 
-export const ChatScopeTypeSchema = z.enum([
-  "SPACE",
-  "PLAN",
-  "SESSION",
-  "CONCEPT",
-]);
+export const ChatScopeTypeSchema = z.enum(["SPACE", "PLAN", "SESSION"]);
 
 export const CreateChatThreadRequestSchema = z.object({
   scopeType: ChatScopeTypeSchema,

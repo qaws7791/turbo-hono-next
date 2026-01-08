@@ -22,11 +22,10 @@ Learning OS의 AI 기능은 사용자가 업로드한 문서를 기반으로 답
 
 **Plan 범위 제한**을 기본으로 합니다.
 
-| 컨텍스트          | 검색 스코프                           |
-| ----------------- | ------------------------------------- |
-| Session 학습/복습 | Plan의 source_materials               |
-| Plan 내 Chat      | Plan의 source_materials               |
-| Concept 복습      | 해당 Concept 학습 시 사용된 materials |
+| 컨텍스트          | 검색 스코프             |
+| ----------------- | ----------------------- |
+| Session 학습/복습 | Plan의 source_materials |
+| Plan 내 Chat      | Plan의 source_materials |
 
 ### Citation
 
@@ -41,7 +40,7 @@ Learning OS의 AI 기능은 사용자가 업로드한 문서를 기반으로 답
 ```typescript
 async function ragSearch(params: {
   query: string;
-  scopeType: "PLAN" | "SESSION" | "CONCEPT";
+  scopeType: "PLAN" | "SESSION";
   scopeId: string;
 }) {
   let materialIds: string[];
@@ -53,9 +52,6 @@ async function ragSearch(params: {
     case "SESSION":
       const session = await getSession(params.scopeId);
       materialIds = await getPlanMaterialIds(session.planId);
-      break;
-    case "CONCEPT":
-      materialIds = await getConceptSourceMaterials(params.scopeId);
       break;
   }
 

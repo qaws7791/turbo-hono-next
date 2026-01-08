@@ -31,7 +31,6 @@ export const materialJobTypeEnum = pgEnum("material_job_type", [
   "CHUNK",
   "EMBED",
   "TAG",
-  "CONCEPT_CANDIDATE",
 ]);
 export const materialJobStatusEnum = pgEnum("material_job_status", [
   "QUEUED",
@@ -80,11 +79,6 @@ export const planSessionStatusEnum = pgEnum("plan_session_status", [
   "CANCELED",
 ]);
 
-export const sessionConceptRoleEnum = pgEnum("session_concept_role", [
-  "NEW",
-  "REVIEW",
-  "PREREQ",
-]);
 export const sessionRunStatusEnum = pgEnum("session_run_status", [
   "RUNNING",
   "COMPLETED",
@@ -108,34 +102,10 @@ export const sessionActivityKindEnum = pgEnum("session_activity_kind", [
   "CODE",
 ]);
 
-export const conceptDifficultyEnum = pgEnum("concept_difficulty", [
-  "EASY",
-  "MEDIUM",
-  "HARD",
-]);
-export const conceptSessionLinkTypeEnum = pgEnum("concept_session_link_type", [
-  "CREATED",
-  "UPDATED",
-  "REVIEWED",
-]);
-export const conceptRelationTypeEnum = pgEnum("concept_relation_type", [
-  "RELATED",
-  "PREREQUISITE",
-  "SIMILAR",
-  "CONTRAST",
-]);
-export const conceptReviewRatingEnum = pgEnum("concept_review_rating", [
-  "AGAIN",
-  "HARD",
-  "GOOD",
-  "EASY",
-]);
-
 export const chatScopeTypeEnum = pgEnum("chat_scope_type", [
   "SPACE",
   "PLAN",
   "SESSION",
-  "CONCEPT",
 ]);
 export const chatMessageRoleEnum = pgEnum("chat_message_role", [
   "USER",

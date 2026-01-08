@@ -1,9 +1,7 @@
 import { useSearchParams } from "react-router";
 import { z } from "zod";
 
-export const SpaceTabSchema = z
-  .enum(["plans", "materials", "concepts"])
-  .catch("plans");
+export const SpaceTabSchema = z.enum(["plans", "materials"]).catch("plans");
 
 export type SpaceTab = z.infer<typeof SpaceTabSchema>;
 

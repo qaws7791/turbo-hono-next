@@ -15,7 +15,7 @@ user/space 소유권 검증 규칙, 리소스별 권한 체크 표준을 정의�
 
 ```
 User (1) ─── owns ───> Space (N)
-Space (1) ─── contains ───> Material, Plan, Concept
+Space (1) ─── contains ───> Material, Plan
 ```
 
 ---
@@ -46,7 +46,6 @@ async function validateSpaceOwnership(userId: string, spaceId: string) {
 | Material   | Material → Space → User       |
 | Plan       | Plan → Space → User           |
 | Session    | Session → Plan → Space → User |
-| Concept    | Concept → Space → User        |
 | ChatThread | Thread → User                 |
 
 ---

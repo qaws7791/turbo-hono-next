@@ -6,7 +6,6 @@ import {
 import { ErrorResponseSchema } from "./common/schema";
 import { authRoutes } from "./modules/auth/routes";
 import { chatRoutes } from "./modules/chat/routes";
-import { conceptRoutes } from "./modules/concepts/routes";
 import { materialRoutes } from "./modules/materials/routes";
 import { planRoutes } from "./modules/plans/routes";
 import { sessionRoutes } from "./modules/sessions/routes";
@@ -34,7 +33,6 @@ const ensureInitialized = () => {
     ...materialRoutes,
     ...planRoutes,
     ...sessionRoutes,
-    ...conceptRoutes,
     ...chatRoutes,
   ] as const;
 

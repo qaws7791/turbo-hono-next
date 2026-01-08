@@ -13,7 +13,6 @@ export type PlanSession = {
   durationMinutes: number;
   status: PlanSessionStatus;
   completedAt?: string;
-  conceptIds: Array<string>;
 };
 
 export type PlanModule = {

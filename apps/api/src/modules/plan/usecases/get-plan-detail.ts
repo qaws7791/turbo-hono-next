@@ -92,7 +92,6 @@ export async function getPlanDetail(
           estimatedMinutes: s.estimatedMinutes,
           status: s.status,
           completedAt: s.completedAt ? formatIsoDatetime(s.completedAt) : null,
-          conceptIds: s.conceptIds,
         })),
       },
     }),

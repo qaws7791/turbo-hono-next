@@ -13,7 +13,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from "@repo/ui/sidebar";
-import { IconCalendar, IconHome, IconNotebook } from "@tabler/icons-react";
+import { IconCalendar, IconHome } from "@tabler/icons-react";
 import { NavLink, useLocation } from "react-router";
 
 import { UserMenu } from "./user-menu";
@@ -57,16 +57,6 @@ export function AppSidebar({
             >
               <IconCalendar />
               <span className="font-medium">오늘 할 일</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={location.pathname.startsWith("/concepts")}
-              render={<NavLink to="/concepts" />}
-            >
-              <IconNotebook />
-              <span className="font-medium">개념</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -88,7 +88,6 @@ export const PlanSessionItemSchema = z.object({
   estimatedMinutes: z.number().int().min(1),
   status: PlanSessionStatusSchema,
   completedAt: z.iso.datetime().nullable(),
-  conceptIds: z.array(PublicIdSchema).default([]),
 });
 
 export const PlanDetailResponseSchema = z.object({

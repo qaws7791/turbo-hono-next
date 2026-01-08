@@ -117,7 +117,6 @@ export const PlanSessionItem = z.object({
   estimatedMinutes: z.number().int().min(1),
   status: PlanSessionStatusSchema,
   completedAt: z.string().datetime().nullable(),
-  conceptIds: z.array(PublicIdSchema).default([]),
 });
 export type PlanSessionItem = z.infer<typeof PlanSessionItem>;
 

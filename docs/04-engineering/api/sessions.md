@@ -79,7 +79,7 @@ PATCH /api/session-runs/{runId}/progress
 POST /api/session-runs/{runId}/complete
 ```
 
-Concept 저장, 요약 생성 트리거
+요약 생성 트리거
 
 **Response** (200):
 
@@ -88,7 +88,6 @@ Concept 저장, 요약 생성 트리거
   "data": {
     "runId": "uuid",
     "status": "COMPLETED",
-    "conceptsCreated": 3,
     "summary": { "id": "uuid" }
   }
 }

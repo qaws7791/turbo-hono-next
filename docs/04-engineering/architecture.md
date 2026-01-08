@@ -25,7 +25,6 @@
 - **Space**: 하나의 학습 목표 컨테이너
 - **Plan**: 선택된 Document 스냅샷 기반의 학습 실행 단위
 - **Session**: Plan 내부의 몰입형 학습 단위(20~40분)
-- **Concept**: 학습 결과로 축적되는 지식 단위
 
 ---
 
@@ -41,7 +40,7 @@ flowchart LR
 
   subgraph S[Backend]
     API[HTTP API\nHonoJS + TypeScript\nZod + zod-openapi]
-    SV[Services\nMaterial / Plan / Session / Concept / Chat]
+    SV[Services\nMaterial / Plan / Session / Chat]
     AI[AI Orchestration\nLangChain]
   end
 
@@ -70,7 +69,7 @@ flowchart LR
 
 - **Client**: 학습 경험(세션 몰입), 데이터 조회/입력, 업로드 UI, 상태/캐시 관리
 - **Backend API**: 인증/인가, 입력 검증, 트랜잭션 경계, 도메인 규칙 실행, AI 파이프라인 호출
-- **PostgreSQL(Neon)**: 핵심 엔티티(Spaces/Plans/Sessions/Concepts/Materials) 및 운영 메타데이터
+- **PostgreSQL(Neon)**: 핵심 엔티티(Spaces/Plans/Sessions/Materials) 및 운영 메타데이터
 - **pgvector**: 임베딩 벡터 및 검색용 인덱스(문서 청크 기반)
 - **R2**: 원본 파일(PDF 등) 저장, 다운로드/미리보기용 서명 URL 제공 가능
 - **OpenAI**: 임베딩 생성 및 LLM 응답 생성
@@ -90,7 +89,7 @@ flowchart TB
   %% Layer Definitions
   %% ========================
   subgraph L1["Application Layer"]
-    R["Routes<br>/materials, /plans, /sessions, /concepts, /chat"]
+    R["Routes<br>/materials, /plans, /sessions, /chat"]
     MW["Middleware<br>Auth / Validation / Rate Limit / Error Handling"]
   end
 
@@ -98,7 +97,6 @@ flowchart TB
     MS["MaterialService"]
     PS["PlanService"]
     SS["SessionService"]
-    CS["ConceptService"]
     CHS["ChatService"]
   end
 
@@ -120,7 +118,6 @@ flowchart TB
   R --> MS
   R --> PS
   R --> SS
-  R --> CS
   R --> CHS
 
   MS --> ING
@@ -149,7 +146,7 @@ flowchart TB
 
   %% Assign Layer Classes
   class R,MW layer1;
-  class MS,PS,SS,CS,CHS layer2;
+  class MS,PS,SS,CHS layer2;
   class ING,RET,GEN layer3;
   class ORM,DB,R2 layer4;
 
@@ -374,7 +371,7 @@ sequenceDiagram
 
 ## 7.2. 캐시/레이트 리미트
 
-- 고빈도 조회(Plans list, Concepts list)는 캐시 계층(예: Redis)을 도입할 수 있습니다.
+- 고빈도 조회(Plans list 등)는 캐시 계층(예: Redis)을 도입할 수 있습니다.
 - LLM/임베딩은 계정 단위 레이트 리미트를 통해 비용 폭주를 방지합니다.
 
 ## 7.3. 검색 품질 고도화

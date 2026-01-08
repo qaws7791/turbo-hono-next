@@ -1,4 +1,4 @@
-import { concepts, planSessions, plans, spaces } from "@repo/database/schema";
+import { planSessions, plans, spaces } from "@repo/database/schema";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { getDb } from "../../lib/db";
@@ -113,33 +113,6 @@ export const spaceRepository = {
               title: row.planTitle,
               progressPercent,
             },
-          });
-        });
-      }
-
-      // 2. Last Studied At 조회 (필요한 경우)
-      if (options.includeLastStudiedAt) {
-        const lastStudied = await db
-          .select({
-            spacePublicId: spaces.publicId,
-            lastLearnedAt: sql<Date | null>`max(${concepts.lastLearnedAt})`,
-          })
-          .from(concepts)
-          .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
-          .where(
-            and(
-              inArray(spaces.publicId, spaceIds),
-              eq(concepts.userId, userId),
-              isNull(concepts.deletedAt),
-            ),
-          )
-          .groupBy(spaces.publicId);
-
-        lastStudied.forEach((row) => {
-          const existing = result.get(row.spacePublicId) || {};
-          result.set(row.spacePublicId, {
-            ...existing,
-            lastStudiedAt: row.lastLearnedAt ?? undefined,
           });
         });
       }

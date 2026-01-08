@@ -20,7 +20,6 @@ function emptyDb(): Db {
     spaces: [],
     materials: [],
     plans: [],
-    concepts: [],
     sessionBlueprints: [],
     sessionRuns: [],
   };
@@ -55,12 +54,6 @@ function seededDb(): Db {
   const plan2Session2Id = randomPublicId();
   const plan2Session3Id = randomPublicId();
   const plan2Session4Id = randomPublicId();
-
-  const concept1Id = randomPublicId();
-  const concept2Id = randomPublicId();
-  const concept3Id = randomPublicId();
-  const concept4Id = randomPublicId();
-  const concept5Id = randomPublicId();
 
   const today = todayIsoDate();
   const tomorrow = (() => {
@@ -294,7 +287,6 @@ function seededDb(): Db {
                 scheduledDate: today,
                 durationMinutes: 30,
                 status: "todo",
-                conceptIds: [],
               },
               {
                 id: session2Id,
@@ -305,7 +297,6 @@ function seededDb(): Db {
                 scheduledDate: today,
                 durationMinutes: 15,
                 status: "todo",
-                conceptIds: [],
               },
             ],
           },
@@ -323,7 +314,6 @@ function seededDb(): Db {
                 scheduledDate: today,
                 durationMinutes: 30,
                 status: "todo",
-                conceptIds: [],
               },
               {
                 id: session4Id,
@@ -334,7 +324,6 @@ function seededDb(): Db {
                 scheduledDate: today,
                 durationMinutes: 15,
                 status: "todo",
-                conceptIds: [],
               },
             ],
           },
@@ -365,7 +354,6 @@ function seededDb(): Db {
                 scheduledDate: today,
                 durationMinutes: 25,
                 status: "todo",
-                conceptIds: [],
               },
               {
                 id: plan2Session2Id,
@@ -376,7 +364,6 @@ function seededDb(): Db {
                 scheduledDate: tomorrow,
                 durationMinutes: 15,
                 status: "todo",
-                conceptIds: [],
               },
             ],
           },
@@ -394,7 +381,6 @@ function seededDb(): Db {
                 scheduledDate: tomorrow,
                 durationMinutes: 30,
                 status: "todo",
-                conceptIds: [],
               },
               {
                 id: plan2Session4Id,
@@ -405,135 +391,10 @@ function seededDb(): Db {
                 scheduledDate: tomorrow,
                 durationMinutes: 20,
                 status: "todo",
-                conceptIds: [],
               },
             ],
           },
         ],
-      },
-    ],
-    concepts: [
-      {
-        id: concept1Id,
-        spaceId: spaceWorkId,
-        title: "useState의 동작 원리",
-        oneLiner:
-          "컴포넌트 렌더 사이에 상태를 유지하고 업데이트를 스케줄합니다.",
-        definition:
-          "useState는 렌더링과 상태 업데이트를 분리합니다. 상태 업데이트는 즉시 반영되지 않을 수 있으며, React는 업데이트를 모아 렌더링을 최적화합니다.",
-        exampleCode:
-          "const [count, setCount] = useState(0);\nsetCount((prev) => prev + 1);",
-        gotchas: ["상태를 직접 변경하지 말고 setter를 사용하세요."],
-        tags: ["react", "hooks", "state"],
-        reviewStatus: "soon",
-        lastStudiedAt: createdAt,
-        sources: [
-          {
-            planId,
-            sessionId: session1Id,
-            moduleTitle: "Module 1: State & Effects",
-            sessionTitle: "Session 1: useState",
-            studiedAt: createdAt,
-          },
-        ],
-        relatedConceptIds: [concept2Id, concept3Id],
-      },
-      {
-        id: concept2Id,
-        spaceId: spaceWorkId,
-        title: "상태 업데이트 함수형 패턴",
-        oneLiner:
-          "이전 값을 기반으로 안전하게 업데이트하려면 함수형 updater를 사용합니다.",
-        definition:
-          "동일한 이벤트 루프 안에서 여러 업데이트가 발생할 수 있으므로, 이전 값을 참조해야 할 때는 setState((prev) => next) 형태가 안전합니다.",
-        exampleCode:
-          "setCount((prev) => prev + 1);\nsetItems((prev) => [...prev, item]);",
-        gotchas: ["배열/객체는 불변 업데이트를 유지하세요."],
-        tags: ["react", "immutability"],
-        reviewStatus: "good",
-        lastStudiedAt: createdAt,
-        sources: [
-          {
-            planId,
-            sessionId: session1Id,
-            moduleTitle: "Module 1: State & Effects",
-            sessionTitle: "Session 1: useState",
-            studiedAt: createdAt,
-          },
-        ],
-        relatedConceptIds: [concept1Id],
-      },
-      {
-        id: concept3Id,
-        spaceId: spaceWorkId,
-        title: "렌더링과 Side Effect의 분리",
-        oneLiner: "렌더는 순수해야 하고, 부수효과는 Effect에서 처리합니다.",
-        definition:
-          "렌더링 과정에서 외부 상태를 변경하면 예측 불가능한 버그가 발생할 수 있습니다. 부수효과는 useEffect 등으로 옮겨 순수성을 유지합니다.",
-        gotchas: ["Effect 의존성 배열을 정확히 관리하세요."],
-        tags: ["react", "effects"],
-        reviewStatus: "due",
-        lastStudiedAt: createdAt,
-        sources: [
-          {
-            planId,
-            sessionId: session1Id,
-            moduleTitle: "Module 1: State & Effects",
-            sessionTitle: "Session 1: useState",
-            studiedAt: createdAt,
-          },
-        ],
-        relatedConceptIds: [concept1Id],
-      },
-      {
-        id: concept4Id,
-        spaceId: spaceHobbyId,
-        title: "TypeScript 기본 타입",
-        oneLiner:
-          "string, number, boolean 등 JavaScript 원시 타입에 대응하는 TypeScript 타입입니다.",
-        definition:
-          "TypeScript는 JavaScript의 런타임 타입을 정적으로 표현합니다. 기본 타입은 타입 추론의 기초가 됩니다.",
-        exampleCode:
-          'const name: string = "홍길동";\nconst age: number = 25;\nconst isActive: boolean = true;',
-        gotchas: ["any 타입 남용을 피하세요."],
-        tags: ["typescript", "basics"],
-        reviewStatus: "soon",
-        lastStudiedAt: createdAt,
-        sources: [
-          {
-            planId: plan2Id,
-            sessionId: plan2Session1Id,
-            moduleTitle: plan2Module1Title,
-            sessionTitle: "Session 1: 기본 타입과 인터페이스",
-            studiedAt: createdAt,
-          },
-        ],
-        relatedConceptIds: [concept5Id],
-      },
-      {
-        id: concept5Id,
-        spaceId: spaceHobbyId,
-        title: "인터페이스와 타입 별칭",
-        oneLiner:
-          "객체의 형태를 정의하는 두 가지 방법: interface와 type alias.",
-        definition:
-          "interface는 확장에 열려 있고 선언 병합이 가능합니다. type alias는 유니온, 인터섹션 등 다양한 타입 조합에 유용합니다.",
-        exampleCode:
-          "interface User {\n  name: string;\n  age: number;\n}\n\ntype Status = 'active' | 'inactive';",
-        gotchas: ["상황에 맞게 interface와 type을 선택하세요."],
-        tags: ["typescript", "interface", "type"],
-        reviewStatus: "good",
-        lastStudiedAt: createdAt,
-        sources: [
-          {
-            planId: plan2Id,
-            sessionId: plan2Session1Id,
-            moduleTitle: plan2Module1Title,
-            sessionTitle: "Session 1: 기본 타입과 인터페이스",
-            studiedAt: createdAt,
-          },
-        ],
-        relatedConceptIds: [concept4Id],
       },
     ],
     sessionBlueprints: [

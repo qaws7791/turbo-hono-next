@@ -51,7 +51,6 @@ apps/web/src/               # 기존 app → src로 변경
 
 - [x] **app-shell** - 앱 쉘 (사이드바, 헤더, 레이아웃)
 - [x] **auth** - 인증 (로그인)
-- [x] **concepts** - 개념 관리
 - [x] **documents** - 문서 관리
 - [x] **home** - 홈 화면
 - [x] **landing** - 랜딩 페이지
@@ -91,11 +90,6 @@ apps/web/src/
 │   │   ├── model/         # types.ts, format-seconds.ts
 │   │   ├── ui/            # login-view.tsx
 │   │   ├── application/   # use-login-view-model.ts
-│   │   └── index.ts
-│   ├── concepts/
-│   │   ├── model/         # types.ts, get-latest-concept-source.ts
-│   │   ├── ui/            # concept-card.tsx 등
-│   │   ├── application/   # use-concept-detail-model.ts 등
 │   │   └── index.ts
 │   ├── documents/
 │   │   ├── model/         # document-status.ts

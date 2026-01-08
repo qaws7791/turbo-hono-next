@@ -2,7 +2,7 @@
 
 ## 개요
 
-RAG 기반 AI 대화 API입니다. Plan/Session/Concept 범위에서 문서 기반 답변을 생성합니다.
+RAG 기반 AI 대화 API입니다. Plan/Session 범위에서 문서 기반 답변을 생성합니다.
 
 ---
 
@@ -57,7 +57,7 @@ POST /api/chat/threads
 }
 ```
 
-scopeType: SPACE / PLAN / SESSION / CONCEPT
+scopeType: SPACE / PLAN / SESSION
 
 ### 스레드 메시지 목록
 
@@ -69,12 +69,11 @@ GET /api/chat/threads/{threadId}/messages
 
 ## 스코프 규칙
 
-| Scope   | 검색 범위                       |
-| ------- | ------------------------------- |
-| PLAN    | Plan의 source_materials         |
-| SESSION | 해당 Plan의 source_materials    |
-| CONCEPT | Concept 학습에 사용된 materials |
-| SPACE   | Space 전체 materials (향후)     |
+| Scope   | 검색 범위                    |
+| ------- | ---------------------------- |
+| PLAN    | Plan의 source_materials      |
+| SESSION | 해당 Plan의 source_materials |
+| SPACE   | Space 전체 materials (향후)  |
 
 ---
 

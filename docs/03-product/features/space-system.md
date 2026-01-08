@@ -25,7 +25,6 @@ Space 안에 다음이 **모두 종속**됩니다:
 | **Documents** | 업로드된 학습 자료                          |
 | **Plans**     | 학습 계획 (여러 개 가능, Active는 1개 권장) |
 | **Sessions**  | 세션 로그                                   |
-| **Concepts**  | 지식 아카이브                               |
 
 ---
 
@@ -62,13 +61,12 @@ Space 안에 다음이 **모두 종속**됩니다:
 
 ## 페이지별 동작 규칙
 
-| 페이지          | Space 적용                                                       |
-| --------------- | ---------------------------------------------------------------- |
-| 홈 (Home)       | **전역 집계**: 모든 Space의 Active Plan에서 할 일 표시           |
-| Spaces          | Space 목록/생성/관리 허브                                        |
-| Space 상세      | 해당 Space의 Documents/Plans/Concept Library                     |
-| Plan 상세       | 선택된 Plan의 실행/진행/경로 확인 및 다음 세션 시작              |
-| Concept Library | 전역 아카이브(`/concepts`) + Space 상세에는 Space별 개념 탭 제공 |
+| 페이지     | Space 적용                                             |
+| ---------- | ------------------------------------------------------ |
+| 홈 (Home)  | **전역 집계**: 모든 Space의 Active Plan에서 할 일 표시 |
+| Spaces     | Space 목록/생성/관리 허브                              |
+| Space 상세 | 해당 Space의 Documents/Plans                           |
+| Plan 상세  | 선택된 Plan의 실행/진행/경로 확인 및 다음 세션 시작    |
 
 ---
 
@@ -78,7 +76,6 @@ Space 안에 다음이 **모두 종속**됩니다:
 
 - `space_id`를 다음에 부여:
   - 업로드 자료 (Documents)
-  - Concept
   - 세션 (Sessions)
   - Plan
   - Module
@@ -86,7 +83,6 @@ Space 안에 다음이 **모두 종속**됩니다:
 ### 소속 규칙
 
 - 세션은 **반드시 1개의 Space에만 속함**
-- Concept도 기본은 **1개의 Space에만 속함**
 - Plan은 `sourceDocumentIds` 목록을 보유
 
 ---

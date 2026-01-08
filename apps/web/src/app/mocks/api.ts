@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { createSessionBlueprint } from "./blueprints";
 import {
-  ConceptReviewStatusSchema,
   DbSchema,
   IsoDateSchema,
   JsonValueSchema,
@@ -17,8 +16,6 @@ import {
 import { readDbOrSeed, writeDb } from "./store";
 
 import type {
-  Concept,
-  ConceptReviewStatus,
   Db,
   Material,
   MaterialKind,
@@ -67,7 +64,6 @@ export type SessionSummaryCard = {
   sessionTitle: string;
   completedAt: string;
   durationMinutes: number;
-  conceptCount: number;
 };
 
 type PlanWithDerived = Plan & {
@@ -118,14 +114,6 @@ function requirePlan(db: Db, planId: string): Plan {
     throw new Error("NOT_FOUND_PLAN");
   }
   return plan;
-}
-
-function requireConcept(db: Db, conceptId: string): Concept {
-  const concept = db.concepts.find((c) => c.id === conceptId);
-  if (!concept) {
-    throw new Error("NOT_FOUND_CONCEPT");
-  }
-  return concept;
 }
 
 function requireSessionBlueprint(
@@ -203,13 +191,6 @@ function nextIsoDateAfter(daysFromToday: number): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function pickReviewStatusByAge(): ConceptReviewStatus {
-  const value = Math.random();
-  if (value < 0.2) return "due";
-  if (value < 0.6) return "soon";
-  return "good";
 }
 
 export function authStatus(): { isAuthenticated: boolean; user: User | null } {
@@ -620,7 +601,6 @@ export function createPlan(input: {
             scheduledDate: schedule[0],
             durationMinutes: 30,
             status: "todo",
-            conceptIds: [],
           },
           {
             id: session2Id,
@@ -631,7 +611,6 @@ export function createPlan(input: {
             scheduledDate: schedule[1],
             durationMinutes: 15,
             status: "todo",
-            conceptIds: [],
           },
         ],
       },
@@ -649,7 +628,6 @@ export function createPlan(input: {
             scheduledDate: schedule[2],
             durationMinutes: 30,
             status: "todo",
-            conceptIds: [],
           },
           {
             id: session4Id,
@@ -660,7 +638,6 @@ export function createPlan(input: {
             scheduledDate: schedule[3],
             durationMinutes: 15,
             status: "todo",
-            conceptIds: [],
           },
         ],
       },
@@ -738,7 +715,6 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
           sessionTitle: session.title,
           completedAt: session.completedAt,
           durationMinutes: session.durationMinutes,
-          conceptCount: session.conceptIds.length,
         });
       }
     }
@@ -777,7 +753,6 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
         sessionTitle: topic.session,
         completedAt: date.toISOString(),
         durationMinutes: 15 + Math.floor(Math.random() * 45), // 15-60 min
-        conceptCount: 3 + Math.floor(Math.random() * 7), // 3-10 concepts
       });
     }
   }
@@ -785,51 +760,6 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
   return cards
     .sort((a, b) => b.completedAt.localeCompare(a.completedAt))
     .slice(0, Math.max(0, Math.min(10, limit)));
-}
-
-export function listConcepts(input?: {
-  spaceId?: string;
-  query?: string;
-  reviewStatus?: ConceptReviewStatus;
-  sessionId?: string;
-}): Array<Concept> {
-  const db = readDb();
-  requireUser(db);
-
-  const query = input?.query?.trim().toLowerCase() ?? "";
-  const reviewStatus = input?.reviewStatus
-    ? ConceptReviewStatusSchema.parse(input.reviewStatus)
-    : undefined;
-
-  return db.concepts
-    .filter((c) => (input?.spaceId ? c.spaceId === input.spaceId : true))
-    .filter((c) => (reviewStatus ? c.reviewStatus === reviewStatus : true))
-    .filter((c) => {
-      if (!input?.sessionId) return true;
-      return c.sources.some((s) => s.sessionId === input.sessionId);
-    })
-    .filter((c) => {
-      if (!query) return true;
-      const hay =
-        `${c.title} ${c.oneLiner} ${c.definition} ${c.tags.join(" ")}`.toLowerCase();
-      return hay.includes(query);
-    })
-    .slice()
-    .sort((a, b) => b.lastStudiedAt.localeCompare(a.lastStudiedAt));
-}
-
-export function getConcept(conceptId: string): Concept {
-  const db = readDb();
-  requireUser(db);
-  const concept = requireConcept(db, conceptId);
-
-  return {
-    ...concept,
-    sources: [...concept.sources].sort(
-      (a, b) =>
-        new Date(b.studiedAt).getTime() - new Date(a.studiedAt).getTime(),
-    ),
-  };
 }
 
 export function getPlanBySpaceActive(spaceId: string): PlanWithDerived | null {
@@ -933,7 +863,6 @@ export function startSession(input: {
     stepHistory: [blueprint.startStepId],
     historyIndex: 0,
     inputs: {},
-    createdConceptIds: [],
     status: "ACTIVE" as const,
   };
 
@@ -1017,7 +946,7 @@ export function saveSessionProgress(input: {
 }
 
 export function completeSession(input: { runId: string }): {
-  createdConceptIds: Array<string>;
+  id?: string;
 } {
   const db = readDb();
   requireUser(db);
@@ -1027,7 +956,7 @@ export function completeSession(input: { runId: string }): {
     throw new Error("NOT_FOUND_RUN");
   }
   if (run.status === "COMPLETED") {
-    return { createdConceptIds: run.createdConceptIds };
+    return {};
   }
 
   const plan = requirePlan(db, run.planId);
@@ -1036,76 +965,16 @@ export function completeSession(input: { runId: string }): {
     throw new Error("NOT_FOUND_SESSION");
   }
 
-  const exampleCode = (() => {
-    const code = run.inputs.code;
-    if (code && typeof code === "object" && !Array.isArray(code)) {
-      for (const value of Object.values(code as Record<string, unknown>)) {
-        if (typeof value === "string" && value.trim().length > 0) {
-          return value.trim().slice(0, 500);
-        }
-      }
-    }
-
-    const practice = run.inputs.practice;
-    if (practice && typeof practice === "object" && !Array.isArray(practice)) {
-      for (const value of Object.values(practice as Record<string, unknown>)) {
-        if (typeof value === "string" && value.trim().length > 0) {
-          return value.trim().slice(0, 500);
-        }
-      }
-    }
-
-    return undefined;
-  })();
-
   const createdAt = nowIso();
-  const titles = [
-    `${found.session.title}: 핵심 정의`,
-    `${found.session.title}: 주의사항`,
-  ];
-
-  const createdConceptIds: Array<string> = [];
-  for (const title of titles) {
-    const id = randomPublicId();
-    const concept: Concept = {
-      id,
-      spaceId: plan.spaceId,
-      title,
-      oneLiner: "세션에서 생성된 핵심 개념을 한 줄로 요약합니다.",
-      definition:
-        "이 개념은 세션에서 자동으로 추출/정리되었습니다. 정의와 예제, 주의사항을 중심으로 빠르게 복습할 수 있도록 구성됩니다.",
-      exampleCode,
-      gotchas: ["복습 필요도에 따라 다시 확인해보세요."],
-      tags: ["auto", "concept"],
-      reviewStatus: pickReviewStatusByAge(),
-      lastStudiedAt: createdAt,
-      sources: [
-        {
-          planId: plan.id,
-          sessionId: run.sessionId,
-          moduleTitle: found.moduleTitle,
-          sessionTitle: found.session.title,
-          studiedAt: createdAt,
-        },
-      ],
-      relatedConceptIds: [],
-    };
-    db.concepts.unshift(concept);
-    createdConceptIds.push(id);
-  }
 
   found.session.status = "completed";
   found.session.completedAt = createdAt;
-  found.session.conceptIds = Array.from(
-    new Set([...(found.session.conceptIds ?? []), ...createdConceptIds]),
-  );
 
   run.status = "COMPLETED";
-  run.createdConceptIds = createdConceptIds;
   run.updatedAt = createdAt;
 
   commit(db);
-  return { createdConceptIds };
+  return {};
 }
 
 export function statsForHome(): {

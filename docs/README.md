@@ -42,8 +42,6 @@ AI가 학습 전 과정을 자동으로 설계·운영하는 **개인 학습 운
 - [Plan 생성 위저드](./03-product/pages/plan-creation-wizard.md)
 - [Plan 상세](./03-product/pages/plan-detail.md)
 - [학습 세션](./03-product/pages/learning-session.md)
-- [Concept Library](./03-product/pages/concept-library.md)
-- [Concept 상세](./03-product/pages/concept-detail.md)
 - [세션 요약](./03-product/pages/session-summary.md)
 - [설정](./03-product/pages/settings.md)
 
@@ -77,7 +75,6 @@ AI가 학습 전 과정을 자동으로 설계·운영하는 **개인 학습 운
 | **Space**   | 한 가지 학습 목표를 담는 컨테이너 |
 | **Plan**    | 업로드된 문서 기반의 학습 계획    |
 | **Session** | 20~40분 단위의 몰입형 학습        |
-| **Concept** | 자동 저장되는 핵심 개념           |
 
 ---
 

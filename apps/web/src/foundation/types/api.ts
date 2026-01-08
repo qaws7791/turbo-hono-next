@@ -1830,47 +1830,29 @@ export interface paths {
           };
           content: {
             "application/json": {
-              data: Array<| {
-                    /** @enum {string} */
-                    kind: "SESSION";
-                    sessionId: string;
-                    planId: string;
-                    spaceId: string;
-                    spaceName: string;
-                    spaceIcon: string;
-                    spaceColor: string;
-                    planTitle: string;
-                    moduleTitle: string;
-                    sessionTitle: string;
-                    /** @enum {string} */
-                    sessionType: "LEARN" | "REVIEW";
-                    estimatedMinutes: number;
-                    /** @enum {string} */
-                    status:
-                      | "SCHEDULED"
-                      | "IN_PROGRESS"
-                      | "COMPLETED"
-                      | "SKIPPED"
-                      | "CANCELED";
-                  }
-                | {
-                    /** @enum {string} */
-                    kind: "CONCEPT_REVIEW";
-                    conceptId: string;
-                    conceptTitle: string;
-                    oneLiner: string;
-                    spaceId: string;
-                    spaceName: string;
-                    spaceIcon: string;
-                    spaceColor: string;
-                    /** @enum {string} */
-                    sessionType: "REVIEW";
-                    estimatedMinutes: number;
-                    /** @enum {string} */
-                    reviewStatus: "GOOD" | "DUE" | "OVERDUE";
-                    /** Format: date-time */
-                    dueAt: string | null;
-                  }>;
+              data: Array<{
+                /** @enum {string} */
+                kind: "SESSION";
+                sessionId: string;
+                planId: string;
+                spaceId: string;
+                spaceName: string;
+                spaceIcon: string;
+                spaceColor: string;
+                planTitle: string;
+                moduleTitle: string;
+                sessionTitle: string;
+                /** @enum {string} */
+                sessionType: "LEARN" | "REVIEW";
+                estimatedMinutes: number;
+                /** @enum {string} */
+                status:
+                  | "SCHEDULED"
+                  | "IN_PROGRESS"
+                  | "COMPLETED"
+                  | "SKIPPED"
+                  | "CANCELED";
+              }>;
               summary: {
                 total: number;
                 completed: number;
@@ -2155,8 +2137,6 @@ export interface paths {
                 summary: {
                   /** Format: uuid */
                   id: string;
-                  conceptsCreatedCount: number;
-                  conceptsUpdatedCount: number;
                   reviewsScheduledCount: number;
                   /** Format: date-time */
                   createdAt: string;
@@ -2269,9 +2249,12 @@ export interface paths {
                 };
                 blueprint: {
                   schemaVersion: number;
+                  /** Format: uuid */
+                  blueprintId: string;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<| {
+                  steps: Array<
+                    | {
                         id: string;
                         estimatedSeconds?: number;
                         /** @enum {string} */
@@ -2293,23 +2276,6 @@ export interface paths {
                         questionsToCover: Array<string>;
                         /** @default [] */
                         prerequisites: Array<string>;
-                      }
-                    | {
-                        id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
-                        intent?:
-                          | "INTRO"
-                          | "EXPLAIN"
-                          | "RETRIEVAL"
-                          | "PRACTICE"
-                          | "WRAPUP";
-                        /** @enum {string} */
-                        type: "CONCEPT";
-                        title: string;
-                        content: string;
-                        chapterIndex?: number;
-                        totalChapters?: number;
                       }
                     | {
                         id: string;
@@ -2430,7 +2396,6 @@ export interface paths {
                         celebrationEmoji: string;
                         encouragement: string;
                         studyTimeMinutes?: number;
-                        savedConceptCount?: number;
                         /** @default [] */
                         completedActivities: Array<string>;
                         keyTakeaways: Array<string>;
@@ -2438,7 +2403,8 @@ export interface paths {
                           title: string;
                           description?: string;
                         };
-                      }>;
+                      }
+                  >;
                   /** @default 0 */
                   startStepIndex: number;
                 };
@@ -2454,8 +2420,6 @@ export interface paths {
                   /** Format: uuid */
                   id: string;
                   summaryMd: string;
-                  conceptsCreatedCount: number;
-                  conceptsUpdatedCount: number;
                   reviewsScheduledCount: number;
                   /** Format: date-time */
                   createdAt: string;
@@ -2893,7 +2857,6 @@ export interface paths {
                 runId: string;
                 /** @enum {string} */
                 status: "RUNNING" | "COMPLETED" | "ABANDONED";
-                conceptsCreated: number;
                 summary: {
                   /** Format: uuid */
                   id: string;
@@ -3008,457 +2971,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/concepts": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Concept 전체 목록 조회
-     * @description 현재 사용자의 모든 학습 공간에 걸친 개념 목록을 조회합니다.
-     *
-     *     **필터링**: `search`, `reviewStatus`, `spaceIds`
-     */
-    get: {
-      parameters: {
-        query?: {
-          page?: number;
-          limit?: number;
-          search?: string;
-          reviewStatus?: "GOOD" | "DUE" | "OVERDUE";
-          spaceIds?: Array<string>;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Concept 목록을 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: Array<{
-                id: string;
-                title: string;
-                oneLiner: string;
-                /** @default [] */
-                tags: Array<string>;
-                /** @enum {string} */
-                reviewStatus: "GOOD" | "DUE" | "OVERDUE";
-                /** Format: date-time */
-                srsDueAt: string | null;
-                /** Format: date-time */
-                lastLearnedAt: string | null;
-                latestSource: {
-                  sessionRunId: string;
-                  /** @enum {string} */
-                  linkType: "CREATED" | "UPDATED" | "REVIEWED";
-                  /** Format: date-time */
-                  date: string;
-                  planId: string;
-                  planTitle: string;
-                  moduleTitle: string | null;
-                  sessionTitle: string;
-                } | null;
-                spaceId: string;
-              }>;
-              meta: {
-                total: number;
-                page: number;
-                limit: number;
-                totalPages: number;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/spaces/{spaceId}/concepts": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Concept 목록 조회
-     * @description 학습 공간에서 추출된 개념 목록을 조회합니다.
-     *
-     *     **필터링**: `search`, `reviewStatus`
-     */
-    get: {
-      parameters: {
-        query?: {
-          page?: number;
-          limit?: number;
-          search?: string;
-          reviewStatus?: "GOOD" | "DUE" | "OVERDUE";
-        };
-        header?: never;
-        path: {
-          spaceId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Concept 목록을 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: Array<{
-                id: string;
-                title: string;
-                oneLiner: string;
-                /** @default [] */
-                tags: Array<string>;
-                /** @enum {string} */
-                reviewStatus: "GOOD" | "DUE" | "OVERDUE";
-                /** Format: date-time */
-                srsDueAt: string | null;
-                /** Format: date-time */
-                lastLearnedAt: string | null;
-                latestSource: {
-                  sessionRunId: string;
-                  /** @enum {string} */
-                  linkType: "CREATED" | "UPDATED" | "REVIEWED";
-                  /** Format: date-time */
-                  date: string;
-                  planId: string;
-                  planTitle: string;
-                  moduleTitle: string | null;
-                  sessionTitle: string;
-                } | null;
-              }>;
-              meta: {
-                total: number;
-                page: number;
-                limit: number;
-                totalPages: number;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/concepts/{conceptId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Concept 상세 조회
-     * @description 개념의 상세 정보를 조회합니다. 설명, 관련 자료, 복습 기록을 포함합니다.
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          conceptId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Concept 상세를 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                id: string;
-                spaceId: string;
-                title: string;
-                oneLiner: string;
-                ariNoteMd: string;
-                /** @default [] */
-                tags: Array<string>;
-                /** @enum {string} */
-                reviewStatus: "GOOD" | "DUE" | "OVERDUE";
-                /** @default [] */
-                relatedConcepts: Array<{
-                  id: string;
-                  title: string;
-                  oneLiner: string;
-                  /** @enum {string} */
-                  reviewStatus: "GOOD" | "DUE" | "OVERDUE";
-                }>;
-                /** @default [] */
-                learningHistory: Array<{
-                  sessionRunId: string;
-                  /** @enum {string} */
-                  linkType: "CREATED" | "UPDATED" | "REVIEWED";
-                  /** Format: date-time */
-                  date: string;
-                  planId: string;
-                  planTitle: string;
-                  moduleTitle: string | null;
-                  sessionTitle: string;
-                }>;
-                srsState: {
-                  interval: number;
-                  ease: number;
-                  /** Format: date-time */
-                  dueAt: string;
-                } | null;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/concepts/{conceptId}/reviews": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * 복습 기록
-     * @description 개념 복습 결과를 기록합니다. SM-2 알고리즘 기반으로 다음 복습 일정을 계산합니다.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          conceptId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            /** @enum {string} */
-            rating: "AGAIN" | "HARD" | "GOOD" | "EASY";
-            sessionRunId?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description 복습 기록이 저장되었습니다. */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                /** Format: date-time */
-                nextDueAt: string;
-                newInterval: number;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/concepts/search": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * 전체 Space Concept 검색
-     * @description 여러 학습 공간에 걸쳐 개념을 검색합니다. 벡터 유사도 기반 검색을 지원합니다.
-     */
-    get: {
-      parameters: {
-        query: {
-          q: string;
-          spaceIds?: Array<string>;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description 검색 결과를 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: Array<{
-                id: string;
-                spaceId: string;
-                title: string;
-                oneLiner: string;
-              }>;
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/chat/threads": {
     parameters: {
       query?: never;
@@ -3483,7 +2995,7 @@ export interface paths {
         content: {
           "application/json": {
             /** @enum {string} */
-            scopeType: "SPACE" | "PLAN" | "SESSION" | "CONCEPT";
+            scopeType: "SPACE" | "PLAN" | "SESSION";
             scopeId: string;
           };
         };
