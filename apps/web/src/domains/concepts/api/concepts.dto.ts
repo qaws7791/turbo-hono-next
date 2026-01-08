@@ -14,3 +14,9 @@ export type ConceptDetailOk =
 export type ApiConceptDetail = ConceptDetailOk["data"];
 
 export type ApiRelatedConcept = ApiConceptDetail["relatedConcepts"][number];
+
+export type ConceptLibraryListOk =
+  paths["/api/concepts"]["get"]["responses"]["200"]["content"]["application/json"];
+
+export type ConceptLibraryListQuery =
+  paths["/api/concepts"]["get"]["parameters"]["query"];

@@ -1,28 +1,32 @@
 import {
   toConceptFromApiDetail,
   toConceptFromApiListItem,
+  toRelatedConceptFromApi,
 } from "./concepts.mapper";
 
 import type {
-  ApiRelatedConcept,
+  ConceptLibraryListOk,
+  ConceptLibraryListQuery,
   SpaceConceptsListOk,
   SpaceConceptsListQuery,
 } from "./concepts.dto";
-import type { Concept } from "../model/concepts.types";
+import type {
+  ConceptDetail,
+  ConceptSummary,
+  RelatedConcept,
+} from "../model/concepts.types";
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
 
 export type SpaceConceptsList = {
-  data: Array<Concept>;
+  data: Array<ConceptSummary>;
   meta: SpaceConceptsListOk["meta"];
 };
 
-export type RelatedConceptSummary = Pick<ApiRelatedConcept, "id" | "title">;
-
-export type ConceptDetail = {
-  concept: Concept;
-  relatedConcepts: Array<RelatedConceptSummary>;
+export type ConceptDetailData = {
+  concept: ConceptDetail;
+  relatedConcepts: Array<RelatedConcept>;
 };
 
 export async function listSpaceConcepts(
@@ -44,9 +48,8 @@ export async function listSpaceConcepts(
 }
 
 export async function getConceptDetail(
-  spaceId: string,
   conceptId: string,
-): Promise<ConceptDetail> {
+): Promise<ConceptDetailData> {
   const { data, error, response } = await apiClient.GET(
     "/api/concepts/{conceptId}",
     { params: { path: { conceptId } } },
@@ -56,10 +59,32 @@ export async function getConceptDetail(
   }
 
   return {
-    concept: toConceptFromApiDetail(spaceId, data.data),
-    relatedConcepts: data.data.relatedConcepts.map((item) => ({
-      id: item.id,
-      title: item.title,
-    })),
+    concept: toConceptFromApiDetail(data.data),
+    relatedConcepts: data.data.relatedConcepts.map(toRelatedConceptFromApi),
+  };
+}
+
+export type ConceptLibraryList = {
+  data: Array<ConceptSummary>;
+  meta: ConceptLibraryListOk["meta"];
+};
+
+export async function listConceptLibrary(
+  query?: ConceptLibraryListQuery,
+): Promise<ConceptLibraryList> {
+  const { data, error, response } = await apiClient.GET("/api/concepts", {
+    params: { query },
+  });
+  if (!response.ok || !data) {
+    throw new ApiError(
+      "Failed to list concept library",
+      response.status,
+      error,
+    );
+  }
+
+  return {
+    data: data.data.map((item) => toConceptFromApiListItem(item.spaceId, item)),
+    meta: data.meta,
   };
 }

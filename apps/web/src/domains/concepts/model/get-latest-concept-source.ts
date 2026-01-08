@@ -1,8 +1,10 @@
-import type { Concept } from "./concepts.types";
+import type { ConceptSource } from "./concepts.types";
 
-export type ConceptSource = Concept["sources"][number];
+export type ConceptWithSources = { sources: Array<ConceptSource> };
 
-export function getLatestConceptSource(concept: Concept): ConceptSource | null {
+export function getLatestConceptSource(
+  concept: ConceptWithSources,
+): ConceptSource | null {
   const sources = concept.sources
     .slice()
     .sort((a, b) => b.studiedAt.localeCompare(a.studiedAt));

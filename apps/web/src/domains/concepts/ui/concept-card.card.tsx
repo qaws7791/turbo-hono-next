@@ -2,20 +2,18 @@ import { Badge } from "@repo/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Separator } from "@repo/ui/separator";
 
-import { getLatestConceptSource } from "../model";
-
 import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
-import type { Concept } from "../model";
+import type { ConceptSummary } from "../model";
 
 export function ConceptCard({
   concept,
   showSource,
 }: {
-  concept: Concept;
+  concept: ConceptSummary;
   showSource: boolean;
 }) {
-  const latest = showSource ? getLatestConceptSource(concept) : null;
+  const latest = showSource ? concept.latestSource : null;
 
   return (
     <Card className="flex flex-col h-full transition-colors group-hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring">
@@ -46,7 +44,8 @@ export function ConceptCard({
               출처:{" "}
               {latest ? (
                 <>
-                  {latest.moduleTitle} · {latest.sessionTitle}
+                  {latest.moduleTitle ?? latest.planTitle} ·{" "}
+                  {latest.sessionTitle}
                 </>
               ) : (
                 "알 수 없음"

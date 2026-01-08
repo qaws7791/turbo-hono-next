@@ -1,12 +1,13 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getConceptDetail, listSpaceConcepts } from "./api/concepts.api";
+import {
+  getConceptDetail,
+  listConceptLibrary,
+  listSpaceConcepts,
+} from "./api/concepts.api";
 
-import type { Space } from "~/domains/spaces/model/spaces.types";
 import type { SpaceConceptsList } from "./api/concepts.api";
-import type { Concept } from "./model/concepts.types";
-
-import { getSpace, listSpaces } from "~/domains/spaces/api/spaces.api";
+import type { ConceptSummary } from "./model/concepts.types";
 
 export const conceptsQueries = {
   all: () => ["concepts"] as const,
@@ -25,84 +26,17 @@ export const conceptsQueries = {
         listSpaceConcepts(spaceId, query),
     }),
 
-  detail: (spaceId: string, conceptId: string) =>
+  detail: (conceptId: string) =>
     queryOptions({
-      queryKey: [...conceptsQueries.details(), spaceId, conceptId] as const,
-      queryFn: () => getConceptDetail(spaceId, conceptId),
+      queryKey: [...conceptsQueries.details(), conceptId] as const,
+      queryFn: () => getConceptDetail(conceptId),
     }),
 
-  library: () => {
+  library: (query?: Parameters<typeof listConceptLibrary>[0]) => {
     return queryOptions({
-      queryKey: [...conceptsQueries.libraries()] as const,
-      queryFn: async (): Promise<Array<Concept>> => {
-        const spaces = await listSpaces();
-        const conceptLists = await Promise.all(
-          spaces.map((space) =>
-            listSpaceConcepts(space.id, {
-              page: 1,
-              limit: 50,
-            }),
-          ),
-        );
-
-        return conceptLists.flatMap((list) => list.data);
-      },
+      queryKey: [...conceptsQueries.libraries(), query ?? null] as const,
+      queryFn: (): Promise<Array<ConceptSummary>> =>
+        listConceptLibrary(query).then((res) => res.data),
     });
   },
-
-  detailPage: (conceptId: string) =>
-    queryOptions({
-      queryKey: [...conceptsQueries.pages(), "detail", conceptId] as const,
-      queryFn: async (): Promise<{
-        concept: Concept;
-        space: Space;
-        related: Array<Concept>;
-      }> => {
-        const spaces = await listSpaces();
-        const conceptLists = await Promise.all(
-          spaces.map((space) =>
-            listSpaceConcepts(space.id, { page: 1, limit: 200 }),
-          ),
-        );
-
-        const index = new Map<string, Concept>();
-        for (const list of conceptLists) {
-          for (const item of list.data) {
-            index.set(item.id, item);
-          }
-        }
-
-        const located = index.get(conceptId);
-        if (!located) {
-          throw new Response("Not Found", { status: 404 });
-        }
-
-        const space = await getSpace(located.spaceId);
-        const detail = await getConceptDetail(located.spaceId, conceptId);
-        const concept = detail.concept;
-
-        const related = detail.relatedConcepts.slice(0, 6).map((r) => {
-          const found = index.get(r.id);
-          if (found) return found;
-
-          const fallback: Concept = {
-            id: r.id,
-            spaceId: concept.spaceId,
-            title: r.title,
-            oneLiner: "",
-            definition: "",
-            exampleCode: undefined,
-            gotchas: [],
-            tags: [],
-            reviewStatus: "good",
-            lastStudiedAt: undefined,
-            sources: [],
-            relatedConceptIds: [],
-          };
-          return fallback;
-        });
-
-        return { concept, space, related };
-      },
-    }),
 };

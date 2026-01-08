@@ -5,7 +5,7 @@ import { conceptsQueries } from "../concepts.queries";
 
 import { ConceptCard } from "./concept-card.card";
 
-import type { Concept } from "../model/concepts.types";
+import type { ConceptSummary } from "../model/concepts.types";
 
 import { spacesQueries } from "~/domains/spaces";
 
@@ -30,7 +30,7 @@ export function SpaceConceptsView({ spaceId }: { spaceId: string }) {
       </div>
 
       <div className="grid gap-4">
-        {concepts.map((concept: Concept) => (
+        {concepts.map((concept: ConceptSummary) => (
           <Link
             key={concept.id}
             to={`/concept/${concept.id}`}

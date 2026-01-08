@@ -12,9 +12,12 @@ export type { ConceptTab, ConceptTabs } from "./application/use-concept-tabs";
 export { conceptsQueries } from "./concepts.queries";
 
 export type {
-  Concept,
+  ConceptDetail,
   ConceptLibraryFilters,
+  ConceptLearningLinkType,
   ConceptReviewStatus,
   ConceptSource,
+  ConceptSummary,
+  RelatedConcept,
 } from "./model/concepts.types";
 export { getLatestConceptSource } from "./model/get-latest-concept-source";

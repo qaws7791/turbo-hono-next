@@ -15,7 +15,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   if (!conceptId.success) {
     throw new Response("Not Found", { status: 404 });
   }
-  await queryClient.ensureQueryData(conceptsQueries.detailPage(conceptId.data));
+  await queryClient.ensureQueryData(conceptsQueries.detail(conceptId.data));
 }
 
 export default function ConceptDetailRoute({ params }: Route.ComponentProps) {

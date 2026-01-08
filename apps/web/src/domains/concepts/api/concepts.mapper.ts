@@ -1,5 +1,11 @@
+import type {
+  ConceptDetail,
+  ConceptReviewStatus,
+  ConceptSource,
+  ConceptSummary,
+  RelatedConcept,
+} from "../model/concepts.types";
 import type { ApiConceptDetail, ApiConceptListItem } from "./concepts.dto";
-import type { Concept, ConceptReviewStatus } from "../model/concepts.types";
 
 export function toConceptReviewStatusFromApi(
   status: ApiConceptListItem["reviewStatus"],
@@ -9,65 +15,71 @@ export function toConceptReviewStatusFromApi(
   return "good";
 }
 
+function toConceptSourceFromApi(source: {
+  sessionRunId: string;
+  linkType: "CREATED" | "UPDATED" | "REVIEWED";
+  date: string;
+  planId: string;
+  planTitle: string;
+  moduleTitle: string | null;
+  sessionTitle: string;
+}): ConceptSource {
+  return {
+    planId: source.planId,
+    planTitle: source.planTitle,
+    sessionRunId: source.sessionRunId,
+    moduleTitle: source.moduleTitle,
+    sessionTitle: source.sessionTitle,
+    studiedAt: source.date,
+    linkType: source.linkType,
+  };
+}
+
 export function toConceptFromApiListItem(
   spaceId: string,
   item: ApiConceptListItem,
-): Concept {
+): ConceptSummary {
   return {
     id: item.id,
     spaceId,
     title: item.title,
     oneLiner: item.oneLiner,
-    definition: "",
-    exampleCode: undefined,
-    gotchas: [],
     tags: item.tags,
     reviewStatus: toConceptReviewStatusFromApi(item.reviewStatus),
     lastStudiedAt: item.lastLearnedAt ?? undefined,
-    sources: [],
-    relatedConceptIds: [],
+    latestSource: item.latestSource
+      ? toConceptSourceFromApi(item.latestSource)
+      : null,
   };
 }
 
-function toReviewStatusFromDueAt(
-  dueAt: string | null | undefined,
-): ConceptReviewStatus {
-  if (!dueAt) return "good";
-  const due = new Date(dueAt);
-  if (Number.isNaN(due.getTime())) return "good";
-
-  const diffMs = due.getTime() - Date.now();
-  if (diffMs <= 0) return "due";
-  if (diffMs <= 3 * 24 * 60 * 60 * 1000) return "soon";
-  return "good";
-}
-
 export function toConceptFromApiDetail(
-  spaceId: string,
   detail: ApiConceptDetail,
-): Concept {
-  const lastStudiedAt = detail.learningHistory
-    .slice()
-    .sort((a, b) => b.date.localeCompare(a.date))[0]?.date;
+): ConceptDetail {
+  const sources = detail.learningHistory.map(toConceptSourceFromApi);
+  const lastStudiedAt = sources[0]?.studiedAt;
 
   return {
     id: detail.id,
-    spaceId,
+    spaceId: detail.spaceId,
     title: detail.title,
     oneLiner: detail.oneLiner,
-    definition: detail.ariNoteMd,
-    exampleCode: undefined,
-    gotchas: [],
+    ariNoteMd: detail.ariNoteMd,
     tags: detail.tags,
-    reviewStatus: toReviewStatusFromDueAt(detail.srsState?.dueAt),
+    reviewStatus: toConceptReviewStatusFromApi(detail.reviewStatus),
     lastStudiedAt,
-    sources: detail.learningHistory.map((h) => ({
-      planId: "",
-      sessionId: h.sessionRunId,
-      moduleTitle: "학습 세션",
-      sessionTitle: "세션 기록",
-      studiedAt: h.date,
-    })),
+    sources,
     relatedConceptIds: detail.relatedConcepts.map((c) => c.id),
+  };
+}
+
+export function toRelatedConceptFromApi(
+  item: ApiConceptDetail["relatedConcepts"][number],
+): RelatedConcept {
+  return {
+    id: item.id,
+    title: item.title,
+    oneLiner: item.oneLiner,
+    reviewStatus: toConceptReviewStatusFromApi(item.reviewStatus),
   };
 }

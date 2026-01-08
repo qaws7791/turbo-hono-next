@@ -10,12 +10,12 @@ import {
 } from "@repo/ui/timeline";
 import { Link } from "react-router";
 
-import type { Concept } from "../model";
+import type { ConceptDetail } from "../model";
 
 import { formatLongDateTime } from "~/foundation/lib/time";
 
 interface ConceptHistoryTabContentProps {
-  concept: Concept;
+  concept: ConceptDetail;
 }
 
 export function ConceptHistoryTabContent({
@@ -40,7 +40,7 @@ export function ConceptHistoryTabContent({
         <Timeline defaultValue={sources.length}>
           {sources.map((source, index) => (
             <TimelineItem
-              key={`${source.sessionId}-${index}`}
+              key={`${source.sessionRunId}-${index}`}
               step={index + 1}
             >
               <TimelineIndicator className="bg-background flex items-center justify-center">
@@ -53,7 +53,7 @@ export function ConceptHistoryTabContent({
                 </TimelineDate>
                 <TimelineTitle>
                   <Link
-                    to={`/session?runId=${source.sessionId}`}
+                    to={`/session?runId=${source.sessionRunId}`}
                     className="hover:underline"
                   >
                     {source.sessionTitle}
@@ -62,7 +62,7 @@ export function ConceptHistoryTabContent({
               </TimelineHeader>
               <TimelineContent>
                 <p className="text-muted-foreground text-xs">
-                  {source.moduleTitle}
+                  {source.moduleTitle ?? source.planTitle}
                 </p>
               </TimelineContent>
             </TimelineItem>

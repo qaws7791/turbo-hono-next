@@ -22,15 +22,22 @@ import { ConceptRelatedTabContent } from "./concept-related-tab-content";
 import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
+import { spacesQueries } from "~/domains/spaces/spaces.queries";
 
 export function ConceptDetailView({ conceptId }: { conceptId: string }) {
-  const { data } = useSuspenseQuery(conceptsQueries.detailPage(conceptId));
-  const { concept, space, related } = data;
+  const { data: detail } = useSuspenseQuery(conceptsQueries.detail(conceptId));
+  const { concept, relatedConcepts } = detail;
+
+  const { data: space } = useSuspenseQuery(
+    spacesQueries.detail(concept.spaceId),
+  );
+
+  const related = relatedConcepts.slice(0, 6);
 
   const tabs = useConceptTabs(concept.id);
   const latestSource = getLatestConceptSource(concept);
   const reviewHref = latestSource
-    ? `/session?runId=${latestSource.sessionId}`
+    ? `/session?runId=${latestSource.sessionRunId}`
     : null;
 
   return (

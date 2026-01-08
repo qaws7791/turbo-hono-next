@@ -2,10 +2,10 @@ import { Link } from "react-router";
 
 import { ConceptReviewBadge } from "./concept-review-badge.badge";
 
-import type { Concept } from "../model";
+import type { RelatedConcept } from "../model";
 
 interface ConceptRelatedTabContentProps {
-  related: Array<Concept>;
+  related: Array<RelatedConcept>;
 }
 
 export function ConceptRelatedTabContent({
