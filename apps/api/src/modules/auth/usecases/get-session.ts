@@ -59,6 +59,7 @@ export async function getSessionByToken(
       avatarUrl: user.avatarUrl ?? null,
       locale: user.locale,
       timezone: user.timezone,
+      subscriptionPlan: user.subscriptionPlan,
     },
     session: {
       id: session.id,

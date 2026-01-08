@@ -11,6 +11,7 @@ export type AuthContext = {
     avatarUrl: string | null;
     locale: string;
     timezone: string;
+    subscriptionPlan: "FREE" | "PRO";
   };
   session: {
     id: string;
