@@ -4,6 +4,9 @@ import {
   conceptSessionLinks,
   conceptTags,
   concepts,
+  planModules,
+  planSessions,
+  plans,
   sessionRuns,
   spaces,
   tags,
@@ -156,6 +159,132 @@ export const conceptRepository = {
     });
   },
 
+  countLibrary(
+    userId: string,
+    params: {
+      search?: string;
+      reviewStatus?: ConceptReviewStatus;
+      today: Date;
+      dueWindowEnd: Date;
+      spaceIds?: ReadonlyArray<number>;
+    },
+  ): ResultAsync<number, AppError> {
+    return tryPromise(async () => {
+      const db = getDb();
+      const where = [
+        eq(concepts.userId, userId),
+        isNull(concepts.deletedAt),
+        eq(spaces.userId, userId),
+        isNull(spaces.deletedAt),
+      ];
+
+      if (params.spaceIds && params.spaceIds.length > 0) {
+        where.push(inArray(concepts.spaceId, [...params.spaceIds]));
+      }
+
+      if (params.search?.trim()) {
+        const q = params.search.trim();
+        where.push(
+          sql`(${concepts.title} ILIKE ${`%${q}%`} OR ${concepts.oneLiner} ILIKE ${`%${q}%`})`,
+        );
+      }
+
+      if (params.reviewStatus === "OVERDUE") {
+        where.push(sql`${concepts.srsDueAt} < ${params.today}`);
+      } else if (params.reviewStatus === "DUE") {
+        where.push(
+          sql`${concepts.srsDueAt} >= ${params.today} AND ${concepts.srsDueAt} <= ${params.dueWindowEnd}`,
+        );
+      } else if (params.reviewStatus === "GOOD") {
+        where.push(
+          sql`${concepts.srsDueAt} > ${params.dueWindowEnd} OR ${concepts.srsDueAt} IS NULL`,
+        );
+      }
+
+      const rows = await db
+        .select({ total: sql<number>`count(*)`.mapWith(Number) })
+        .from(concepts)
+        .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
+        .where(and(...where));
+      return rows[0]?.total ?? 0;
+    });
+  },
+
+  listLibrary(
+    userId: string,
+    params: {
+      page: number;
+      limit: number;
+      search?: string;
+      reviewStatus?: ConceptReviewStatus;
+      today: Date;
+      dueWindowEnd: Date;
+      spaceIds?: ReadonlyArray<number>;
+    },
+  ): ResultAsync<
+    Array<{
+      id: number;
+      publicId: string;
+      spaceId: string;
+      title: string;
+      oneLiner: string;
+      srsDueAt: Date | null;
+      lastLearnedAt: Date | null;
+    }>,
+    AppError
+  > {
+    return tryPromise(() => {
+      const db = getDb();
+      const where = [
+        eq(concepts.userId, userId),
+        isNull(concepts.deletedAt),
+        eq(spaces.userId, userId),
+        isNull(spaces.deletedAt),
+      ];
+
+      if (params.spaceIds && params.spaceIds.length > 0) {
+        where.push(inArray(concepts.spaceId, [...params.spaceIds]));
+      }
+
+      if (params.search?.trim()) {
+        const q = params.search.trim();
+        where.push(
+          sql`(${concepts.title} ILIKE ${`%${q}%`} OR ${concepts.oneLiner} ILIKE ${`%${q}%`})`,
+        );
+      }
+
+      if (params.reviewStatus === "OVERDUE") {
+        where.push(sql`${concepts.srsDueAt} < ${params.today}`);
+      } else if (params.reviewStatus === "DUE") {
+        where.push(
+          sql`${concepts.srsDueAt} >= ${params.today} AND ${concepts.srsDueAt} <= ${params.dueWindowEnd}`,
+        );
+      } else if (params.reviewStatus === "GOOD") {
+        where.push(
+          sql`${concepts.srsDueAt} > ${params.dueWindowEnd} OR ${concepts.srsDueAt} IS NULL`,
+        );
+      }
+
+      const offset = (params.page - 1) * params.limit;
+      return db
+        .select({
+          id: concepts.id,
+          publicId: concepts.publicId,
+          spaceId: spaces.publicId,
+          title: concepts.title,
+          oneLiner: concepts.oneLiner,
+          srsDueAt: concepts.srsDueAt,
+          lastLearnedAt: concepts.lastLearnedAt,
+        })
+        .from(concepts)
+        .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
+        .where(and(...where))
+        .orderBy(asc(concepts.srsDueAt), desc(concepts.updatedAt))
+        .limit(params.limit)
+        .offset(offset);
+    });
+  },
+
   findDetailByPublicId(
     userId: string,
     conceptId: string,
@@ -164,6 +293,7 @@ export const conceptRepository = {
       id: number;
       publicId: string;
       spaceId: number;
+      spacePublicId: string;
       title: string;
       oneLiner: string;
       ariNoteMd: string;
@@ -179,6 +309,7 @@ export const conceptRepository = {
           id: concepts.id,
           publicId: concepts.publicId,
           spaceId: concepts.spaceId,
+          spacePublicId: spaces.publicId,
           title: concepts.title,
           oneLiner: concepts.oneLiner,
           ariNoteMd: concepts.ariNoteMd,
@@ -186,11 +317,14 @@ export const conceptRepository = {
           srsStateJson: concepts.srsStateJson,
         })
         .from(concepts)
+        .innerJoin(spaces, eq(spaces.id, concepts.spaceId))
         .where(
           and(
             eq(concepts.publicId, conceptId),
             eq(concepts.userId, userId),
             isNull(concepts.deletedAt),
+            eq(spaces.userId, userId),
+            isNull(spaces.deletedAt),
           ),
         )
         .limit(1);
@@ -199,27 +333,53 @@ export const conceptRepository = {
   },
 
   listRelatedConcepts(
+    userId: string,
     conceptId: number,
-  ): ResultAsync<Array<{ id: string; title: string }>, AppError> {
+  ): ResultAsync<
+    Array<{
+      id: string;
+      title: string;
+      oneLiner: string;
+      srsDueAt: Date | null;
+    }>,
+    AppError
+  > {
     return tryPromise(() => {
       const db = getDb();
       return db
         .select({
           id: concepts.publicId,
           title: concepts.title,
+          oneLiner: concepts.oneLiner,
+          srsDueAt: concepts.srsDueAt,
         })
         .from(conceptRelations)
         .innerJoin(concepts, eq(concepts.id, conceptRelations.toConceptId))
-        .where(eq(conceptRelations.fromConceptId, conceptId))
+        .where(
+          and(
+            eq(conceptRelations.fromConceptId, conceptId),
+            eq(concepts.userId, userId),
+            isNull(concepts.deletedAt),
+          ),
+        )
         .orderBy(desc(conceptRelations.createdAt))
         .limit(10);
     });
   },
 
   listLearningHistory(
+    userId: string,
     conceptId: number,
   ): ResultAsync<
-    Array<{ sessionRunId: string; linkType: string; createdAt: Date }>,
+    Array<{
+      sessionRunId: string;
+      linkType: string;
+      createdAt: Date;
+      planId: string;
+      planTitle: string;
+      moduleTitle: string | null;
+      sessionTitle: string;
+    }>,
     AppError
   > {
     return tryPromise(() => {
@@ -229,15 +389,120 @@ export const conceptRepository = {
           sessionRunId: sessionRuns.publicId,
           linkType: conceptSessionLinks.linkType,
           createdAt: conceptSessionLinks.createdAt,
+          planId: plans.publicId,
+          planTitle: plans.title,
+          moduleTitle: planModules.title,
+          sessionTitle: planSessions.title,
         })
         .from(conceptSessionLinks)
         .innerJoin(
           sessionRuns,
           eq(sessionRuns.id, conceptSessionLinks.sessionRunId),
         )
-        .where(eq(conceptSessionLinks.conceptId, conceptId))
+        .innerJoin(plans, eq(plans.id, sessionRuns.planId))
+        .innerJoin(planSessions, eq(planSessions.id, sessionRuns.sessionId))
+        .leftJoin(planModules, eq(planModules.id, planSessions.moduleId))
+        .where(
+          and(
+            eq(conceptSessionLinks.conceptId, conceptId),
+            eq(sessionRuns.userId, userId),
+          ),
+        )
         .orderBy(desc(conceptSessionLinks.createdAt))
         .limit(30);
+    });
+  },
+
+  getLatestSourceMap(
+    userId: string,
+    conceptIds: ReadonlyArray<number>,
+  ): ResultAsync<
+    Map<
+      number,
+      {
+        sessionRunId: string;
+        linkType: string;
+        createdAt: Date;
+        planId: string;
+        planTitle: string;
+        moduleTitle: string | null;
+        sessionTitle: string;
+      }
+    >,
+    AppError
+  > {
+    return tryPromise(async () => {
+      if (conceptIds.length === 0) {
+        return new Map<
+          number,
+          {
+            sessionRunId: string;
+            linkType: string;
+            createdAt: Date;
+            planId: string;
+            planTitle: string;
+            moduleTitle: string | null;
+            sessionTitle: string;
+          }
+        >();
+      }
+
+      const db = getDb();
+      const rows = await db
+        .select({
+          conceptId: conceptSessionLinks.conceptId,
+          sessionRunId: sessionRuns.publicId,
+          linkType: conceptSessionLinks.linkType,
+          createdAt: conceptSessionLinks.createdAt,
+          planId: plans.publicId,
+          planTitle: plans.title,
+          moduleTitle: planModules.title,
+          sessionTitle: planSessions.title,
+        })
+        .from(conceptSessionLinks)
+        .innerJoin(
+          sessionRuns,
+          eq(sessionRuns.id, conceptSessionLinks.sessionRunId),
+        )
+        .innerJoin(plans, eq(plans.id, sessionRuns.planId))
+        .innerJoin(planSessions, eq(planSessions.id, sessionRuns.sessionId))
+        .leftJoin(planModules, eq(planModules.id, planSessions.moduleId))
+        .where(
+          and(
+            inArray(conceptSessionLinks.conceptId, [...conceptIds]),
+            eq(sessionRuns.userId, userId),
+          ),
+        )
+        .orderBy(desc(conceptSessionLinks.createdAt));
+
+      const map = new Map<
+        number,
+        {
+          sessionRunId: string;
+          linkType: string;
+          createdAt: Date;
+          planId: string;
+          planTitle: string;
+          moduleTitle: string | null;
+          sessionTitle: string;
+        }
+      >();
+
+      for (const row of rows) {
+        if (!map.has(row.conceptId)) {
+          map.set(row.conceptId, {
+            sessionRunId: row.sessionRunId,
+            linkType: row.linkType,
+            createdAt: row.createdAt,
+            planId: row.planId,
+            planTitle: row.planTitle,
+            moduleTitle: row.moduleTitle,
+            sessionTitle: row.sessionTitle,
+          });
+        }
+      }
+
+      return map;
     });
   },
 

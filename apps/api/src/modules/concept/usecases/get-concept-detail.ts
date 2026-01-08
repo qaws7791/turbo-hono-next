@@ -4,7 +4,7 @@ import { ApiError } from "../../../middleware/error-handler";
 import { assertSpaceOwned } from "../../space";
 import { ConceptDetailResponse } from "../concept.dto";
 import { conceptRepository } from "../concept.repository";
-import { extractSrsState } from "../concept.utils";
+import { computeReviewStatus, extractSrsState } from "../concept.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -40,12 +40,18 @@ export async function getConceptDetail(
   const tagMap = tagMapResult.value;
 
   // 4. 관련 Concept 조회
-  const relatedResult = await conceptRepository.listRelatedConcepts(concept.id);
+  const relatedResult = await conceptRepository.listRelatedConcepts(
+    userId,
+    concept.id,
+  );
   if (relatedResult.isErr()) return err(relatedResult.error);
   const related = relatedResult.value;
 
   // 5. 학습 이력 조회
-  const historyResult = await conceptRepository.listLearningHistory(concept.id);
+  const historyResult = await conceptRepository.listLearningHistory(
+    userId,
+    concept.id,
+  );
   if (historyResult.isErr()) return err(historyResult.error);
   const history = historyResult.value;
 
@@ -64,15 +70,26 @@ export async function getConceptDetail(
     ConceptDetailResponse.parse({
       data: {
         id: concept.publicId,
+        spaceId: concept.spacePublicId,
         title: concept.title,
         oneLiner: concept.oneLiner,
         ariNoteMd: concept.ariNoteMd,
         tags: tagMap.get(concept.id) ?? [],
-        relatedConcepts: related.map((r) => ({ id: r.id, title: r.title })),
+        reviewStatus: computeReviewStatus(concept.srsDueAt),
+        relatedConcepts: related.map((r) => ({
+          id: r.id,
+          title: r.title,
+          oneLiner: r.oneLiner,
+          reviewStatus: computeReviewStatus(r.srsDueAt),
+        })),
         learningHistory: history.map((h) => ({
           sessionRunId: h.sessionRunId,
           linkType: h.linkType,
           date: h.createdAt.toISOString(),
+          planId: h.planId,
+          planTitle: h.planTitle,
+          moduleTitle: h.moduleTitle,
+          sessionTitle: h.sessionTitle,
         })),
         srsState,
       },

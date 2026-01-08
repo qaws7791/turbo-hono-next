@@ -1,6 +1,7 @@
 import {
   createConceptReviewRoute,
   getConceptDetailRoute,
+  listConceptLibraryRoute,
   listConceptsRoute,
   searchConceptsRoute,
 } from "@repo/api-spec";
@@ -10,6 +11,7 @@ import { requireAuth } from "../middleware/auth";
 import {
   createConceptReview,
   getConceptDetail,
+  listConceptLibrary,
   listConcepts,
   searchConcepts,
 } from "../modules/concept";
@@ -17,6 +19,26 @@ import {
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
 export function registerConceptRoutes(app: OpenAPIHono): void {
+  app.openapi(
+    { ...listConceptLibraryRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const query = c.req.valid("query");
+
+      return jsonResult(
+        c,
+        listConceptLibrary(auth.user.id, {
+          page: query.page ?? 1,
+          limit: query.limit ?? 20,
+          search: query.search,
+          reviewStatus: query.reviewStatus,
+          spaceIds: query.spaceIds,
+        }),
+        200,
+      );
+    },
+  );
+
   app.openapi(
     { ...listConceptsRoute, middleware: [requireAuth] as const },
     async (c) => {

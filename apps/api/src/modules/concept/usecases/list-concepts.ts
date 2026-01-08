@@ -64,9 +64,29 @@ export async function listConcepts(
   if (tagMapResult.isErr()) return err(tagMapResult.error);
   const tagMap = tagMapResult.value;
 
+  const latestSourceMapResult = await conceptRepository.getLatestSourceMap(
+    userId,
+    rows.map((row) => row.id),
+  );
+  if (latestSourceMapResult.isErr()) return err(latestSourceMapResult.error);
+  const latestSourceMap = latestSourceMapResult.value;
+
   return ok(
     ListConceptsResponse.parse({
       data: rows.map((row) => ({
+        latestSource: (() => {
+          const source = latestSourceMap.get(row.id);
+          if (!source) return null;
+          return {
+            sessionRunId: source.sessionRunId,
+            linkType: source.linkType,
+            date: source.createdAt.toISOString(),
+            planId: source.planId,
+            planTitle: source.planTitle,
+            moduleTitle: source.moduleTitle,
+            sessionTitle: source.sessionTitle,
+          };
+        })(),
         id: row.publicId,
         title: row.title,
         oneLiner: row.oneLiner,

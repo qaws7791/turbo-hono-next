@@ -23,6 +23,16 @@ export const ListConceptsInput = PaginationInput.extend({
 });
 export type ListConceptsInput = z.infer<typeof ListConceptsInput>;
 
+const ConceptLearningHistoryItem = z.object({
+  sessionRunId: PublicIdSchema,
+  linkType: z.enum(["CREATED", "UPDATED", "REVIEWED"]),
+  date: z.string().datetime(),
+  planId: PublicIdSchema,
+  planTitle: z.string().min(1),
+  moduleTitle: z.string().min(1).nullable(),
+  sessionTitle: z.string().min(1),
+});
+
 export const ConceptListItem = z.object({
   id: PublicIdSchema,
   title: z.string().min(1),
@@ -31,6 +41,7 @@ export const ConceptListItem = z.object({
   reviewStatus: ConceptReviewStatusSchema,
   srsDueAt: z.string().datetime().nullable(),
   lastLearnedAt: z.string().datetime().nullable(),
+  latestSource: ConceptLearningHistoryItem.nullable(),
 });
 export type ConceptListItem = z.infer<typeof ConceptListItem>;
 
@@ -43,27 +54,23 @@ export type ListConceptsResponse = z.infer<typeof ListConceptsResponse>;
 export const ConceptDetailResponse = z.object({
   data: z.object({
     id: PublicIdSchema,
+    spaceId: PublicIdSchema,
     title: z.string().min(1),
     oneLiner: z.string().min(1),
     ariNoteMd: z.string().min(1),
     tags: z.array(z.string()).default([]),
+    reviewStatus: ConceptReviewStatusSchema,
     relatedConcepts: z
       .array(
         z.object({
           id: PublicIdSchema,
           title: z.string().min(1),
+          oneLiner: z.string().min(1),
+          reviewStatus: ConceptReviewStatusSchema,
         }),
       )
       .default([]),
-    learningHistory: z
-      .array(
-        z.object({
-          sessionRunId: PublicIdSchema,
-          linkType: z.enum(["CREATED", "UPDATED", "REVIEWED"]),
-          date: z.string().datetime(),
-        }),
-      )
-      .default([]),
+    learningHistory: z.array(ConceptLearningHistoryItem).default([]),
     srsState: z
       .object({
         interval: z.number().int().nonnegative(),
@@ -108,3 +115,31 @@ export const SearchConceptsResponse = z.object({
   ),
 });
 export type SearchConceptsResponse = z.infer<typeof SearchConceptsResponse>;
+
+export const ListConceptLibraryInput = PaginationInput.extend({
+  search: z.string().max(200).optional(),
+  reviewStatus: ConceptReviewStatusSchema.optional(),
+  spaceIds: z.array(PublicIdSchema).min(1).max(50).optional(),
+});
+export type ListConceptLibraryInput = z.infer<typeof ListConceptLibraryInput>;
+
+export const ConceptLibraryListItem = z.object({
+  id: PublicIdSchema,
+  spaceId: PublicIdSchema,
+  title: z.string().min(1),
+  oneLiner: z.string().min(1),
+  tags: z.array(z.string()).default([]),
+  reviewStatus: ConceptReviewStatusSchema,
+  srsDueAt: z.string().datetime().nullable(),
+  lastLearnedAt: z.string().datetime().nullable(),
+  latestSource: ConceptLearningHistoryItem.nullable(),
+});
+export type ConceptLibraryListItem = z.infer<typeof ConceptLibraryListItem>;
+
+export const ListConceptLibraryResponse = z.object({
+  data: z.array(ConceptLibraryListItem),
+  meta: PaginationMeta,
+});
+export type ListConceptLibraryResponse = z.infer<
+  typeof ListConceptLibraryResponse
+>;
