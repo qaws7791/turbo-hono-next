@@ -7,7 +7,11 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import { authProviderEnum, userStatusEnum } from "./enums";
+import {
+  authProviderEnum,
+  subscriptionPlanEnum,
+  userStatusEnum,
+} from "./enums";
 import { timestamps } from "./shared";
 
 /* ========== 1) Identity & Access ========== */
@@ -28,6 +32,9 @@ export const users = pgTable(
       withTimezone: true,
       mode: "date",
     }),
+    subscriptionPlan: subscriptionPlanEnum("subscription_plan")
+      .notNull()
+      .default("FREE"),
     ...timestamps,
   },
   (table) => [uniqueIndex("users_email_unique").on(table.email)],

@@ -1,6 +1,10 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
 export const userStatusEnum = pgEnum("user_status", ["ACTIVE", "DISABLED"]);
+export const subscriptionPlanEnum = pgEnum("subscription_plan", [
+  "FREE",
+  "PRO",
+]);
 export const authProviderEnum = pgEnum("auth_provider", ["GOOGLE"]);
 export const tagSourceEnum = pgEnum("tag_source", ["AI", "USER"]);
 
