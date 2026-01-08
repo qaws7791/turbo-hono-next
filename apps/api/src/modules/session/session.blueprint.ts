@@ -23,6 +23,7 @@ export function buildSessionBlueprint(
   const steps = buildSteps(input);
   return SessionBlueprint.parse({
     schemaVersion: 1,
+    blueprintId: crypto.randomUUID(),
     createdAt: isoDateTime(input.createdAt),
     steps,
     startStepIndex: 0,

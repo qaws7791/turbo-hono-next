@@ -74,6 +74,7 @@ export async function listMaterials(
         summary: row.summary ?? null,
         tags: tagMap.get(row.id) ?? [],
         createdAt: isoDateRequired(row.createdAt),
+        updatedAt: isoDateRequired(row.updatedAt),
       })),
       meta: createPaginationMeta(total, validated.page, validated.limit),
     }),

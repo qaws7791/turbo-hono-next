@@ -1,9 +1,11 @@
 import {
+  concepts,
   materials,
   planModules,
   planSessions,
   planSourceMaterials,
   plans,
+  sessionConcepts,
   spaces,
 } from "@repo/database/schema";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -53,6 +55,9 @@ export const planRepository = {
       title: string;
       status: PlanStatus;
       goalType: string;
+      currentLevel: string;
+      createdAt: Date;
+      updatedAt: Date;
     }>,
     AppError
   > {
@@ -73,6 +78,9 @@ export const planRepository = {
           title: plans.title,
           status: plans.status,
           goalType: plans.goalType,
+          currentLevel: plans.currentLevel,
+          createdAt: plans.createdAt,
+          updatedAt: plans.updatedAt,
         })
         .from(plans)
         .where(and(...where))
@@ -138,6 +146,8 @@ export const planRepository = {
       currentLevel: string;
       targetDueDate: Date;
       specialRequirements: string | null;
+      createdAt: Date;
+      updatedAt: Date;
     } | null,
     AppError
   > {
@@ -154,6 +164,8 @@ export const planRepository = {
           currentLevel: plans.currentLevel,
           targetDueDate: plans.targetDueDate,
           specialRequirements: plans.specialRequirements,
+          createdAt: plans.createdAt,
+          updatedAt: plans.updatedAt,
         })
         .from(plans)
         .innerJoin(spaces, eq(spaces.id, plans.spaceId))
@@ -244,6 +256,7 @@ export const planRepository = {
       estimatedMinutes: number;
       status: string;
       completedAt: Date | null;
+      conceptIds: Array<string>;
     }>,
     AppError
   > {
@@ -261,12 +274,39 @@ export const planRepository = {
           estimatedMinutes: planSessions.estimatedMinutes,
           status: planSessions.status,
           completedAt: planSessions.completedAt,
+          conceptPublicId: concepts.publicId,
         })
         .from(planSessions)
+        .leftJoin(
+          sessionConcepts,
+          eq(sessionConcepts.sessionId, planSessions.id),
+        )
+        .leftJoin(concepts, eq(concepts.id, sessionConcepts.conceptId))
         .where(eq(planSessions.planId, planId))
         .orderBy(planSessions.orderIndex);
 
-      return rows;
+      const sessionMap = new Map<
+        string,
+        Omit<(typeof rows)[number], "conceptPublicId"> & {
+          conceptIds: Array<string>;
+        }
+      >();
+      rows.forEach((row) => {
+        const existing = sessionMap.get(row.id);
+        if (existing) {
+          if (row.conceptPublicId) {
+            existing.conceptIds.push(row.conceptPublicId);
+          }
+        } else {
+          sessionMap.set(row.id, {
+            ...row,
+            conceptPublicId: undefined,
+            conceptIds: row.conceptPublicId ? [row.conceptPublicId] : [],
+          });
+        }
+      });
+
+      return Array.from(sessionMap.values());
     });
   },
 
@@ -305,6 +345,33 @@ export const planRepository = {
         .from(planSourceMaterials)
         .where(eq(planSourceMaterials.planId, planId));
       return rows.map((row) => row.materialId);
+    });
+  },
+
+  getSourceMaterialIdsMap(
+    planIds: ReadonlyArray<number>,
+  ): ResultAsync<Map<number, Array<string>>, AppError> {
+    return tryPromise(async () => {
+      if (planIds.length === 0) {
+        return new Map<number, Array<string>>();
+      }
+
+      const db = getDb();
+      const rows = await db
+        .select({
+          planId: planSourceMaterials.planId,
+          materialId: planSourceMaterials.materialId,
+        })
+        .from(planSourceMaterials)
+        .where(inArray(planSourceMaterials.planId, [...planIds]));
+
+      const map = new Map<number, Array<string>>();
+      rows.forEach((row) => {
+        const existing = map.get(row.planId) ?? [];
+        existing.push(row.materialId);
+        map.set(row.planId, existing);
+      });
+      return map;
     });
   },
 

@@ -36,6 +36,7 @@ export const MaterialListItem = z.object({
   summary: z.string().nullable(),
   tags: z.array(z.string()).default([]),
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 export type MaterialListItem = z.infer<typeof MaterialListItem>;
 

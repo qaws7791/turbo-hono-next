@@ -49,6 +49,7 @@ export const sessionRepository = {
   ): ResultAsync<
     Array<{
       sessionId: string;
+      planId: string;
       sessionTitle: string;
       sessionType: PlanSessionType;
       estimatedMinutes: number;
@@ -67,6 +68,7 @@ export const sessionRepository = {
       return db
         .select({
           sessionId: planSessions.publicId,
+          planId: plans.publicId,
           sessionTitle: planSessions.title,
           sessionType: planSessions.sessionType,
           estimatedMinutes: planSessions.estimatedMinutes,
@@ -577,6 +579,7 @@ export const sessionRepository = {
       module: { id: string; title: string } | null;
       plan: { id: number; publicId: string; title: string };
       space: { id: number; publicId: string; name: string };
+      createdConceptIds: Array<string>;
       summary: {
         id: string;
         summaryMd: string;
@@ -647,6 +650,17 @@ export const sessionRepository = {
       const row = rows[0];
       if (!row) return null;
 
+      const conceptRows = await db
+        .select({ publicId: concepts.publicId })
+        .from(conceptSessionLinks)
+        .innerJoin(concepts, eq(concepts.id, conceptSessionLinks.conceptId))
+        .where(
+          and(
+            eq(conceptSessionLinks.sessionRunId, row.run.id),
+            eq(conceptSessionLinks.linkType, "CREATED"),
+          ),
+        );
+
       return {
         run: {
           ...row.run,
@@ -657,6 +671,7 @@ export const sessionRepository = {
         module: row.module && row.module.id ? row.module : null,
         plan: row.plan,
         space: row.space,
+        createdConceptIds: conceptRows.map((r) => r.publicId),
         summary: row.summary && row.summary.id ? row.summary : null,
       };
     });
@@ -1202,6 +1217,35 @@ export const sessionRepository = {
         .update(plans)
         .set({ status: "COMPLETED", completedAt: now, updatedAt: now })
         .where(eq(plans.id, planId));
+    });
+  },
+
+  /**
+   * 사용자의 최근 학습 날짜 목록을 조회합니다.
+   * streak 계산을 위해 COMPLETED 상태인 session run의 날짜를 조회합니다.
+   */
+  listDistinctStudyDates(
+    userId: string,
+    maxDays: number,
+  ): ResultAsync<Array<Date>, AppError> {
+    return tryPromise(async () => {
+      const db = getDb();
+      // endedAt을 날짜별로 그룹화하여 최근 maxDays일간의 학습 날짜 조회
+      const rows = await db
+        .selectDistinct({
+          studyDate: sql<Date>`date(${sessionRuns.endedAt})`,
+        })
+        .from(sessionRuns)
+        .where(
+          and(
+            eq(sessionRuns.userId, userId),
+            eq(sessionRuns.status, "COMPLETED"),
+          ),
+        )
+        .orderBy(desc(sql`date(${sessionRuns.endedAt})`))
+        .limit(maxDays);
+
+      return rows.map((r) => r.studyDate).filter((d): d is Date => d !== null);
     });
   },
 };

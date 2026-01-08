@@ -15,8 +15,8 @@ export const spaceRepository = {
       id: string;
       name: string;
       description: string | null;
-      icon: string | null;
-      color: string | null;
+      icon: string;
+      color: string;
       createdAt: Date;
       updatedAt: Date;
     }>,
@@ -153,8 +153,8 @@ export const spaceRepository = {
       id: string;
       name: string;
       description: string | null;
-      icon: string | null;
-      color: string | null;
+      icon: string;
+      color: string;
       createdAt: Date;
       updatedAt: Date;
     } | null,
@@ -181,8 +181,8 @@ export const spaceRepository = {
       userId: string;
       name: string;
       description: string | null;
-      icon: string | null;
-      color: string | null;
+      icon: string;
+      color: string;
       createdAt: Date;
       updatedAt: Date;
       deletedAt: Date | null;
@@ -237,8 +237,8 @@ export const spaceRepository = {
       id: string;
       name: string;
       description: string | null;
-      icon: string | null;
-      color: string | null;
+      icon: string;
+      color: string;
       createdAt: Date;
       updatedAt: Date;
     } | null,

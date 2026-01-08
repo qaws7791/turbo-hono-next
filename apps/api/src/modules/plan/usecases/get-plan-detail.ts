@@ -40,7 +40,15 @@ export async function getPlanDetail(
   if (sessionsResult.isErr()) return err(sessionsResult.error);
   const sessions = sessionsResult.value;
 
-  // 4. 진행률 계산
+  // 4. 소스 자료 ID 조회
+  const sourceMaterialIdsResult = await planRepository.listSourceMaterialIds(
+    plan.internalId,
+  );
+  if (sourceMaterialIdsResult.isErr())
+    return err(sourceMaterialIdsResult.error);
+  const sourceMaterialIds = sourceMaterialIdsResult.value;
+
+  // 5. 진행률 계산
   const totalSessions = sessions.length;
   const completedSessions = sessions.filter(
     (s) =>
@@ -60,10 +68,13 @@ export async function getPlanDetail(
         currentLevel: plan.currentLevel,
         targetDueDate: formatIsoDate(plan.targetDueDate),
         specialRequirements: plan.specialRequirements ?? null,
+        createdAt: formatIsoDatetime(plan.createdAt),
+        updatedAt: formatIsoDatetime(plan.updatedAt),
         progress: {
           completedSessions,
           totalSessions,
         },
+        sourceMaterialIds,
         modules: modules.map((m) => ({
           id: m.id,
           title: m.title,
@@ -81,6 +92,7 @@ export async function getPlanDetail(
           estimatedMinutes: s.estimatedMinutes,
           status: s.status,
           completedAt: s.completedAt ? formatIsoDatetime(s.completedAt) : null,
+          conceptIds: s.conceptIds,
         })),
       },
     }),

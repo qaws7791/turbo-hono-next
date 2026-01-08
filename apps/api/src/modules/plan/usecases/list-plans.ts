@@ -55,6 +55,13 @@ export async function listPlans(
   if (progressMapResult.isErr()) return err(progressMapResult.error);
   const progressMap = progressMapResult.value;
 
+  // 6. 소스 자료 ID 맵 조회
+  const sourceMaterialIdsMapResult =
+    await planRepository.getSourceMaterialIdsMap(planRows.map((row) => row.id));
+  if (sourceMaterialIdsMapResult.isErr())
+    return err(sourceMaterialIdsMapResult.error);
+  const sourceMaterialIdsMap = sourceMaterialIdsMapResult.value;
+
   return ok(
     ListPlansResponse.parse({
       data: planRows.map((row) => {
@@ -62,16 +69,21 @@ export async function listPlans(
           totalSessions: 0,
           completedSessions: 0,
         };
+        const sourceMaterialIds = sourceMaterialIdsMap.get(row.id) ?? [];
 
         return {
           id: row.publicId,
           title: row.title,
           status: row.status,
           goalType: row.goalType,
+          currentLevel: row.currentLevel,
+          createdAt: row.createdAt.toISOString(),
+          updatedAt: row.updatedAt.toISOString(),
           progress: {
             completedSessions: progress.completedSessions,
             totalSessions: progress.totalSessions,
           },
+          sourceMaterialIds,
         };
       }),
       meta: { total, page: validated.page, limit: validated.limit },

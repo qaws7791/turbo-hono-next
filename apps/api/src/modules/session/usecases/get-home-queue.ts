@@ -2,7 +2,12 @@ import { err, ok } from "neverthrow";
 
 import { HomeQueueResponse } from "../session.dto";
 import { sessionRepository } from "../session.repository";
-import { addDays, parseDateOnly } from "../session.utils";
+import {
+  addDays,
+  computeStreakDays,
+  generateCoachingMessage,
+  parseDateOnly,
+} from "../session.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -39,6 +44,14 @@ export async function getHomeQueue(
     return err(reviewedConceptsCountResult.error);
   const reviewedConceptsCount = Number(reviewedConceptsCountResult.value);
 
+  // 2. Streak 계산을 위한 학습 날짜 조회
+  const studyDatesResult = await sessionRepository.listDistinctStudyDates(
+    userId,
+    365,
+  );
+  if (studyDatesResult.isErr()) return err(studyDatesResult.error);
+  const studyDates = studyDatesResult.value;
+
   const sessionTotal = rows.length;
   const sessionCompleted = rows.filter(
     (row) =>
@@ -52,6 +65,25 @@ export async function getHomeQueue(
 
   const total = Number(sessionTotal + conceptTotal);
   const completed = Number(sessionCompleted + conceptCompleted);
+  const remainingCount = Math.max(0, total - completed);
+
+  // 3. estimatedMinutes 계산 (미완료 항목만)
+  let estimatedMinutes = 0;
+  for (const row of rows) {
+    if (
+      row.status !== "COMPLETED" &&
+      row.status !== "SKIPPED" &&
+      row.status !== "CANCELED"
+    ) {
+      estimatedMinutes += row.estimatedMinutes;
+    }
+  }
+  // Concept review는 각 5분으로 계산
+  estimatedMinutes += dueConcepts.length * 5;
+
+  // 4. Streak 및 coaching message 계산
+  const streakDays = computeStreakDays(studyDates, today);
+  const coachingMessage = generateCoachingMessage(remainingCount);
 
   const data: Array<HomeQueueResponseType["data"][number]> = [];
 
@@ -66,6 +98,7 @@ export async function getHomeQueue(
     data.push({
       kind: "SESSION",
       sessionId: row.sessionId,
+      planId: row.planId,
       spaceId: row.spaceId,
       spaceName: row.spaceName,
       spaceIcon: row.spaceIcon ?? "book",
@@ -102,7 +135,13 @@ export async function getHomeQueue(
   return ok(
     HomeQueueResponse.parse({
       data,
-      summary: { total, completed },
+      summary: {
+        total,
+        completed,
+        estimatedMinutes,
+        coachingMessage,
+        streakDays,
+      },
     }),
   );
 }

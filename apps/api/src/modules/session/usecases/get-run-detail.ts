@@ -185,7 +185,10 @@ export async function getRunDetail(
         template: templateWithRag,
       });
 
-      const parse = SessionBlueprint.safeParse(generated);
+      const parse = SessionBlueprint.safeParse({
+        ...generated,
+        blueprintId: templateWithRag.blueprintId, // 템플릿의 ID 유지
+      });
       blueprint =
         parse.success &&
         isBlueprintCompatibleWithTemplate({
@@ -264,6 +267,7 @@ export async function getRunDetail(
           space: { id: detail.space.publicId, name: detail.space.name },
         },
         blueprint: blueprintWithStats,
+        createdConceptIds: detail.createdConceptIds,
         progress: { stepIndex, inputs, savedAt },
         summary: detail.summary
           ? {

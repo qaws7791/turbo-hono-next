@@ -51,7 +51,11 @@ export const PlanListItem = z.object({
   title: z.string().min(1),
   status: PlanStatusSchema,
   goalType: PlanGoalTypeSchema,
+  currentLevel: PlanLevelSchema,
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
   progress: PlanProgress,
+  sourceMaterialIds: z.array(z.string().uuid()),
 });
 export type PlanListItem = z.infer<typeof PlanListItem>;
 
@@ -73,6 +77,8 @@ export const CreatePlanResponse = z.object({
     id: PublicIdSchema,
     title: z.string().min(1),
     status: PlanStatusSchema,
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
   }),
 });
 export type CreatePlanResponse = z.infer<typeof CreatePlanResponse>;
@@ -111,6 +117,7 @@ export const PlanSessionItem = z.object({
   estimatedMinutes: z.number().int().min(1),
   status: PlanSessionStatusSchema,
   completedAt: z.string().datetime().nullable(),
+  conceptIds: z.array(PublicIdSchema).default([]),
 });
 export type PlanSessionItem = z.infer<typeof PlanSessionItem>;
 
@@ -124,7 +131,10 @@ export const PlanDetailResponse = z.object({
     currentLevel: PlanLevelSchema,
     targetDueDate: z.string().date(),
     specialRequirements: z.string().nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
     progress: PlanProgress,
+    sourceMaterialIds: z.array(z.string().uuid()),
     modules: z.array(PlanModuleItem),
     sessions: z.array(PlanSessionItem),
   }),

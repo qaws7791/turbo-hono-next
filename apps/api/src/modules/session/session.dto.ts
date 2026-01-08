@@ -22,6 +22,7 @@ export type ConceptReviewStatus = z.infer<typeof ConceptReviewStatusSchema>;
 export const HomeQueueSessionItem = z.object({
   kind: z.literal("SESSION"),
   sessionId: PublicIdSchema,
+  planId: PublicIdSchema,
   spaceId: PublicIdSchema,
   spaceName: z.string().min(1),
   spaceIcon: z.string().min(1).max(50),
@@ -64,6 +65,9 @@ export const HomeQueueResponse = z.object({
   summary: z.object({
     total: z.number().int().nonnegative(),
     completed: z.number().int().nonnegative(),
+    estimatedMinutes: z.number().int().nonnegative(),
+    coachingMessage: z.string().min(1),
+    streakDays: z.number().int().nonnegative(),
   }),
 });
 export type HomeQueueResponse = z.infer<typeof HomeQueueResponse>;
@@ -220,6 +224,7 @@ export type SessionStep = z.infer<typeof SessionStepSchema>;
 
 export const SessionBlueprint = z.object({
   schemaVersion: z.number().int().positive(),
+  blueprintId: z.string().uuid(),
   createdAt: z.string().datetime(),
   steps: z.array(SessionStepSchema).min(1),
   startStepIndex: z.number().int().nonnegative().default(0),
@@ -422,6 +427,7 @@ export const SessionRunDetailResponse = z.object({
       }),
     }),
     blueprint: SessionBlueprint,
+    createdConceptIds: z.array(PublicIdSchema).default([]),
     progress: z.object({
       stepIndex: z.number().int().nonnegative(),
       inputs: z.record(z.string(), z.unknown()),
@@ -454,6 +460,7 @@ export const SessionRunListItem = z.object({
   startedAt: z.string().datetime(),
   endedAt: z.string().datetime().nullable(),
   exitReason: SessionExitReasonSchema.nullable(),
+  durationMinutes: z.number().int().nonnegative(),
   sessionId: PublicIdSchema,
   sessionTitle: z.string().min(1),
   sessionType: PlanSessionTypeSchema,

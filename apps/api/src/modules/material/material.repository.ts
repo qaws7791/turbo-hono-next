@@ -14,9 +14,9 @@ import { and, asc, desc, eq, ilike, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "../../lib/db";
 import { tryPromise } from "../../lib/result";
 
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
 import type { MaterialProcessingStatus } from "./material.dto";
-import type { ResultAsync } from "neverthrow";
 
 type MaterialSort = Array<ReturnType<typeof asc> | ReturnType<typeof desc>>;
 
@@ -132,6 +132,7 @@ export const materialRepository = {
       processingStatus: MaterialProcessingStatus;
       summary: string | null;
       createdAt: Date;
+      updatedAt: Date;
     }>,
     AppError
   > {
@@ -162,6 +163,7 @@ export const materialRepository = {
           processingStatus: materials.processingStatus,
           summary: materials.summary,
           createdAt: materials.createdAt,
+          updatedAt: materials.updatedAt,
         })
         .from(materials)
         .where(and(...where))

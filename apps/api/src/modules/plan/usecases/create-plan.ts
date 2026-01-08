@@ -177,6 +177,8 @@ export async function createPlan(
         id: planPublicId,
         title: aiPlan.title,
         status: "ACTIVE" as const,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
       },
     }),
   );

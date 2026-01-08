@@ -8,8 +8,8 @@ export const SpaceOutput = z.object({
   id: PublicIdSchema,
   name: z.string().min(1),
   description: z.string().nullable(),
-  icon: z.string().nullable(),
-  color: z.string().nullable(),
+  icon: z.string(),
+  color: z.string(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   // Optional fields when include parameter is used

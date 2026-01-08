@@ -33,29 +33,42 @@ export async function listSessionRuns(
 
   return ok(
     ListSessionRunsResponse.parse({
-      data: rows.map((row) => ({
-        runId: row.runId,
-        status: row.status,
-        startedAt: isoDateTime(row.startedAt),
-        endedAt: row.endedAt ? isoDateTime(row.endedAt) : null,
-        exitReason: row.exitReason,
-        sessionId: row.sessionId,
-        sessionTitle: row.sessionTitle,
-        sessionType: row.sessionType,
-        planId: row.planId,
-        planTitle: row.planTitle,
-        spaceId: row.spaceId,
-        spaceName: row.spaceName,
-        summary: row.summary
-          ? {
-              id: row.summary.id,
-              conceptsCreatedCount: row.summary.conceptsCreatedCount,
-              conceptsUpdatedCount: row.summary.conceptsUpdatedCount,
-              reviewsScheduledCount: row.summary.reviewsScheduledCount,
-              createdAt: isoDateTime(row.summary.createdAt),
-            }
-          : null,
-      })),
+      data: rows.map((row) => {
+        // durationMinutes 계산: 완료된 경우 startedAt과 endedAt의 차이, 아닌 경우 0
+        const durationMinutes = row.endedAt
+          ? Math.max(
+              0,
+              Math.round(
+                (row.endedAt.getTime() - row.startedAt.getTime()) / 60000,
+              ),
+            )
+          : 0;
+
+        return {
+          runId: row.runId,
+          status: row.status,
+          startedAt: isoDateTime(row.startedAt),
+          endedAt: row.endedAt ? isoDateTime(row.endedAt) : null,
+          exitReason: row.exitReason,
+          durationMinutes,
+          sessionId: row.sessionId,
+          sessionTitle: row.sessionTitle,
+          sessionType: row.sessionType,
+          planId: row.planId,
+          planTitle: row.planTitle,
+          spaceId: row.spaceId,
+          spaceName: row.spaceName,
+          summary: row.summary
+            ? {
+                id: row.summary.id,
+                conceptsCreatedCount: row.summary.conceptsCreatedCount,
+                conceptsUpdatedCount: row.summary.conceptsUpdatedCount,
+                reviewsScheduledCount: row.summary.reviewsScheduledCount,
+                createdAt: isoDateTime(row.summary.createdAt),
+              }
+            : null,
+        };
+      }),
       meta: {
         total,
         page: validated.page,
