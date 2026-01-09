@@ -10,12 +10,10 @@ export default [
   layout("routes/app-layout.tsx", [
     route("home", "routes/home.tsx"),
     route("today", "routes/today.tsx"),
-    route("spaces", "routes/spaces.tsx"),
-    route("spaces/:spaceId", "routes/space-layout.tsx", [
-      route("plans/new", "routes/plan-wizard.tsx"),
-    ]),
-    // 학습 계획 상세는 스페이스 레이아웃과 분리하여 독립적인 UI 제공
-    route("spaces/:spaceId/plan/:planId", "routes/plan-detail.tsx"),
+    route("plans", "routes/plans.tsx"),
+    route("plans/new", "routes/plan-wizard.tsx"),
+    route("plans/:planId", "routes/plan-detail.tsx"),
+    route("materials", "routes/materials.tsx"),
   ]),
   route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;
