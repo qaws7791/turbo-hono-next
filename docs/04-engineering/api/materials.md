@@ -2,7 +2,7 @@
 
 ## 개요
 
-학습 자료(Documents)의 업로드, 조회, 삭제 API입니다. UI에서는 "Documents", 백엔드에서는 "Materials"로 명명됩니다.
+학습 자료(Documents)의 업로드, 조회, 삭제 API입니다. UI에서는 "Documents", 백엔드에서는 "Materials"로 명명됩니다. 모든 자료는 사용자의 계정 내에서 전역적으로 관리됩니다.
 
 ---
 
@@ -11,7 +11,7 @@
 ### 자료 목록 조회
 
 ```
-GET /api/spaces/{spaceId}/materials
+GET /api/materials
 ```
 
 **Query Parameters**:
@@ -37,7 +37,6 @@ GET /api/spaces/{spaceId}/materials
       "fileSize": 1024000,
       "processingStatus": "READY",
       "summary": "React Hooks의 기본 개념과 활용법을 다룹니다.",
-      "tags": ["react", "hooks"],
       "createdAt": "2025-01-15T09:00:00Z"
     }
   ],
@@ -64,7 +63,6 @@ GET /api/materials/{materialId}
 {
   "data": {
     "id": "uuid",
-    "spaceId": "uuid",
     "title": "React Hooks 완벽 가이드",
     "sourceType": "FILE",
     "originalFilename": "react-hooks-guide.pdf",
@@ -73,7 +71,6 @@ GET /api/materials/{materialId}
     "processingStatus": "READY",
     "processedAt": "2025-01-15T09:05:00Z",
     "summary": "React Hooks의 기본 개념과 활용법을 다룹니다.",
-    "tags": ["react", "hooks"],
     "chunkCount": 42,
     "createdAt": "2025-01-15T09:00:00Z",
     "updatedAt": "2025-01-15T09:05:00Z"
@@ -85,14 +82,17 @@ GET /api/materials/{materialId}
 
 ### 파일 업로드 (Presigned URL 방식)
 
-자료 생성은 **파일 업로드 방식만** 지원합니다. 텍스트 자료는 `.txt`/`.md` 파일로 업로드합니다.
+자료 생성은 **파일 업로드 방식만** 지원합니다.
 
-대용량 파일 업로드를 위한 **2개의 API 호출 + 1개의 직접 업로드** 플로우입니다.
+- **일반 파일**: PDF, .md, .txt, .docx 등을 직접 업로드합니다.
+- **텍스트 입력**: 사용자가 입력한 텍스트를 클라이언트에서 `.txt` 파일로 생성하여 이 API를 통해 업로드합니다.
+
+대용량 파일 업로드를 위한 **2개의 API 호출 + 1개의 직접 업로드** 플로우를 공용으로 사용합니다.
 
 #### 1단계: 업로드 세션 시작
 
 ```
-POST /api/spaces/{spaceId}/materials/uploads/init
+POST /api/materials/uploads/init
 ```
 
 **Request** (application/json):
@@ -139,7 +139,7 @@ curl -X PUT \
 **예시 (브라우저 fetch)**:
 
 ```ts
-const init = await api.post(`/spaces/${spaceId}/materials/uploads/init`, {
+const init = await api.post(`/api/materials/uploads/init`, {
   originalFilename: file.name,
   mimeType: file.type || "application/octet-stream",
   fileSize: file.size,
@@ -156,20 +156,19 @@ if (!uploadRes.ok) throw new Error("Failed to upload file to R2");
 
 const etag = uploadRes.headers.get("etag") ?? undefined;
 
-await api.post(`/spaces/${spaceId}/materials/uploads/complete`, {
+await api.post(`/api/materials/uploads/complete`, {
   uploadId,
+  title: isTextInput ? "사용자 입력 텍스트" : file.name,
   etag,
 });
 ```
-
-> 브라우저에서 `etag`를 읽으려면 R2 CORS 설정에 `ExposeHeaders: ETag`가 필요할 수 있습니다. 읽을 수 없다면 `etag` 없이 3단계를 호출해도 됩니다.
 
 #### 3단계: 업로드 완료 처리
 
 클라이언트가 `uploadUrl`로 파일을 직접 업로드한 후 호출합니다.
 
 ```
-POST /api/spaces/{spaceId}/materials/uploads/complete
+POST /api/materials/uploads/complete
 ```
 
 **Request** (application/json):
@@ -184,7 +183,9 @@ POST /api/spaces/{spaceId}/materials/uploads/complete
 
 - 파일 크기: 최대 50MB
 - 지원 형식: PDF, .md, .txt, .docx
-- `sourceType` 저장 규칙: PDF/DOCX → `FILE`, TXT/MD → `TEXT`
+- `sourceType` 저장 규칙:
+  - PDF, DOCX, MD 등 원본 파일 업로드 시 → `FILE`
+  - 텍스트 입력 UI를 통해 생성된 `.txt` 파일 업로드 시 → `TEXT` (클라이언트가 `sourceType`을 직접 지정하지 않으며, 백엔드에서 파일 형식 및 업로드 맥락에 따라 처리하거나 클라이언트가 complete 호출 시 힌트를 줄 수 있음 - 현재는 파일 확장자 및 MIME 타입 기반 자동 판별)
 
 **Response** (201/202): 동기 처리 시 `201`, 비동기 처리 시 `202`를 반환합니다.
 
@@ -300,8 +301,9 @@ stateDiagram-v2
 
 ```typescript
 // 클라이언트
-async function uploadWithPolling(file: File, spaceId: string) {
-  const { data } = await api.post(`/spaces/${spaceId}/materials`, { file });
+async function uploadWithPolling(file: File) {
+  // 실제 구현에서는 /api/materials/uploads/init -> upload -> complete 순서로 진행
+  const { data } = await api.post(`/api/materials/uploads/complete`, { ... });
 
   if (data.processingStatus === "READY") {
     return data;
@@ -313,7 +315,7 @@ async function uploadWithPolling(file: File, spaceId: string) {
 
 async function pollJobStatus(jobId: string) {
   while (true) {
-    const { data } = await api.get(`/jobs/${jobId}`);
+    const { data } = await api.get(`/api/jobs/${jobId}`);
 
     if (data.status === "SUCCEEDED") {
       return data.result;
@@ -325,23 +327,6 @@ async function pollJobStatus(jobId: string) {
     await sleep(3000); // 3초 대기
   }
 }
-```
-
-### SSE 방식 (향후)
-
-```
-GET /api/jobs/{jobId}/stream
-```
-
-```
-event: progress
-data: {"progress": 0.5, "step": "chunking"}
-
-event: progress
-data: {"progress": 0.8, "step": "embedding"}
-
-event: complete
-data: {"materialId": "uuid", "status": "READY"}
 ```
 
 ---
@@ -362,17 +347,8 @@ data: {"materialId": "uuid", "status": "READY"}
 ## 스키마
 
 ```typescript
-// URL 수집 Request
-const CreateMaterialFromUrlSchema = z.object({
-  url: z.url(),
-  title: z.string().max(200).optional(),
-});
-
-// 텍스트 입력 Request
-const CreateMaterialFromTextSchema = z.object({
-  text: z.string().min(10).max(100000),
-  title: z.string().max(200).optional(),
-});
+// 텍스트 입력 (클라이언트는 이를 .txt 파일로 변환하여 '파일 업로드 시작' API를 호출함)
+// 별도의 CreateMaterialFromTextSchema API는 더 이상 사용하지 않고 파일 업로드 API로 통합됨.
 
 // 파일 업로드 시작 Request
 const InitiateMaterialUploadSchema = z.object({
@@ -395,12 +371,10 @@ const CompleteMaterialUploadSchema = z.object({
 // Response
 const MaterialSchema = z.object({
   id: z.string().uuid(),
-  spaceId: z.string().uuid(),
   title: z.string(),
-  sourceType: z.enum(["FILE", "URL", "TEXT"]),
+  sourceType: z.enum(["FILE", "TEXT"]),
   processingStatus: z.enum(["PENDING", "PROCESSING", "READY", "FAILED"]),
   summary: z.string().nullable(),
-  tags: z.array(z.string()),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

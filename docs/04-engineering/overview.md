@@ -29,7 +29,7 @@
 
 1. **핵심 기능**
    - 사용자 인증 (Google OAuth + 매직링크)
-   - Space/Document/Plan/Session CRUD
+   - Material/Plan/Session CRUD
    - RAG 기반 AI 대화
 
 2. **동기 처리 우선**
@@ -86,7 +86,7 @@ GET /jobs/{jobId} → { status, progress, result }
 
 ### 데이터 모델
 
-- [x] 핵심 엔티티 정의 (User, Space, Material, Plan, Session)
+- [x] 핵심 엔티티 정의 (User, Material, Plan, Session)
 - [x] 좀비 데이터 전략 수립
 - [x] Session/SessionRun 분리
 

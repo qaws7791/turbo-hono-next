@@ -76,7 +76,7 @@ docs/
 
 1. **파일명**: kebab-case (예: `plan-detail.md`, `plan-detail.tsx`)
 2. **컴포넌트**: PascalCase (예: `PlanDetailView`)
-3. **라우트 경로**: kebab-case/리소스 기반(예: `/spaces/:spaceId/plan/:planId`)
+3. **라우트 경로**: kebab-case/리소스 기반(예: `/plans/:planId`)
 
 ---
 

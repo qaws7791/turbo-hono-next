@@ -1,4 +1,4 @@
-# Plan 생성 위저드 (/spaces/:spaceId/plans/new)
+# Plan 생성 위저드 (/plans/new)
 
 ## 개요
 
@@ -17,18 +17,18 @@ Plan 생성 위저드는 **3단계 위저드** 형태로, 사용자가 "무엇�
 
 ## 진입점 (Entry Points)
 
-1. **Space 상세 > Plans 탭**: "Plan 만들기" Primary CTA
-2. **Space 상세 > Overview**: Active Plan 없을 때 "Plan 만들기" CTA
+1. **학습 계획 (Plans) 목록 페이지**: "Plan 만들기" Primary CTA
+2. **홈 (Home)**: Active Plan 없을 때 "Plan 만들기" CTA
 3. **빠른 액션 카드**: "새 Plan 생성" 버튼
 
 ---
 
 ## 라우팅
 
-| 경로                             | 설명                                               |
-| -------------------------------- | -------------------------------------------------- |
-| `GET /spaces/:spaceId/plans/new` | Plan 생성 위저드                                   |
-| 완료 후                          | `/spaces/:spaceId/plan/:planId` (Plan 상세)로 이동 |
+| 경로             | 설명                                |
+| ---------------- | ----------------------------------- |
+| `GET /plans/new` | Plan 생성 위저드                    |
+| 완료 후          | `/plans/:planId` (Plan 상세)로 이동 |
 
 ---
 
@@ -62,7 +62,7 @@ Plan 생성 위저드는 **3단계 위저드** 형태로, 사용자가 "무엇�
 ```
 Plan을 만들려면 학습 자료가 필요합니다.
 
-- "문서" 탭으로 이동하여 자료를 업로드한 뒤 다시 돌아옵니다.
+- "학습 자료" 메뉴로 이동하여 자료를 업로드한 뒤 다시 돌아옵니다.
 ```
 
 ---

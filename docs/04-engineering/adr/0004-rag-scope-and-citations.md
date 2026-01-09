@@ -97,7 +97,7 @@ interface ChatResponse {
 
 1. **관련성**
    - 현재 학습 맥락에 맞는 답변만 제공
-   - 다른 Space/Plan의 문서가 혼입되면 혼란
+   - 다른 Plan의 문서가 혼입되면 혼란
 
 2. **Hallucination 방지**
    - 근거가 제한되면 LLM의 "지어내기" 가능성 감소
@@ -216,7 +216,7 @@ async function generateAnswer(planId: string, question: string) {
 
 ## 향후 확장
 
-1. **Space 범위 검색**: Plan 외 전체 Space 문서 검색 옵션
+1. **사용자 범위 검색**: Plan 외 사용자의 전체 문서 검색 옵션
 2. **Citation UI**: 클릭 시 원본 문서 해당 위치로 이동
 3. **하이브리드 검색**: 키워드 + 벡터 결합
 

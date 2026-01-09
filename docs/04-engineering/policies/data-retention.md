@@ -27,16 +27,16 @@
 
 ### 30일 후 삭제 (소프트 삭제 후)
 
-- Spaces, Materials, Plans
-- Sessions
+- Materials, Plans
+- Sessions, Session Runs
 - Chat Threads
 
 ### 파기 순서
 
 ```
 1. Users.deleted_at 설정
-2. 연관 Spaces.deleted_at 설정
-3. 30일 후 GC: 물리 삭제
+2. 연관 Plans/Materials.deleted_at 설정
+3. 30일 후 GC: 물리 삭제 (R2 원본 포함)
 ```
 
 ---

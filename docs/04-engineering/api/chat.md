@@ -57,7 +57,7 @@ POST /api/chat/threads
 }
 ```
 
-scopeType: SPACE / PLAN / SESSION
+scopeType: SESSION / PLAN / USER
 
 ### 스레드 메시지 목록
 
@@ -69,11 +69,9 @@ GET /api/chat/threads/{threadId}/messages
 
 ## 스코프 규칙
 
-| Scope   | 검색 범위                    |
-| ------- | ---------------------------- |
-| PLAN    | Plan의 source_materials      |
-| SESSION | 해당 Plan의 source_materials |
-| SPACE   | Space 전체 materials (향후)  |
+| SESSION | 해당 세션 관련 자료 |
+| PLAN | Plan 전체 자료 |
+| USER | 사용자 전체 자료 (향후) |
 
 ---
 

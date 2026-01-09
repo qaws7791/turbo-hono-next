@@ -41,7 +41,7 @@
 
 ### Active Plan
 
-- Space당 1개의 Active Plan 권장
+- 전체 학습 계획 중 **단 1개의 Active Plan**만 유지 가능
 - Active Plan만 Home 큐에 표시
 
 ---

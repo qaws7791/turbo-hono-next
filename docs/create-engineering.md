@@ -29,7 +29,7 @@
   Session(스케줄)과 SessionRun(실행기록) 분리 이유, 상태 머신 요약, 복구 정책.
 
 - **`04-engineering/adr/0004-rag-scope-and-citations.md`**
-  검색 스코프 제한 규칙(Plan/Space), citation 저장 여부/포맷, 재현성 전략.
+  검색 스코프 제한 규칙(Plan/전체), citation 저장 여부/포맷, 재현성 전략.
 
 - **`04-engineering/adr/0005-ingestion-sync-to-async.md`**
   MVP 동기 처리에서 비동기 잡으로 전환하는 기준(문서 크기/시간/비용), 전환 시 API 계약 변화.
@@ -93,13 +93,13 @@
   비동기 전환 시 잡 모델(status/progress), 큐/워커 구성, 재시도/데드레터 정책.
 
 - **`04-engineering/backend/rate-limit-and-quotas.md`**
-  사용자/스페이스 단위 레이트리밋, 비용 폭주 방지(토큰 예산, 호출 제한), 캐싱 정책.
+  사용자 단위 레이트리밋, 비용 폭주 방지(토큰 예산, 호출 제한), 캐싱 정책.
 
 - **`04-engineering/backend/observability.md`**
   로그 상관관계 ID, 핵심 메트릭(OpenAI 호출/지연/실패율, retrieval hit rate), Sentry/Posthog 연동 기준.
 
 - **`04-engineering/backend/migrations-and-seeding.md`**
-  Drizzle 마이그레이션 규칙, 시드 데이터(기본 Space 템플릿 등), 환경별 데이터 전략.
+  Drizzle 마이그레이션 규칙, 시드 데이터(샘플 학습 자료 및 계획 등), 환경별 데이터 전략.
 
 ---
 
@@ -130,7 +130,7 @@
 > 현재 `material-deletion.md`만 있으므로, 아래 정책들이 빠지면 운영 시 충돌이 생깁니다.
 
 - **`04-engineering/policies/access-control.md`**
-  user/space 소유권 검증 규칙, 리소스별 권한 체크 표준.
+  사용자 소유권 검증 규칙, 리소스별 권한 체크 표준.
 
 - **`04-engineering/policies/data-retention.md`**
   raw file/chunk/embedding/chat log 보존 기간, 계정 삭제 시 파기 범위, 백업/복구 원칙.

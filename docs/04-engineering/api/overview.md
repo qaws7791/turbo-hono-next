@@ -47,7 +47,6 @@
 | 규칙          | 예시                                                  |
 | ------------- | ----------------------------------------------------- |
 | 복수형 리소스 | `/api/materials`, `/api/plans`                        |
-| 중첩 리소스   | `/api/spaces/:spaceId/materials`                      |
 | kebab-case    | `/plan-sessions`                                      |
 | ID는 UUID     | `/api/materials/550e8400-e29b-41d4-a716-446655440000` |
 
@@ -171,13 +170,12 @@ GET /api/materials?sort=status:asc,createdAt:desc
 
 ```
 GET /api/materials?status=READY
-GET /api/materials?spaceId=uuid
 ```
 
 ### 복합 필터
 
 ```
-GET /api/materials?status=READY&spaceId=uuid
+GET /api/materials?status=READY&sourceType=FILE
 ```
 
 ### 검색

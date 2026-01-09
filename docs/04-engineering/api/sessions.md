@@ -14,7 +14,7 @@
 GET /api/home/queue
 ```
 
-모든 Space의 Active Plan에서 오늘 예정된 세션을 집계합니다.
+모든 활성(Active) 학습 계획에서 오늘 예정된 세션을 집계합니다.
 
 **Response** (200):
 
@@ -23,7 +23,6 @@ GET /api/home/queue
   "data": [
     {
       "sessionId": "uuid",
-      "spaceName": "React 학습",
       "planTitle": "React 마스터",
       "moduleTitle": "Module 2: Hooks",
       "sessionTitle": "Session 1: useState",

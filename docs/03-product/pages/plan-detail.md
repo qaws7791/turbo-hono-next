@@ -1,4 +1,4 @@
-# Plan 상세 (운영 콘솔) (/spaces/:spaceId/plan/:planId)
+# Plan 상세 (운영 콘솔) (/plans/:planId)
 
 ## 개요
 
@@ -22,6 +22,7 @@ Plan 상세는 **실행(오늘/다음 세션 시작) + 안내(경로/현재 위�
 **표시 항목**:
 
 - Plan 제목
+- 아이콘 및 색상 (Plan의 정체성)
 - 상태 (`active` / `paused` / `archived`)
 - Active 강조 (배지)
 

@@ -304,7 +304,6 @@ export const materialRepository = {
 
   findDuplicateByChecksum(
     userId: string,
-    spaceId: number,
     checksum: string,
   ): ResultAsync<{ id: string } | null, CommonError> {
     return ResultAsync.fromPromise(
@@ -314,7 +313,6 @@ export const materialRepository = {
         .where(
           and(
             eq(materials.userId, userId),
-            eq(materials.spaceId, spaceId),
             eq(materials.checksum, checksum),
             isNull(materials.deletedAt),
           ),
@@ -353,7 +351,6 @@ import { CreateMaterialInput, CreateMaterialResult } from "../material.dto";
 import { MaterialErrors, MaterialError } from "../material.errors";
 import { CommonError, CommonErrors } from "../../../lib/errors/common";
 import { materialRepository } from "../material.repository";
-import { assertSpaceOwned } from "../../space";
 
 type CreateMaterialError = MaterialError | CommonError;
 
@@ -384,7 +381,6 @@ function validateInput(
  */
 function checkDuplicate(
   userId: string,
-  spaceId: number,
   checksum: string | null,
 ): ResultAsync<void, MaterialError | CommonError> {
   if (!checksum) {
@@ -392,7 +388,7 @@ function checkDuplicate(
   }
 
   return materialRepository
-    .findDuplicateByChecksum(userId, spaceId, checksum)
+    .findDuplicateByChecksum(userId, checksum)
     .andThen((duplicate) =>
       duplicate ? err(MaterialErrors.duplicate(duplicate.id)) : ok(undefined),
     );
@@ -403,38 +399,30 @@ function checkDuplicate(
  */
 export function createMaterial(
   userId: string,
-  spaceId: string,
   input: unknown,
 ): ResultAsync<CreateMaterialResultType, CreateMaterialError> {
   return validateInput(input)
     .andThen((validated) =>
-      assertSpaceOwnedSafe(userId, spaceId).map((space) => ({
-        validated,
-        space,
-      })),
+      parseSource(validated).map((parsed) => ({ validated, ...parsed })),
     )
-    .andThen(({ validated, space }) =>
-      parseSource(validated).map((parsed) => ({ validated, space, ...parsed })),
-    )
-    .andThen(({ validated, space, parsed, fileInfo }) => {
+    .andThen(({ validated, parsed, fileInfo }) => {
       const checksum = fileInfo?.file.checksumSha256Hex ?? null;
-      return checkDuplicate(userId, space.id, checksum).map(() => ({
+      return checkDuplicate(userId, checksum).map(() => ({
         validated,
-        space,
         parsed,
         fileInfo,
         checksum,
       }));
     })
-    .andThen(({ validated, space, parsed, fileInfo, checksum }) => {
+    .andThen(({ validated, parsed, fileInfo, checksum }) => {
       const title = inferTitle(validated, parsed, fileInfo);
       const now = new Date();
 
       return materialRepository
-        .insertMaterial({
+        .insert(materials)
+        .values({
           id: crypto.randomUUID(),
           userId,
-          spaceId: space.id,
           sourceType: validated.kind,
           title,
           // ... 나머지 필드들
@@ -511,12 +499,11 @@ export async function handleResultAsync<T>(
 import { handleResultAsync } from "../lib/result-handler";
 import { createMaterial } from "../modules/material/usecases/create-material";
 
-app.post("/spaces/:spaceId/materials", authMiddleware, async (c) => {
+app.post("/api/materials", authMiddleware, async (c) => {
   const userId = c.get("userId");
-  const spaceId = c.req.param("spaceId");
   const body = await c.req.json();
 
-  return handleResultAsync(c, createMaterial(userId, spaceId, body));
+  return handleResultAsync(c, createMaterial(userId, body));
 });
 ```
 
@@ -736,7 +723,7 @@ import { createMaterial } from "./create-material";
 
 describe("createMaterial", () => {
   it("should return Ok with material on success", async () => {
-    const result = await createMaterial(userId, spaceId, validInput);
+    const result = await createMaterial(userId, validInput);
 
     expect(result.isOk()).toBe(true);
     if (result.isOk()) {
@@ -746,7 +733,7 @@ describe("createMaterial", () => {
 
   it("should return Err with MaterialDuplicateError on duplicate", async () => {
     // Mock repository to return duplicate
-    const result = await createMaterial(userId, spaceId, duplicateInput);
+    const result = await createMaterial(userId, duplicateInput);
 
     expect(result.isErr()).toBe(true);
     if (result.isErr()) {
@@ -760,9 +747,9 @@ describe("createMaterial", () => {
 ### 7.2. 통합 테스트
 
 ```typescript
-describe("POST /spaces/:spaceId/materials", () => {
+describe("POST /api/materials", () => {
   it("should return 409 on duplicate file", async () => {
-    const response = await app.request("/api/spaces/1/materials", {
+    const response = await app.request("/api/materials", {
       method: "POST",
       body: JSON.stringify(duplicateInput),
     });

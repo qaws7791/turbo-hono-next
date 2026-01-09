@@ -28,11 +28,10 @@
 
 - `/home` 홈
 - `/today` 오늘 할 일
-- `/spaces` 스페이스 목록
-- `/spaces/:spaceId` Space 상세(기본: 학습 계획 탭)
-  - `/spaces/:spaceId/documents` 문서 탭
-  - `/spaces/:spaceId/plans/new` Plan 생성 위저드
-  - `/spaces/:spaceId/plan/:planId` Plan 상세
+- `/plans` 학습 계획 목록
+- `/plans/new` Plan 생성 위저드
+- `/plans/:planId` Plan 상세
+- `/materials` 학습 자료 관리
 
 ---
 

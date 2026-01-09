@@ -191,7 +191,8 @@ CREATE TABLE auth_sessions (
 ```typescript
 const ALLOWED_REDIRECT_PATHS = [
   "/home",
-  "/spaces",
+  "/plans",
+  "/materials",
   "/session",
   // 외부 URL 불허
 ];

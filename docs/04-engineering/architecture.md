@@ -21,9 +21,8 @@
 
 ### 1.2. 핵심 도메인 용어 정리
 
-- **Document(문서)**: 사용자가 업로드한 학습 자료. (백엔드 리소스명으로는 `Material`을 사용해 `/materials` 등으로 노출될 수 있음)
-- **Space**: 하나의 학습 목표 컨테이너
-- **Plan**: 선택된 Document 스냅샷 기반의 학습 실행 단위
+- **Document(문서)**: 사용자가 업로드한 학습 자료. (백엔드 리소스명으로는 `Material`을 사용해 `/materials` 등으로 노출됨)
+- **Plan**: 선택된 Document 스냅샷 기반의 학습 실행 단위 (Icon, Color 등 UI 속성 포함)
 - **Session**: Plan 내부의 몰입형 학습 단위(20~40분)
 
 ---
@@ -69,7 +68,7 @@ flowchart LR
 
 - **Client**: 학습 경험(세션 몰입), 데이터 조회/입력, 업로드 UI, 상태/캐시 관리
 - **Backend API**: 인증/인가, 입력 검증, 트랜잭션 경계, 도메인 규칙 실행, AI 파이프라인 호출
-- **PostgreSQL(Neon)**: 핵심 엔티티(Spaces/Plans/Sessions/Materials) 및 운영 메타데이터
+- **PostgreSQL(Neon)**: 핵심 엔티티(Plans/Sessions/Materials) 및 운영 메타데이터
 - **pgvector**: 임베딩 벡터 및 검색용 인덱스(문서 청크 기반)
 - **R2**: 원본 파일(PDF 등) 저장, 다운로드/미리보기용 서명 URL 제공 가능
 - **OpenAI**: 임베딩 생성 및 LLM 응답 생성
@@ -155,7 +154,7 @@ flowchart TB
 ### 3.1. 권장 레이어 규칙
 
 - **Routes는 얇게**: (1) 인증/인가, (2) Zod 검증, (3) 서비스 호출만 담당
-- **서비스가 규칙의 단일 소스**: 삭제 정책(좀비 데이터), Plan 스냅샷 불변성, 권한 등은 서비스에만 위치
+- **서비스가 규칙의 단일 소스**: 삭제 정책(좀비 데이터), Plan 스냅샷 불변성, 소유권 검증 등은 서비스에만 위치
 - **AI 파이프라인은 별도 계층**: “LLM 호출 코드”를 서비스에 흩뿌리지 않고, ING/RET/GEN로 구분해 테스트 가능하게 유지
 
 ---
@@ -212,7 +211,7 @@ sequenceDiagram
   participant DB as Postgres(Neon)
   participant LLM as OpenAI LLM
 
-  Client->>API: POST /plans (spaceId, selectedMaterialIds)
+  Client->>API: POST /plans (selectedMaterialIds, metadata)
   API->>DB: Validate ownership + materials status
   API->>DB: Create Plan + PlanMaterialSnapshot
   API->>DB: Retrieve top chunks for outline seed (optional)
@@ -253,7 +252,7 @@ sequenceDiagram
 
 **권장 정책**
 
-- **검색 범위 제한**: Plan 스냅샷에 포함된 문서(또는 Space 내 문서)로 리트리벌 범위를 제한하여 “근거 일탈”을 줄입니다.
+- **검색 범위 제한**: Plan 스냅샷에 포함된 문서로 리트리벌 범위를 제한하여 “근거 일탈”을 줄입니다.
 - **근거 표기 옵션**: MVP에서는 선택 사항으로 두되, 추후 신뢰성 강화를 위해 chunkId 기반 인용(citation)을 지원할 수 있습니다.
 
 ---
@@ -312,7 +311,7 @@ sequenceDiagram
 ## 5.1. 인증/인가
 
 - 로그인 정책(매직링크 + Google OAuth)을 전제로, 백엔드는 다음을 보장해야 합니다.
-  - 모든 리소스는 **소유자/권한** 검증 후 접근 허용(Space/Plan/Material 단위)
+  - 모든 리소스는 **사용자 소유권** 검증 후 접근 허용(Plan/Material 단위)
   - 세션은 **httpOnly cookie** 또는 동급 보안 수준을 가진 토큰 전략을 권장
   - OAuth redirect는 allowlist 기반으로 제한
 

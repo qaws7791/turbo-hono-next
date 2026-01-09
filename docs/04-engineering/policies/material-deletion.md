@@ -46,7 +46,7 @@
    - **참조 중인 Plan이 없을 때:** 즉시 목록에서 사라짐.  
      메시지: _"삭제되었습니다."_
    - **참조 중인 Plan이 있을 때:** 즉시 목록에서 사라짐.  
-     메시지: _"목록에서 삭제되었습니다. (진행 중인 학습을 위해 데이터는 유지됩니다.)"_
+     메시지: _"목록에서 삭제되었습니다. (진행 중인 학습을 위해 데이터는 유지됩니다.) cache..."_
 3. **결과:** 사용자의 `Documents` 목록은 즉시 깨끗해집니다.
 
 ### 3.2. 프로세스 로직
@@ -79,7 +79,7 @@ flowchart TD
 // packages/database/schema.ts
 
 export const materials = pgTable("materials", {
-  // ... 기존 필드 (id, spaceId, title 등)
+  // ... 기존 필드 (id, title, userId 등)
 
   // [추가] 삭제 요청 시각
   // - null: 정상 표시 상태
@@ -92,17 +92,17 @@ export const materials = pgTable("materials", {
 
 #### A. 목록 조회 API (`GET /materials`)
 
-기본적으로 삭제되지 않은(`deletedAt IS NULL`) 항목만 반환합니다.
+기본적으로 사용자의 자료 중 삭제되지 않은(`deletedAt IS NULL`) 항목만 반환합니다.
 
 ```typescript
 // 서비스 계층 예시
-const getMaterials = async (spaceId: string) => {
+const getMaterials = async (userId: string) => {
   return db
     .select()
     .from(materials)
     .where(
       and(
-        eq(materials.spaceId, spaceId),
+        eq(materials.userId, userId),
         isNull(materials.deletedAt), // 삭제된 것 제외
       ),
     );
@@ -120,7 +120,7 @@ const deleteMaterial = async (materialId: string) => {
   const activePlans = await db
     .select()
     .from(plans)
-    .where(arrayContains(plans.sourceDocumentIds, [materialId]))
+    .where(arrayContains(plans.sourceMaterialIds, [materialId]))
     .where(eq(plans.status, "active"));
 
   if (activePlans.length > 0) {
@@ -164,14 +164,14 @@ const cleanupZombieMaterials = async (planId: string) => {
 
   if (!plan[0]) return;
 
-  const documentIds = plan[0].sourceDocumentIds;
+  const materialIds = plan[0].sourceMaterialIds;
 
   // 2. 각 문서별로 좀비 상태인지 확인
-  for (const docId of documentIds) {
+  for (const matId of materialIds) {
     const material = await db
       .select()
       .from(materials)
-      .where(eq(materials.id, docId))
+      .where(eq(materials.id, matId))
       .limit(1);
 
     // deletedAt이 null이면 정상 상태이므로 스킵
@@ -181,41 +181,16 @@ const cleanupZombieMaterials = async (planId: string) => {
     const otherActivePlans = await db
       .select()
       .from(plans)
-      .where(arrayContains(plans.sourceDocumentIds, [docId]))
+      .where(arrayContains(plans.sourceMaterialIds, [matId]))
       .where(eq(plans.status, "active"))
       .where(ne(plans.id, planId));
 
     // 4. 다른 Plan이 없으면 Hard Delete 실행
     if (otherActivePlans.length === 0) {
-      await deleteFileFromR2(docId);
-      await deleteVectors(docId);
-      await db.delete(materials).where(eq(materials.id, docId));
+      await deleteFileFromR2(matId);
+      await deleteVectors(matId);
+      await db.delete(materials).where(eq(materials.id, matId));
     }
-  }
-};
-```
-
-### 4.3. 이벤트 트리거
-
-Plan 상태 변경 시 Garbage Collection을 자동 실행합니다.
-
-```typescript
-// Plan 삭제 시
-const deletePlan = async (planId: string) => {
-  await db.delete(plans).where(eq(plans.id, planId));
-  await cleanupZombieMaterials(planId); // GC 실행
-};
-
-// Plan 완료/보관 시
-const updatePlanStatus = async (
-  planId: string,
-  status: "paused" | "archived",
-) => {
-  await db.update(plans).set({ status }).where(eq(plans.id, planId));
-
-  // archived 상태로 전환 시 GC 실행
-  if (status === "archived") {
-    await cleanupZombieMaterials(planId);
   }
 };
 ```
@@ -239,71 +214,10 @@ const updatePlanStatus = async (
 1. (시나리오 1 이어서) Plan 1을 `archived` 상태로 변경
    - ✅ **예상 결과:** Document A가 완전히 삭제됨 (DB, R2, Vector Store)
 
-### 시나리오 3: 다중 Plan 참조
-
-1. Document B를 업로드
-2. Document B를 포함한 Plan 2, Plan 3 생성 (모두 Active)
-3. Document B 삭제 시도
-   - ✅ **예상 결과:** Soft Delete 실행
-4. Plan 2를 `archived`로 변경
-   - ✅ **예상 결과:** Document B는 여전히 유지 (Plan 3이 아직 Active)
-5. Plan 3도 `archived`로 변경
-   - ✅ **예상 결과:** Document B가 완전히 삭제됨
-
-### 시나리오 4: 미사용 자료 삭제
-
-1. Document C를 업로드
-2. 어떤 Plan도 생성하지 않음
-3. Document C 삭제 시도
-   - ✅ **예상 결과:** 즉시 Hard Delete 실행, "삭제되었습니다" 메시지 표시
-
----
-
-## 6. 성능 고려사항
-
-### 쿼리 최적화
-
-- `plans.sourceDocumentIds`에 GIN 인덱스 생성
-- `materials.deletedAt`에 부분 인덱스 생성
-
-```sql
--- 배열 검색 최적화
-CREATE INDEX idx_plans_source_documents ON plans USING GIN (source_document_ids);
-
--- Soft Delete된 항목 조회 최적화
-CREATE INDEX idx_materials_deleted_at ON materials (deleted_at) WHERE deleted_at IS NOT NULL;
-```
-
-### 비동기 처리
-
-Garbage Collection은 즉시 실행하지 않고 백그라운드 작업으로 처리할 수 있습니다.
-
-```typescript
-// 메시지 큐에 작업 등록
-await queue.publish("material.cleanup", { planId });
-```
-
----
-
-## 7. 향후 확장 가능성
-
-### 7.1. 사용자 복원 기능
-
-"실수로 지웠어요" 시나리오 대응:
-
-- 삭제 후 N일 이내 복원 가능
-- `deletedAt`을 `null`로 되돌리면 목록에 다시 표시
-
-### 7.2. 관리자 대시보드
-
-- 좀비 상태인 문서 목록 조회
-- 수동 Garbage Collection 실행
-
 ---
 
 ## 관련 문서
 
 - [데이터 모델](../data-models.md)
 - [Materials API](../api/materials.md)
-- [Plan 시스템](../../03-product/features/plan-system.md)
-- [Documents 페이지](../../03-product/pages/documents.md)
+- [Plan 상세 페이지](../../03-product/pages/plan-detail.md)

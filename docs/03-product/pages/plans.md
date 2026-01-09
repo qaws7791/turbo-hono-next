@@ -49,9 +49,9 @@ Plans 탭에서 학습 계획을 생성하고 관리합니다. Plan은 사용자
 
 ### Active Plan 전환
 
-- Space당 1개의 Active Plan 권장
+- 전체 학습 계획 중 **단 1개의 Active Plan**만 유지 가능
 - Active Plan은 시각적으로 강조 (배지)
-- 다른 Plan을 Active로 설정하면 기존 Active는 Paused로
+- 다른 Plan을 Active로 설정하면 기존 Active는 Paused로 자동 전환
 
 ### Pause / Resume
 

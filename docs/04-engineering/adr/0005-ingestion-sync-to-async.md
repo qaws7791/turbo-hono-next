@@ -36,7 +36,7 @@ MVP에서의 접근 방식과 전환 기준을 결정해야 합니다.
 
 ```
 POST /materials
-Request: { file, spaceId, ... }
+Request: { file, ... }
 Response: 201 Created { id, status: "READY", ... }
 
 처리 시간: 평균 10~20초 (20페이지 이하 PDF)
@@ -46,7 +46,7 @@ Response: 201 Created { id, status: "READY", ... }
 
 ```
 POST /materials
-Request: { file, spaceId, ... }
+Request: { file, ... }
 Response: 202 Accepted { id, jobId, status: "PROCESSING" }
 
 GET /jobs/{jobId}
@@ -69,7 +69,6 @@ interface CreateMaterialRequest {
   file?: File; // 파일 업로드
   url?: string; // URL 입력
   text?: string; // 텍스트 입력
-  spaceId: string;
   title?: string;
 }
 ```
@@ -117,15 +116,15 @@ interface JobStatusResponse {
 ### 클라이언트 사전 판단
 
 ```typescript
-async function uploadMaterial(file: File, spaceId: string) {
+async function uploadMaterial(file: File) {
   const estimatedPages = await estimatePages(file);
 
   if (estimatedPages >= 20) {
     // 비동기 UI 표시 (진행률 바, 백그라운드 알림)
-    return uploadAsync(file, spaceId);
+    return uploadAsync(file);
   } else {
     // 동기 처리 (로딩 스피너, 완료 대기)
-    return uploadSync(file, spaceId);
+    return uploadSync(file);
   }
 }
 ```
@@ -133,17 +132,17 @@ async function uploadMaterial(file: File, spaceId: string) {
 ### 서버 자동 전환
 
 ```typescript
-async function processUpload(file: Buffer, spaceId: string) {
+async function processUpload(file: Buffer) {
   const textLength = await extractTextLength(file);
   const estimatedTime = textLength / TOKENS_PER_SECOND;
 
   if (estimatedTime > 30) {
     // 비동기 잡 생성
-    const job = await queue.add("ingestion", { file, spaceId });
+    const job = await queue.add("ingestion", { file });
     return { jobId: job.id, status: "PROCESSING" };
   } else {
     // 동기 처리
-    const material = await ingestSync(file, spaceId);
+    const material = await ingestSync(file);
     return { id: material.id, status: "READY" };
   }
 }
@@ -186,7 +185,7 @@ async function processUpload(file: Buffer, spaceId: string) {
 ```typescript
 // routes/materials.ts
 app.post("/materials", async (c) => {
-  const { file, spaceId } = await c.req.parseBody();
+  const { file } = await c.req.parseBody();
 
   // 1. R2에 파일 업로드
   const objectKey = await uploadToR2(file);
@@ -195,7 +194,6 @@ app.post("/materials", async (c) => {
   const [material] = await db
     .insert(materials)
     .values({
-      spaceId,
       storageKey: objectKey,
       processingStatus: "PROCESSING",
     })

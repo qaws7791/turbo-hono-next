@@ -81,19 +81,17 @@ interface ValidationError {
 | 코드                | 메시지                          | 처리             |
 | ------------------- | ------------------------------- | ---------------- |
 | FORBIDDEN           | 접근 권한이 없습니다            | 에러 페이지 표시 |
-| SPACE_ACCESS_DENIED | 이 Space에 접근할 수 없습니다   | 홈으로 이동      |
 | RESOURCE_OWNER_ONLY | 리소스 소유자만 접근 가능합니다 | 에러 표시        |
 
 ### 404 Not Found
 
 리소스 없음
 
-| 코드               | 메시지                   |
-| ------------------ | ------------------------ |
-| SPACE_NOT_FOUND    | Space를 찾을 수 없습니다 |
-| MATERIAL_NOT_FOUND | 자료를 찾을 수 없습니다  |
-| PLAN_NOT_FOUND     | Plan을 찾을 수 없습니다  |
-| SESSION_NOT_FOUND  | 세션을 찾을 수 없습니다  |
+| 코드               | 메시지                  |
+| ------------------ | ----------------------- |
+| MATERIAL_NOT_FOUND | 자료를 찾을 수 없습니다 |
+| PLAN_NOT_FOUND     | Plan을 찾을 수 없습니다 |
+| SESSION_NOT_FOUND  | 세션을 찾을 수 없습니다 |
 
 ### 409 Conflict
 
@@ -263,12 +261,10 @@ export function handleApiError(error: ErrorResponse) {
 
     // 권한 에러 → 에러 표시
     case "FORBIDDEN":
-    case "SPACE_ACCESS_DENIED":
       toast.error(message);
       break;
 
     // 리소스 없음 → 404 페이지
-    case "SPACE_NOT_FOUND":
     case "PLAN_NOT_FOUND":
       router.push("/404");
       break;

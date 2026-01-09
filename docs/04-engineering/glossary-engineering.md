@@ -98,7 +98,7 @@
 | **Object Key** | R2/S3에서 파일을 식별하는 고유 경로           | `materials/abc-123/file.pdf` |
 | **Signed URL** | 제한된 시간 동안만 유효한 인증된 URL          | 파일 다운로드 링크           |
 | **Migration**  | 데이터베이스 스키마 변경을 버전 관리하는 과정 | Drizzle migration            |
-| **Seed Data**  | 초기 데이터 또는 테스트 데이터                | 기본 Space 템플릿            |
+| **Seed Data**  | 초기 데이터 또는 테스트 데이터                | 샘플 학습 자료 및 계획       |
 
 ---
 

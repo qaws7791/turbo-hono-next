@@ -16,7 +16,7 @@
 예:
 
 - `apps/web/app/routes/home.tsx`
-- `apps/web/app/routes/space-documents.tsx`
+- `apps/web/app/routes/materials.tsx`
 
 ### 2) 뮤테이션: Route `clientAction`
 
@@ -27,8 +27,8 @@
 
 예:
 
-- 문서 업로드/삭제: `apps/web/app/routes/space-documents.tsx`
-- 스페이스 생성: `apps/web/app/routes/spaces.tsx`
+- 문서 업로드/삭제: `apps/web/app/routes/materials.tsx`
+- 플랜 생성: `apps/web/app/routes/plan-wizard.tsx`
 
 ### 3) 화면 내 제출: `useFetcher()`
 
