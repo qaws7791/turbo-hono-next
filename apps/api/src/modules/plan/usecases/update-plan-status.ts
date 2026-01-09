@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
 
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { PlanStatusSchema, UpdatePlanStatusResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 import { validateStatusTransition } from "../plan.utils";
@@ -44,16 +43,12 @@ export async function updatePlanStatus(
     );
   }
 
-  // 3. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, plan.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-
-  // 4. ACTIVE 상태로의 전환은 activatePlan 사용
+  // 3. ACTIVE 상태로의 전환은 activatePlan 사용
   if (validatedStatus === "ACTIVE") {
     return activatePlan(userId, planId);
   }
 
-  // 5. 상태 전이 검증
+  // 4. 상태 전이 검증
   if (!validateStatusTransition(plan.status, validatedStatus)) {
     return err(
       new ApiError(400, "INVALID_REQUEST", "허용되지 않는 상태 전이입니다.", {
@@ -63,12 +58,12 @@ export async function updatePlanStatus(
     );
   }
 
-  // 6. 소스 Material ID 조회
+  // 5. 소스 Material ID 조회
   const materialIdsResult = await planRepository.listSourceMaterialIds(plan.id);
   if (materialIdsResult.isErr()) return err(materialIdsResult.error);
   const materialIds = materialIdsResult.value;
 
-  // 7. Plan 상태 업데이트 트랜잭션
+  // 6. Plan 상태 업데이트 트랜잭션
   const updateResult = await planRepository.updatePlanStatusTransaction({
     planId: plan.id,
     status: validatedStatus,
@@ -76,7 +71,7 @@ export async function updatePlanStatus(
   });
   if (updateResult.isErr()) return err(updateResult.error);
 
-  // 8. ARCHIVED 상태인 경우 좀비 Material 정리
+  // 7. ARCHIVED 상태인 경우 좀비 Material 정리
   if (validatedStatus === "ARCHIVED") {
     const gcResult = await planRepository.gcZombieMaterials(materialIds);
     if (gcResult.isErr()) return err(gcResult.error);

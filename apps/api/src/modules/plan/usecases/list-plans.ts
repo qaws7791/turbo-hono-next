@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
 
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { ListPlansInput, ListPlansResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 
@@ -25,22 +24,16 @@ export async function listPlans(
   }
   const validated = parseResult.data;
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, validated.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-  const space = spaceResult.value;
-
-  // 3. 총 개수 조회
-  const countResult = await planRepository.countBySpaceId(
+  // 2. 총 개수 조회
+  const countResult = await planRepository.countByUserId(
     userId,
-    space.id,
     validated.status,
   );
   if (countResult.isErr()) return err(countResult.error);
   const total = countResult.value;
 
-  // 4. 목록 조회
-  const listResult = await planRepository.listBySpaceId(userId, space.id, {
+  // 3. 목록 조회
+  const listResult = await planRepository.listByUserId(userId, {
     page: validated.page,
     limit: validated.limit,
     status: validated.status,
@@ -48,14 +41,14 @@ export async function listPlans(
   if (listResult.isErr()) return err(listResult.error);
   const planRows = listResult.value;
 
-  // 5. 진행률 맵 조회
+  // 4. 진행률 맵 조회
   const progressMapResult = await planRepository.getProgressMap(
     planRows.map((row) => row.id),
   );
   if (progressMapResult.isErr()) return err(progressMapResult.error);
   const progressMap = progressMapResult.value;
 
-  // 6. 소스 자료 ID 맵 조회
+  // 5. 소스 자료 ID 맵 조회
   const sourceMaterialIdsMapResult =
     await planRepository.getSourceMaterialIdsMap(planRows.map((row) => row.id));
   if (sourceMaterialIdsMapResult.isErr())
@@ -74,6 +67,8 @@ export async function listPlans(
         return {
           id: row.publicId,
           title: row.title,
+          icon: row.icon,
+          color: row.color,
           status: row.status,
           goalType: row.goalType,
           currentLevel: row.currentLevel,

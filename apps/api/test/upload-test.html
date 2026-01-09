@@ -519,16 +519,6 @@
           </div>
 
           <div class="form-group">
-            <label for="spaceId">Space ID</label>
-            <input
-              type="text"
-              id="spaceId"
-              placeholder="예: spc_abc123xyz"
-              required
-            />
-          </div>
-
-          <div class="form-group">
             <label for="title">자료 제목 (선택)</label>
             <input
               type="text"
@@ -756,7 +746,6 @@
 
         try {
           const apiBase = getApiBase();
-          const spaceId = document.getElementById("spaceId").value.trim();
           const title = document.getElementById("title").value.trim();
           const file = fileInput.files[0];
 
@@ -767,12 +756,11 @@
           const mimeType = getMimeType(file.name);
           log(`📁 파일: ${file.name} (${formatBytes(file.size)}, ${mimeType})`);
           log(`🔗 API 서버: ${apiBase}`);
-          log(`📂 Space ID: ${spaceId}`);
 
           // Step 1: Initiate Upload
           log("⏳ 1단계: Presigned URL 요청 중...");
           const initiateRes = await fetch(
-            `${apiBase}/api/spaces/${spaceId}/materials/uploads/init`,
+            `${apiBase}/api/materials/uploads/init`,
             {
               method: "POST",
               credentials: "include",
@@ -836,7 +824,7 @@
           }
 
           const completeRes = await fetch(
-            `${apiBase}/api/spaces/${spaceId}/materials/uploads/complete`,
+            `${apiBase}/api/materials/uploads/complete`,
             {
               method: "POST",
               credentials: "include",

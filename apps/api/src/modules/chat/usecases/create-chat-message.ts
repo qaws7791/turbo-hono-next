@@ -141,10 +141,18 @@ export async function createChatMessage(
   if (userMsgResult.isErr()) return err(userMsgResult.error);
 
   // 4. 관련 Material ID 조회
-  const materialIdsResult = await chatRepository.getMaterialIdsForScope(
+  const scopeInfoResult = await chatRepository.getScopeInfo(
     userId,
     thread.scopeType,
     thread.scopeId,
+  );
+  if (scopeInfoResult.isErr()) return err(scopeInfoResult.error);
+  const scopeInfo = scopeInfoResult.value;
+
+  const materialIdsResult = await chatRepository.getMaterialIdsForScope(
+    userId,
+    thread.scopeType,
+    scopeInfo.scopeId,
   );
   if (materialIdsResult.isErr()) return err(materialIdsResult.error);
   const materialIds = materialIdsResult.value;
@@ -157,7 +165,6 @@ export async function createChatMessage(
   // 6. 관련 청크 검색
   const chunksResult = await chatRepository.retrieveTopChunks({
     userId,
-    spaceId: thread.spaceId,
     query: validated.content,
     materialIds,
     topK: 5,

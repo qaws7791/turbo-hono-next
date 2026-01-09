@@ -61,8 +61,9 @@ export async function getPlanDetail(
     PlanDetailResponse.parse({
       data: {
         id: plan.id,
-        spaceId: plan.spaceId,
         title: plan.title,
+        icon: plan.icon,
+        color: plan.color,
         status: plan.status,
         goalType: plan.goalType,
         currentLevel: plan.currentLevel,

@@ -47,7 +47,6 @@ type AiPlanResponse = z.infer<typeof AiPlanResponseSchema>;
  */
 async function fetchMaterialContexts(params: {
   readonly userId: string;
-  readonly spaceId: number;
   readonly materialIds: ReadonlyArray<string>;
   readonly goalType: string;
   readonly currentLevel: string;
@@ -57,7 +56,6 @@ async function fetchMaterialContexts(params: {
 
   const results = await retrieveTopChunks({
     userId: params.userId,
-    spaceId: params.spaceId,
     materialIds: params.materialIds,
     query: searchQuery,
     topK: 20, // 자료당 충분한 컨텍스트 확보
@@ -190,7 +188,6 @@ export async function generatePlanWithAi(
   // 1. RAG를 통해 자료 컨텍스트 검색
   const rawContexts = await fetchMaterialContexts({
     userId: input.userId,
-    spaceId: input.spaceId,
     materialIds: input.materialIds,
     goalType: input.goalType,
     currentLevel: input.currentLevel,
@@ -205,7 +202,6 @@ export async function generatePlanWithAi(
   // 3. 프롬프트 생성
   const systemPrompt = buildSystemPrompt();
   const userPrompt = buildUserPrompt({
-    spaceName: input.spaceName,
     goalType: input.goalType,
     currentLevel: input.currentLevel,
     targetDueDate: input.targetDueDate,

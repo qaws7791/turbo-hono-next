@@ -28,11 +28,9 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     { ...listMaterialsRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      const { spaceId } = c.req.valid("param");
       const query = c.req.valid("query");
 
       const params = {
-        spaceId,
         page: query.page ?? 1,
         limit: query.limit ?? 20,
         status: query.status,
@@ -59,13 +57,8 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     { ...initiateMaterialUploadRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      const { spaceId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(
-        c,
-        initiateMaterialUpload(auth.user.id, spaceId, body),
-        200,
-      );
+      return jsonResult(c, initiateMaterialUpload(auth.user.id, body), 200);
     },
   );
 
@@ -74,10 +67,9 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     { ...completeMaterialUploadRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      const { spaceId } = c.req.valid("param");
       const body = c.req.valid("json");
       return handleResult(
-        completeMaterialUpload(auth.user.id, spaceId, body),
+        completeMaterialUpload(auth.user.id, body),
         (created) => {
           if (created.mode === "sync") {
             return c.json(

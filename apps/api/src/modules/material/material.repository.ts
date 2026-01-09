@@ -2,12 +2,10 @@ import {
   materialChunks,
   materialEmbeddings,
   materialJobs,
-  materialTags,
   materialUploads,
   materials,
   planSourceMaterials,
   plans,
-  tags,
 } from "@repo/database/schema";
 import { and, asc, desc, eq, ilike, inArray, isNull, sql } from "drizzle-orm";
 
@@ -57,44 +55,13 @@ function parseSort(sort: string | undefined): MaterialSort {
 }
 
 export const materialRepository = {
-  getTagMap(
-    materialIds: ReadonlyArray<string>,
-  ): ResultAsync<Map<string, Array<string>>, AppError> {
-    return tryPromise(async () => {
-      if (materialIds.length === 0) return new Map<string, Array<string>>();
-
-      const db = getDb();
-      const rows = await db
-        .select({
-          materialId: materialTags.materialId,
-          tag: tags.slug,
-        })
-        .from(materialTags)
-        .innerJoin(tags, eq(tags.id, materialTags.tagId))
-        .where(inArray(materialTags.materialId, [...materialIds]));
-
-      const map = new Map<string, Array<string>>();
-      rows.forEach((row) => {
-        const list = map.get(row.materialId) ?? [];
-        list.push(row.tag);
-        map.set(row.materialId, list);
-      });
-      return map;
-    });
-  },
-
-  countBySpaceId(
+  countByUserId(
     userId: string,
-    spaceId: number,
     filters: { status?: MaterialProcessingStatus; search?: string },
   ): ResultAsync<number, AppError> {
     return tryPromise(async () => {
       const db = getDb();
-      const where = [
-        eq(materials.userId, userId),
-        eq(materials.spaceId, spaceId),
-        isNull(materials.deletedAt),
-      ];
+      const where = [eq(materials.userId, userId), isNull(materials.deletedAt)];
 
       if (filters.status) {
         where.push(eq(materials.processingStatus, filters.status));
@@ -112,9 +79,8 @@ export const materialRepository = {
     });
   },
 
-  listBySpaceId(
+  listByUserId(
     userId: string,
-    spaceId: number,
     params: {
       page: number;
       limit: number;
@@ -138,11 +104,7 @@ export const materialRepository = {
   > {
     return tryPromise(() => {
       const db = getDb();
-      const where = [
-        eq(materials.userId, userId),
-        eq(materials.spaceId, spaceId),
-        isNull(materials.deletedAt),
-      ];
+      const where = [eq(materials.userId, userId), isNull(materials.deletedAt)];
 
       if (params.status) {
         where.push(eq(materials.processingStatus, params.status));
@@ -229,7 +191,6 @@ export const materialRepository = {
   ): ResultAsync<
     {
       id: string;
-      spaceId: number;
       deletedAt: Date | null;
       storageProvider: string | null;
       storageKey: string | null;
@@ -241,7 +202,6 @@ export const materialRepository = {
       const rows = await db
         .select({
           id: materials.id,
-          spaceId: materials.spaceId,
           deletedAt: materials.deletedAt,
           storageProvider: materials.storageProvider,
           storageKey: materials.storageKey,
@@ -274,7 +234,6 @@ export const materialRepository = {
   findUploadSessionByIdForUser(
     uploadId: string,
     userId: string,
-    spaceId: number,
   ): ResultAsync<
     {
       id: string;
@@ -312,7 +271,6 @@ export const materialRepository = {
           and(
             eq(materialUploads.id, uploadId),
             eq(materialUploads.userId, userId),
-            eq(materialUploads.spaceId, spaceId),
           ),
         )
         .limit(1);
@@ -405,7 +363,6 @@ export const materialRepository = {
 
   findDuplicateByChecksum(
     userId: string,
-    spaceId: number,
     checksum: string,
   ): ResultAsync<{ id: string } | null, AppError> {
     return tryPromise(async () => {
@@ -416,7 +373,6 @@ export const materialRepository = {
         .where(
           and(
             eq(materials.userId, userId),
-            eq(materials.spaceId, spaceId),
             eq(materials.checksum, checksum),
             isNull(materials.deletedAt),
           ),

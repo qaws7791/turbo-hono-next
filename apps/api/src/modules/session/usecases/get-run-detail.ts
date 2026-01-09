@@ -165,8 +165,12 @@ export async function getRunDetail(
           module: detail.module
             ? { id: detail.module.id, title: detail.module.title }
             : null,
-          plan: { id: detail.plan.publicId, title: detail.plan.title },
-          space: { id: detail.space.publicId, name: detail.space.name },
+          plan: {
+            id: detail.plan.publicId,
+            title: detail.plan.title,
+            icon: detail.plan.icon,
+            color: detail.plan.color,
+          },
         },
         blueprint: blueprintWithStats,
         progress: { stepIndex, inputs, savedAt },

@@ -15,8 +15,6 @@ export type PlanLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
  */
 export type GeneratePlanInput = {
   readonly userId: string;
-  readonly spaceId: number;
-  readonly spaceName: string;
   readonly materialIds: ReadonlyArray<string>;
   readonly goalType: PlanGoalType;
   readonly currentLevel: PlanLevel;

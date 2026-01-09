@@ -1,9 +1,6 @@
 import { z } from "zod";
 
 import { PaginationInput, PaginationMeta } from "../../lib/pagination";
-import { isPublicId } from "../../lib/public-id";
-
-const PublicIdSchema = z.string().refine(isPublicId, "Invalid public id");
 
 export const MaterialProcessingStatusSchema = z.enum([
   "PENDING",
@@ -19,7 +16,6 @@ export const MaterialSourceTypeSchema = z.enum(["FILE", "TEXT"]);
 export type MaterialSourceType = z.infer<typeof MaterialSourceTypeSchema>;
 
 export const ListMaterialsInput = PaginationInput.extend({
-  spaceId: PublicIdSchema,
   status: MaterialProcessingStatusSchema.optional(),
   search: z.string().max(200).optional(),
   sort: z.string().max(200).optional(),
@@ -34,7 +30,6 @@ export const MaterialListItem = z.object({
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
   summary: z.string().nullable(),
-  tags: z.array(z.string()).default([]),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -48,7 +43,6 @@ export type ListMaterialsResponse = z.infer<typeof ListMaterialsResponse>;
 
 export const MaterialDetail = z.object({
   id: z.string().uuid(),
-  spaceId: PublicIdSchema,
   title: z.string().min(1),
   sourceType: MaterialSourceTypeSchema,
   originalFilename: z.string().nullable(),
@@ -57,7 +51,6 @@ export const MaterialDetail = z.object({
   processingStatus: MaterialProcessingStatusSchema,
   processedAt: z.string().datetime().nullable(),
   summary: z.string().nullable(),
-  tags: z.array(z.string()).default([]),
   chunkCount: z.number().int().nonnegative().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

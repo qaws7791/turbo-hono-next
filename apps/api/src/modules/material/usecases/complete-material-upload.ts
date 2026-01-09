@@ -10,7 +10,6 @@ import {
 } from "../../../lib/r2";
 import { throwAppError, tryPromise } from "../../../lib/result";
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import {
   CompleteMaterialUploadInput,
   CreateMaterialResult,
@@ -86,18 +85,15 @@ async function unwrap<T>(
 
 export function completeMaterialUpload(
   userId: string,
-  spaceId: string,
   input: unknown,
 ): ResultAsync<CreateMaterialResultType, AppError> {
   return tryPromise(async () => {
     const validated = CompleteMaterialUploadInput.parse(input);
-    const space = await unwrap(assertSpaceOwned(userId, spaceId));
 
     const session = await unwrap(
       materialRepository.findUploadSessionByIdForUser(
         validated.uploadId,
         userId,
-        space.id,
       ),
     );
 
@@ -262,7 +258,7 @@ export function completeMaterialUpload(
 
       const checksum = createHash("sha256").update(tempBytes).digest("hex");
       const duplicate = await unwrap(
-        materialRepository.findDuplicateByChecksum(userId, space.id, checksum),
+        materialRepository.findDuplicateByChecksum(userId, checksum),
       );
 
       if (duplicate) {
@@ -317,7 +313,6 @@ export function completeMaterialUpload(
 
       const ingestResult = await ingestMaterial({
         userId,
-        spaceId: space.id,
         materialId,
         materialTitle: title,
         originalFilename: session.originalFilename ?? null,
@@ -332,7 +327,6 @@ export function completeMaterialUpload(
         materialRepository.insertMaterial({
           id: materialId,
           userId,
-          spaceId: space.id,
           sourceType,
           title,
           originalFilename: session.originalFilename,
@@ -398,12 +392,12 @@ export function completeMaterialUpload(
       // best-effort cleanup (vector index)
       try {
         if (materialId) {
-          const { getVectorStoreForSpace } = await import(
+          const { getVectorStoreForUser } = await import(
             "../../../ai/rag/vector-store"
           );
-          const store = await getVectorStoreForSpace({ spaceId: space.id });
+          const store = await getVectorStoreForUser({ userId });
           await store.delete({
-            filter: { userId, spaceId: String(space.id), materialId },
+            filter: { userId, materialId },
           });
         }
       } catch {

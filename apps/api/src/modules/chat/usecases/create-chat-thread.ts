@@ -28,7 +28,7 @@ export async function createChatThread(
   const validated = parseResult.data;
 
   // 2. 스코프 조회
-  const scopeResult = await chatRepository.getScopeSpaceId(
+  const scopeResult = await chatRepository.getScopeInfo(
     userId,
     validated.scopeType,
     validated.scopeId,
@@ -40,9 +40,8 @@ export async function createChatThread(
   const insertResult = await chatRepository.insertThread({
     id: threadId,
     userId,
-    spaceId: scope.spaceId,
     scopeType: validated.scopeType,
-    scopeId: scope.scopeId,
+    scopeId: String(scope.scopeId),
     createdAt: now,
     updatedAt: now,
   });

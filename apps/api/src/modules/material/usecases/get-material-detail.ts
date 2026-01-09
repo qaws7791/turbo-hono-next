@@ -2,7 +2,6 @@ import { err, ok } from "neverthrow";
 
 import { countMaterialChunks } from "../../../ai/rag/stats";
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { GetMaterialDetailResponse } from "../material.dto";
 import { materialRepository } from "../material.repository";
 import { isoDate, isoDateRequired } from "../material.utils";
@@ -31,30 +30,18 @@ export async function getMaterialDetail(
     );
   }
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, material.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-  const space = spaceResult.value;
-
-  // 3. 청크 수 조회
+  // 2. 청크 수 조회
   const chunkCountResult = await countMaterialChunks({
     userId,
-    spaceId: space.id,
     materialId,
   });
   if (chunkCountResult.isErr()) return err(chunkCountResult.error);
   const chunkCount = chunkCountResult.value;
 
-  // 4. 태그 맵 조회
-  const tagMapResult = await materialRepository.getTagMap([materialId]);
-  if (tagMapResult.isErr()) return err(tagMapResult.error);
-  const tagMap = tagMapResult.value;
-
   return ok(
     GetMaterialDetailResponse.parse({
       data: {
         id: material.id,
-        spaceId: space.publicId,
         title: material.title,
         sourceType: material.sourceType,
         originalFilename: material.originalFilename ?? null,
@@ -63,7 +50,6 @@ export async function getMaterialDetail(
         processingStatus: material.processingStatus,
         processedAt: isoDate(material.processedAt),
         summary: material.summary ?? null,
-        tags: tagMap.get(materialId) ?? [],
         chunkCount,
         createdAt: isoDateRequired(material.createdAt),
         updatedAt: isoDateRequired(material.updatedAt),

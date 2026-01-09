@@ -93,8 +93,8 @@ function getEmbeddings(): OpenAIEmbeddings {
   return sharedEmbeddings;
 }
 
-function collectionNameForSpace(spaceId: number): string {
-  return `space:${spaceId}`;
+function collectionNameForUser(userId: string): string {
+  return `user:${userId}`;
 }
 
 async function ensureInitialized(): Promise<void> {
@@ -124,8 +124,8 @@ async function ensureInitialized(): Promise<void> {
   return initPromise;
 }
 
-export async function getVectorStoreForSpace(params: {
-  readonly spaceId: number;
+export async function getVectorStoreForUser(params: {
+  readonly userId: string;
 }): Promise<PGVectorStore> {
   await ensureInitialized();
 
@@ -133,7 +133,7 @@ export async function getVectorStoreForSpace(params: {
     pool: getPool(),
     tableName: TABLE_NAME,
     collectionTableName: COLLECTION_TABLE_NAME,
-    collectionName: collectionNameForSpace(params.spaceId),
+    collectionName: collectionNameForUser(params.userId),
     columns: COLUMN_CONFIG,
     distanceStrategy: "cosine",
     skipInitializationCheck: true,

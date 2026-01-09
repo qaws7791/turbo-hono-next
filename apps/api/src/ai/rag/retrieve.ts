@@ -1,6 +1,6 @@
 import { ApiError } from "../../middleware/error-handler";
 
-import { getVectorStoreForSpace } from "./vector-store";
+import { getVectorStoreForUser } from "./vector-store";
 
 import type { RagDocumentMetadata, RagSearchResult } from "./types";
 
@@ -79,7 +79,6 @@ function parseRagMetadata(value: unknown): RagDocumentMetadata {
 
   return {
     userId: parseStringField(value, "userId"),
-    spaceId: parseStringField(value, "spaceId"),
     materialId: parseStringField(value, "materialId"),
     materialTitle: parseStringField(value, "materialTitle"),
     originalFilename: parseNullableStringField(value, "originalFilename"),
@@ -92,16 +91,14 @@ function parseRagMetadata(value: unknown): RagDocumentMetadata {
 
 export async function retrieveTopChunks(params: {
   readonly userId: string;
-  readonly spaceId: number;
   readonly materialIds: ReadonlyArray<string>;
   readonly query: string;
   readonly topK: number;
 }): Promise<ReadonlyArray<RagSearchResult>> {
-  const store = await getVectorStoreForSpace({ spaceId: params.spaceId });
+  const store = await getVectorStoreForUser({ userId: params.userId });
 
   const filterBase = {
     userId: params.userId,
-    spaceId: String(params.spaceId),
   } as const;
 
   const filter =

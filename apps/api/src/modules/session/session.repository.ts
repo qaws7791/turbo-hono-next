@@ -9,7 +9,6 @@ import {
   sessionRunBlueprints,
   sessionRuns,
   sessionSummaries,
-  spaces,
 } from "@repo/database/schema";
 import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 
@@ -41,10 +40,8 @@ export const sessionRepository = {
       estimatedMinutes: number;
       status: PlanSessionStatus;
       planTitle: string;
-      spaceId: string;
-      spaceName: string;
-      spaceIcon: string | null;
-      spaceColor: string | null;
+      planIcon: string;
+      planColor: string;
       moduleTitle: string | null;
     }>,
     AppError
@@ -60,15 +57,12 @@ export const sessionRepository = {
           estimatedMinutes: planSessions.estimatedMinutes,
           status: planSessions.status,
           planTitle: plans.title,
-          spaceId: spaces.publicId,
-          spaceName: spaces.name,
-          spaceIcon: spaces.icon,
-          spaceColor: spaces.color,
+          planIcon: plans.icon,
+          planColor: plans.color,
           moduleTitle: planModules.title,
         })
         .from(planSessions)
         .innerJoin(plans, eq(plans.id, planSessions.planId))
-        .innerJoin(spaces, eq(spaces.id, plans.spaceId))
         .leftJoin(planModules, eq(planModules.id, planSessions.moduleId))
         .where(
           and(
@@ -78,7 +72,7 @@ export const sessionRepository = {
             eq(planSessions.scheduledForDate, today),
           ),
         )
-        .orderBy(asc(spaces.createdAt), asc(planSessions.orderIndex));
+        .orderBy(asc(plans.createdAt), asc(planSessions.orderIndex));
     });
   },
 
@@ -157,7 +151,6 @@ export const sessionRepository = {
       publicId: string;
       status: string;
       planId: number;
-      spaceId: number;
     } | null,
     AppError
   > {
@@ -169,7 +162,6 @@ export const sessionRepository = {
           publicId: planSessions.publicId,
           status: planSessions.status,
           planId: planSessions.planId,
-          spaceId: plans.spaceId,
         })
         .from(planSessions)
         .innerJoin(plans, eq(plans.id, planSessions.planId))
@@ -376,7 +368,6 @@ export const sessionRepository = {
       startedAt: Date;
       sessionId: number;
       planId: number;
-      spaceId: number;
       sessionTitle: string;
     } | null,
     AppError
@@ -391,7 +382,6 @@ export const sessionRepository = {
           startedAt: sessionRuns.startedAt,
           sessionId: sessionRuns.sessionId,
           planId: sessionRuns.planId,
-          spaceId: sessionRuns.spaceId,
           sessionTitle: planSessions.title,
         })
         .from(sessionRuns)
@@ -455,8 +445,13 @@ export const sessionRepository = {
         estimatedMinutes: number;
       };
       module: { id: string; title: string } | null;
-      plan: { id: number; publicId: string; title: string };
-      space: { id: number; publicId: string; name: string };
+      plan: {
+        id: number;
+        publicId: string;
+        title: string;
+        icon: string;
+        color: string;
+      };
       summary: {
         id: string;
         summaryMd: string;
@@ -493,11 +488,8 @@ export const sessionRepository = {
             id: plans.id,
             publicId: plans.publicId,
             title: plans.title,
-          },
-          space: {
-            id: spaces.id,
-            publicId: spaces.publicId,
-            name: spaces.name,
+            icon: plans.icon,
+            color: plans.color,
           },
           summary: {
             id: sessionSummaries.id,
@@ -509,7 +501,6 @@ export const sessionRepository = {
         .from(sessionRuns)
         .innerJoin(planSessions, eq(planSessions.id, sessionRuns.sessionId))
         .innerJoin(plans, eq(plans.id, sessionRuns.planId))
-        .innerJoin(spaces, eq(spaces.id, sessionRuns.spaceId))
         .leftJoin(planModules, eq(planModules.id, planSessions.moduleId))
         .leftJoin(
           sessionSummaries,
@@ -532,7 +523,6 @@ export const sessionRepository = {
         session: row.session,
         module: row.module && row.module.id ? row.module : null,
         plan: row.plan,
-        space: row.space,
         summary: row.summary && row.summary.id ? row.summary : null,
       };
     });
@@ -701,8 +691,8 @@ export const sessionRepository = {
       sessionType: PlanSessionType;
       planId: string;
       planTitle: string;
-      spaceId: string;
-      spaceName: string;
+      planIcon: string;
+      planColor: string;
       summary: {
         id: string;
         reviewsScheduledCount: number;
@@ -732,8 +722,8 @@ export const sessionRepository = {
           sessionType: planSessions.sessionType,
           planId: plans.publicId,
           planTitle: plans.title,
-          spaceId: spaces.publicId,
-          spaceName: spaces.name,
+          planIcon: plans.icon,
+          planColor: plans.color,
           summaryId: sessionSummaries.id,
           reviewsScheduledCount: sessionSummaries.reviewsScheduledCount,
           summaryCreatedAt: sessionSummaries.createdAt,
@@ -741,7 +731,6 @@ export const sessionRepository = {
         .from(sessionRuns)
         .innerJoin(planSessions, eq(planSessions.id, sessionRuns.sessionId))
         .innerJoin(plans, eq(plans.id, sessionRuns.planId))
-        .innerJoin(spaces, eq(spaces.id, sessionRuns.spaceId))
         .leftJoin(
           sessionSummaries,
           eq(sessionSummaries.sessionRunId, sessionRuns.id),
@@ -762,8 +751,8 @@ export const sessionRepository = {
         sessionType: row.sessionType,
         planId: row.planId,
         planTitle: row.planTitle,
-        spaceId: row.spaceId,
-        spaceName: row.spaceName,
+        planIcon: row.planIcon,
+        planColor: row.planColor,
         summary: row.summaryId
           ? {
               id: row.summaryId,
@@ -811,7 +800,6 @@ export const sessionRepository = {
       id: number;
       publicId: string;
       planId: number;
-      spaceId: number;
     };
     userId: string;
     now: Date;
@@ -826,7 +814,6 @@ export const sessionRepository = {
           publicId: runPublicId,
           sessionId: params.session.id,
           userId: params.userId,
-          spaceId: params.session.spaceId,
           planId: params.session.planId,
           idempotencyKey: params.idempotencyKey ?? null,
           status: "RUNNING",
@@ -850,7 +837,6 @@ export const sessionRepository = {
       publicId: string;
       sessionId: number;
       planId: number;
-      spaceId: number;
       startedAt: Date;
     };
     userId: string;

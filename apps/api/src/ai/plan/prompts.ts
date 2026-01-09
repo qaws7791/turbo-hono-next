@@ -51,7 +51,6 @@ export function buildSystemPrompt(): string {
 }
 
 export function buildUserPrompt(params: {
-  readonly spaceName: string;
   readonly goalType: PlanGoalType;
   readonly currentLevel: PlanLevel;
   readonly targetDueDate: Date;
@@ -84,7 +83,6 @@ ${params.specialRequirements}`
   return `## 학습 계획 생성 요청
 
 ### 기본 정보
-- **스페이스**: ${params.spaceName}
 - **학습 목표**: ${GOAL_TYPE_LABELS[params.goalType]}
 - **현재 수준**: ${LEVEL_LABELS[params.currentLevel]}
 - **오늘 날짜**: ${today}

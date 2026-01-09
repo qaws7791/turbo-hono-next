@@ -1,6 +1,5 @@
 export type RagDocumentMetadata = {
   readonly userId: string;
-  readonly spaceId: string;
   readonly materialId: string;
   readonly materialTitle: string;
   readonly originalFilename: string | null;

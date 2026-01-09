@@ -1,10 +1,10 @@
-import { ApiError } from "../../middleware/error-handler";
 import { tryPromise } from "../../lib/result";
+import { ApiError } from "../../middleware/error-handler";
 
-import { getVectorStoreForSpace } from "./vector-store";
+import { getVectorStoreForUser } from "./vector-store";
 
-import type { AppError } from "../../lib/result";
 import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 
 function parseCount(value: unknown): number {
   if (typeof value === "number") return value;
@@ -17,11 +17,10 @@ function parseCount(value: unknown): number {
 
 export function countMaterialChunks(params: {
   readonly userId: string;
-  readonly spaceId: number;
   readonly materialId: string;
 }): ResultAsync<number, AppError> {
   return tryPromise(async () => {
-    const store = await getVectorStoreForSpace({ spaceId: params.spaceId });
+    const store = await getVectorStoreForUser({ userId: params.userId });
     const collectionId = await store.getOrCreateCollection();
 
     const query = `

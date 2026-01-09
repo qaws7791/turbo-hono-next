@@ -4,6 +4,7 @@ import {
   deletePlanRoute,
   getPlanDetailRoute,
   listPlansRoute,
+  updatePlanRoute,
   updatePlanStatusRoute,
 } from "@repo/api-spec";
 
@@ -15,6 +16,7 @@ import {
   deletePlan,
   getPlanDetail,
   listPlans,
+  updatePlan,
   updatePlanStatus,
 } from "../modules/plan";
 
@@ -25,13 +27,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     { ...listPlansRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      const { spaceId } = c.req.valid("param");
       const query = c.req.valid("query");
 
       return jsonResult(
         c,
         listPlans(auth.user.id, {
-          spaceId,
           page: query.page ?? 1,
           limit: query.limit ?? 20,
           status: query.status,
@@ -54,9 +54,18 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     { ...createPlanRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      const { spaceId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, createPlan(auth.user.id, spaceId, body), 201);
+      return jsonResult(c, createPlan(auth.user.id, body), 201);
+    },
+  );
+
+  app.openapi(
+    { ...updatePlanRoute, middleware: [requireAuth] as const },
+    async (c) => {
+      const auth = c.get("auth");
+      const { planId } = c.req.valid("param");
+      const body = c.req.valid("json");
+      return jsonResult(c, updatePlan(auth.user.id, planId, body), 200);
     },
   );
 

@@ -118,7 +118,6 @@ export async function createOrRecoverRun(
       id: session.id,
       publicId: session.publicId,
       planId: session.planId,
-      spaceId: session.spaceId,
     },
     userId,
     now,

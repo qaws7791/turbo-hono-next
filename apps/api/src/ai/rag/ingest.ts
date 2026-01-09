@@ -1,15 +1,14 @@
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-import { ApiError } from "../../middleware/error-handler";
 import { CONFIG } from "../../lib/config";
+import { ApiError } from "../../middleware/error-handler";
 
 import { loadDocumentsFromBytes } from "./load";
-import { getVectorStoreForSpace } from "./vector-store";
+import { getVectorStoreForUser } from "./vector-store";
 
 export type IngestMaterialParams = {
   readonly userId: string;
-  readonly spaceId: number;
   readonly materialId: string;
   readonly materialTitle: string;
   readonly originalFilename: string | null;
@@ -93,7 +92,6 @@ export async function ingestMaterial(
     const pageNumber = extractPageNumber(doc.metadata);
     const metadata: Record<string, unknown> = {
       userId: params.userId,
-      spaceId: String(params.spaceId),
       materialId: params.materialId,
       materialTitle: params.materialTitle,
       originalFilename: params.originalFilename,
@@ -116,9 +114,9 @@ export async function ingestMaterial(
     );
   }
 
-  const store = await getVectorStoreForSpace({ spaceId: params.spaceId });
+  const store = await getVectorStoreForUser({ userId: params.userId });
 
-  // Re-indexing: delete existing docs for this material in this space.
+  // Re-indexing: delete existing docs for this material.
   await store.delete({
     filter: {
       userId: params.userId,

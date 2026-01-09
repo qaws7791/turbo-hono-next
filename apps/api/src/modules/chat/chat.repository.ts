@@ -5,7 +5,6 @@ import {
   planSessions,
   planSourceMaterials,
   plans,
-  spaces,
 } from "@repo/database/schema";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { errAsync, okAsync } from "neverthrow";
@@ -15,58 +14,21 @@ import { getDb } from "../../lib/db";
 import { tryPromise } from "../../lib/result";
 import { ApiError } from "../../middleware/error-handler";
 
-import type { ChatScopeType } from "./chat.dto";
-import type { AppError } from "../../lib/result";
 import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
+import type { ChatScopeType } from "./chat.dto";
 
 export const chatRepository = {
-  getScopeSpaceId(
+  getScopeInfo(
     userId: string,
     scopeType: ChatScopeType,
     scopeId: string,
-  ): ResultAsync<{ spaceId: number; scopeId: number }, AppError> {
-    if (scopeType === "SPACE") {
-      return tryPromise(async () => {
-        const db = getDb();
-        const rows = await db
-          .select({
-            id: spaces.id,
-            userId: spaces.userId,
-            deletedAt: spaces.deletedAt,
-          })
-          .from(spaces)
-          .where(eq(spaces.publicId, scopeId))
-          .limit(1);
-        return rows[0] ?? null;
-      }).andThen((space) => {
-        if (!space || space.deletedAt) {
-          return errAsync(
-            new ApiError(404, "SPACE_NOT_FOUND", "Space를 찾을 수 없습니다.", {
-              spaceId: scopeId,
-            }),
-          );
-        }
-        if (space.userId !== userId) {
-          return errAsync(
-            new ApiError(
-              403,
-              "SPACE_ACCESS_DENIED",
-              "이 Space에 접근할 수 없습니다.",
-              {
-                spaceId: scopeId,
-              },
-            ),
-          );
-        }
-        return okAsync({ spaceId: space.id, scopeId: space.id });
-      });
-    }
-
+  ): ResultAsync<{ scopeId: number }, AppError> {
     if (scopeType === "PLAN") {
       return tryPromise(async () => {
         const db = getDb();
         const rows = await db
-          .select({ id: plans.id, spaceId: plans.spaceId })
+          .select({ id: plans.id })
           .from(plans)
           .where(
             and(
@@ -83,7 +45,7 @@ export const chatRepository = {
             new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다."),
           );
         }
-        return okAsync({ spaceId: plan.spaceId, scopeId: plan.id });
+        return okAsync({ scopeId: plan.id });
       });
     }
 
@@ -91,7 +53,7 @@ export const chatRepository = {
       return tryPromise(async () => {
         const db = getDb();
         const rows = await db
-          .select({ id: planSessions.id, spaceId: plans.spaceId })
+          .select({ id: planSessions.id })
           .from(planSessions)
           .innerJoin(plans, eq(plans.id, planSessions.planId))
           .where(
@@ -109,7 +71,7 @@ export const chatRepository = {
             new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다."),
           );
         }
-        return okAsync({ spaceId: session.spaceId, scopeId: session.id });
+        return okAsync({ scopeId: session.id });
       });
     }
 
@@ -167,66 +129,29 @@ export const chatRepository = {
       });
     }
 
-    if (scopeType === "SPACE") {
-      return tryPromise(async () => {
-        const db = getDb();
-        const rows = await db
-          .select({
-            id: spaces.id,
-            userId: spaces.userId,
-            deletedAt: spaces.deletedAt,
-          })
-          .from(spaces)
-          .where(eq(spaces.id, scopeId))
-          .limit(1);
-        return rows[0] ?? null;
-      }).andThen((space) => {
-        if (!space || space.deletedAt) {
-          return errAsync(
-            new ApiError(404, "SPACE_NOT_FOUND", "Space를 찾을 수 없습니다.", {
-              spaceId: scopeId,
-            }),
-          );
-        }
-
-        if (space.userId !== userId) {
-          return errAsync(
-            new ApiError(
-              403,
-              "SPACE_ACCESS_DENIED",
-              "이 Space에 접근할 수 없습니다.",
-              {
-                spaceId: scopeId,
-              },
-            ),
-          );
-        }
-
-        return tryPromise(() => {
-          const db = getDb();
-          return db
-            .select({ id: materials.id })
-            .from(materials)
-            .where(
-              and(
-                eq(materials.userId, userId),
-                eq(materials.spaceId, space.id),
-                eq(materials.processingStatus, "READY"),
-                isNull(materials.deletedAt),
-              ),
-            )
-            .orderBy(desc(materials.createdAt))
-            .limit(50);
-        }).map((rows) => rows.map((row) => row.id));
-      });
-    }
-
     return okAsync<Array<string>, AppError>([]);
+  },
+
+  getMaterialIdsForUser(userId: string): ResultAsync<Array<string>, AppError> {
+    return tryPromise(() => {
+      const db = getDb();
+      return db
+        .select({ id: materials.id })
+        .from(materials)
+        .where(
+          and(
+            eq(materials.userId, userId),
+            eq(materials.processingStatus, "READY"),
+            isNull(materials.deletedAt),
+          ),
+        )
+        .orderBy(desc(materials.createdAt))
+        .limit(50);
+    }).map((rows) => rows.map((row) => row.id));
   },
 
   retrieveTopChunks(params: {
     readonly userId: string;
-    readonly spaceId: number;
     readonly query: string;
     readonly materialIds: ReadonlyArray<string>;
     readonly topK: number;
@@ -244,7 +169,6 @@ export const chatRepository = {
     return tryPromise(async () => {
       const rows = await ragRetrieveTopChunks({
         userId: params.userId,
-        spaceId: params.spaceId,
         materialIds: params.materialIds,
         query: params.query,
         topK: params.topK,
@@ -268,9 +192,8 @@ export const chatRepository = {
     {
       id: string;
       userId: string;
-      spaceId: number;
       scopeType: ChatScopeType;
-      scopeId: number;
+      scopeId: string;
     } | null,
     AppError
   > {
@@ -280,7 +203,6 @@ export const chatRepository = {
         .select({
           id: chatThreads.id,
           userId: chatThreads.userId,
-          spaceId: chatThreads.spaceId,
           scopeType: chatThreads.scopeType,
           scopeId: chatThreads.scopeId,
         })

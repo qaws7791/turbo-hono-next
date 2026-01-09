@@ -4,7 +4,7 @@ import { isPublicId } from "../../lib/public-id";
 
 const PublicIdSchema = z.string().refine(isPublicId, "Invalid public id");
 
-export const ChatScopeTypeSchema = z.enum(["SPACE", "PLAN", "SESSION"]);
+export const ChatScopeTypeSchema = z.enum(["PLAN", "SESSION"]);
 export type ChatScopeType = z.infer<typeof ChatScopeTypeSchema>;
 
 export const CreateChatThreadInput = z.object({

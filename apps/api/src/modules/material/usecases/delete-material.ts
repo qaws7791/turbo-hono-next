@@ -1,9 +1,8 @@
 import { err, ok } from "neverthrow";
 
-import { getVectorStoreForSpace } from "../../../ai/rag/vector-store";
+import { getVectorStoreForUser } from "../../../ai/rag/vector-store";
 import { deleteObject } from "../../../lib/r2";
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { DeleteMaterialResponse } from "../material.dto";
 import { materialRepository } from "../material.repository";
 
@@ -31,16 +30,12 @@ export async function deleteMaterial(
     );
   }
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, material.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-
-  // 3. Plan 참조 확인
+  // 2. Plan 참조 확인
   const hasRefsResult = await materialRepository.hasPlanReferences(materialId);
   if (hasRefsResult.isErr()) return err(hasRefsResult.error);
   const hasRefs = hasRefsResult.value;
 
-  // 4. 참조가 있으면 소프트 삭제
+  // 3. 참조가 있으면 소프트 삭제
   if (hasRefs) {
     const now = new Date();
     const softDeleteResult = await materialRepository.softDelete(
@@ -58,17 +53,16 @@ export async function deleteMaterial(
     );
   }
 
-  // 5. 스토리지 삭제 (R2인 경우)
+  // 4. 스토리지 삭제 (R2인 경우)
   if (material.storageProvider === "R2" && material.storageKey) {
     await deleteObject({ key: material.storageKey });
   }
 
-  // 5.5. 벡터 인덱스 삭제
-  const store = await getVectorStoreForSpace({ spaceId: material.spaceId });
+  // 5. 벡터 인덱스 삭제
+  const store = await getVectorStoreForUser({ userId });
   await store.delete({
     filter: {
       userId,
-      spaceId: String(material.spaceId),
       materialId,
     },
   });

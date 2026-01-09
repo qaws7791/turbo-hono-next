@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
 
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { DeletePlanResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 
@@ -26,20 +25,16 @@ export async function deletePlan(
     );
   }
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, plan.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-
-  // 3. 소스 Material ID 조회
+  // 2. 소스 Material ID 조회
   const materialIdsResult = await planRepository.listSourceMaterialIds(plan.id);
   if (materialIdsResult.isErr()) return err(materialIdsResult.error);
   const materialIds = materialIdsResult.value;
 
-  // 4. Plan 삭제
+  // 3. Plan 삭제
   const deleteResult = await planRepository.deletePlan(plan.id);
   if (deleteResult.isErr()) return err(deleteResult.error);
 
-  // 5. 좀비 Material 정리
+  // 4. 좀비 Material 정리
   const gcResult = await planRepository.gcZombieMaterials(materialIds);
   if (gcResult.isErr()) return err(gcResult.error);
 

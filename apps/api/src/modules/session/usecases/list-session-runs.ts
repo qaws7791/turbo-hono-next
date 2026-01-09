@@ -56,8 +56,8 @@ export async function listSessionRuns(
           sessionType: row.sessionType,
           planId: row.planId,
           planTitle: row.planTitle,
-          spaceId: row.spaceId,
-          spaceName: row.spaceName,
+          planIcon: row.planIcon,
+          planColor: row.planColor,
           summary: row.summary
             ? {
                 id: row.summary.id,

@@ -42,7 +42,6 @@ export async function completeRun(
       publicId: run.publicId,
       sessionId: run.sessionId,
       planId: run.planId,
-      spaceId: run.spaceId,
       startedAt: run.startedAt,
     },
     userId,

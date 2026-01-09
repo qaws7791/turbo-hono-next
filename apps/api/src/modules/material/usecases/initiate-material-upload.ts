@@ -3,7 +3,6 @@ import { err, ok } from "neverthrow";
 import { isSupportedMaterialFile } from "../../../ai/ingestion/parse";
 import { createPresignedPutUrl } from "../../../lib/r2";
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import {
   InitiateMaterialUploadInput,
   InitiateMaterialUploadResponse,
@@ -38,7 +37,6 @@ function buildTempObjectKey(params: {
 
 export async function initiateMaterialUpload(
   userId: string,
-  spaceId: string,
   input: unknown,
 ): Promise<Result<InitiateMaterialUploadResponseType, AppError>> {
   // 1. 입력 검증
@@ -50,15 +48,10 @@ export async function initiateMaterialUpload(
   }
   const validated = parseResult.data;
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-  const space = spaceResult.value;
-
   const originalFilename = validated.originalFilename.trim();
   const mimeType = validated.mimeType.trim();
 
-  // 3. 파일 크기 검증
+  // 2. 파일 크기 검증
   if (validated.fileSize > MAX_FILE_BYTES) {
     return err(
       new ApiError(400, "MATERIAL_FILE_TOO_LARGE", "파일 크기가 너무 큽니다.", {
@@ -67,7 +60,7 @@ export async function initiateMaterialUpload(
     );
   }
 
-  // 4. 파일 형식 검증
+  // 3. 파일 형식 검증
   if (!isSupportedMaterialFile({ mimeType, originalFilename })) {
     return err(
       new ApiError(
@@ -90,11 +83,10 @@ export async function initiateMaterialUpload(
     now,
   });
 
-  // 5. 업로드 세션 생성
+  // 4. 업로드 세션 생성
   const insertResult = await materialRepository.insertUploadSession({
     id: uploadId,
     userId,
-    spaceId: space.id,
     status: "INITIATED",
     expiresAt,
     objectKey,
@@ -106,7 +98,7 @@ export async function initiateMaterialUpload(
   });
   if (insertResult.isErr()) return err(insertResult.error);
 
-  // 6. Presigned URL 생성
+  // 5. Presigned URL 생성
   const { url } = await createPresignedPutUrl({
     key: objectKey,
     contentType: mimeType,

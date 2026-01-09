@@ -4,7 +4,6 @@ import {
   planSessions,
   planSourceMaterials,
   plans,
-  spaces,
 } from "@repo/database/schema";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
@@ -20,18 +19,13 @@ export type PlanEntity = typeof plans.$inferSelect;
 export type InsertPlanEntity = typeof plans.$inferInsert;
 
 export const planRepository = {
-  countBySpaceId(
+  countByUserId(
     userId: string,
-    spaceId: number,
     status?: PlanStatus,
   ): ResultAsync<number, AppError> {
     return tryPromise(async () => {
       const db = getDb();
-      const where = [
-        eq(plans.userId, userId),
-        eq(plans.spaceId, spaceId),
-        isNull(plans.deletedAt),
-      ];
+      const where = [eq(plans.userId, userId), isNull(plans.deletedAt)];
       if (status) where.push(eq(plans.status, status));
 
       const rows = await db
@@ -42,15 +36,16 @@ export const planRepository = {
     });
   },
 
-  listBySpaceId(
+  listByUserId(
     userId: string,
-    spaceId: number,
     options: { page: number; limit: number; status?: PlanStatus },
   ): ResultAsync<
     Array<{
       id: number;
       publicId: string;
       title: string;
+      icon: string;
+      color: string;
       status: PlanStatus;
       goalType: string;
       currentLevel: string;
@@ -61,11 +56,7 @@ export const planRepository = {
   > {
     return tryPromise(() => {
       const db = getDb();
-      const where = [
-        eq(plans.userId, userId),
-        eq(plans.spaceId, spaceId),
-        isNull(plans.deletedAt),
-      ];
+      const where = [eq(plans.userId, userId), isNull(plans.deletedAt)];
       if (options.status) where.push(eq(plans.status, options.status));
 
       const offset = (options.page - 1) * options.limit;
@@ -74,6 +65,8 @@ export const planRepository = {
           id: plans.id,
           publicId: plans.publicId,
           title: plans.title,
+          icon: plans.icon,
+          color: plans.color,
           status: plans.status,
           goalType: plans.goalType,
           currentLevel: plans.currentLevel,
@@ -137,8 +130,9 @@ export const planRepository = {
     {
       internalId: number;
       id: string;
-      spaceId: string;
       title: string;
+      icon: string;
+      color: string;
       status: PlanStatus;
       goalType: string;
       currentLevel: string;
@@ -155,8 +149,9 @@ export const planRepository = {
         .select({
           internalId: plans.id,
           id: plans.publicId,
-          spaceId: spaces.publicId,
           title: plans.title,
+          icon: plans.icon,
+          color: plans.color,
           status: plans.status,
           goalType: plans.goalType,
           currentLevel: plans.currentLevel,
@@ -166,14 +161,11 @@ export const planRepository = {
           updatedAt: plans.updatedAt,
         })
         .from(plans)
-        .innerJoin(spaces, eq(spaces.id, plans.spaceId))
         .where(
           and(
             eq(plans.publicId, planPublicId),
             eq(plans.userId, userId),
             isNull(plans.deletedAt),
-            eq(spaces.userId, userId),
-            isNull(spaces.deletedAt),
           ),
         )
         .limit(1);
@@ -189,7 +181,9 @@ export const planRepository = {
     {
       id: number;
       publicId: string;
-      spaceId: number;
+      title: string;
+      icon: string;
+      color: string;
       status: PlanStatus;
     } | null,
     AppError
@@ -200,7 +194,9 @@ export const planRepository = {
         .select({
           id: plans.id,
           publicId: plans.publicId,
-          spaceId: plans.spaceId,
+          title: plans.title,
+          icon: plans.icon,
+          color: plans.color,
           status: plans.status,
         })
         .from(plans)
@@ -287,7 +283,6 @@ export const planRepository = {
       processingStatus: string;
       deletedAt: Date | null;
       userId: string;
-      spaceId: number;
     }>,
     AppError
   > {
@@ -300,7 +295,6 @@ export const planRepository = {
           processingStatus: materials.processingStatus,
           deletedAt: materials.deletedAt,
           userId: materials.userId,
-          spaceId: materials.spaceId,
         })
         .from(materials)
         .where(inArray(materials.id, [...materialIds]));
@@ -345,14 +339,14 @@ export const planRepository = {
     });
   },
 
-  pauseActivePlansInSpace(
+  pauseActivePlansForUser(
     db: Database,
-    spaceId: number,
+    userId: string,
     now: Date,
     exceptPlanId?: number,
   ): ResultAsync<void, AppError> {
     return tryPromise(async () => {
-      const where = [eq(plans.spaceId, spaceId), eq(plans.status, "ACTIVE")];
+      const where = [eq(plans.userId, userId), eq(plans.status, "ACTIVE")];
       if (exceptPlanId !== undefined) {
         where.push(sql`${plans.id} <> ${exceptPlanId}`);
       }
@@ -425,6 +419,47 @@ export const planRepository = {
     });
   },
 
+  updatePlan(
+    planId: number,
+    data: {
+      title?: string;
+      icon?: string;
+      color?: string;
+      status?: PlanStatus;
+    },
+    now: Date,
+  ): ResultAsync<
+    {
+      id: string;
+      title: string;
+      icon: string;
+      color: string;
+      status: PlanStatus;
+    },
+    AppError
+  > {
+    return tryPromise(async () => {
+      const db = getDb();
+      const rows = await db
+        .update(plans)
+        .set({ ...data, updatedAt: now })
+        .where(eq(plans.id, planId))
+        .returning({
+          id: plans.publicId,
+          title: plans.title,
+          icon: plans.icon,
+          color: plans.color,
+          status: plans.status,
+        });
+
+      const updated = rows[0];
+      if (!updated) {
+        throw new Error("Failed to update plan");
+      }
+      return updated;
+    });
+  },
+
   deleteSourceMaterials(
     db: Database,
     planId: number,
@@ -479,7 +514,6 @@ export const planRepository = {
 
   createPlanTransaction(params: {
     userId: string;
-    spaceId: number;
     planData: InsertPlanEntity;
     sourceRows: Array<{
       planId: number;
@@ -496,7 +530,7 @@ export const planRepository = {
       let result: { id: number; publicId: string } | null = null;
 
       await db.transaction(async (tx) => {
-        // Pause active plans
+        // Pause active plans for user
         await tx
           .update(plans)
           .set({
@@ -504,7 +538,7 @@ export const planRepository = {
             updatedAt: params.planData.createdAt ?? new Date(),
           })
           .where(
-            and(eq(plans.spaceId, params.spaceId), eq(plans.status, "ACTIVE")),
+            and(eq(plans.userId, params.userId), eq(plans.status, "ACTIVE")),
           );
 
         // Insert plan
@@ -584,20 +618,21 @@ export const planRepository = {
   },
 
   activatePlanTransaction(params: {
-    plan: { id: number; spaceId: number };
+    plan: { id: number };
+    userId: string;
     now: Date;
   }): ResultAsync<void, AppError> {
     return tryPromise(async () => {
       const db = getDb();
 
       await db.transaction(async (tx) => {
-        // Pause other active plans in same space
+        // Pause other active plans for user
         await tx
           .update(plans)
           .set({ status: "PAUSED", updatedAt: params.now })
           .where(
             and(
-              eq(plans.spaceId, params.plan.spaceId),
+              eq(plans.userId, params.userId),
               eq(plans.status, "ACTIVE"),
               sql`${plans.id} <> ${params.plan.id}`,
             ),

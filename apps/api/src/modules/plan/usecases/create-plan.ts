@@ -3,7 +3,6 @@ import { err, ok } from "neverthrow";
 import { generatePlanWithAi } from "../../../ai/plan/generate";
 import { generatePublicId } from "../../../lib/public-id";
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { CreatePlanInput, CreatePlanResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 import { addDays, parseDateOnly } from "../plan.utils";
@@ -17,7 +16,6 @@ import type {
 
 export async function createPlan(
   userId: string,
-  spaceId: string,
   input: CreatePlanInputType,
 ): Promise<Result<CreatePlanResponseType, AppError>> {
   // 1. 입력 검증
@@ -29,19 +27,14 @@ export async function createPlan(
   }
   const validated = parseResult.data;
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-  const space = spaceResult.value;
-
-  // 3. Material 조회
+  // 2. Material 조회
   const materialsResult = await planRepository.findMaterialsByIds(
     validated.materialIds,
   );
   if (materialsResult.isErr()) return err(materialsResult.error);
   const materialRows = materialsResult.value;
 
-  // 4. Material 정렬 및 검증
+  // 3. Material 정렬 및 검증
   const byId = new Map(
     materialRows.map((material) => [material.id, material] as const),
   );
@@ -63,7 +56,7 @@ export async function createPlan(
   }
 
   for (const material of ordered) {
-    if (material.userId !== userId || material.spaceId !== space.id) {
+    if (material.userId !== userId) {
       return err(new ApiError(403, "FORBIDDEN", "자료 접근 권한이 없습니다."));
     }
     if (material.deletedAt) {
@@ -87,18 +80,18 @@ export async function createPlan(
     }
   }
 
-  // 5. AI를 통한 개인화된 학습 계획 생성
+  // 4. AI를 통한 개인화된 학습 계획 생성
   const now = new Date();
   const planPublicId = generatePublicId();
   const targetDueDate = parseDateOnly(validated.targetDueDate);
   const startDate = parseDateOnly(new Date().toISOString().slice(0, 10));
+  const icon = validated.icon ?? "target";
+  const color = validated.color ?? "blue";
 
   let aiPlan;
   try {
     aiPlan = await generatePlanWithAi({
       userId,
-      spaceId: space.id,
-      spaceName: space.name,
       materialIds: validated.materialIds,
       goalType: validated.goalType,
       currentLevel: validated.currentLevel,
@@ -111,11 +104,10 @@ export async function createPlan(
     aiPlan = buildFallbackPlan({
       materials: ordered,
       goalType: validated.goalType,
-      spaceName: space.name,
     });
   }
 
-  // 6. AI 결과를 DB 형식으로 변환
+  // 5. AI 결과를 DB 형식으로 변환
   const moduleRows = aiPlan.modules.map((mod) => ({
     id: crypto.randomUUID(),
     title: mod.title,
@@ -138,15 +130,15 @@ export async function createPlan(
     updatedAt: now,
   }));
 
-  // 7. Plan 트랜잭션 생성
+  // 6. Plan 트랜잭션 생성
   const createResult = await planRepository.createPlanTransaction({
     userId,
-    spaceId: space.id,
     planData: {
       publicId: planPublicId,
       userId,
-      spaceId: space.id,
       title: aiPlan.title,
+      icon,
+      color,
       status: "ACTIVE",
       goalType: validated.goalType,
       currentLevel: validated.currentLevel,
@@ -176,6 +168,8 @@ export async function createPlan(
       data: {
         id: planPublicId,
         title: aiPlan.title,
+        icon,
+        color,
         status: "ACTIVE" as const,
         createdAt: now.toISOString(),
         updatedAt: now.toISOString(),
@@ -193,7 +187,6 @@ function buildFallbackPlan(params: {
     readonly title: string | null;
   }>;
   readonly goalType: string;
-  readonly spaceName: string;
 }) {
   const goalLabels: Record<string, string> = {
     JOB: "취업 준비",
@@ -203,7 +196,7 @@ function buildFallbackPlan(params: {
     OTHER: "학습",
   };
 
-  const title = `${params.spaceName} ${goalLabels[params.goalType] ?? "학습"} 계획`;
+  const title = `${goalLabels[params.goalType] ?? "학습"} 계획`;
 
   const modules = params.materials.map((mat, idx) => ({
     title: mat.title ?? `Module ${idx + 1}`,
@@ -259,7 +252,7 @@ function buildFallbackPlan(params: {
 
   return {
     title,
-    summary: `${params.spaceName}을(를) 위한 체계적인 학습 계획입니다.`,
+    summary: `체계적인 학습 계획입니다.`,
     modules,
     sessions,
   };

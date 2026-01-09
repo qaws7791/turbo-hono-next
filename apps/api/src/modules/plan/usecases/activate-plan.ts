@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
 
 import { ApiError } from "../../../middleware/error-handler";
-import { assertSpaceOwned } from "../../space";
 import { ActivatePlanResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 
@@ -28,13 +27,10 @@ export async function activatePlan(
     );
   }
 
-  // 2. Space 소유권 확인
-  const spaceResult = await assertSpaceOwned(userId, plan.spaceId);
-  if (spaceResult.isErr()) return err(spaceResult.error);
-
-  // 3. Plan 활성화 트랜잭션 실행
+  // 2. Plan 활성화 트랜잭션 실행
   const activateResult = await planRepository.activatePlanTransaction({
-    plan: { id: plan.id, spaceId: plan.spaceId },
+    plan: { id: plan.id },
+    userId,
     now,
   });
   if (activateResult.isErr()) return err(activateResult.error);
