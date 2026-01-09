@@ -63,7 +63,7 @@
         "VITE_API_BASE_URL"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".sst/**", "dist/**", "storybook-static/**"]
+      "outputs": [".sst/**", "dist/**", "storybook-static/**", "build/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

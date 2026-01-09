@@ -1,5 +1,5 @@
 import { Badge } from "@repo/ui/badge";
-import { AlertCircle, BadgeCheck, Check } from "lucide-react";
+import { BadgeCheck, Check } from "lucide-react";
 
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
@@ -34,13 +34,6 @@ export const Variants: Story = {
           variant="destructive"
         >
           99
-        </Badge>
-        <Badge
-          className="gap-2"
-          variant="outline"
-        >
-          <AlertCircle className="size-3" />
-          Review
         </Badge>
       </div>
     </div>

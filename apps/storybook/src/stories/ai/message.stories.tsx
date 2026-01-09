@@ -54,7 +54,7 @@ export const Default: Story = {
         <MessageContent>
           <MessageResponse>
             **Highlights:** - Set up the environment and run the starter tests.
-            - Review the API contracts in the docs folder. - Focus on the
+            - Examine the API contracts in the docs folder. - Focus on the
             onboarding checklist for week 1.
           </MessageResponse>
         </MessageContent>

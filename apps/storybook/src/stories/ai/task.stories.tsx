@@ -20,7 +20,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <Task defaultOpen>
-      <TaskTrigger title="Review onboarding materials" />
+      <TaskTrigger title="Analyze onboarding materials" />
       <TaskContent>
         <TaskItem>
           Confirm the environment setup instructions are current.

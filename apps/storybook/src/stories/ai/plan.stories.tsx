@@ -36,7 +36,7 @@ export const Default: Story = {
       </PlanHeader>
       <PlanContent>
         <ol className="list-inside list-decimal space-y-2 text-sm">
-          <li>Review basic types, unions, and narrowing.</li>
+          <li>Examine basic types, unions, and narrowing.</li>
           <li>Practice with generics and utility types.</li>
           <li>Configure tsconfig and linting rules.</li>
           <li>Build a small CLI with tests.</li>

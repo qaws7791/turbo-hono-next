@@ -20,7 +20,7 @@ export const Default: Story = {
     <Reasoning defaultOpen>
       <ReasoningTrigger />
       <ReasoningContent>
-        The assistant reviewed prior tasks, grouped them by scope, and selected
+        The assistant analyzed prior tasks, grouped them by scope, and selected
         the shortest path that covers TypeScript fundamentals before moving to
         generics and tooling.
       </ReasoningContent>
