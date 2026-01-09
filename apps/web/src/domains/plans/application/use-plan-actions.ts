@@ -7,8 +7,8 @@ export type PlanActions = {
   executePlanAction: (planId: string, intent: PlanActionIntent) => void;
 };
 
-export function usePlanActions(spaceId: string): PlanActions {
-  const { isSubmitting, executePlanAction } = usePlanStatusMutation(spaceId);
+export function usePlanActions(): PlanActions {
+  const { isSubmitting, executePlanAction } = usePlanStatusMutation();
 
   return { isSubmitting, executePlanAction };
 }

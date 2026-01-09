@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import * as React from "react";
 import { useNavigate } from "react-router";
 
 import { useCreatePlanMutation } from "./use-create-plan-mutation";
@@ -13,25 +14,23 @@ import { materialsQueries } from "~/domains/materials";
  * - Mutation 상태
  * - 네비게이션 핸들러
  */
-export function usePlanWizard(spaceId: string) {
-  const { data: materials } = useSuspenseQuery(
-    materialsQueries.listForSpace(spaceId),
-  );
+export function usePlanWizard() {
   const navigate = useNavigate();
-  const { isSubmitting, createPlan } = useCreatePlanMutation(spaceId);
+  const { data: materials } = useSuspenseQuery(materialsQueries.list());
+  const { isSubmitting, createPlan } = useCreatePlanMutation();
   const model = usePlanWizardForm({
     materials,
     submitPlan: createPlan,
   });
 
-  const handleCancel = () => navigate(`/spaces/${spaceId}/plans`);
-  const closeHref = `/spaces/${spaceId}/plans`;
+  const handleExit = React.useCallback(() => {
+    navigate("/plans");
+  }, [navigate]);
 
   return {
     model,
     isSubmitting,
     materials,
-    handleCancel,
-    closeHref,
+    handleExit,
   };
 }

@@ -71,14 +71,12 @@ export function computeProgressPercent(progress: {
   );
 }
 
-export function toPlanFromListItem(
-  item: ApiPlanListItem,
-  spaceId: string,
-): PlanWithDerived {
+export function toPlanFromListItem(item: ApiPlanListItem): PlanWithDerived {
   return {
     id: item.id,
-    spaceId,
     title: item.title,
+    icon: item.icon,
+    color: item.color,
     goal: mapGoalType(item.goalType),
     level: mapCurrentLevel(item.currentLevel),
     status: mapPlanStatus(item.status),
@@ -135,8 +133,9 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
 
   return {
     id: detail.id,
-    spaceId: detail.spaceId,
     title: detail.title,
+    icon: detail.icon,
+    color: detail.color,
     goal: mapGoalType(detail.goalType),
     level: mapCurrentLevel(detail.currentLevel),
     status: mapPlanStatus(detail.status),

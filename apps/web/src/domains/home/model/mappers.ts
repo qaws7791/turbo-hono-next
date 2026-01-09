@@ -40,18 +40,16 @@ export function toHomeQueueItem(item: ApiQueueItem): HomeQueueItem {
       href: `/session?sessionId=${encodeURIComponent(item.sessionId)}`,
       kind: "SESSION",
       sessionId: item.sessionId,
-      spaceId: item.spaceId,
-      spaceName: item.spaceName,
       planId: item.planId,
       planTitle: item.planTitle,
+      planIcon: item.planIcon,
+      planColor: item.planColor,
       moduleTitle: item.moduleTitle,
       sessionTitle: item.sessionTitle,
       type: mapSessionType(item.sessionType),
       status: mapSessionStatus(item.status),
       scheduledDate: todayIsoDate(),
       durationMinutes: item.estimatedMinutes,
-      spaceIcon: item.spaceIcon,
-      spaceColor: item.spaceColor,
     };
     return mapped;
   }
@@ -65,7 +63,6 @@ export function toSessionSummaryCard(run: ApiSessionRun): SessionSummaryCard {
   return {
     sessionId: run.sessionId,
     planId: run.planId,
-    spaceId: run.spaceId,
     moduleTitle: run.planTitle,
     sessionTitle: run.sessionTitle,
     completedAt: run.endedAt ?? run.startedAt,

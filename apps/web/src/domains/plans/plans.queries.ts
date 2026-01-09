@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { getPlan, listSpacePlans } from "./api";
+import { getPlan, listPlans } from "./api";
 
 import type { PlanWithDerived } from "./model/types";
 
@@ -10,11 +10,11 @@ export const plansQueries = {
   details: () => [...plansQueries.all(), "detail"] as const,
   active: () => [...plansQueries.all(), "active"] as const,
 
-  listForSpace: (spaceId: string) =>
+  list: (query?: { status?: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED" }) =>
     queryOptions({
-      queryKey: [...plansQueries.lists(), spaceId] as const,
+      queryKey: [...plansQueries.lists(), query] as const,
       queryFn: async (): Promise<Array<PlanWithDerived>> => {
-        const { data } = await listSpacePlans(spaceId);
+        const { data } = await listPlans(query);
         return data;
       },
     }),
@@ -25,14 +25,11 @@ export const plansQueries = {
       queryFn: (): Promise<PlanWithDerived> => getPlan(planId),
     }),
 
-  activeForSpace: (spaceId: string) =>
+  activePlan: () =>
     queryOptions({
-      queryKey: [...plansQueries.active(), spaceId] as const,
+      queryKey: [...plansQueries.active()] as const,
       queryFn: async (): Promise<PlanWithDerived | null> => {
-        const { data } = await listSpacePlans(spaceId, {
-          status: "ACTIVE",
-          limit: 1,
-        });
+        const { data } = await listPlans({ status: "ACTIVE" });
         return data[0] ?? null;
       },
     }),

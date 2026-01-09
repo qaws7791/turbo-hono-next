@@ -46,7 +46,7 @@ export function MaterialSelectItem({
           </Badge>
         </div>
         <div className="text-muted-foreground text-xs">
-          {materialKindLabel(material.kind)} · 태그 {material.tags.length}개
+          {materialKindLabel(material.kind)}
         </div>
         {material.summary ? (
           <div className="text-muted-foreground text-sm">

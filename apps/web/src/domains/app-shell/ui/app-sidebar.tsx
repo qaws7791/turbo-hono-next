@@ -8,27 +8,25 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarTrigger,
 } from "@repo/ui/sidebar";
-import { IconCalendar, IconHome } from "@tabler/icons-react";
+import {
+  IconBook,
+  IconCalendar,
+  IconHome,
+  IconTarget,
+} from "@tabler/icons-react";
 import { NavLink, useLocation } from "react-router";
 
 import { UserMenu } from "./user-menu";
 
-import type { AppShellSpace, AppShellUser } from "../model/types";
-
-import { getColorByName, getIconByName } from "~/domains/spaces";
+import type { AppShellUser } from "../model/types";
 
 export function AppSidebar({
   user,
-  spaces,
   onOpenSettings,
 }: {
   user: AppShellUser;
-  spaces: Array<AppShellSpace>;
   onOpenSettings: () => void;
 }) {
   const location = useLocation();
@@ -63,41 +61,26 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupContent></SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton render={<NavLink to="/spaces" />}>
-                  스페이스
+                <SidebarMenuButton
+                  isActive={location.pathname.startsWith("/plans")}
+                  render={<NavLink to="/plans" />}
+                >
+                  <IconTarget />
+                  <span className="font-medium">학습 계획</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuSub className="ml-0 border-l-0">
-                {spaces.map((space) => {
-                  const SpaceIconComponent = getIconByName(
-                    space.icon ?? "book",
-                  );
-                  const colorData = getColorByName(space.color ?? "blue");
-                  return (
-                    <SidebarMenuSubItem key={space.id}>
-                      <SidebarMenuSubButton
-                        isActive={location.pathname.startsWith(
-                          `/spaces/${space.id}`,
-                        )}
-                        render={<NavLink to={`/spaces/${space.id}`} />}
-                      >
-                        <SpaceIconComponent
-                          className="size-4 shrink-0"
-                          style={{ color: colorData?.value }}
-                        />
-                        <span className="truncate">{space.name}</span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  );
-                })}
-              </SidebarMenuSub>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={location.pathname.startsWith("/materials")}
+                  render={<NavLink to="/materials" />}
+                >
+                  <IconBook />
+                  <span className="font-medium">학습 자료</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

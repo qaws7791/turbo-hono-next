@@ -11,7 +11,6 @@ import {
 import { PageBody } from "~/domains/app-shell";
 
 type PlanDetailViewProps = {
-  spaceId: string;
   planId: string;
 };
 
@@ -21,15 +20,12 @@ type PlanDetailViewProps = {
  * - 플랜 정보, 진행률, 액션, 커리큘럼 섹션으로 구성
  * - usePlanDetail 훅으로 데이터와 로직 캡슐화
  */
-export function PlanDetailView({ spaceId, planId }: PlanDetailViewProps) {
-  const detail = usePlanDetail(spaceId, planId);
+export function PlanDetailView({ planId }: PlanDetailViewProps) {
+  const detail = usePlanDetail(planId);
 
   return (
     <>
-      <PlanDetailBreadcrumb
-        space={detail.space}
-        planTitle={detail.plan.title}
-      />
+      <PlanDetailBreadcrumb planTitle={detail.plan.title} />
       <PageBody className="space-y-10 mt-24 max-w-4xl">
         <div className="flex flex-col gap-4 sm:justify-between">
           <PlanHeaderSection plan={detail.plan} />

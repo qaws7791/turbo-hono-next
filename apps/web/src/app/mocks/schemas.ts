@@ -16,18 +16,6 @@ export const UserSchema = z.object({
 });
 export type User = z.infer<typeof UserSchema>;
 
-export const SpaceSchema = z.object({
-  id: PublicIdSchema,
-  name: z.string().min(1).max(50),
-  description: z.string().min(1).max(200).optional(),
-  icon: z.string().min(1).max(50).default("book"),
-  color: z.string().min(1).max(20).default("blue"),
-  createdAt: IsoDateTimeSchema,
-  updatedAt: IsoDateTimeSchema,
-  activePlanId: PublicIdSchema.optional(),
-});
-export type Space = z.infer<typeof SpaceSchema>;
-
 export const MaterialKindSchema = z.enum(["file", "url", "text"]);
 export type MaterialKind = z.infer<typeof MaterialKindSchema>;
 
@@ -58,12 +46,10 @@ export type MaterialSource = z.infer<typeof MaterialSourceSchema>;
 
 export const MaterialSchema = z.object({
   id: UuidSchema,
-  spaceId: PublicIdSchema,
   title: z.string().min(1).max(120),
   kind: MaterialKindSchema,
   status: MaterialStatusSchema,
   summary: z.string().min(1).max(280).optional(),
-  tags: z.array(z.string().min(1).max(24)).max(8),
   createdAt: IsoDateTimeSchema,
   updatedAt: IsoDateTimeSchema,
   analysisReadyAt: IsoDateTimeSchema.optional(),
@@ -123,8 +109,9 @@ export type PlanModule = z.infer<typeof PlanModuleSchema>;
 
 export const PlanSchema = z.object({
   id: PublicIdSchema,
-  spaceId: PublicIdSchema,
   title: z.string().min(1).max(80),
+  icon: z.string().min(1).max(50).default("target"),
+  color: z.string().min(1).max(20).default("blue"),
   goal: PlanGoalSchema,
   level: PlanLevelSchema,
   status: PlanStatusSchema,
@@ -390,7 +377,6 @@ export type SessionRun = z.infer<typeof SessionRunSchema>;
 export const DbSchema = z.object({
   version: z.number().int().nonnegative(),
   user: UserSchema.optional(),
-  spaces: z.array(SpaceSchema),
   materials: z.array(MaterialSchema),
   plans: z.array(PlanSchema),
   sessionBlueprints: z.array(SessionBlueprintSchema),

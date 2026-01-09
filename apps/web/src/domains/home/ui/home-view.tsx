@@ -20,7 +20,7 @@ import { Link } from "react-router";
 import { PageBody, PageHeader } from "~/domains/app-shell";
 import { useUser } from "~/domains/auth";
 import { homeQueries } from "~/domains/home/home.queries";
-import { getColorByName, getIconByName } from "~/domains/spaces";
+import { getColorByName, getIconByName } from "~/foundation/lib/icon-color";
 import { formatLongDateTime, formatShortDate } from "~/foundation/lib/time";
 
 function QueueTypeBadge({ type }: { type: "session" | "review" }) {
@@ -140,17 +140,14 @@ export function HomeView() {
             {queue.summary.total === 0 ? (
               <div className="text-muted-foreground space-y-2 text-sm">
                 <p>오늘 할 일이 없습니다.</p>
-                <p>
-                  스페이스를 만들고 문서를 업로드한 다음, 학습 계획을
-                  생성해보세요.
-                </p>
-                <Button render={<Link to="/spaces" />}>스페이스로</Button>
+                <p>학습 자료를 업로드하고 학습 계획을 생성해보세요.</p>
+                <Button render={<Link to="/plans" />}>학습 계획으로</Button>
               </div>
             ) : (
               <div className="grid gap-3 md:grid-cols-3">
                 {queue.items.slice(0, 3).map((item) => {
-                  const SpaceIcon = getIconByName(item.spaceIcon);
-                  const colorData = getColorByName(item.spaceColor);
+                  const PlanIcon = getIconByName(item.planIcon);
+                  const colorData = getColorByName(item.planColor);
 
                   return (
                     <Link
@@ -175,15 +172,15 @@ export function HomeView() {
                             </div>
                           </div>
 
-                          {/* 스페이스 및 예정일 */}
+                          {/* 계획 및 예정일 */}
                           <div className="flex items-center justify-between text-sm mt-4 gap-4">
                             <div className="flex items-center gap-2">
-                              <SpaceIcon
+                              <PlanIcon
                                 className="size-4 shrink-0"
                                 style={{ color: colorData?.value }}
                               />
                               <span className="text-muted-foreground">
-                                {item.spaceName}
+                                {item.planTitle}
                               </span>
                             </div>
                             <div className="flex items-center gap-1 text-muted-foreground">

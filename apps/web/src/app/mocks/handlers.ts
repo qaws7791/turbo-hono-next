@@ -5,21 +5,17 @@ import type { paths } from "~/foundation/types/api";
 
 import {
   createPlan,
-  createSpace,
   deleteMaterial,
   getPlan,
   getSessionRun,
-  getSpace,
   homeQueue,
   listMaterials,
   listPlans,
-  listSpaces,
   requestMagicLink,
   setActivePlan,
   setPlanStatus,
   signInWithGoogle,
   startSession,
-  updateSpace,
   uploadMaterial,
 } from "~/app/mocks/api";
 import { readDbOrSeed, writeDb } from "~/app/mocks/store";
@@ -32,7 +28,7 @@ import { nowIso } from "~/foundation/lib/time";
 import { randomUuidV4 } from "~/foundation/lib/uuid";
 
 type ErrorResponse =
-  paths["/api/spaces"]["get"]["responses"]["default"]["content"]["application/json"];
+  paths["/api/plans"]["get"]["responses"]["default"]["content"]["application/json"];
 
 type AuthMeOk =
   paths["/api/auth/me"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -41,25 +37,14 @@ type AuthLogoutOk =
 type MagicLinkOk =
   paths["/api/auth/magic-link"]["post"]["responses"]["200"]["content"]["application/json"];
 
-type SpaceListOk =
-  paths["/api/spaces"]["get"]["responses"]["200"]["content"]["application/json"];
-type SpaceCreateOk =
-  paths["/api/spaces"]["post"]["responses"]["201"]["content"]["application/json"];
-type SpaceGetOk =
-  paths["/api/spaces/{spaceId}"]["get"]["responses"]["200"]["content"]["application/json"];
-type SpaceUpdateOk =
-  paths["/api/spaces/{spaceId}"]["patch"]["responses"]["200"]["content"]["application/json"];
-type SpaceDeleteOk =
-  paths["/api/spaces/{spaceId}"]["delete"]["responses"]["200"]["content"]["application/json"];
-
 type MaterialsListOk =
-  paths["/api/spaces/{spaceId}/materials"]["get"]["responses"]["200"]["content"]["application/json"];
+  paths["/api/materials"]["get"]["responses"]["200"]["content"]["application/json"];
 type MaterialDetailOk =
   paths["/api/materials/{materialId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type MaterialUploadInitOk =
-  paths["/api/spaces/{spaceId}/materials/uploads/init"]["post"]["responses"]["200"]["content"]["application/json"];
+  paths["/api/materials/uploads/init"]["post"]["responses"]["200"]["content"]["application/json"];
 type MaterialUploadCompleteCreated =
-  paths["/api/spaces/{spaceId}/materials/uploads/complete"]["post"]["responses"]["201"]["content"]["application/json"];
+  paths["/api/materials/uploads/complete"]["post"]["responses"]["201"]["content"]["application/json"];
 type JobStatusOk =
   paths["/api/jobs/{jobId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type MaterialDeleteOk =
@@ -68,9 +53,9 @@ type MaterialUpdateOk =
   paths["/api/materials/{materialId}"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 type PlanListOk =
-  paths["/api/spaces/{spaceId}/plans"]["get"]["responses"]["200"]["content"]["application/json"];
+  paths["/api/plans"]["get"]["responses"]["200"]["content"]["application/json"];
 type PlanCreateCreated =
-  paths["/api/spaces/{spaceId}/plans"]["post"]["responses"]["201"]["content"]["application/json"];
+  paths["/api/plans"]["post"]["responses"]["201"]["content"]["application/json"];
 type PlanDetailOk =
   paths["/api/plans/{planId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type PlanStatusUpdateOk =
@@ -116,20 +101,12 @@ type MagicLinkBody = NonNullable<
   paths["/api/auth/magic-link"]["post"]["requestBody"]
 >["content"]["application/json"];
 
-type SpaceCreateBody = NonNullable<
-  paths["/api/spaces"]["post"]["requestBody"]
->["content"]["application/json"];
-
-type SpaceUpdateBody = NonNullable<
-  paths["/api/spaces/{spaceId}"]["patch"]["requestBody"]
->["content"]["application/json"];
-
 type MaterialUploadInitBody = NonNullable<
-  paths["/api/spaces/{spaceId}/materials/uploads/init"]["post"]["requestBody"]
+  paths["/api/materials/uploads/init"]["post"]["requestBody"]
 >["content"]["application/json"];
 
 type MaterialUploadCompleteBody = NonNullable<
-  paths["/api/spaces/{spaceId}/materials/uploads/complete"]["post"]["requestBody"]
+  paths["/api/materials/uploads/complete"]["post"]["requestBody"]
 >["content"]["application/json"];
 
 type MaterialUpdateBody = NonNullable<
@@ -137,7 +114,7 @@ type MaterialUpdateBody = NonNullable<
 >["content"]["application/json"];
 
 type PlanCreateBody = NonNullable<
-  paths["/api/spaces/{spaceId}/plans"]["post"]["requestBody"]
+  paths["/api/plans"]["post"]["requestBody"]
 >["content"]["application/json"];
 
 type PlanStatusBody = NonNullable<
@@ -191,19 +168,6 @@ function requireAuthOr401() {
   return null;
 }
 
-function mapSpaceToApiSpace(space: ReturnType<typeof getSpace>) {
-  const apiSpace: SpaceListOk["data"][number] = {
-    id: space.id,
-    name: space.name,
-    description: space.description ?? null,
-    icon: space.icon ?? null,
-    color: space.color ?? null,
-    createdAt: space.createdAt,
-    updatedAt: space.updatedAt,
-  };
-  return apiSpace;
-}
-
 function mapMaterialStatusToProcessingStatus(
   status: "pending" | "analyzing" | "completed" | "error",
 ): "PENDING" | "PROCESSING" | "READY" | "FAILED" {
@@ -230,7 +194,6 @@ function mapMaterialToMaterialListItem(
     fileSize,
     processingStatus: mapMaterialStatusToProcessingStatus(material.status),
     summary: material.summary ?? null,
-    tags: material.tags,
     createdAt: material.createdAt,
     updatedAt: material.updatedAt,
   };
@@ -276,7 +239,6 @@ function mapPlanSessionStatus(
 
 const UploadSessionSchema = z.object({
   uploadId: z.string().uuid(),
-  spaceId: z.string().min(1),
   originalFilename: z.string().min(1),
   mimeType: z.string().min(1),
   fileSize: z.number().int().positive(),
@@ -426,129 +388,22 @@ export const handlers = [
     return HttpResponse.json({ success: true }, { status: 200 });
   }),
 
-  // Spaces
-  http.get("/api/spaces", () => {
+  // Materials
+  http.get("/api/materials", ({ request }) => {
     const unauthorized = requireAuthOr401();
     if (unauthorized) return unauthorized;
 
-    const response: SpaceListOk = {
-      data: listSpaces().map(mapSpaceToApiSpace),
-    };
-    return HttpResponse.json(response);
-  }),
-
-  http.post("/api/spaces", async ({ request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const body = (await request
-      .json()
-      .catch(() => null)) as SpaceCreateBody | null;
-    if (!body) {
-      return HttpResponse.json(
-        errorResponse("BAD_REQUEST", "Invalid JSON body"),
-        { status: 400 },
-      );
-    }
-
-    const created = createSpace({
-      name: body.name,
-      description: body.description,
-    });
-
-    const response: SpaceCreateOk = { data: mapSpaceToApiSpace(created) };
-    return HttpResponse.json(response, { status: 201 });
-  }),
-
-  http.get("/api/spaces/:spaceId", ({ params }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const spaceId = String(params.spaceId ?? "");
-    try {
-      const response: SpaceGetOk = {
-        data: mapSpaceToApiSpace(getSpace(spaceId)),
-      };
-      return HttpResponse.json(response);
-    } catch {
-      return HttpResponse.json(errorResponse("NOT_FOUND", "Space not found"), {
-        status: 404,
-      });
-    }
-  }),
-
-  http.patch("/api/spaces/:spaceId", async ({ params, request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const spaceId = String(params.spaceId ?? "");
-    const body = (await request
-      .json()
-      .catch(() => null)) as SpaceUpdateBody | null;
-    if (!body) {
-      return HttpResponse.json(
-        errorResponse("BAD_REQUEST", "Invalid JSON body"),
-        { status: 400 },
-      );
-    }
-
-    try {
-      const updated = updateSpace({
-        spaceId,
-        name: body.name ?? undefined,
-        description: body.description ?? undefined,
-        icon: body.icon ?? undefined,
-        color: body.color ?? undefined,
-      });
-      const response: SpaceUpdateOk = { data: mapSpaceToApiSpace(updated) };
-      return HttpResponse.json(response);
-    } catch {
-      return HttpResponse.json(errorResponse("NOT_FOUND", "Space not found"), {
-        status: 404,
-      });
-    }
-  }),
-
-  http.delete("/api/spaces/:spaceId", ({ params }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const spaceId = String(params.spaceId ?? "");
-    const db = readDbOrSeed();
-    const exists = db.spaces.some((s) => s.id === spaceId);
-    if (!exists) {
-      return HttpResponse.json(errorResponse("NOT_FOUND", "Space not found"), {
-        status: 404,
-      });
-    }
-
-    db.spaces = db.spaces.filter((s) => s.id !== spaceId);
-    db.materials = db.materials.filter((d) => d.spaceId !== spaceId);
-    db.plans = db.plans.filter((p) => p.spaceId !== spaceId);
-    writeDb(db);
-
-    const response: SpaceDeleteOk = { message: "Deleted" };
-    return HttpResponse.json(response);
-  }),
-
-  // Materials (mapped from Material mock)
-  http.get("/api/spaces/:spaceId/materials", ({ params, request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const spaceId = String(params.spaceId ?? "");
     const url = new URL(request.url);
     const { page, limit } = parsePagination(url);
     const status = url.searchParams.get("status");
     const search = (url.searchParams.get("search") ?? "").trim().toLowerCase();
 
-    const mapped = listMaterials(spaceId)
+    const mapped = listMaterials()
       .map(mapMaterialToMaterialListItem)
       .filter((m) => (status ? m.processingStatus === status : true))
       .filter((m) => {
         if (!search) return true;
-        const hay =
-          `${m.title} ${m.summary ?? ""} ${m.tags.join(" ")}`.toLowerCase();
+        const hay = `${m.title} ${m.summary ?? ""}`.toLowerCase();
         return hay.includes(search);
       });
 
@@ -589,7 +444,6 @@ export const handlers = [
     const response: MaterialDetailOk = {
       data: {
         id: doc.id,
-        spaceId: doc.spaceId,
         title: doc.title,
         sourceType,
         originalFilename,
@@ -598,7 +452,6 @@ export const handlers = [
         processingStatus: mapMaterialStatusToProcessingStatus(doc.status),
         processedAt: doc.status === "completed" ? doc.updatedAt : null,
         summary: doc.summary ?? null,
-        tags: doc.tags,
         chunkCount: null,
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt,
@@ -607,51 +460,46 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post(
-    "/api/spaces/:spaceId/materials/uploads/init",
-    async ({ params, request }) => {
-      const unauthorized = requireAuthOr401();
-      if (unauthorized) return unauthorized;
+  http.post("/api/materials/uploads/init", async ({ request }) => {
+    const unauthorized = requireAuthOr401();
+    if (unauthorized) return unauthorized;
 
-      const spaceId = String(params.spaceId ?? "");
-      const body = (await request
-        .json()
-        .catch(() => null)) as MaterialUploadInitBody | null;
-      if (!body) {
-        return HttpResponse.json(
-          errorResponse("BAD_REQUEST", "Invalid JSON body"),
-          { status: 400 },
-        );
-      }
+    const body = (await request
+      .json()
+      .catch(() => null)) as MaterialUploadInitBody | null;
+    if (!body) {
+      return HttpResponse.json(
+        errorResponse("BAD_REQUEST", "Invalid JSON body"),
+        { status: 400 },
+      );
+    }
 
-      const uploadId = randomUuidV4();
-      const objectKey = `mock/${spaceId}/${uploadId}/${body.originalFilename}`;
+    const uploadId = randomUuidV4();
+    const objectKey = `mock/${uploadId}/${body.originalFilename}`;
 
-      const store = readUploadStore();
-      store.items.unshift({
+    const store = readUploadStore();
+    store.items.unshift({
+      uploadId,
+      originalFilename: body.originalFilename,
+      mimeType: body.mimeType,
+      fileSize: body.fileSize,
+      objectKey,
+      createdAt: nowIso(),
+    });
+    writeUploadStore(store);
+
+    const response: MaterialUploadInitOk = {
+      data: {
         uploadId,
-        spaceId,
-        originalFilename: body.originalFilename,
-        mimeType: body.mimeType,
-        fileSize: body.fileSize,
         objectKey,
-        createdAt: nowIso(),
-      });
-      writeUploadStore(store);
-
-      const response: MaterialUploadInitOk = {
-        data: {
-          uploadId,
-          objectKey,
-          uploadUrl: `https://example.invalid/mock-upload/${encodeURIComponent(objectKey)}`,
-          method: "PUT",
-          headers: {},
-          expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-        },
-      };
-      return HttpResponse.json(response);
-    },
-  ),
+        uploadUrl: `https://example.invalid/mock-upload/${encodeURIComponent(objectKey)}`,
+        method: "PUT",
+        headers: {},
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      },
+    };
+    return HttpResponse.json(response);
+  }),
 
   // Presigned upload URL (MSW 전용)
   http.put(/^https:\/\/example\.invalid\/mock-upload\/.+$/, async () => {
@@ -663,55 +511,47 @@ export const handlers = [
     });
   }),
 
-  http.post(
-    "/api/spaces/:spaceId/materials/uploads/complete",
-    async ({ params, request }) => {
-      const unauthorized = requireAuthOr401();
-      if (unauthorized) return unauthorized;
+  http.post("/api/materials/uploads/complete", async ({ request }) => {
+    const unauthorized = requireAuthOr401();
+    if (unauthorized) return unauthorized;
 
-      const spaceId = String(params.spaceId ?? "");
-      const body = (await request
-        .json()
-        .catch(() => null)) as MaterialUploadCompleteBody | null;
-      if (!body) {
-        return HttpResponse.json(
-          errorResponse("BAD_REQUEST", "Invalid JSON body"),
-          { status: 400 },
-        );
-      }
+    const body = (await request
+      .json()
+      .catch(() => null)) as MaterialUploadCompleteBody | null;
+    if (!body) {
+      return HttpResponse.json(
+        errorResponse("BAD_REQUEST", "Invalid JSON body"),
+        { status: 400 },
+      );
+    }
 
-      const upload = takeUpload(body.uploadId);
-      if (!upload || upload.spaceId !== spaceId) {
-        return HttpResponse.json(
-          errorResponse("NOT_FOUND", "Upload not found"),
-          {
-            status: 404,
-          },
-        );
-      }
-
-      const created = uploadMaterial({
-        spaceId,
-        kind: "file",
-        title: body.title ?? upload.originalFilename,
-        source: {
-          type: "file",
-          fileName: upload.originalFilename,
-          fileSizeBytes: upload.fileSize,
-        },
+    const upload = takeUpload(body.uploadId);
+    if (!upload) {
+      return HttpResponse.json(errorResponse("NOT_FOUND", "Upload not found"), {
+        status: 404,
       });
+    }
 
-      const response: MaterialUploadCompleteCreated = {
-        data: {
-          id: created.id,
-          title: created.title,
-          processingStatus: mapMaterialStatusToProcessingStatus(created.status),
-          summary: created.summary ?? null,
-        },
-      };
-      return HttpResponse.json(response, { status: 201 });
-    },
-  ),
+    const created = uploadMaterial({
+      kind: "file",
+      title: body.title ?? upload.originalFilename,
+      source: {
+        type: "file",
+        fileName: upload.originalFilename,
+        fileSizeBytes: upload.fileSize,
+      },
+    });
+
+    const response: MaterialUploadCompleteCreated = {
+      data: {
+        id: created.id,
+        title: created.title,
+        processingStatus: mapMaterialStatusToProcessingStatus(created.status),
+        summary: created.summary ?? null,
+      },
+    };
+    return HttpResponse.json(response, { status: 201 });
+  }),
 
   http.get("/api/jobs/:jobId", ({ params }) => {
     const unauthorized = requireAuthOr401();
@@ -747,7 +587,7 @@ export const handlers = [
       );
     }
 
-    deleteMaterial({ spaceId: doc.spaceId, materialId: materialId });
+    deleteMaterial({ materialId: materialId });
     const response: MaterialDeleteOk = {
       message: "Deleted",
       data: { type: "soft" },
@@ -792,16 +632,15 @@ export const handlers = [
   }),
 
   // Plans
-  http.get("/api/spaces/:spaceId/plans", ({ params, request }) => {
+  http.get("/api/plans", ({ request }) => {
     const unauthorized = requireAuthOr401();
     if (unauthorized) return unauthorized;
 
-    const spaceId = String(params.spaceId ?? "");
     const url = new URL(request.url);
     const { page, limit } = parsePagination(url);
     const status = url.searchParams.get("status");
 
-    const all = listPlans(spaceId);
+    const all = listPlans();
     const filtered = all.filter((p) =>
       status ? mapPlanStatus(p.status) === status : true,
     );
@@ -822,6 +661,8 @@ export const handlers = [
       return {
         id: p.id,
         title: p.title,
+        icon: p.icon,
+        color: p.color,
         status: mapPlanStatus(p.status),
         goalType: mapPlanGoalType(p.goal),
         currentLevel: mapPlanLevel(p.level),
@@ -866,8 +707,9 @@ export const handlers = [
     const response: PlanDetailOk = {
       data: {
         id: plan.id,
-        spaceId: plan.spaceId,
         title: plan.title,
+        icon: plan.icon,
+        color: plan.color,
         status: mapPlanStatus(plan.status),
         goalType: mapPlanGoalType(plan.goal),
         currentLevel: mapPlanLevel(plan.level),
@@ -904,11 +746,10 @@ export const handlers = [
     return HttpResponse.json(response);
   }),
 
-  http.post("/api/spaces/:spaceId/plans", async ({ params, request }) => {
+  http.post("/api/plans", async ({ request }) => {
     const unauthorized = requireAuthOr401();
     if (unauthorized) return unauthorized;
 
-    const spaceId = String(params.spaceId ?? "");
     const body = (await request
       .json()
       .catch(() => null)) as PlanCreateBody | null;
@@ -921,7 +762,6 @@ export const handlers = [
 
     try {
       const plan = createPlan({
-        spaceId,
         sourceMaterialIds: body.materialIds,
         goal: (() => {
           if (body.goalType === "JOB") return "career";
@@ -943,6 +783,8 @@ export const handlers = [
         data: {
           id: plan.id,
           title: plan.title,
+          icon: plan.icon,
+          color: plan.color,
           status: mapPlanStatus(plan.status),
           createdAt: plan.createdAt,
           updatedAt: plan.updatedAt,
@@ -1007,7 +849,7 @@ export const handlers = [
       });
     }
 
-    setActivePlan({ spaceId: plan.spaceId, planId });
+    setActivePlan({ planId });
     const updated = getPlan(planId);
     const response: PlanActivateOk = {
       data: { id: updated.id, status: mapPlanStatus(updated.status) },
@@ -1029,9 +871,6 @@ export const handlers = [
     }
 
     db.plans = db.plans.filter((p) => p.id !== planId);
-    db.spaces = db.spaces.map((s) =>
-      s.activePlanId === planId ? { ...s, activePlanId: undefined } : s,
-    );
     writeDb(db);
 
     const response: PlanDeleteOk = { message: "Deleted" };
@@ -1047,16 +886,14 @@ export const handlers = [
       kind: "SESSION" as const,
       sessionId: i.sessionId,
       planId: i.planId,
-      spaceId: i.spaceId,
-      spaceName: i.spaceName,
-      spaceIcon: i.spaceIcon,
-      spaceColor: i.spaceColor,
       planTitle: i.planTitle,
       moduleTitle: i.moduleTitle,
       sessionTitle: i.sessionTitle,
       sessionType: mapPlanSessionType(i.type),
       estimatedMinutes: i.durationMinutes,
       status: mapPlanSessionStatus(i.status),
+      planIcon: i.planIcon,
+      planColor: i.planColor,
     }));
 
     const completedCount = items.filter(
@@ -1142,16 +979,10 @@ export const handlers = [
 
     const db = readDbOrSeed();
     const plan = db.plans.find((p) => p.id === run.planId);
-    const space = plan
-      ? db.spaces.find((s) => s.id === plan.spaceId)
-      : undefined;
-    if (!plan || !space) {
-      return HttpResponse.json(
-        errorResponse("NOT_FOUND", "Plan/Space not found"),
-        {
-          status: 404,
-        },
-      );
+    if (!plan) {
+      return HttpResponse.json(errorResponse("NOT_FOUND", "Plan not found"), {
+        status: 404,
+      });
     }
 
     const found = plan.modules
@@ -1288,7 +1119,7 @@ export const handlers = [
         celebrationEmoji:
           typeof step.celebrationEmoji === "string"
             ? step.celebrationEmoji
-            : "??",
+            : "🎉",
         encouragement: String(step.encouragement ?? ""),
         studyTimeMinutes:
           typeof step.studyTimeMinutes === "number"
@@ -1347,8 +1178,12 @@ export const handlers = [
           module: found
             ? { id: found.module.id, title: found.module.title }
             : null,
-          plan: { id: plan.id, title: plan.title },
-          space: { id: space.id, name: space.name },
+          plan: {
+            id: plan.id,
+            title: plan.title,
+            icon: plan.icon,
+            color: plan.color,
+          },
         },
         blueprint: {
           schemaVersion: run.blueprint.schemaVersion,
@@ -1506,9 +1341,6 @@ export const handlers = [
 
     const data: ListSessionRunsOk["data"] = slice.map((r) => {
       const plan = db.plans.find((p) => p.id === r.planId);
-      const space = plan
-        ? db.spaces.find((s) => s.id === plan.spaceId)
-        : undefined;
       const found = plan
         ? plan.modules
             .flatMap((m) => m.sessions.map((s) => ({ module: m, session: s })))
@@ -1537,8 +1369,8 @@ export const handlers = [
         sessionType: found ? mapPlanSessionType(found.session.type) : "LEARN",
         planId: r.planId,
         planTitle: plan?.title ?? "",
-        spaceId: space?.id ?? "",
-        spaceName: space?.name ?? "",
+        planIcon: plan?.icon ?? "target",
+        planColor: plan?.color ?? "blue",
         summary: null,
       };
     });

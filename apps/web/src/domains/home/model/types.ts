@@ -10,18 +10,16 @@ export type HomeQueueSessionItem = {
   href: string;
   kind: "SESSION";
   sessionId: string;
-  spaceId: string;
-  spaceName: string;
   planId: string;
   planTitle: string;
+  planIcon: string;
+  planColor: string;
   moduleTitle: string;
   sessionTitle: string;
   type: "session" | "review";
   status: "todo" | "in_progress" | "completed";
   scheduledDate: string;
   durationMinutes: number;
-  spaceIcon: string;
-  spaceColor: string;
 };
 
 export type HomeQueueItem = HomeQueueSessionItem;
@@ -37,7 +35,6 @@ export type HomeStats = {
 export type SessionSummaryCard = {
   sessionId: string;
   planId: string;
-  spaceId: string;
   moduleTitle: string;
   sessionTitle: string;
   completedAt: string;

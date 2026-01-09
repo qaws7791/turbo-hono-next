@@ -9,6 +9,7 @@ import {
 import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui/tabs";
+import { Textarea } from "@repo/ui/textarea";
 import * as React from "react";
 
 interface MaterialUploadDialogProps {
@@ -24,27 +25,50 @@ export function MaterialUploadDialog({
   isSubmitting,
   onUpload,
 }: MaterialUploadDialogProps) {
-  const [title, setTitle] = React.useState("");
+  // 파일 탭 state
+  const [fileTitle, setFileTitle] = React.useState("");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 텍스트 탭 state
+  const [textTitle, setTextTitle] = React.useState("");
+  const [textContent, setTextContent] = React.useState("");
+
+  const handleFileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const file = fileInputRef.current?.files?.[0];
     if (!file) return;
 
-    const finalTitle = title.trim() || file.name;
+    const finalTitle = fileTitle.trim() || file.name;
     onUpload(file, finalTitle);
 
     // Reset form
-    setTitle("");
+    setFileTitle("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!textContent.trim()) return;
+
+    const finalTitle = textTitle.trim() || "텍스트 메모";
+    const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+    const file = new File([blob], `${finalTitle}.txt`, { type: "text/plain" });
+
+    onUpload(file, finalTitle);
+
+    // Reset form
+    setTextTitle("");
+    setTextContent("");
+  };
+
   const handleClose = () => {
     onOpenChange(false);
-    setTitle("");
+    // Reset all forms
+    setFileTitle("");
+    setTextTitle("");
+    setTextContent("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -72,16 +96,8 @@ export function MaterialUploadDialog({
               파일
             </TabsTrigger>
             <TabsTrigger
-              value="url"
-              className="flex-1"
-              disabled
-            >
-              URL
-            </TabsTrigger>
-            <TabsTrigger
               value="text"
               className="flex-1"
-              disabled
             >
               텍스트
             </TabsTrigger>
@@ -92,7 +108,7 @@ export function MaterialUploadDialog({
             className="mt-4"
           >
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleFileSubmit}
               className="space-y-4"
             >
               <div className="space-y-2">
@@ -101,8 +117,8 @@ export function MaterialUploadDialog({
                   id="file-title"
                   name="title"
                   placeholder="문서 제목"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={fileTitle}
+                  onChange={(e) => setFileTitle(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -127,21 +143,43 @@ export function MaterialUploadDialog({
           </TabsContent>
 
           <TabsContent
-            value="url"
-            className="mt-4"
-          >
-            <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
-              현재는 URL 업로드를 지원하지 않습니다.
-            </div>
-          </TabsContent>
-
-          <TabsContent
             value="text"
             className="mt-4"
           >
-            <div className="text-muted-foreground rounded-xl border border-border bg-muted/30 p-4 text-sm">
-              현재는 텍스트 업로드를 지원하지 않습니다.
-            </div>
+            <form
+              onSubmit={handleTextSubmit}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="text-title">제목 (선택)</Label>
+                <Input
+                  id="text-title"
+                  name="title"
+                  placeholder="텍스트 메모"
+                  value={textTitle}
+                  onChange={(e) => setTextTitle(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="text-content">내용</Label>
+                <Textarea
+                  id="text-content"
+                  name="content"
+                  placeholder="학습할 텍스트를 입력하세요..."
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  rows={8}
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !textContent.trim()}
+                className="w-full"
+              >
+                업로드
+              </Button>
+            </form>
           </TabsContent>
         </Tabs>
       </DialogContent>

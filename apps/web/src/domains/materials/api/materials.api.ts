@@ -1,5 +1,6 @@
 import { toMaterialFromApi } from "./materials.mapper";
 
+import type { Material } from "../model/materials.types";
 import type {
   JobStatusOk,
   MaterialUploadCompleteAccepted,
@@ -10,30 +11,27 @@ import type {
   MaterialsListOk,
   MaterialsListQuery,
 } from "./materials.dto";
-import type { Material } from "../model/materials.types";
 
 import { apiClient } from "~/foundation/api/client";
 import { ApiError } from "~/foundation/api/error";
 
-export type SpaceMaterialsList = {
+export type MaterialsList = {
   data: Array<Material>;
   meta: MaterialsListOk["meta"];
 };
 
-export async function listSpaceMaterials(
-  spaceId: string,
+export async function listMaterials(
   query?: MaterialsListQuery,
-): Promise<SpaceMaterialsList> {
-  const { data, error, response } = await apiClient.GET(
-    "/api/spaces/{spaceId}/materials",
-    { params: { path: { spaceId }, query } },
-  );
+): Promise<MaterialsList> {
+  const { data, error, response } = await apiClient.GET("/api/materials", {
+    params: { query },
+  });
   if (!response.ok || !data) {
     throw new ApiError("Failed to list materials", response.status, error);
   }
 
   return {
-    data: data.data.map((item) => toMaterialFromApi(spaceId, item)),
+    data: data.data.map((item) => toMaterialFromApi(item)),
     meta: data.meta,
   };
 }
@@ -49,12 +47,11 @@ export async function deleteMaterial(materialId: string): Promise<void> {
 }
 
 export async function initMaterialUpload(
-  spaceId: string,
   input: MaterialUploadInitBody,
 ): Promise<MaterialUploadInitOk["data"]> {
   const { data, error, response } = await apiClient.POST(
-    "/api/spaces/{spaceId}/materials/uploads/init",
-    { params: { path: { spaceId } }, body: input },
+    "/api/materials/uploads/init",
+    { body: input },
   );
   if (!response.ok || !data) {
     throw new ApiError("Failed to init upload", response.status, error);
@@ -63,14 +60,13 @@ export async function initMaterialUpload(
 }
 
 export async function completeMaterialUpload(
-  spaceId: string,
   input: MaterialUploadCompleteBody,
 ): Promise<
   MaterialUploadCompleteCreated["data"] | MaterialUploadCompleteAccepted["data"]
 > {
   const { data, error, response } = await apiClient.POST(
-    "/api/spaces/{spaceId}/materials/uploads/complete",
-    { params: { path: { spaceId } }, body: input },
+    "/api/materials/uploads/complete",
+    { body: input },
   );
   if (!response.ok || !data) {
     throw new ApiError("Failed to complete upload", response.status, error);

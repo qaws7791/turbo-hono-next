@@ -1,10 +1,9 @@
 import type { paths } from "~/foundation/types/api";
 
-export type PlansListQuery =
-  paths["/api/spaces/{spaceId}/plans"]["get"]["parameters"]["query"];
+export type PlansListQuery = paths["/api/plans"]["get"]["parameters"]["query"];
 
 export type PlansListOk =
-  paths["/api/spaces/{spaceId}/plans"]["get"]["responses"]["200"]["content"]["application/json"];
+  paths["/api/plans"]["get"]["responses"]["200"]["content"]["application/json"];
 
 export type ApiPlanListItem = PlansListOk["data"][number];
 
@@ -27,11 +26,11 @@ export type PlanStatusUpdateOk =
   paths["/api/plans/{planId}/status"]["patch"]["responses"]["200"]["content"]["application/json"];
 
 type PlanCreateRequestBody = NonNullable<
-  paths["/api/spaces/{spaceId}/plans"]["post"]["requestBody"]
+  paths["/api/plans"]["post"]["requestBody"]
 >;
 
 export type PlanCreateBody =
   PlanCreateRequestBody["content"]["application/json"];
 
 export type PlanCreateCreated =
-  paths["/api/spaces/{spaceId}/plans"]["post"]["responses"]["201"]["content"]["application/json"]["data"];
+  paths["/api/plans"]["post"]["responses"]["201"]["content"]["application/json"]["data"];

@@ -36,7 +36,7 @@ function computeTargetDueDate(input: {
   return base.toISOString().slice(0, 10);
 }
 
-export function useCreatePlanMutation(spaceId: string): {
+export function useCreatePlanMutation(): {
   isSubmitting: boolean;
   createPlan: (input: CreatePlanInput) => void;
 } {
@@ -49,7 +49,7 @@ export function useCreatePlanMutation(spaceId: string): {
       try {
         const targetDueDate = computeTargetDueDate(input);
 
-        const plan = await createPlanApi(spaceId, {
+        const plan = await createPlanApi({
           materialIds: input.sourceMaterialIds,
           goalType: mapGoalTypeToApi(input.goal),
           currentLevel: mapCurrentLevelToApi(input.level),
@@ -57,12 +57,12 @@ export function useCreatePlanMutation(spaceId: string): {
           specialRequirements: input.notes,
         });
 
-        navigate(`/spaces/${spaceId}/plan/${plan.id}`);
+        navigate(`/plans/${plan.id}`);
       } finally {
         setIsSubmitting(false);
       }
     },
-    [navigate, spaceId],
+    [navigate],
   );
 
   return { isSubmitting, createPlan };

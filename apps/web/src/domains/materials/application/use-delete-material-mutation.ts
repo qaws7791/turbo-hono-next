@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteMaterial as deleteMaterialApi } from "../api/materials.api";
 import { materialsQueries } from "../materials.queries";
 
-export function useDeleteMaterialMutation(spaceId: string) {
+export function useDeleteMaterialMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -12,10 +12,10 @@ export function useDeleteMaterialMutation(spaceId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: materialsQueries.listForSpace(spaceId).queryKey,
+        queryKey: materialsQueries.lists(),
       });
       queryClient.invalidateQueries({
-        queryKey: materialsQueries.countForSpace(spaceId).queryKey,
+        queryKey: materialsQueries.counts(),
       });
     },
   });

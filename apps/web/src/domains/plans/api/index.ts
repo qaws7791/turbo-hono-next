@@ -2,6 +2,6 @@ export {
   activatePlan,
   createPlan,
   getPlan,
-  listSpacePlans,
+  listPlans,
   updatePlanStatus,
 } from "./plans.api";

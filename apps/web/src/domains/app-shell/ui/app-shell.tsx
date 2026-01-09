@@ -1,5 +1,4 @@
 import { SidebarInset, SidebarProvider, useSidebar } from "@repo/ui/sidebar";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 
@@ -9,7 +8,6 @@ import { AppSidebar } from "./app-sidebar";
 import { SettingsDialog } from "./settings-dialog";
 
 import { useUser } from "~/domains/auth";
-import { spacesQueries } from "~/domains/spaces";
 
 /**
  * 라우트 변경 시 모바일 사이드바를 자동으로 닫는 컴포넌트
@@ -28,7 +26,6 @@ function MobileSidebarAutoClose() {
 
 export function AppShell() {
   const user = useUser();
-  const { data: spaces } = useSuspenseQuery(spacesQueries.list());
 
   const state = useAppShellState();
 
@@ -40,7 +37,6 @@ export function AppShell() {
       <MobileSidebarAutoClose />
       <AppSidebar
         user={user}
-        spaces={spaces}
         onOpenSettings={() => state.setSettingsOpen(true)}
       />
       <SidebarInset>

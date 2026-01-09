@@ -5,7 +5,7 @@ import { activatePlan, updatePlanStatus } from "../api";
 
 export type PlanActionIntent = "set-active" | "pause" | "resume" | "archive";
 
-export function usePlanStatusMutation(spaceId: string): {
+export function usePlanStatusMutation(): {
   isSubmitting: boolean;
   executePlanAction: (planId: string, intent: PlanActionIntent) => void;
 } {
@@ -19,7 +19,7 @@ export function usePlanStatusMutation(spaceId: string): {
       try {
         if (intent === "set-active") {
           await activatePlan(planId);
-          navigate(`/spaces/${spaceId}/plan/${planId}`);
+          navigate(`/plans/${planId}`);
           return;
         }
 
@@ -29,7 +29,7 @@ export function usePlanStatusMutation(spaceId: string): {
           await updatePlanStatus(planId, "ACTIVE");
         } else if (intent === "archive") {
           await updatePlanStatus(planId, "ARCHIVED");
-          navigate(`/spaces/${spaceId}/plans`);
+          navigate(`/plans`);
           return;
         }
 
@@ -38,7 +38,7 @@ export function usePlanStatusMutation(spaceId: string): {
         setIsSubmitting(false);
       }
     },
-    [navigate, revalidator, spaceId],
+    [navigate, revalidator],
   );
 
   return { isSubmitting, executePlanAction };

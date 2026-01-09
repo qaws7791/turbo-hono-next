@@ -10,18 +10,13 @@ function mapProcessingStatus(
   return "pending";
 }
 
-export function toMaterialFromApi(
-  spaceId: string,
-  item: ApiMaterialListItem,
-): Material {
+export function toMaterialFromApi(item: ApiMaterialListItem): Material {
   return {
     id: item.id,
-    spaceId,
     title: item.title,
     kind: item.sourceType === "TEXT" ? "text" : "file",
     status: mapProcessingStatus(item.processingStatus),
     summary: item.summary ?? undefined,
-    tags: item.tags,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     source:

@@ -6,7 +6,6 @@ export type PlanWizardMaterial = {
   id: string;
   title: string;
   summary?: string;
-  tags: Array<string>;
   kind: "file" | "url" | "text";
   status: "pending" | "analyzing" | "completed" | "error";
 };

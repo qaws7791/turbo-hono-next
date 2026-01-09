@@ -18,12 +18,12 @@ function normalizeEtag(value: string | null): string | undefined {
   return trimmed.replace(/^"|"$/g, "");
 }
 
-export function useUploadMaterialMutation(spaceId: string) {
+export function useUploadMaterialMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ file, title }: { file: File; title: string }) => {
-      const init = await initMaterialUpload(spaceId, {
+      const init = await initMaterialUpload({
         originalFilename: file.name,
         mimeType: file.type || "application/octet-stream",
         fileSize: file.size,
@@ -40,7 +40,7 @@ export function useUploadMaterialMutation(spaceId: string) {
 
       const etag = normalizeEtag(uploadResponse.headers.get("etag"));
 
-      const completed = await completeMaterialUpload(spaceId, {
+      const completed = await completeMaterialUpload({
         uploadId: init.uploadId,
         title,
         etag,
@@ -62,10 +62,10 @@ export function useUploadMaterialMutation(spaceId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: materialsQueries.listForSpace(spaceId).queryKey,
+        queryKey: materialsQueries.lists(),
       });
       queryClient.invalidateQueries({
-        queryKey: materialsQueries.countForSpace(spaceId).queryKey,
+        queryKey: materialsQueries.counts(),
       });
     },
   });

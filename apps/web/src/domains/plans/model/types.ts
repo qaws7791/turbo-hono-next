@@ -24,8 +24,9 @@ export type PlanModule = {
 
 export type Plan = {
   id: string;
-  spaceId: string;
   title: string;
+  icon: string;
+  color: string;
   goal: PlanGoal;
   level: PlanLevel;
   status: PlanStatus;
@@ -38,11 +39,6 @@ export type Plan = {
 export type PlanWithDerived = Plan & {
   progressPercent: number;
   totalSessions: number;
-};
-
-export type PlanDetailSpace = {
-  id: string;
-  name: string;
 };
 
 export type PlanDetailQueueItem = {

@@ -399,367 +399,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/spaces": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Space 목록 조회
-     * @description 현재 사용자가 소유한 모든 학습 공간 목록을 조회합니다.
-     */
-    get: {
-      parameters: {
-        query?: {
-          /** @description 포함할 추가 정보. 'activePlan'은 활성 플랜 정보를, 'lastStudiedAt'는 마지막 학습 날짜를 포함합니다. */
-          include?: Array<"activePlan" | "lastStudiedAt">;
-        };
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Space 목록을 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: Array<{
-                id: string;
-                name: string;
-                description: string | null;
-                icon: string;
-                color: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-                activePlan?: {
-                  id: string;
-                  title: string;
-                  progressPercent: number;
-                } | null;
-                /** Format: date-time */
-                lastStudiedAt?: string | null;
-              }>;
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    /**
-     * Space 생성
-     * @description 새로운 학습 공간을 생성합니다. 주제별로 자료와 학습 계획을 관리할 수 있습니다.
-     */
-    post: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path?: never;
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            name: string;
-            description?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Space가 생성되었습니다. */
-        201: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                id: string;
-                name: string;
-                description: string | null;
-                icon: string;
-                color: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-                activePlan?: {
-                  id: string;
-                  title: string;
-                  progressPercent: number;
-                } | null;
-                /** Format: date-time */
-                lastStudiedAt?: string | null;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/api/spaces/{spaceId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Space 상세 조회
-     * @description 학습 공간의 상세 정보를 조회합니다.
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          spaceId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Space 상세를 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                id: string;
-                name: string;
-                description: string | null;
-                icon: string;
-                color: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-                activePlan?: {
-                  id: string;
-                  title: string;
-                  progressPercent: number;
-                } | null;
-                /** Format: date-time */
-                lastStudiedAt?: string | null;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    /**
-     * Space 삭제
-     * @description 학습 공간을 삭제합니다. 포함된 모든 자료와 학습 계획도 함께 삭제됩니다.
-     */
-    delete: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          spaceId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description Space가 삭제되었습니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              message: string;
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    options?: never;
-    head?: never;
-    /**
-     * Space 수정
-     * @description 학습 공간의 이름, 설명 등을 수정합니다.
-     */
-    patch: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          spaceId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: {
-        content: {
-          "application/json": {
-            name?: string;
-            description?: string;
-            icon?: string;
-            color?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Space가 수정되었습니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                id: string;
-                name: string;
-                description: string | null;
-                icon: string;
-                color: string;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-                activePlan?: {
-                  id: string;
-                  title: string;
-                  progressPercent: number;
-                } | null;
-                /** Format: date-time */
-                lastStudiedAt?: string | null;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    trace?: never;
-  };
-  "/api/spaces/{spaceId}/materials": {
+  "/api/materials": {
     parameters: {
       query?: never;
       header?: never;
@@ -768,7 +408,7 @@ export interface paths {
     };
     /**
      * 자료 목록 조회
-     * @description Space에 등록된 학습 자료 목록을 페이지네이션과 함께 조회합니다.
+     * @description 사용자의 학습 자료 목록을 페이지네이션과 함께 조회합니다.
      *
      *     **필터링 옵션**: `status`, `search`, `sort`
      */
@@ -782,9 +422,7 @@ export interface paths {
           sort?: string;
         };
         header?: never;
-        path: {
-          spaceId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: never;
@@ -807,8 +445,6 @@ export interface paths {
                 /** @enum {string} */
                 processingStatus: "PENDING" | "PROCESSING" | "READY" | "FAILED";
                 summary: string | null;
-                /** @default [] */
-                tags: Array<string>;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -887,7 +523,6 @@ export interface paths {
               data: {
                 /** Format: uuid */
                 id: string;
-                spaceId: string;
                 title: string;
                 /** @enum {string} */
                 sourceType: "FILE" | "TEXT";
@@ -899,8 +534,6 @@ export interface paths {
                 /** Format: date-time */
                 processedAt: string | null;
                 summary: string | null;
-                /** @default [] */
-                tags: Array<string>;
                 chunkCount: number | null;
                 /** Format: date-time */
                 createdAt: string;
@@ -1056,7 +689,7 @@ export interface paths {
     };
     trace?: never;
   };
-  "/api/spaces/{spaceId}/materials/uploads/init": {
+  "/api/materials/uploads/init": {
     parameters: {
       query?: never;
       header?: never;
@@ -1075,9 +708,7 @@ export interface paths {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          spaceId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: {
@@ -1144,7 +775,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/spaces/{spaceId}/materials/uploads/complete": {
+  "/api/materials/uploads/complete": {
     parameters: {
       query?: never;
       header?: never;
@@ -1161,9 +792,7 @@ export interface paths {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          spaceId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: {
@@ -1326,7 +955,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/spaces/{spaceId}/plans": {
+  "/api/plans": {
     parameters: {
       query?: never;
       header?: never;
@@ -1335,7 +964,7 @@ export interface paths {
     };
     /**
      * Plan 목록 조회
-     * @description 학습 공간의 학습 계획 목록을 조회합니다.
+     * @description 사용자의 학습 계획 목록을 조회합니다.
      *
      *     **필터링**: `status`별 조회 가능
      */
@@ -1347,9 +976,7 @@ export interface paths {
           status?: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
         };
         header?: never;
-        path: {
-          spaceId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: never;
@@ -1364,6 +991,8 @@ export interface paths {
               data: Array<{
                 id: string;
                 title: string;
+                icon: string;
+                color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
                 /** @enum {string} */
@@ -1421,9 +1050,7 @@ export interface paths {
       parameters: {
         query?: never;
         header?: never;
-        path: {
-          spaceId: string;
-        };
+        path?: never;
         cookie?: never;
       };
       requestBody?: {
@@ -1437,6 +1064,8 @@ export interface paths {
             /** Format: date */
             targetDueDate: string;
             specialRequirements?: string;
+            icon?: string;
+            color?: string;
           };
         };
       };
@@ -1451,6 +1080,8 @@ export interface paths {
               data: {
                 id: string;
                 title: string;
+                icon: string;
+                color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
                 /** Format: date-time */
@@ -1522,8 +1153,9 @@ export interface paths {
             "application/json": {
               data: {
                 id: string;
-                spaceId: string;
                 title: string;
+                icon: string;
+                color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
                 /** @enum {string} */
@@ -1653,7 +1285,73 @@ export interface paths {
     };
     options?: never;
     head?: never;
-    patch?: never;
+    /**
+     * Plan 수정
+     * @description 학습 계획의 제목, 아이콘, 색상 등을 수정합니다.
+     */
+    patch: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          planId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            title?: string;
+            icon?: string;
+            color?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+          };
+        };
+      };
+      responses: {
+        /** @description Plan이 수정되었습니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              data: {
+                id: string;
+                title: string;
+                icon: string;
+                color: string;
+                /** @enum {string} */
+                status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+              };
+            };
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                code: string;
+                message: string;
+                details?: {
+                  [key: string]: unknown;
+                };
+                validation?: Array<{
+                  field: string;
+                  code: string;
+                  message: string;
+                }>;
+              };
+            };
+          };
+        };
+      };
+    };
     trace?: never;
   };
   "/api/plans/{planId}/status": {
@@ -1835,11 +1533,9 @@ export interface paths {
                 kind: "SESSION";
                 sessionId: string;
                 planId: string;
-                spaceId: string;
-                spaceName: string;
-                spaceIcon: string;
-                spaceColor: string;
                 planTitle: string;
+                planIcon: string;
+                planColor: string;
                 moduleTitle: string;
                 sessionTitle: string;
                 /** @enum {string} */
@@ -2132,8 +1828,8 @@ export interface paths {
                 sessionType: "LEARN" | "REVIEW";
                 planId: string;
                 planTitle: string;
-                spaceId: string;
-                spaceName: string;
+                planIcon: string;
+                planColor: string;
                 summary: {
                   /** Format: uuid */
                   id: string;
@@ -2241,10 +1937,8 @@ export interface paths {
                   plan: {
                     id: string;
                     title: string;
-                  };
-                  space: {
-                    id: string;
-                    name: string;
+                    icon: string;
+                    color: string;
                   };
                 };
                 blueprint: {
@@ -2995,7 +2689,7 @@ export interface paths {
         content: {
           "application/json": {
             /** @enum {string} */
-            scopeType: "SPACE" | "PLAN" | "SESSION";
+            scopeType: "PLAN" | "SESSION";
             scopeId: string;
           };
         };

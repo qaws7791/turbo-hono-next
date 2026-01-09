@@ -7,9 +7,12 @@ import {
   StepGoalSetting,
   StepMaterialSelect,
   StepScheduleSetting,
+  WizardBackButton,
   WizardFooter,
   WizardHeader,
 } from "./wizard";
+
+import { PageBody, PageHeader } from "~/domains/app-shell";
 
 /**
  * 학습 계획 생성 위저드 View 컴포넌트
@@ -19,42 +22,49 @@ import {
  * - Step 2: 학습 목표 및 레벨 설정
  * - Step 3: 기한 및 요구사항 설정
  */
-export function PlanWizardView({ spaceId }: { spaceId: string }) {
-  const wizard = usePlanWizard(spaceId);
+export function PlanWizardView() {
+  const wizard = usePlanWizard();
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      <WizardTitle />
-      <Card>
-        <WizardHeader
+    <>
+      <PageHeader hideSidebarTrigger>
+        <WizardBackButton
           step={wizard.model.step}
-          error={wizard.model.error}
-          closeHref={wizard.closeHref}
+          onBack={wizard.model.goBack}
+          onExit={wizard.handleExit}
         />
-        <CardContent className="space-y-6">
-          {wizard.model.step === 1 && (
-            <StepMaterialSelect
-              model={wizard.model}
-              spaceId={spaceId}
-              materialsCount={wizard.materials.length}
-            />
-          )}
-          {wizard.model.step === 2 && <StepGoalSetting model={wizard.model} />}
-          {wizard.model.step === 3 && (
-            <StepScheduleSetting model={wizard.model} />
-          )}
-          <Separator />
-          <WizardFooter
+      </PageHeader>
+      <PageBody className="space-y-8">
+        <WizardTitle />
+        <Card>
+          <WizardHeader
             step={wizard.model.step}
-            isSubmitting={wizard.isSubmitting}
-            onCancel={wizard.handleCancel}
-            onBack={wizard.model.goBack}
-            onNext={wizard.model.goNext}
-            onSubmit={wizard.model.submit}
+            error={wizard.model.error}
           />
-        </CardContent>
-      </Card>
-    </div>
+          <CardContent className="space-y-6">
+            {wizard.model.step === 1 && (
+              <StepMaterialSelect
+                model={wizard.model}
+                materialsCount={wizard.materials.length}
+              />
+            )}
+            {wizard.model.step === 2 && (
+              <StepGoalSetting model={wizard.model} />
+            )}
+            {wizard.model.step === 3 && (
+              <StepScheduleSetting model={wizard.model} />
+            )}
+            <Separator />
+            <WizardFooter
+              step={wizard.model.step}
+              isSubmitting={wizard.isSubmitting}
+              onNext={wizard.model.goNext}
+              onSubmit={wizard.model.submit}
+            />
+          </CardContent>
+        </Card>
+      </PageBody>
+    </>
   );
 }
 

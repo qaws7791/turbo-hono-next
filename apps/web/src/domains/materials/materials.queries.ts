@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { listSpaceMaterials } from "./api/materials.api";
+import { listMaterials } from "./api/materials.api";
 
 import type { Material } from "./model/materials.types";
 
@@ -9,23 +9,23 @@ export const materialsQueries = {
   lists: () => [...materialsQueries.all(), "list"] as const,
   counts: () => [...materialsQueries.all(), "count"] as const,
 
-  listForSpace: (spaceId: string) =>
+  list: (query?: { page?: number; limit?: number }) =>
     queryOptions({
-      queryKey: [...materialsQueries.lists(), spaceId] as const,
+      queryKey: [...materialsQueries.lists(), query] as const,
       queryFn: async (): Promise<Array<Material>> => {
-        const { data } = await listSpaceMaterials(spaceId, {
-          page: 1,
-          limit: 100,
+        const { data } = await listMaterials({
+          page: query?.page ?? 1,
+          limit: query?.limit ?? 100,
         });
         return data;
       },
     }),
 
-  countForSpace: (spaceId: string) =>
+  count: () =>
     queryOptions({
-      queryKey: [...materialsQueries.counts(), spaceId] as const,
+      queryKey: [...materialsQueries.counts()] as const,
       queryFn: async (): Promise<number> => {
-        const { meta } = await listSpaceMaterials(spaceId, {
+        const { meta } = await listMaterials({
           page: 1,
           limit: 1,
         });

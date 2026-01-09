@@ -17,7 +17,6 @@ function emptyDb(): Db {
   return {
     version: 0,
     user: undefined,
-    spaces: [],
     materials: [],
     plans: [],
     sessionBlueprints: [],
@@ -29,8 +28,6 @@ function seededDb(): Db {
   const createdAt = nowIso();
 
   const userId = randomUuidV4();
-  const spaceWorkId = randomPublicId();
-  const spaceHobbyId = randomPublicId();
 
   const material1Id = randomUuidV4();
   const material2Id = randomUuidV4();
@@ -172,56 +169,30 @@ function seededDb(): Db {
   });
 
   return {
-    version: 2,
+    version: 3,
     user: {
       id: userId,
       name: "홍길동",
       email: "hong@example.com",
       plan: "free",
     },
-    spaces: [
-      {
-        id: spaceWorkId,
-        name: "Work",
-        description: "실무 중심 학습",
-        icon: "briefcase",
-        color: "blue",
-        createdAt,
-        updatedAt: createdAt,
-        activePlanId: planId,
-      },
-      {
-        id: spaceHobbyId,
-        name: "Hobby",
-        description: "흥미 기반 학습",
-        icon: "music",
-        color: "purple",
-        createdAt,
-        updatedAt: createdAt,
-        activePlanId: plan2Id,
-      },
-    ],
     materials: [
       {
         id: material1Id,
-        spaceId: spaceWorkId,
         title: "React Hooks 정리 (URL)",
         kind: "url",
         status: "completed",
         summary: "Hooks의 핵심 패턴과 실무에서 자주 쓰는 케이스를 요약합니다.",
-        tags: ["react", "hooks"],
         createdAt,
         updatedAt: createdAt,
         source: { type: "url", url: "https://react.dev/reference/react" },
       },
       {
         id: material2Id,
-        spaceId: spaceWorkId,
         title: "TypeScript 실전 노트 (텍스트)",
         kind: "text",
         status: "completed",
         summary: "타입 설계와 좁히기, 런타임 검증을 중심으로 정리합니다.",
-        tags: ["typescript", "zod"],
         createdAt,
         updatedAt: createdAt,
         source: {
@@ -231,12 +202,10 @@ function seededDb(): Db {
       },
       {
         id: material3Id,
-        spaceId: spaceHobbyId,
         title: "기타 코드 스케일 연습 (파일)",
         kind: "file",
         status: "completed",
         summary: "기초 스케일 패턴을 빠르게 반복 학습합니다.",
-        tags: ["music", "practice"],
         createdAt,
         updatedAt: createdAt,
         source: {
@@ -247,12 +216,10 @@ function seededDb(): Db {
       },
       {
         id: material4Id,
-        spaceId: spaceHobbyId,
         title: "TypeScript 핸드북 (URL)",
         kind: "url",
         status: "completed",
         summary: "TypeScript 공식 핸드북 내용을 정리합니다.",
-        tags: ["typescript", "handbook"],
         createdAt,
         updatedAt: createdAt,
         source: {
@@ -264,8 +231,9 @@ function seededDb(): Db {
     plans: [
       {
         id: planId,
-        spaceId: spaceWorkId,
         title: "React Hooks 마스터",
+        icon: "target",
+        color: "blue",
         goal: "work",
         level: "basic",
         status: "active",
@@ -331,8 +299,9 @@ function seededDb(): Db {
       },
       {
         id: plan2Id,
-        spaceId: spaceHobbyId,
         title: "TypeScript 마스터",
+        icon: "book",
+        color: "purple",
         goal: "hobby",
         level: "basic",
         status: "active",

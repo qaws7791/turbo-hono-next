@@ -10,7 +10,6 @@ import {
   PlanLevelSchema,
   PlanSchema,
   PlanStatusSchema,
-  SpaceSchema,
   UserSchema,
 } from "./schemas";
 import { readDbOrSeed, writeDb } from "./store";
@@ -26,7 +25,6 @@ import type {
   PlanSessionStatus,
   PlanSessionType,
   SessionBlueprint,
-  Space,
   User,
 } from "./schemas";
 
@@ -42,8 +40,6 @@ import { randomUuidV4 } from "~/foundation/lib/uuid";
 
 export type HomeQueueItem = {
   sessionId: string;
-  spaceId: string;
-  spaceName: string;
   planId: string;
   planTitle: string;
   moduleTitle: string;
@@ -52,14 +48,13 @@ export type HomeQueueItem = {
   status: PlanSessionStatus;
   scheduledDate: string;
   durationMinutes: number;
-  spaceIcon: string;
-  spaceColor: string;
+  planIcon: string;
+  planColor: string;
 };
 
 export type SessionSummaryCard = {
   sessionId: string;
   planId: string;
-  spaceId: string;
   moduleTitle: string;
   sessionTitle: string;
   completedAt: string;
@@ -94,18 +89,6 @@ function requireUser(db: Db): User {
     throw new Error("UNAUTHENTICATED");
   }
   return user;
-}
-
-function findSpace(db: Db, spaceId: string): Space | undefined {
-  return db.spaces.find((s) => s.id === spaceId);
-}
-
-function requireSpace(db: Db, spaceId: string): Space {
-  const space = findSpace(db, spaceId);
-  if (!space) {
-    throw new Error("NOT_FOUND_SPACE");
-  }
-  return space;
 }
 
 function requirePlan(db: Db, planId: string): Plan {
@@ -143,8 +126,7 @@ function mutateMaterialsForAnalysis(db: Db, now: Date): boolean {
       doc.status = "completed";
       doc.summary =
         doc.summary ??
-        "자동 분석이 완료되었습니다. 요약/태그를 기반으로 Plan을 생성할 수 있습니다.";
-      doc.tags = doc.tags.length > 0 ? doc.tags : ["learning", "notes"];
+        "자동 분석이 완료되었습니다. 요약 정보를 기반으로 Plan을 생성할 수 있습니다.";
       doc.analysisReadyAt = undefined;
       doc.updatedAt = now.toISOString();
       changed = true;
@@ -228,84 +210,9 @@ export function logout(): void {
   clearAuthSession();
 }
 
-export function listSpaces(): Array<Space> {
+export function listMaterials(): Array<Material> {
   const db = readDb();
   requireUser(db);
-  return db.spaces.map((s) => SpaceSchema.parse(s));
-}
-
-export function createSpace(input: {
-  name: string;
-  description?: string;
-}): Space {
-  const db = readDb();
-  requireUser(db);
-
-  const name = z.string().min(1).max(50).parse(input.name.trim());
-  const description =
-    input.description && input.description.trim().length > 0
-      ? z.string().min(1).max(200).parse(input.description.trim())
-      : undefined;
-
-  const now = nowIso();
-  const space: Space = {
-    id: randomPublicId(),
-    name,
-    description,
-    icon: "book",
-    color: "blue",
-    createdAt: now,
-    updatedAt: now,
-    activePlanId: undefined,
-  };
-  const validated = SpaceSchema.parse(space);
-  db.spaces.unshift(validated);
-  commit(db);
-  return validated;
-}
-
-export function updateSpace(input: {
-  spaceId: string;
-  name?: string;
-  description?: string;
-  icon?: string;
-  color?: string;
-}): Space {
-  const db = readDb();
-  requireUser(db);
-  const space = requireSpace(db, input.spaceId);
-
-  if (input.name !== undefined) {
-    space.name = z.string().min(1).max(50).parse(input.name.trim());
-  }
-  if (input.description !== undefined) {
-    space.description =
-      input.description.trim().length > 0
-        ? z.string().min(1).max(200).parse(input.description.trim())
-        : undefined;
-  }
-  if (input.icon !== undefined) {
-    space.icon = z.string().min(1).max(50).parse(input.icon);
-  }
-  if (input.color !== undefined) {
-    space.color = z.string().min(1).max(20).parse(input.color);
-  }
-
-  space.updatedAt = nowIso();
-  commit(db);
-  return SpaceSchema.parse(space);
-}
-
-export function getSpace(spaceId: string): Space {
-  const db = readDb();
-  requireUser(db);
-  return SpaceSchema.parse(requireSpace(db, spaceId));
-}
-
-export function listMaterials(spaceId: string): Array<Material> {
-  const db = readDb();
-  requireUser(db);
-  requireSpace(db, spaceId);
 
   const changed = mutateMaterialsForAnalysis(db, new Date());
   if (changed) {
@@ -313,13 +220,11 @@ export function listMaterials(spaceId: string): Array<Material> {
   }
 
   return db.materials
-    .filter((d) => d.spaceId === spaceId)
     .slice()
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export function uploadMaterial(input: {
-  spaceId: string;
   kind: MaterialKind;
   title: string;
   source:
@@ -329,7 +234,6 @@ export function uploadMaterial(input: {
 }): Material {
   const db = readDb();
   requireUser(db);
-  requireSpace(db, input.spaceId);
 
   const kind = MaterialKindSchema.parse(input.kind);
   const title = z.string().min(1).max(120).parse(input.title.trim());
@@ -340,12 +244,10 @@ export function uploadMaterial(input: {
 
   const base: Omit<Material, "source"> = {
     id: randomUuidV4(),
-    spaceId: input.spaceId,
     title,
     kind,
     status: "analyzing",
     summary: undefined,
-    tags: [],
     createdAt: now,
     updatedAt: now,
     analysisReadyAt: analysisReadyAt.toISOString(),
@@ -388,25 +290,17 @@ export function uploadMaterial(input: {
   return material;
 }
 
-export function deleteMaterial(input: {
-  spaceId: string;
-  materialId: string;
-}): void {
+export function deleteMaterial(input: { materialId: string }): void {
   const db = readDb();
   requireUser(db);
-  requireSpace(db, input.spaceId);
-  db.materials = db.materials.filter(
-    (d) => !(d.spaceId === input.spaceId && d.id === input.materialId),
-  );
+  db.materials = db.materials.filter((d) => d.id !== input.materialId);
   commit(db);
 }
 
-export function listPlans(spaceId: string): Array<PlanWithDerived> {
+export function listPlans(): Array<PlanWithDerived> {
   const db = readDb();
   requireUser(db);
-  requireSpace(db, spaceId);
   return db.plans
-    .filter((p) => p.spaceId === spaceId)
     .slice()
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((p) => withDerivedPlan(PlanSchema.parse(p)));
@@ -429,31 +323,26 @@ export function setPlanStatus(input: {
   plan.status = status;
   plan.updatedAt = nowIso();
 
-  // Space-level active plan should stay consistent.
-  const space = requireSpace(db, plan.spaceId);
   if (status === "active") {
-    space.activePlanId = plan.id;
-  } else if (space.activePlanId === plan.id) {
-    space.activePlanId = undefined;
+    // 사용자의 다른 plan들을 paused로 변경 (활성 플랜은 하나만 권장)
+    for (const p of db.plans) {
+      if (p.id !== plan.id && p.status === "active") {
+        p.status = "paused";
+        p.updatedAt = nowIso();
+      }
+    }
   }
-  space.updatedAt = nowIso();
 
   commit(db);
   return withDerivedPlan(PlanSchema.parse(plan));
 }
 
-export function setActivePlan(input: {
-  spaceId: string;
-  planId: string;
-}): void {
+export function setActivePlan(input: { planId: string }): void {
   const db = readDb();
   requireUser(db);
-  const space = requireSpace(db, input.spaceId);
-  const plan = requirePlan(db, input.planId);
-  invariant(plan.spaceId === input.spaceId, "Plan does not belong to space");
+  requirePlan(db, input.planId);
 
   for (const p of db.plans) {
-    if (p.spaceId !== input.spaceId) continue;
     if (p.id === input.planId) {
       p.status = "active";
       p.updatedAt = nowIso();
@@ -463,13 +352,13 @@ export function setActivePlan(input: {
     }
   }
 
-  space.activePlanId = input.planId;
-  space.updatedAt = nowIso();
   commit(db);
 }
 
 export function createPlan(input: {
-  spaceId: string;
+  title?: string;
+  icon?: string;
+  color?: string;
   sourceMaterialIds: Array<string>;
   goal: PlanGoal;
   level: PlanLevel;
@@ -480,7 +369,6 @@ export function createPlan(input: {
 }): PlanWithDerived {
   const db = readDb();
   requireUser(db);
-  const space = requireSpace(db, input.spaceId);
 
   const sourceMaterialIds = z
     .array(z.string().uuid())
@@ -490,14 +378,14 @@ export function createPlan(input: {
   const goal = PlanGoalSchema.parse(input.goal);
   const level = PlanLevelSchema.parse(input.level);
 
-  const materials = db.materials.filter(
-    (d) => d.spaceId === input.spaceId && sourceMaterialIds.includes(d.id),
+  const materials = db.materials.filter((d) =>
+    sourceMaterialIds.includes(d.id),
   );
   if (materials.length !== sourceMaterialIds.length) {
-    throw new Error("INVALID_Material_SELECTION");
+    throw new Error("INVALID_MATERIAL_SELECTION");
   }
   if (materials.some((d) => d.status !== "completed")) {
-    throw new Error("MaterialS_NOT_READY");
+    throw new Error("MATERIALS_NOT_READY");
   }
 
   const now = nowIso();
@@ -513,20 +401,15 @@ export function createPlan(input: {
     nextIsoDateAfter(3),
   ];
 
-  const tagSeed = materials.flatMap((d) => d.tags).slice(0, 4);
-  const module1Title = tagSeed[0]
-    ? `Module 1: ${tagSeed[0]}`
-    : "Module 1: Foundations";
-  const module2Title = tagSeed[1]
-    ? `Module 2: ${tagSeed[1]}`
-    : "Module 2: Practice";
+  const module1Title = "Module 1: Foundations";
+  const module2Title = "Module 2: Practice";
 
   const session1Id = randomPublicId();
   const session2Id = randomPublicId();
   const session3Id = randomPublicId();
   const session4Id = randomPublicId();
 
-  const planTitle = `${space.name} Plan`;
+  const planTitle = input.title || materials[0]?.title || "새 학습 계획";
 
   const blueprint1 = createSessionBlueprint({
     planId,
@@ -578,8 +461,9 @@ export function createPlan(input: {
 
   const plan: Plan = {
     id: planId,
-    spaceId: input.spaceId,
-    title: `${space.name} Plan`,
+    title: planTitle,
+    icon: input.icon || "target",
+    color: input.color || "blue",
     goal,
     level,
     status: "active",
@@ -646,8 +530,15 @@ export function createPlan(input: {
 
   db.sessionBlueprints.unshift(blueprint1, blueprint2, blueprint3, blueprint4);
   db.plans.unshift(plan);
-  space.activePlanId = plan.id;
-  space.updatedAt = nowIso();
+
+  // 다른 플랜들 비활성화
+  for (const p of db.plans) {
+    if (p.id !== planId && p.status === "active") {
+      p.status = "paused";
+      p.updatedAt = nowIso();
+    }
+  }
+
   commit(db);
 
   return withDerivedPlan(plan);
@@ -660,21 +551,15 @@ export function homeQueue(): Array<HomeQueueItem> {
   const today = todayIsoDate();
 
   const activePlans = db.plans.filter((p) => p.status === "active");
-  const spacesById = new Map(db.spaces.map((s) => [s.id, s] as const));
 
   const items: Array<HomeQueueItem> = [];
   for (const plan of activePlans) {
-    const space = spacesById.get(plan.spaceId);
-    if (!space) continue;
-
     for (const module of plan.modules) {
       for (const session of module.sessions) {
         if (session.status === "completed") continue;
         if (session.scheduledDate > today) continue;
         items.push({
           sessionId: session.id,
-          spaceId: space.id,
-          spaceName: space.name,
           planId: plan.id,
           planTitle: plan.title,
           moduleTitle: module.title,
@@ -683,8 +568,8 @@ export function homeQueue(): Array<HomeQueueItem> {
           status: session.status,
           scheduledDate: session.scheduledDate,
           durationMinutes: session.durationMinutes,
-          spaceIcon: space.icon ?? "book",
-          spaceColor: space.color ?? "blue",
+          planIcon: plan.icon,
+          planColor: plan.color,
         });
       }
     }
@@ -710,7 +595,6 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
         cards.push({
           sessionId: session.id,
           planId: plan.id,
-          spaceId: plan.spaceId,
           moduleTitle: module.title,
           sessionTitle: session.title,
           completedAt: session.completedAt,
@@ -720,7 +604,7 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
     }
   }
 
-  // If we don't have enough real data, fill with mocks for UI testing
+  // 데이터가 부족할 경우 테스트용 모크 데이터 생성
   if (cards.length < limit) {
     const now = new Date();
     const mockTopics = [
@@ -736,23 +620,21 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
       const topic = mockTopics[i % mockTopics.length];
       if (!topic) continue;
 
-      // Distribute dates over the last month (approx 30 days)
       const daysAgo = Math.floor(Math.random() * 30);
       const date = new Date(now);
       date.setDate(date.getDate() - daysAgo);
       date.setHours(
         Math.floor(Math.random() * 12) + 9,
         Math.floor(Math.random() * 60),
-      ); // Random time between 9am-9pm
+      );
 
       cards.push({
         sessionId: `mock-session-${i}`,
         planId: `mock-plan-${i}`,
-        spaceId: `mock-space-${i}`,
         moduleTitle: topic.module,
         sessionTitle: topic.session,
         completedAt: date.toISOString(),
-        durationMinutes: 15 + Math.floor(Math.random() * 45), // 15-60 min
+        durationMinutes: 15 + Math.floor(Math.random() * 45),
       });
     }
   }
@@ -762,16 +644,6 @@ export function recentSessions(limit: number): Array<SessionSummaryCard> {
     .slice(0, Math.max(0, Math.min(10, limit)));
 }
 
-export function getPlanBySpaceActive(spaceId: string): PlanWithDerived | null {
-  const db = readDb();
-  requireUser(db);
-  const space = requireSpace(db, spaceId);
-  if (!space.activePlanId) return null;
-  const plan = db.plans.find((p) => p.id === space.activePlanId);
-  if (!plan) return null;
-  return withDerivedPlan(plan);
-}
-
 export function planNextQueue(
   planId: string,
   limit: number,
@@ -779,7 +651,6 @@ export function planNextQueue(
   const db = readDb();
   requireUser(db);
   const plan = requirePlan(db, planId);
-  const space = requireSpace(db, plan.spaceId);
 
   const today = todayIsoDate();
 
@@ -790,8 +661,6 @@ export function planNextQueue(
       if (session.scheduledDate > today) continue;
       items.push({
         sessionId: session.id,
-        spaceId: space.id,
-        spaceName: space.name,
         planId: plan.id,
         planTitle: plan.title,
         moduleTitle: module.title,
@@ -800,8 +669,8 @@ export function planNextQueue(
         status: session.status,
         scheduledDate: session.scheduledDate,
         durationMinutes: session.durationMinutes,
-        spaceIcon: space.icon ?? "book",
-        spaceColor: space.color ?? "blue",
+        planIcon: plan.icon,
+        planColor: plan.color,
       });
     }
   }
@@ -888,7 +757,6 @@ export function getSessionRun(runId: string) {
     throw new Error("NOT_FOUND_RUN");
   }
 
-  // Enrich with plan and session title info
   const plan = db.plans.find((p) => p.id === run.planId);
   let planTitle = "";
   let moduleTitle = "";

@@ -11,7 +11,6 @@ import type { PlanWizardModel } from "../../model";
 
 type StepMaterialSelectProps = {
   model: PlanWizardModel;
-  spaceId: string;
   materialsCount: number;
 };
 
@@ -23,7 +22,6 @@ type StepMaterialSelectProps = {
  */
 export function StepMaterialSelect({
   model,
-  spaceId,
   materialsCount,
 }: StepMaterialSelectProps) {
   return (
@@ -45,7 +43,7 @@ export function StepMaterialSelect({
       />
 
       {materialsCount === 0 ? (
-        <EmptyMaterialsState spaceId={spaceId} />
+        <EmptyMaterialsState />
       ) : (
         <MaterialList model={model} />
       )}
@@ -53,15 +51,13 @@ export function StepMaterialSelect({
   );
 }
 
-function EmptyMaterialsState({ spaceId }: { spaceId: string }) {
+function EmptyMaterialsState() {
   return (
     <div className="space-y-2">
       <div className="text-muted-foreground text-sm">
         학습 계획을 만들려면 학습 자료가 필요합니다.
       </div>
-      <Button render={<Link to={`/spaces/${spaceId}/materials`} />}>
-        자료 업로드로 이동
-      </Button>
+      <Button render={<Link to="/materials" />}>자료 업로드로 이동</Button>
     </div>
   );
 }

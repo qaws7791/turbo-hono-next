@@ -19,12 +19,10 @@ export type MaterialKind = "file" | "url" | "text";
 
 export type Material = {
   id: string;
-  spaceId: string;
   title: string;
   kind: MaterialKind;
   status: MaterialStatus;
   summary?: string;
-  tags: Array<string>;
   createdAt: string;
   updatedAt: string;
   analysisReadyAt?: string;

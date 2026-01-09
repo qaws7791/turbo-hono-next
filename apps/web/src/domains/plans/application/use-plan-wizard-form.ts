@@ -52,8 +52,7 @@ export function usePlanWizardForm(input: {
   const filteredMaterials = React.useMemo(() => {
     return input.materials.filter((doc) => {
       if (!normalized) return true;
-      const hay =
-        `${doc.title} ${doc.summary ?? ""} ${doc.tags.join(" ")}`.toLowerCase();
+      const hay = `${doc.title} ${doc.summary ?? ""}`.toLowerCase();
       return hay.includes(normalized);
     });
   }, [input.materials, normalized]);
