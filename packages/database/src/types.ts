@@ -10,7 +10,6 @@ import type {
   materialChunks,
   materialEmbeddings,
   materialJobs,
-  materialTags,
   materials,
   outlineNodes,
   planGenerationRequestMaterials,
@@ -24,8 +23,6 @@ import type {
   sessionProgressSnapshots,
   sessionRuns,
   sessionSummaries,
-  spaces,
-  tags,
   users,
 } from "./schema";
 
@@ -41,17 +38,8 @@ export type NewMagicLinkToken = typeof magicLinkTokens.$inferInsert;
 export type AuthSession = typeof authSessions.$inferSelect;
 export type NewAuthSession = typeof authSessions.$inferInsert;
 
-export type Space = typeof spaces.$inferSelect;
-export type NewSpace = typeof spaces.$inferInsert;
-
-export type Tag = typeof tags.$inferSelect;
-export type NewTag = typeof tags.$inferInsert;
-
 export type Material = typeof materials.$inferSelect;
 export type NewMaterial = typeof materials.$inferInsert;
-
-export type MaterialTag = typeof materialTags.$inferSelect;
-export type NewMaterialTag = typeof materialTags.$inferInsert;
 
 export type MaterialJob = typeof materialJobs.$inferSelect;
 export type NewMaterialJob = typeof materialJobs.$inferInsert;

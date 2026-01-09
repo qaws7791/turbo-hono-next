@@ -22,11 +22,9 @@ export const HomeQueueSessionItemSchema = z.object({
   kind: z.literal("SESSION"),
   sessionId: PublicIdSchema,
   planId: PublicIdSchema,
-  spaceId: PublicIdSchema,
-  spaceName: z.string().min(1),
-  spaceIcon: z.string().min(1).max(50),
-  spaceColor: z.string().min(1).max(50),
   planTitle: z.string().min(1),
+  planIcon: z.string().min(1).max(50),
+  planColor: z.string().min(1).max(50),
   moduleTitle: z.string().min(1),
   sessionTitle: z.string().min(1),
   sessionType: PlanSessionTypeSchema,
@@ -278,10 +276,8 @@ export const SessionRunDetailResponseSchema = z.object({
       plan: z.object({
         id: PublicIdSchema,
         title: z.string().min(1),
-      }),
-      space: z.object({
-        id: PublicIdSchema,
-        name: z.string().min(1),
+        icon: z.string().min(1).max(50),
+        color: z.string().min(1).max(50),
       }),
     }),
     blueprint: SessionBlueprintSchema,
@@ -319,8 +315,8 @@ export const SessionRunListItemSchema = z.object({
   sessionType: PlanSessionTypeSchema,
   planId: PublicIdSchema,
   planTitle: z.string().min(1),
-  spaceId: PublicIdSchema,
-  spaceName: z.string().min(1),
+  planIcon: z.string().min(1).max(50),
+  planColor: z.string().min(1).max(50),
   summary: z
     .object({
       id: z.uuid(),

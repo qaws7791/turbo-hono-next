@@ -13,16 +13,15 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+import { planSessions } from "./curriculum";
 import {
   sessionActivityKindEnum,
   sessionCheckinKindEnum,
   sessionExitReasonEnum,
   sessionRunStatusEnum,
 } from "./enums";
-import { planSessions } from "./curriculum";
 import { users } from "./identity";
 import { plans } from "./plans";
-import { spaces } from "./space";
 
 /* ========== 7) Session Execution ========== */
 
@@ -37,9 +36,6 @@ export const sessionRuns = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     planId: bigint("plan_id", { mode: "number" })
       .notNull()
       .references(() => plans.id, { onDelete: "cascade" }),

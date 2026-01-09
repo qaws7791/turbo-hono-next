@@ -6,7 +6,6 @@ import {
   jsonb,
   numeric,
   pgTable,
-  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -22,11 +21,8 @@ import {
   materialUploadStatusEnum,
   outlineNodeTypeEnum,
   storageProviderEnum,
-  tagSourceEnum,
 } from "./enums";
 import { users } from "./identity";
-import { spaces } from "./space";
-import { tags } from "./tags";
 import { timestamps } from "./shared";
 
 /* ========== 4) Materials ========== */
@@ -40,9 +36,6 @@ export const materials = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     sourceType: materialSourceTypeEnum("source_type").notNull(),
     title: text("title").notNull(),
     originalFilename: text("original_filename"),
@@ -66,16 +59,10 @@ export const materials = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("materials_space_id_created_at_idx").on(
-      table.spaceId,
-      table.createdAt,
-    ),
-    index("materials_processing_status_space_id_idx").on(
-      table.processingStatus,
-      table.spaceId,
-    ),
-    index("materials_space_id_not_deleted_idx")
-      .on(table.spaceId)
+    index("materials_user_id_idx").on(table.userId),
+    index("materials_user_id_created_at_idx").on(table.userId, table.createdAt),
+    index("materials_user_id_not_deleted_idx")
+      .on(table.userId)
       .where(sql`${table.deletedAt} IS NULL`),
   ],
 );
@@ -89,9 +76,6 @@ export const materialUploads = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     status: materialUploadStatusEnum("status").notNull().default("INITIATED"),
     expiresAt: timestamp("expires_at", {
       withTimezone: true,
@@ -114,34 +98,12 @@ export const materialUploads = pgTable(
     ...timestamps,
   },
   (table) => [
-    index("material_uploads_user_space_created_at_idx").on(
+    index("material_uploads_user_id_created_at_idx").on(
       table.userId,
-      table.spaceId,
       table.createdAt,
     ),
     index("material_uploads_expires_at_idx").on(table.expiresAt),
     index("material_uploads_status_idx").on(table.status),
-  ],
-);
-
-export const materialTags = pgTable(
-  "material_tags",
-  {
-    materialId: uuid("material_id")
-      .notNull()
-      .references(() => materials.id, { onDelete: "cascade" }),
-    tagId: uuid("tag_id")
-      .notNull()
-      .references(() => tags.id, { onDelete: "cascade" }),
-    source: tagSourceEnum("source").notNull(),
-    confidence: numeric("confidence"),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .$defaultFn(() => new Date())
-      .notNull(),
-  },
-  (table) => [
-    primaryKey({ columns: [table.materialId, table.tagId] }),
-    index("material_tags_material_id_idx").on(table.materialId),
   ],
 );
 
@@ -225,9 +187,6 @@ export const outlineNodes = pgTable(
     materialId: uuid("material_id")
       .notNull()
       .references(() => materials.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     parentId: uuid("parent_id"),
     nodeType: outlineNodeTypeEnum("node_type").notNull(),
     title: text("title").notNull(),
@@ -241,7 +200,6 @@ export const outlineNodes = pgTable(
   },
   (table) => [
     index("outline_nodes_material_id_idx").on(table.materialId),
-    index("outline_nodes_space_id_idx").on(table.spaceId),
     index("outline_nodes_parent_id_idx").on(table.parentId),
   ],
 );

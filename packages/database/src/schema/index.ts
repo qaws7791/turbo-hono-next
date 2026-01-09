@@ -1,12 +1,10 @@
 export * from "./enums";
 
+export * from "./chat";
+export * from "./curriculum";
+export * from "./events";
+export * from "./home";
 export * from "./identity";
-export * from "./space";
-export * from "./tags";
 export * from "./materials";
 export * from "./plans";
-export * from "./curriculum";
 export * from "./sessions";
-export * from "./chat";
-export * from "./home";
-export * from "./events";

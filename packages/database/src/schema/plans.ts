@@ -23,7 +23,6 @@ import {
 } from "./enums";
 import { users } from "./identity";
 import { materials } from "./materials";
-import { spaces } from "./space";
 import { timestamps } from "./shared";
 
 /* ========== 5) Plans ========== */
@@ -37,9 +36,6 @@ export const planGenerationRequests = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     status: planGenerationRequestStatusEnum("status")
       .notNull()
       .default("DRAFT"),
@@ -52,10 +48,7 @@ export const planGenerationRequests = pgTable(
     errorMessage: text("error_message"),
     ...timestamps,
   },
-  (table) => [
-    index("plan_generation_requests_user_id_idx").on(table.userId),
-    index("plan_generation_requests_space_id_idx").on(table.spaceId),
-  ],
+  (table) => [index("plan_generation_requests_user_id_idx").on(table.userId)],
 );
 
 export const planGenerationRequestMaterials = pgTable(
@@ -88,14 +81,13 @@ export const plans = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     generationRequestId: uuid("generation_request_id").references(
       () => planGenerationRequests.id,
       { onDelete: "set null" },
     ),
     title: text("title").notNull(),
+    icon: text("icon").notNull().default("target"),
+    color: text("color").notNull().default("blue"),
     status: planStatusEnum("status").notNull().default("PAUSED"),
     goalType: planGoalTypeEnum("goal_type").notNull(),
     goalText: text("goal_text"),
@@ -113,11 +105,10 @@ export const plans = pgTable(
   },
   (table) => [
     uniqueIndex("plans_public_id_unique").on(table.publicId),
-    index("plans_space_id_idx").on(table.spaceId),
     index("plans_user_id_idx").on(table.userId),
-    index("plans_space_id_status_idx").on(table.spaceId, table.status),
-    uniqueIndex("plans_one_active_per_space_unique")
-      .on(table.spaceId)
+    index("plans_user_id_status_idx").on(table.userId, table.status),
+    uniqueIndex("plans_one_active_per_user_unique")
+      .on(table.userId)
       .where(sql`${table.status} = 'ACTIVE'`),
   ],
 );

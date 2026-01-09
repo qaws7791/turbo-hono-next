@@ -1,7 +1,5 @@
 import { z } from "@hono/zod-openapi";
 
-import { PublicIdSchema } from "../../common/schema";
-
 export const PaginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
@@ -24,7 +22,6 @@ export const MaterialListItemSchema = z.object({
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
   summary: z.string().nullable(),
-  tags: z.array(z.string()).default([]),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });
@@ -43,7 +40,6 @@ export const MaterialListResponseSchema = z.object({
 
 export const MaterialDetailSchema = z.object({
   id: z.uuid(),
-  spaceId: PublicIdSchema,
   title: z.string().min(1),
   sourceType: MaterialSourceTypeSchema,
   originalFilename: z.string().nullable(),
@@ -52,7 +48,6 @@ export const MaterialDetailSchema = z.object({
   processingStatus: MaterialProcessingStatusSchema,
   processedAt: z.iso.datetime().nullable(),
   summary: z.string().nullable(),
-  tags: z.array(z.string()).default([]),
   chunkCount: z.number().int().nonnegative().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

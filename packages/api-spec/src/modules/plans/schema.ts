@@ -30,6 +30,8 @@ export const PlanProgressSchema = z.object({
 export const PlanListItemSchema = z.object({
   id: PublicIdSchema,
   title: z.string().min(1),
+  icon: z.string(),
+  color: z.string(),
   status: PlanStatusSchema,
   goalType: PlanGoalTypeSchema,
   currentLevel: PlanLevelSchema,
@@ -56,12 +58,16 @@ export const CreatePlanRequestSchema = z.object({
   currentLevel: PlanLevelSchema,
   targetDueDate: z.iso.date(),
   specialRequirements: z.string().max(2000).optional(),
+  icon: z.string().max(50).optional(),
+  color: z.string().max(50).optional(),
 });
 
 export const CreatePlanResponseSchema = z.object({
   data: z.object({
     id: PublicIdSchema,
     title: z.string().min(1),
+    icon: z.string(),
+    color: z.string(),
     status: PlanStatusSchema,
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
@@ -93,8 +99,9 @@ export const PlanSessionItemSchema = z.object({
 export const PlanDetailResponseSchema = z.object({
   data: z.object({
     id: PublicIdSchema,
-    spaceId: PublicIdSchema,
     title: z.string().min(1),
+    icon: z.string(),
+    color: z.string(),
     status: PlanStatusSchema,
     goalType: PlanGoalTypeSchema,
     currentLevel: PlanLevelSchema,
@@ -106,6 +113,32 @@ export const PlanDetailResponseSchema = z.object({
     sourceMaterialIds: z.array(z.uuid()),
     modules: z.array(PlanModuleItemSchema),
     sessions: z.array(PlanSessionItemSchema),
+  }),
+});
+
+export const UpdatePlanRequestSchema = z
+  .object({
+    title: z.string().min(1).max(200).optional(),
+    icon: z.string().max(50).optional(),
+    color: z.string().max(50).optional(),
+    status: PlanStatusSchema.optional(),
+  })
+  .refine(
+    (value) =>
+      value.title !== undefined ||
+      value.icon !== undefined ||
+      value.color !== undefined ||
+      value.status !== undefined,
+    "수정할 필드가 필요합니다.",
+  );
+
+export const UpdatePlanResponseSchema = z.object({
+  data: z.object({
+    id: PublicIdSchema,
+    title: z.string(),
+    icon: z.string(),
+    color: z.string(),
+    status: PlanStatusSchema,
   }),
 });
 

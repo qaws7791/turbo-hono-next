@@ -1,5 +1,4 @@
 import {
-  bigint,
   index,
   integer,
   jsonb,
@@ -13,7 +12,6 @@ import {
 import { chatMessageRoleEnum, chatScopeTypeEnum } from "./enums";
 import { users } from "./identity";
 import { materialChunks } from "./materials";
-import { spaces } from "./space";
 
 /* ========== 9) Chat ========== */
 
@@ -26,11 +24,8 @@ export const chatThreads = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    spaceId: bigint("space_id", { mode: "number" })
-      .notNull()
-      .references(() => spaces.id, { onDelete: "cascade" }),
     scopeType: chatScopeTypeEnum("scope_type").notNull(),
-    scopeId: bigint("scope_id", { mode: "number" }).notNull(),
+    scopeId: text("scope_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .$defaultFn(() => new Date())
       .notNull(),
@@ -38,10 +33,7 @@ export const chatThreads = pgTable(
       .$defaultFn(() => new Date())
       .notNull(),
   },
-  (table) => [
-    index("chat_threads_user_id_idx").on(table.userId),
-    index("chat_threads_space_id_idx").on(table.spaceId),
-  ],
+  (table) => [index("chat_threads_user_id_idx").on(table.userId)],
 );
 
 export const chatMessages = pgTable(

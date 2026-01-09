@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 
-import { ErrorResponseSchema, PublicIdSchema } from "../../common/schema";
+import { ErrorResponseSchema } from "../../common/schema";
 
 import {
   CompleteMaterialUploadRequestSchema,
@@ -21,12 +21,11 @@ import {
 export const listMaterialsRoute = createRoute({
   tags: ["materials"],
   method: "get",
-  path: "/api/spaces/{spaceId}/materials",
+  path: "/api/materials",
   summary: "자료 목록 조회",
   description:
-    "Space에 등록된 학습 자료 목록을 페이지네이션과 함께 조회합니다.\n\n**필터링 옵션**: `status`, `search`, `sort`",
+    "사용자의 학습 자료 목록을 페이지네이션과 함께 조회합니다.\n\n**필터링 옵션**: `status`, `search`, `sort`",
   request: {
-    params: z.object({ spaceId: PublicIdSchema }),
     query: PaginationQuerySchema.extend({
       status: MaterialProcessingStatusSchema.optional(),
       search: z.string().optional(),
@@ -72,12 +71,11 @@ export const getMaterialDetailRoute = createRoute({
 export const initiateMaterialUploadRoute = createRoute({
   tags: ["materials"],
   method: "post",
-  path: "/api/spaces/{spaceId}/materials/uploads/init",
+  path: "/api/materials/uploads/init",
   summary: "R2 업로드 세션 생성",
   description:
     "파일 업로드를 위한 Presigned URL을 발급합니다.\n\n**지원 형식**: PDF, DOCX, TXT 등",
   request: {
-    params: z.object({ spaceId: PublicIdSchema }),
     body: {
       content: {
         "application/json": {
@@ -104,12 +102,11 @@ export const initiateMaterialUploadRoute = createRoute({
 export const completeMaterialUploadRoute = createRoute({
   tags: ["materials"],
   method: "post",
-  path: "/api/spaces/{spaceId}/materials/uploads/complete",
+  path: "/api/materials/uploads/complete",
   summary: "R2 업로드 완료 처리",
   description:
     "R2에 파일 업로드 완료 후 자료 분석을 시작합니다. 비동기 처리 시 `jobId`를 반환합니다.",
   request: {
-    params: z.object({ spaceId: PublicIdSchema }),
     body: {
       content: {
         "application/json": {

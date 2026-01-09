@@ -9,7 +9,6 @@ import { chatRoutes } from "./modules/chat/routes";
 import { materialRoutes } from "./modules/materials/routes";
 import { planRoutes } from "./modules/plans/routes";
 import { sessionRoutes } from "./modules/sessions/routes";
-import { spaceRoutes } from "./modules/spaces/routes";
 
 const registry = new OpenAPIRegistry();
 
@@ -29,7 +28,6 @@ const ensureInitialized = () => {
 
   const routes = [
     ...authRoutes,
-    ...spaceRoutes,
     ...materialRoutes,
     ...planRoutes,
     ...sessionRoutes,

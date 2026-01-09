@@ -10,6 +10,8 @@ import {
   PlanDetailResponseSchema,
   PlanListResponseSchema,
   PlanStatusSchema,
+  UpdatePlanRequestSchema,
+  UpdatePlanResponseSchema,
   UpdatePlanStatusRequestSchema,
   UpdatePlanStatusResponseSchema,
 } from "./schema";
@@ -17,12 +19,11 @@ import {
 export const listPlansRoute = createRoute({
   tags: ["plans"],
   method: "get",
-  path: "/api/spaces/{spaceId}/plans",
+  path: "/api/plans",
   summary: "Plan 목록 조회",
   description:
-    "학습 공간의 학습 계획 목록을 조회합니다.\n\n**필터링**: `status`별 조회 가능",
+    "사용자의 학습 계획 목록을 조회합니다.\n\n**필터링**: `status`별 조회 가능",
   request: {
-    params: z.object({ spaceId: PublicIdSchema }),
     query: z.object({
       page: z.coerce.number().int().min(1).default(1).optional(),
       limit: z.coerce.number().int().min(1).max(100).default(20).optional(),
@@ -68,12 +69,11 @@ export const getPlanDetailRoute = createRoute({
 export const createPlanRoute = createRoute({
   tags: ["plans"],
   method: "post",
-  path: "/api/spaces/{spaceId}/plans",
+  path: "/api/plans",
   summary: "Plan 생성",
   description:
     "AI가 자료를 분석하여 학습 계획을 생성합니다. 세션과 복습 일정이 자동 생성됩니다.",
   request: {
-    params: z.object({ spaceId: PublicIdSchema }),
     body: {
       content: { "application/json": { schema: CreatePlanRequestSchema } },
     },
@@ -82,6 +82,35 @@ export const createPlanRoute = createRoute({
     201: {
       description: "Plan이 생성되었습니다.",
       content: { "application/json": { schema: CreatePlanResponseSchema } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
+export const updatePlanRoute = createRoute({
+  tags: ["plans"],
+  method: "patch",
+  path: "/api/plans/{planId}",
+  summary: "Plan 수정",
+  description: "학습 계획의 제목, 아이콘, 색상 등을 수정합니다.",
+  request: {
+    params: z.object({ planId: PublicIdSchema }),
+    body: {
+      content: {
+        "application/json": { schema: UpdatePlanRequestSchema },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "Plan이 수정되었습니다.",
+      content: {
+        "application/json": { schema: UpdatePlanResponseSchema },
+      },
     },
     default: {
       description: "에러 응답",
@@ -170,6 +199,7 @@ export const planRoutes = [
   listPlansRoute,
   getPlanDetailRoute,
   createPlanRoute,
+  updatePlanRoute,
   updatePlanStatusRoute,
   activatePlanRoute,
   deletePlanRoute,
