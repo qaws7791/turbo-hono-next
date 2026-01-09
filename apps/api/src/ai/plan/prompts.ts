@@ -18,10 +18,9 @@ const LEVEL_CONSIDERATIONS: Record<PlanLevel, string> = {
   BEGINNER: `
 - 기초 개념부터 차근차근 설명
 - 전문 용어는 쉬운 설명과 함께 제공
-- 실습보다 이해 위주의 학습 권장
-- 충분한 복습 시간 배분`,
+- 실습보다 이해 위주의 학습 권장`,
   INTERMEDIATE: `
-- 기본 개념은 간략히 복습
+- 기본 개념은 간략히 확인
 - 실습과 응용에 더 많은 시간 배분
 - 심화 개념으로의 연결 고리 제공
 - 실제 사례 기반 학습 권장`,
@@ -40,12 +39,10 @@ export function buildSystemPrompt(): string {
 1. 학습 자료 내용을 깊이 이해하고 핵심 개념을 파악합니다.
 2. 사용자의 현재 수준에 맞게 난이도를 조절합니다.
 3. 학습 목표를 고려하여 효과적인 커리큘럼을 설계합니다.
-4. 망각 곡선을 고려한 복습 일정을 포함합니다.
 
 ## 규칙
 - 각 세션은 25~50분 단위로 구성합니다.
 - 하루에 1~3개의 세션을 배치합니다.
-- 학습(LEARN) 세션과 복습(REVIEW) 세션을 적절히 배합합니다.
 - 모든 응답은 한국어로 작성합니다.
 - 세션 목표(objective)는 구체적이고 측정 가능하게 작성합니다.`;
 }
@@ -127,7 +124,7 @@ ${materialsSection}
 
 ### JSON 필드 설명
 - modules.materialIndex: 0부터 시작하는 자료 인덱스 (자료 순서 그대로)
-- sessions.sessionType: "LEARN" (학습) 또는 "REVIEW" (복습)
+- sessions.sessionType: "LEARN" (학습)
 - sessions.dayOffset: 오늘(0)부터 시작하는 일 수
 - sessions.moduleIndex: 해당 세션이 속한 모듈의 인덱스
 

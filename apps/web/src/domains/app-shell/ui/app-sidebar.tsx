@@ -54,7 +54,7 @@ export function AppSidebar({
               render={<NavLink to="/today" />}
             >
               <IconCalendar />
-              <span className="font-medium">오늘 할 일</span>
+              <span className="font-medium">오늘의 세션</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

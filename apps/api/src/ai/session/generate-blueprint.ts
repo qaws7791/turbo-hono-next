@@ -9,7 +9,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export async function generateSessionBlueprintWithAi(input: {
-  readonly sessionType: "LEARN" | "REVIEW";
+  readonly sessionType: "LEARN";
   readonly planTitle: string;
   readonly moduleTitle: string;
   readonly sessionTitle: string;

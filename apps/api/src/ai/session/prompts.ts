@@ -17,7 +17,7 @@ export function buildSystemPrompt(): string {
 }
 
 export function buildUserPrompt(params: {
-  readonly sessionType: "LEARN" | "REVIEW";
+  readonly sessionType: "LEARN";
   readonly planTitle: string;
   readonly moduleTitle: string;
   readonly sessionTitle: string;
@@ -44,7 +44,7 @@ ${templateJson}
 위 템플릿을 기반으로 다음을 수행하세요.
 - steps 내 텍스트(learningGoals/questionsToCover/content/question/options/explanation/scenario/feedback/encouragement/keyTakeaways/nextSessionPreview 등)를 세션 정보에 맞게 구체화합니다.
 - 템플릿에 이미 포함된 자료 발췌가 있다면, 그 내용을 우선하여 설명/문항/예시를 구성합니다.
-- REVIEW 세션이면 회상/오답 유도 방지/핵심 복기 중심으로, LEARN 세션이면 개념 이해→확인→적용 흐름으로 구성합니다.
+- 개념 이해→확인→적용 흐름으로 구성합니다.
 
 중요: 반드시 JSON만 반환하세요.`;
 }

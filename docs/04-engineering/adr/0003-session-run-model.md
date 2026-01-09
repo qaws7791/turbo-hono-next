@@ -32,7 +32,7 @@ plan_sessions (스케줄)
 ├── id
 ├── plan_id
 ├── module_id
-├── session_type (LEARN / REVIEW)
+├── session_type (LEARN)
 ├── scheduled_for_date
 ├── status (SCHEDULED / IN_PROGRESS / COMPLETED / SKIPPED)
 └── ...

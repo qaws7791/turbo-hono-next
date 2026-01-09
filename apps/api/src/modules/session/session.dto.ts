@@ -4,7 +4,7 @@ import { isPublicId } from "../../lib/public-id";
 
 const PublicIdSchema = z.string().refine(isPublicId, "Invalid public id");
 
-export const PlanSessionTypeSchema = z.enum(["LEARN", "REVIEW"]);
+export const PlanSessionTypeSchema = z.enum(["LEARN"]);
 export type PlanSessionType = z.infer<typeof PlanSessionTypeSchema>;
 
 export const PlanSessionStatusSchema = z.enum([
@@ -397,7 +397,6 @@ export const SessionRunDetailResponse = z.object({
       .object({
         id: z.string().uuid(),
         summaryMd: z.string().min(1),
-        reviewsScheduledCount: z.number().int().nonnegative(),
         createdAt: z.string().datetime(),
       })
       .nullable(),
@@ -429,7 +428,6 @@ export const SessionRunListItem = z.object({
   summary: z
     .object({
       id: z.string().uuid(),
-      reviewsScheduledCount: z.number().int().nonnegative(),
       createdAt: z.string().datetime(),
     })
     .nullable(),

@@ -33,8 +33,7 @@ function mapApiBlueprintToUiBlueprint(
       planId: detail.session.plan.id,
       moduleId,
       planSessionId: detail.session.sessionId,
-      sessionType:
-        detail.session.sessionType === "REVIEW" ? "review" : "session",
+      sessionType: "session",
     },
     timeBudget: {
       targetMinutes: detail.session.estimatedMinutes,

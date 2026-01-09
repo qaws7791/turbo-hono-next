@@ -36,7 +36,7 @@ export type MaterialContext = {
  * AI가 생성한 개별 세션 정보
  */
 export type GeneratedSession = {
-  readonly sessionType: "LEARN" | "REVIEW";
+  readonly sessionType: "LEARN";
   readonly title: string;
   readonly objective: string;
   readonly estimatedMinutes: number;

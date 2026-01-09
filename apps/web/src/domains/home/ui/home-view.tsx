@@ -1,4 +1,3 @@
-import { Badge } from "@repo/ui/badge";
 import { Button } from "@repo/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui/card";
 import { Progress } from "@repo/ui/progress";
@@ -23,17 +22,6 @@ import { homeQueries } from "~/domains/home/home.queries";
 import { getColorByName, getIconByName } from "~/foundation/lib/icon-color";
 import { formatLongDateTime, formatShortDate } from "~/foundation/lib/time";
 
-function QueueTypeBadge({ type }: { type: "session" | "review" }) {
-  return (
-    <Badge variant={type === "session" ? "default" : "secondary"}>
-      {type === "session" ? "세션" : "복습"}
-    </Badge>
-  );
-}
-
-/**
- * 시간대에 따른 인사 메시지 반환
- */
 function getGreetingMessage(): string {
   const hour = new Date().getHours();
   if (hour >= 5 && hour < 12) {
@@ -70,7 +58,7 @@ export function HomeView() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="font-medium text-muted-foreground">
-                남은 할 일
+                남은 세션
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -92,9 +80,7 @@ export function HomeView() {
               <div className="text-2xl font-semibold">
                 {stats.completedCountToday}
               </div>
-              <div className="text-muted-foreground text-xs">
-                세션/복습 합산
-              </div>
+              <div className="text-muted-foreground text-xs">완료한 세션</div>
             </CardContent>
           </Card>
           <Card>
@@ -118,7 +104,7 @@ export function HomeView() {
         <section>
           <div className="flex items-center justify-between">
             <div className="flex items-baseline gap-2">
-              <h2 className="text-xl font-semibold">할 일</h2>
+              <h2 className="text-xl font-semibold">세션</h2>
               {queue.summary.total > 0 && (
                 <span className="text-lg text-muted-foreground font-medium">
                   {queue.summary.total}
@@ -139,7 +125,7 @@ export function HomeView() {
           <div className="mt-4">
             {queue.summary.total === 0 ? (
               <div className="text-muted-foreground space-y-2 text-sm">
-                <p>오늘 할 일이 없습니다.</p>
+                <p>오늘의 세션이 없습니다.</p>
                 <p>학습 자료를 업로드하고 학습 계획을 생성해보세요.</p>
                 <Button render={<Link to="/plans" />}>학습 계획으로</Button>
               </div>
@@ -157,18 +143,13 @@ export function HomeView() {
                       <Card className="hover:bg-muted h-full">
                         <CardContent className="h-full flex flex-col justify-between">
                           <div>
-                            {/* 유형 배지 */}
-                            <div>
-                              <QueueTypeBadge type={item.type} />
-                            </div>
                             {/* 세션 제목 및 계획 정보 */}
-                            <div className="mt-4">
-                              <span className="font-semibold block text-base">
-                                {item.sessionTitle}
-                              </span>
-                              <div className="text-muted-foreground text-sm">
-                                {item.planTitle} · {item.durationMinutes}분
-                              </div>
+
+                            <span className="font-semibold block text-base">
+                              {item.sessionTitle}
+                            </span>
+                            <div className="text-muted-foreground text-sm">
+                              {item.planTitle} · {item.durationMinutes}분
                             </div>
                           </div>
 

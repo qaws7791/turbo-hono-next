@@ -47,9 +47,9 @@ interface SettingsState {
   dndEnabled: boolean;
   dndStart: string;
   dndEnd: string;
+
   // Learning
   sessionLength: string;
-  reviewIntensity: string;
   ariStyle: string;
   autoAdaptDifficulty: boolean;
   // Data
@@ -71,7 +71,6 @@ const defaultSettings: SettingsState = {
   dndStart: "22:00",
   dndEnd: "08:00",
   sessionLength: "25",
-  reviewIntensity: "medium",
   ariStyle: "coach",
   autoAdaptDifficulty: true,
   retentionPolicy: "forever",
@@ -92,15 +91,6 @@ function getSessionLengthLabel(value: string): string {
     "15": "15분",
     "25": "25분",
     "40": "40분",
-  };
-  return labels[value] ?? value;
-}
-
-function getReviewIntensityLabel(value: string): string {
-  const labels: Record<string, string> = {
-    low: "낮음",
-    medium: "중간",
-    high: "높음",
   };
   return labels[value] ?? value;
 }
@@ -545,27 +535,6 @@ function LearningSettings({
             <SelectItem value="15">15분</SelectItem>
             <SelectItem value="25">25분</SelectItem>
             <SelectItem value="40">40분</SelectItem>
-          </SelectContent>
-        </Select>
-      </SettingRow>
-
-      <SettingRow
-        title="복습 강도"
-        description="복습 빈도와 깊이를 조절합니다."
-      >
-        <Select
-          value={settings.reviewIntensity}
-          onValueChange={(val) => val && updateSetting("reviewIntensity", val)}
-        >
-          <SelectTrigger className="w-24">
-            <SelectValue>
-              {getReviewIntensityLabel(settings.reviewIntensity)}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="low">낮음</SelectItem>
-            <SelectItem value="medium">중간</SelectItem>
-            <SelectItem value="high">높음</SelectItem>
           </SelectContent>
         </Select>
       </SettingRow>

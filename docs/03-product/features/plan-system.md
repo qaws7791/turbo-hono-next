@@ -98,15 +98,10 @@ Plan 생성 시 AI가 자동으로 Session 스케줄 생성:
 ### Session 구성
 
 - 예정일 (`scheduledDate`)
-- 유형 (`type`): 학습 / 복습
+- 유형 (`type`): 학습
 - 예상 시간 (`duration`)
 - 모듈 ID (`moduleId`)
 - 세션 제목 (`title`)
-
-### 복습 자동 포함
-
-- Spaced Repetition 알고리즘 기반
-- 자동으로 복습 세션 배치
 
 ---
 

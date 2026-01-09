@@ -61,7 +61,6 @@ export async function listSessionRuns(
           summary: row.summary
             ? {
                 id: row.summary.id,
-                reviewsScheduledCount: row.summary.reviewsScheduledCount,
                 createdAt: isoDateTime(row.summary.createdAt),
               }
             : null,

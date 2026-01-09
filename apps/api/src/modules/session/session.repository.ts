@@ -455,7 +455,6 @@ export const sessionRepository = {
       summary: {
         id: string;
         summaryMd: string;
-        reviewsScheduledCount: number;
         createdAt: Date;
       } | null;
     } | null,
@@ -494,7 +493,6 @@ export const sessionRepository = {
           summary: {
             id: sessionSummaries.id,
             summaryMd: sessionSummaries.summaryMd,
-            reviewsScheduledCount: sessionSummaries.reviewsScheduledCount,
             createdAt: sessionSummaries.createdAt,
           },
         })
@@ -695,7 +693,6 @@ export const sessionRepository = {
       planColor: string;
       summary: {
         id: string;
-        reviewsScheduledCount: number;
         createdAt: Date;
       } | null;
     }>,
@@ -725,7 +722,6 @@ export const sessionRepository = {
           planIcon: plans.icon,
           planColor: plans.color,
           summaryId: sessionSummaries.id,
-          reviewsScheduledCount: sessionSummaries.reviewsScheduledCount,
           summaryCreatedAt: sessionSummaries.createdAt,
         })
         .from(sessionRuns)
@@ -756,7 +752,6 @@ export const sessionRepository = {
         summary: row.summaryId
           ? {
               id: row.summaryId,
-              reviewsScheduledCount: row.reviewsScheduledCount ?? 0,
               createdAt: row.summaryCreatedAt ?? row.startedAt,
             }
           : null,
@@ -885,7 +880,6 @@ export const sessionRepository = {
           id: summaryId,
           sessionRunId: params.run.id,
           summaryMd,
-          reviewsScheduledCount: 0,
           createdAt: params.now,
         });
       });

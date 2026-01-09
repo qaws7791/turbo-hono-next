@@ -1,7 +1,7 @@
 export type PlanStatus = "active" | "paused" | "archived";
 export type PlanGoal = "career" | "certificate" | "work" | "hobby";
 export type PlanLevel = "novice" | "basic" | "intermediate" | "advanced";
-export type PlanSessionType = "session" | "review";
+export type PlanSessionType = "session";
 export type PlanSessionStatus = "todo" | "in_progress" | "completed";
 
 export type PlanSession = {

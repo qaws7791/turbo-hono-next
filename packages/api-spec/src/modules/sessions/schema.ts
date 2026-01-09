@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi";
 
 import { PublicIdSchema } from "../../common/schema";
 
-export const PlanSessionTypeSchema = z.enum(["LEARN", "REVIEW"]);
+export const PlanSessionTypeSchema = z.enum(["LEARN"]);
 export const PlanSessionStatusSchema = z.enum([
   "SCHEDULED",
   "IN_PROGRESS",
@@ -290,7 +290,6 @@ export const SessionRunDetailResponseSchema = z.object({
       .object({
         id: z.uuid(),
         summaryMd: z.string().min(1),
-        reviewsScheduledCount: z.number().int().nonnegative(),
         createdAt: z.iso.datetime(),
       })
       .nullable(),
@@ -320,7 +319,6 @@ export const SessionRunListItemSchema = z.object({
   summary: z
     .object({
       id: z.uuid(),
-      reviewsScheduledCount: z.number().int().nonnegative(),
       createdAt: z.iso.datetime(),
     })
     .nullable(),

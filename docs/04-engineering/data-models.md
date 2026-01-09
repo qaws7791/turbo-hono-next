@@ -5,9 +5,9 @@
 이 문서는 AI 개인화 학습 플랫폼(Learning OS)의 **전체 기능을 빠짐없이 구현**할 수 있도록,
 도메인 엔티티와 관계, 스키마 설계 원칙을 정의합니다.
 
-- **Document(=Material)**: 업로드/입력된 학습 자료 (User 전역 공유)
+- **Material**: 업로드/입력된 학습 자료 (User 전역 공유)
 - **Plan**: 학습 자료 기반의 학습 실행 단위 (Icon, Color 등 UI 속성 포함)
-- **Module / Session**: 커리큘럼과 일일 실행 단위(학습/복습)
+- **Module / Session**: 커리큘럼과 일일 실행 단위(학습)
 - **AI Chat**: Plan/Session 범위의 대화 및 근거(청크) 인용
 - **Zombie Data(좀비 데이터)**: `deleted_at` 기반 소프트 삭제 + GC(가비지 컬렉션)
 
@@ -20,9 +20,9 @@
 - 모든 핵심 데이터는 `user_id`를 통해 소유권을 명확히 합니다.
 - 기존의 Space(학습 공간) 개념은 제거되었으며, 모든 Materials와 Plans는 사용자의 계정 내에서 전역적으로 관리됩니다.
 
-### 2) “Documents”는 UI 용어, DB는 `materials`
+### 2) “Materials”는 UI/DB 공통 용어
 
-- 제품 문서의 Documents(자료) = 엔지니어링/백엔드의 `materials` 테이블을 의미합니다.
+- 제품 전반에서 **Materials**라는 용어를 일관되게 사용합니다.
 
 ### 3) 소프트 삭제 기본값
 
@@ -228,6 +228,30 @@ erDiagram
 
 - 사용자당 **ACTIVE Plan 1개** 강제: `UNIQUE(user_id) WHERE status='ACTIVE'`
 
+## PLAN_SOURCE_MATERIALS
+
+Plan이 생성될 때 참조한 Material의 스냅샷 관계를 관리합니다.
+
+| 필드        | 타입        | 설명               |
+| ----------- | ----------- | ------------------ |
+| id          | uuid (PK)   | 관계 ID            |
+| plan_id     | uuid (FK)   | 대상 Plan          |
+| material_id | uuid (FK)   | 참조 Material      |
+| created_at  | timestamptz | 생성 (스냅샷 시점) |
+
+## PLAN_MODULES
+
+Plan 내부의 학습 대단위(모듈)를 정의합니다.
+
+| 필드        | 타입        | 설명      |
+| ----------- | ----------- | --------- |
+| id          | uuid (PK)   | 모듈 ID   |
+| plan_id     | uuid (FK)   | 대상 Plan |
+| title       | text        | 모듈 제목 |
+| description | text        | 모듈 설명 |
+| order_index | integer     | 순서      |
+| created_at  | timestamptz | 생성      |
+
 ---
 
 # 4. Curriculum: Modules & Sessions
@@ -238,7 +262,7 @@ erDiagram
 | ------------------ | ----------- | ---------------------------------------------------------- |
 | id                 | uuid (PK)   | Session ID                                                 |
 | plan_id            | uuid (FK)   | Plan                                                       |
-| session_type       | enum        | `LEARN / REVIEW`                                           |
+| session_type       | enum        | `LEARN`                                                    |
 | title              | text        | 예: `Session 1: useState`                                  |
 | scheduled_for_date | date        | “오늘 할 일” 기준일                                        |
 | status             | enum        | `SCHEDULED / IN_PROGRESS / COMPLETED / SKIPPED / CANCELED` |
@@ -275,6 +299,29 @@ erDiagram
 | scope_id   | uuid        | 해당 리소스 ID   |
 | created_at | timestamptz | 생성             |
 | updated_at | timestamptz | 수정             |
+
+## CHAT_MESSAGES
+
+| 필드       | 타입        | 설명                        |
+| ---------- | ----------- | --------------------------- |
+| id         | uuid (PK)   | 메시지 ID                   |
+| thread_id  | uuid (FK)   | 소속 스레드                 |
+| role       | enum        | `USER / ASSISTANT / SYSTEM` |
+| content    | text        | 메시지 본문                 |
+| created_at | timestamptz | 생성                        |
+
+## CHAT_CITATIONS
+
+메시지 답변의 근거가 된 문서 청크 인용 정보를 저장합니다.
+
+| 필드        | 타입        | 설명                      |
+| ----------- | ----------- | ------------------------- |
+| id          | uuid (PK)   | 인용 ID                   |
+| message_id  | uuid (FK)   | 해당 답변 메시지          |
+| material_id | uuid (FK)   | 근거 문서                 |
+| chunk_index | integer     | 청크 번호                 |
+| snippet     | text        | 인용된 텍스트 조각 (선택) |
+| created_at  | timestamptz | 생성                      |
 
 ---
 

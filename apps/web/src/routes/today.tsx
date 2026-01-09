@@ -2,7 +2,7 @@ import { TodayView, homeQueries } from "~/domains/home";
 import { queryClient } from "~/foundation/query-client";
 
 export function meta() {
-  return [{ title: "오늘 할 일" }];
+  return [{ title: "오늘의 세션" }];
 }
 
 export async function clientLoader() {

@@ -71,7 +71,7 @@ interface GeneratedPlan {
     description: string;
     sessions: {
       title: string;
-      type: "LEARN" | "REVIEW";
+      type: "LEARN";
       estimatedMinutes: number;
       scheduledForDate: string;
     }[];

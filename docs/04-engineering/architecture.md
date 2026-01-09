@@ -21,8 +21,8 @@
 
 ### 1.2. 핵심 도메인 용어 정리
 
-- **Document(문서)**: 사용자가 업로드한 학습 자료. (백엔드 리소스명으로는 `Material`을 사용해 `/materials` 등으로 노출됨)
-- **Plan**: 선택된 Document 스냅샷 기반의 학습 실행 단위 (Icon, Color 등 UI 속성 포함)
+- **Material(학습 자료)**: 사용자가 업로드하거나 입력한 모든 학습 소스.
+- **Plan**: 선택된 Material 스냅샷 기반의 학습 실행 단위 (Icon, Color 등 UI 속성 포함)
 - **Session**: Plan 내부의 몰입형 학습 단위(20~40분)
 
 ---
@@ -51,7 +51,7 @@ flowchart LR
 
   subgraph X[External]
     OAIE[OpenAI Embeddings API]
-    OAIL[OpenAI LLM API]
+    OAIL[OpenAI GPT-5-mini API]
   end
 
   B --> FE --> API
@@ -161,7 +161,7 @@ flowchart TB
 
 ## 4. 핵심 데이터/AI 흐름
 
-## 4.1. Document 업로드 및 인덱싱(ingestion)
+## 4.1. Material(Document) 업로드 및 인덱싱(ingestion)
 
 목표: 사용자가 업로드한 문서를 **R2에 저장**하고, 검색 가능한 형태로 **청크 + 임베딩 + 벡터 저장(pgvector)** 까지 완료합니다.
 

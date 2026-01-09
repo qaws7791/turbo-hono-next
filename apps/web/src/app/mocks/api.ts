@@ -406,8 +406,6 @@ export function createPlan(input: {
 
   const session1Id = randomPublicId();
   const session2Id = randomPublicId();
-  const session3Id = randomPublicId();
-  const session4Id = randomPublicId();
 
   const planTitle = input.title || materials[0]?.title || "새 학습 계획";
 
@@ -421,41 +419,17 @@ export function createPlan(input: {
     sessionTitle: "Session 1: 핵심 개념",
     targetMinutes: 30,
     level,
-    nextSessionTitle: "Review 1: 개념 점검",
+    nextSessionTitle: "Session 2: 적용 연습",
   });
   const blueprint2 = createSessionBlueprint({
     planId,
-    moduleId: module1Id,
-    planSessionId: session2Id,
-    sessionType: "review",
-    planTitle,
-    moduleTitle: module1Title,
-    sessionTitle: "Review 1: 개념 점검",
-    targetMinutes: 15,
-    level,
-    nextSessionTitle: "Session 2: 적용 연습",
-  });
-  const blueprint3 = createSessionBlueprint({
-    planId,
     moduleId: module2Id,
-    planSessionId: session3Id,
+    planSessionId: session2Id,
     sessionType: "session",
     planTitle,
     moduleTitle: module2Title,
     sessionTitle: "Session 2: 적용 연습",
     targetMinutes: 30,
-    level,
-    nextSessionTitle: "Review 2: 회고",
-  });
-  const blueprint4 = createSessionBlueprint({
-    planId,
-    moduleId: module2Id,
-    planSessionId: session4Id,
-    sessionType: "review",
-    planTitle,
-    moduleTitle: module2Title,
-    sessionTitle: "Review 2: 회고",
-    targetMinutes: 15,
     level,
   });
 
@@ -486,41 +460,21 @@ export function createPlan(input: {
             durationMinutes: 30,
             status: "todo",
           },
-          {
-            id: session2Id,
-            moduleId: module1Id,
-            blueprintId: blueprint2.blueprintId,
-            title: "Review 1: 개념 점검",
-            type: "review",
-            scheduledDate: schedule[1],
-            durationMinutes: 15,
-            status: "todo",
-          },
         ],
       },
       {
         id: module2Id,
         title: module2Title,
-        summary: "적용과 복습으로 장기 기억을 강화합니다.",
+        summary: "개념을 실제 사례에 적용하며 깊이 이해합니다.",
         sessions: [
           {
-            id: session3Id,
+            id: session2Id,
             moduleId: module2Id,
-            blueprintId: blueprint3.blueprintId,
+            blueprintId: blueprint2.blueprintId,
             title: "Session 2: 적용 연습",
             type: "session",
-            scheduledDate: schedule[2],
+            scheduledDate: schedule[1],
             durationMinutes: 30,
-            status: "todo",
-          },
-          {
-            id: session4Id,
-            moduleId: module2Id,
-            blueprintId: blueprint4.blueprintId,
-            title: "Review 2: 회고",
-            type: "review",
-            scheduledDate: schedule[3],
-            durationMinutes: 15,
             status: "todo",
           },
         ],
@@ -528,7 +482,7 @@ export function createPlan(input: {
     ],
   };
 
-  db.sessionBlueprints.unshift(blueprint1, blueprint2, blueprint3, blueprint4);
+  db.sessionBlueprints.unshift(blueprint1, blueprint2);
   db.plans.unshift(plan);
 
   // 다른 플랜들 비활성화

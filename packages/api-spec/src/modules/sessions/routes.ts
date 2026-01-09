@@ -28,8 +28,7 @@ export const homeQueueRoute = createRoute({
   method: "get",
   path: "/api/home/queue",
   summary: "오늘 할 일 큐 조회",
-  description:
-    "오늘 학습해야 할 세션 목록을 조회합니다. 복습 예정 개념을 포함합니다.",
+  description: "오늘 학습해야 할 세션 목록을 조회합니다.",
   responses: {
     200: {
       description: "오늘 예정된 세션을 반환합니다.",

@@ -8,7 +8,7 @@
   04 문서들의 범위/우선순위, MVP 스코프(동기/비동기 전환 기준 포함), “결정해야 하는 것” 체크리스트를 요약.
 
 - **`04-engineering/decision-log.md`**
-  핵심 기술 의사결정 기록(예: Plan 스냅샷 방식, RAG 스코프 규칙, 청크 정책, 세션 복구 방식, SRS 파라미터 등)과 변경 이력.
+  핵심 기술 의사결정 기록(예: Plan 스냅샷 방식, RAG 스코프 규칙, 청크 정책, 세션 복구 방식 등)과 변경 이력.
 
 - **`04-engineering/glossary-engineering.md`**
   엔지니어링 전용 용어(ingestion, chunk, citation, session-run, idempotency 등) 정의.
@@ -86,8 +86,8 @@
 - **`04-engineering/backend/session-engine.md`**
   세션 진행 상태 머신(스텝 전이, 체크인/활동 기록), 중간 저장/복구, 동시성/중복 호출 방지.
 
-- **`04-engineering/backend/personalization-srs.md`**
-  SRS 알고리즘(파라미터, rating→interval 규칙), due_at 계산, 복습 세션 편성 로직.
+- **`04-engineering/backend/personalization-engine.md`**
+  세션 개인화, 난이도 적응 로직.
 
 - **`04-engineering/backend/background-jobs.md`**
   비동기 전환 시 잡 모델(status/progress), 큐/워커 구성, 재시도/데드레터 정책.

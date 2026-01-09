@@ -16,7 +16,7 @@ export type HomeQueueSessionItem = {
   planColor: string;
   moduleTitle: string;
   sessionTitle: string;
-  type: "session" | "review";
+  type: "session";
   status: "todo" | "in_progress" | "completed";
   scheduledDate: string;
   durationMinutes: number;

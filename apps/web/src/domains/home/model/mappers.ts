@@ -23,8 +23,9 @@ export function mapSessionStatus(
   return "todo";
 }
 
-export function mapSessionType(type: "LEARN" | "REVIEW"): "session" | "review" {
-  return type === "REVIEW" ? "review" : "session";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function mapSessionType(_type: "LEARN"): "session" {
+  return "session";
 }
 
 export function isoDateFromMaybeDateTime(value: string | null): string {

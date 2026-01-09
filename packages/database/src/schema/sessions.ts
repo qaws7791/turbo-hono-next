@@ -155,9 +155,6 @@ export const sessionSummaries = pgTable(
       .notNull()
       .references(() => sessionRuns.id, { onDelete: "cascade" }),
     summaryMd: text("summary_md").notNull(),
-    reviewsScheduledCount: integer("reviews_scheduled_count")
-      .notNull()
-      .default(0),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .$defaultFn(() => new Date())
       .notNull(),

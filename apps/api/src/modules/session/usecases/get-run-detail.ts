@@ -178,7 +178,6 @@ export async function getRunDetail(
           ? {
               id: detail.summary.id,
               summaryMd: detail.summary.summaryMd,
-              reviewsScheduledCount: detail.summary.reviewsScheduledCount,
               createdAt: isoDateTime(detail.summary.createdAt),
             }
           : null,

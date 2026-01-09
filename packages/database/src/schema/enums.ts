@@ -65,10 +65,7 @@ export const planStatusEnum = pgEnum("plan_status", [
   "COMPLETED",
 ]);
 
-export const planSessionTypeEnum = pgEnum("plan_session_type", [
-  "LEARN",
-  "REVIEW",
-]);
+export const planSessionTypeEnum = pgEnum("plan_session_type", ["LEARN"]);
 export const planSessionStatusEnum = pgEnum("plan_session_status", [
   "SCHEDULED",
   "IN_PROGRESS",

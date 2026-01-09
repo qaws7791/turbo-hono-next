@@ -35,13 +35,12 @@ AI가 학습 전 과정을 자동으로 설계·운영하는 **개인 학습 운
 - [로그인](./03-product/pages/login.md)
 - [홈 (Home)](./03-product/pages/home.md)
 - [오늘 할 일 (Today)](./03-product/pages/today.md)
-- [Documents](./03-product/pages/documents.md)
+- [Materials (자료 관리)](./03-product/pages/materials.md)
 - [Plans](./03-product/pages/plans.md)
 - [Plan 생성 위저드](./03-product/pages/plan-creation-wizard.md)
 - [Plan 상세](./03-product/pages/plan-detail.md)
 - [학습 세션](./03-product/pages/learning-session.md)
-- [세션 요약](./03-product/pages/session-summary.md)
-- [설정](./03-product/pages/settings.md)
+- [설정 (다이얼로그)](./03-product/pages/settings.md)
 
 #### [기능별 기획](./03-product/features/)
 

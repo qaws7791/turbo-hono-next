@@ -69,7 +69,7 @@ export function LandingView() {
                 나머지는 AI가 합니다.
               </h1>
               <p className="text-muted-foreground text-base leading-relaxed">
-                목표를 말하고 자료를 올리면, AI가 경로를 설계하고 매일 할 일을
+                목표를 말하고 자료를 올리면, AI가 경로를 설계하고 매일 세션을
                 준비합니다. 당신은 매일 한 번만 “시작”을 누르면 됩니다.
               </p>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -105,7 +105,7 @@ export function LandingView() {
                 <div className="bg-muted h-28 rounded-xl" />
                 <div className="bg-muted h-28 rounded-xl" />
                 <p className="text-muted-foreground text-sm">
-                  홈에서 오늘 할 일을 확인하고, 세션은 풀스크린 모드에서 몰입해
+                  홈에서 오늘의 세션을 확인하고, 세션은 풀스크린 모드에서 몰입해
                   진행합니다.
                 </p>
               </CardContent>
@@ -122,8 +122,8 @@ export function LandingView() {
               { title: "무엇부터?", body: "자료는 많은데, 경로가 없습니다." },
               { title: "꾸준함", body: "매번 계획을 세우다 지칩니다." },
               {
-                title: "복습",
-                body: "기억이 사라지기 전에 챙기기 어렵습니다.",
+                title: "진행 추적",
+                body: "학습 진도를 한눈에 파악할 수 있습니다.",
               },
               { title: "정리", body: "노트 노동이 학습을 대체합니다." },
             ].map((item) => (
@@ -154,8 +154,8 @@ export function LandingView() {
                 body: "세션 내에서 자연스럽게 이해도를 확인하고 맞춤 힌트를 제공합니다.",
               },
               {
-                title: "복습 자동화",
-                body: "간격 반복 학습 기반으로 복습을 자동 스케줄링합니다.",
+                title: "진행 상황 대시보드",
+                body: "학습 진도와 달성률을 시각적으로 확인합니다.",
               },
               {
                 title: "지식 아카이브",
@@ -208,21 +208,17 @@ export function LandingView() {
 
         <Section
           title="과학적 근거"
-          subtitle="학습 과학의 4원리를 반영합니다."
+          subtitle="학습 과학의 원리를 반영합니다."
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            {["간격 반복 학습", "인지 부하 이론", "인출 연습", "지식 추적"].map(
-              (item) => (
-                <Card key={item}>
-                  <CardContent className="flex items-center justify-between p-6">
-                    <span className="font-medium">{item}</span>
-                    <span className="text-muted-foreground text-sm">
-                      적용됨
-                    </span>
-                  </CardContent>
-                </Card>
-              ),
-            )}
+          <div className="grid gap-4 md:grid-cols-3">
+            {["인지 부하 이론", "인출 연습", "지식 추적"].map((item) => (
+              <Card key={item}>
+                <CardContent className="flex items-center justify-between p-6">
+                  <span className="font-medium">{item}</span>
+                  <span className="text-muted-foreground text-sm">적용됨</span>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </Section>
 
@@ -290,13 +286,10 @@ export function LandingView() {
                 q: "자료를 업로드하면 학습 계획이 자동으로 바뀌나요?",
                 a: "아니요. 업로드는 저장/분석만 합니다. 학습 계획은 사용자가 명시적으로 생성합니다.",
               },
-              {
-                q: "복습은 어떻게 동작하나요?",
-                a: "간격 반복 학습 기반으로 복습 필요도를 계산해 큐에 반영합니다.",
-              },
+
               {
                 q: "세션 상세 페이지가 있나요?",
-                a: "별도의 세션 상세 페이지 대신, 세션 요약 카드와 개념 라이브러리로 복습합니다.",
+                a: "별도의 세션 상세 페이지 대신, 세션 요약 카드로 학습 내용을 확인합니다.",
               },
               {
                 q: "데이터는 안전한가요?",
@@ -328,7 +321,7 @@ export function LandingView() {
             <CardContent className="flex flex-col items-start justify-between gap-4 p-8 md:flex-row md:items-center">
               <div className="space-y-1">
                 <div className="text-xl font-semibold">
-                  오늘 할 일은 AI가 준비합니다
+                  오늘의 세션은 AI가 준비합니다
                 </div>
                 <div className="text-muted-foreground text-sm">
                   목표 말하기 → 자료 업로드 → 학습 계획 생성 → 매일 시작

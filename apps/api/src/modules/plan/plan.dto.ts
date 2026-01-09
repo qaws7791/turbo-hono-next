@@ -117,7 +117,7 @@ export const UpdatePlanResponse = z.object({
 export type UpdatePlanResponse = z.infer<typeof UpdatePlanResponse>;
 
 // Session 관련 Enum 스키마
-export const PlanSessionTypeSchema = z.enum(["LEARN", "REVIEW"]);
+export const PlanSessionTypeSchema = z.enum(["LEARN"]);
 export type PlanSessionType = z.infer<typeof PlanSessionTypeSchema>;
 
 export const PlanSessionStatusSchema = z.enum([

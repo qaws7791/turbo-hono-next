@@ -47,7 +47,7 @@
 - 4가지 핵심 기능:
   1. 자동 경로 설계
   2. 적응형 세션
-  3. 복습 자동화
+  3. 진행 상황 추적
   4. 지식 아카이브
 
 ### 6. How It Works
@@ -60,8 +60,7 @@
 
 ### 7. Science Backed
 
-- 4가지 러닝사이언스 원리:
-  - Spaced Repetition
+- 3가지 러닝사이언스 원리:
   - Cognitive Load Theory
   - Retrieval Practice
   - Knowledge Tracing

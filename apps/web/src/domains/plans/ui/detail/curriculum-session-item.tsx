@@ -34,7 +34,7 @@ export function CurriculumSessionItem({
           <div className="truncate text-sm font-medium">{session.title}</div>
           <div className="text-muted-foreground text-xs">
             {formatShortDate(session.scheduledDate)} · {session.durationMinutes}
-            분 · {session.type === "session" ? "세션" : "복습"}
+            분
           </div>
         </div>
         <div className="flex items-center gap-2">

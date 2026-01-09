@@ -49,8 +49,9 @@ export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
   return "archived";
 }
 
-export function mapSessionType(type: "LEARN" | "REVIEW"): PlanSessionType {
-  return type === "REVIEW" ? "review" : "session";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function mapSessionType(_type: "LEARN"): PlanSessionType {
+  return "session";
 }
 
 export function mapSessionStatus(

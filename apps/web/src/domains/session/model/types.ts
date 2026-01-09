@@ -119,7 +119,7 @@ export type SessionBlueprint = {
     planId: string;
     moduleId: string | null;
     planSessionId: string;
-    sessionType: "session" | "review";
+    sessionType: "session";
   };
   timeBudget: {
     targetMinutes: number;

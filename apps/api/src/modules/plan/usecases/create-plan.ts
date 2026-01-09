@@ -206,7 +206,7 @@ function buildFallbackPlan(params: {
   }));
 
   const sessions: Array<{
-    sessionType: "LEARN" | "REVIEW";
+    sessionType: "LEARN";
     title: string;
     objective: string;
     estimatedMinutes: number;
@@ -228,26 +228,6 @@ function buildFallbackPlan(params: {
       });
       dayOffset += 1;
     });
-  });
-
-  // 복습 세션 추가
-  sessions.push({
-    sessionType: "REVIEW",
-    title: "Review 1: 핵심 개념 복습",
-    objective: "학습한 핵심 개념들을 복습하고 이해도를 점검합니다.",
-    estimatedMinutes: 25,
-    dayOffset,
-    moduleIndex: modules.length - 1,
-  });
-  dayOffset += 1;
-
-  sessions.push({
-    sessionType: "REVIEW",
-    title: "Review 2: 최종 점검",
-    objective: "전체 학습 내용을 정리하고 목표 달성 여부를 확인합니다.",
-    estimatedMinutes: 25,
-    dayOffset,
-    moduleIndex: modules.length - 1,
   });
 
   return {

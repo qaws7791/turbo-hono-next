@@ -697,7 +697,7 @@ function FlashcardStep({
       {result ? (
         <div className="flex items-center justify-between p-4 rounded-xl bg-muted/30">
           <span className="text-sm">
-            {result === "know" ? "✅ 잘 알고 있어요!" : "📚 복습이 필요해요"}
+            {result === "know" ? "✅ 잘 알고 있어요!" : "📚 더 연습이 필요해요"}
           </span>
           <Button
             variant="ghost"

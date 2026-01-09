@@ -39,18 +39,14 @@ function seededDb(): Db {
   const module1Id = randomUuidV4();
   const module2Id = randomUuidV4();
   const session1Id = randomPublicId();
-  const session2Id = randomPublicId();
   const session3Id = randomPublicId();
-  const session4Id = randomPublicId();
 
   // Plan 2: TypeScript 마스터
   const plan2Id = randomPublicId();
   const plan2Module1Id = randomUuidV4();
   const plan2Module2Id = randomUuidV4();
   const plan2Session1Id = randomPublicId();
-  const plan2Session2Id = randomPublicId();
   const plan2Session3Id = randomPublicId();
-  const plan2Session4Id = randomPublicId();
 
   const today = todayIsoDate();
   const tomorrow = (() => {
@@ -77,18 +73,6 @@ function seededDb(): Db {
     sessionTitle: "Session 1: useState",
     targetMinutes: 30,
     level: "basic",
-    nextSessionTitle: "Review 1: State 업데이트 규칙",
-  });
-  const blueprint2 = createSessionBlueprint({
-    planId,
-    moduleId: module1Id,
-    planSessionId: session2Id,
-    sessionType: "review",
-    planTitle,
-    moduleTitle: module1Title,
-    sessionTitle: "Review 1: State 업데이트 규칙",
-    targetMinutes: 15,
-    level: "basic",
     nextSessionTitle: "Session 2: Suspense 기본",
   });
   const blueprint3 = createSessionBlueprint({
@@ -100,18 +84,6 @@ function seededDb(): Db {
     moduleTitle: module2Title,
     sessionTitle: "Session 2: Suspense 기본",
     targetMinutes: 30,
-    level: "basic",
-    nextSessionTitle: "Review 2: 에러 경계",
-  });
-  const blueprint4 = createSessionBlueprint({
-    planId,
-    moduleId: module2Id,
-    planSessionId: session4Id,
-    sessionType: "review",
-    planTitle,
-    moduleTitle: module2Title,
-    sessionTitle: "Review 2: 에러 경계",
-    targetMinutes: 15,
     level: "basic",
   });
 
@@ -130,18 +102,6 @@ function seededDb(): Db {
     sessionTitle: "Session 1: 기본 타입과 인터페이스",
     targetMinutes: 25,
     level: "basic",
-    nextSessionTitle: "Review 1: 타입 추론 연습",
-  });
-  const plan2Blueprint2 = createSessionBlueprint({
-    planId: plan2Id,
-    moduleId: plan2Module1Id,
-    planSessionId: plan2Session2Id,
-    sessionType: "review",
-    planTitle: plan2Title,
-    moduleTitle: plan2Module1Title,
-    sessionTitle: "Review 1: 타입 추론 연습",
-    targetMinutes: 15,
-    level: "basic",
     nextSessionTitle: "Session 2: 제네릭 입문",
   });
   const plan2Blueprint3 = createSessionBlueprint({
@@ -153,18 +113,6 @@ function seededDb(): Db {
     moduleTitle: plan2Module2Title,
     sessionTitle: "Session 2: 제네릭 입문",
     targetMinutes: 30,
-    level: "intermediate",
-    nextSessionTitle: "Review 2: 유틸리티 타입",
-  });
-  const plan2Blueprint4 = createSessionBlueprint({
-    planId: plan2Id,
-    moduleId: plan2Module2Id,
-    planSessionId: plan2Session4Id,
-    sessionType: "review",
-    planTitle: plan2Title,
-    moduleTitle: plan2Module2Title,
-    sessionTitle: "Review 2: 유틸리티 타입",
-    targetMinutes: 20,
     level: "intermediate",
   });
 
@@ -256,16 +204,6 @@ function seededDb(): Db {
                 durationMinutes: 30,
                 status: "todo",
               },
-              {
-                id: session2Id,
-                moduleId: module1Id,
-                blueprintId: blueprint2.blueprintId,
-                title: "Review 1: State 업데이트 규칙",
-                type: "review",
-                scheduledDate: today,
-                durationMinutes: 15,
-                status: "todo",
-              },
             ],
           },
           {
@@ -281,16 +219,6 @@ function seededDb(): Db {
                 type: "session",
                 scheduledDate: today,
                 durationMinutes: 30,
-                status: "todo",
-              },
-              {
-                id: session4Id,
-                moduleId: module2Id,
-                blueprintId: blueprint4.blueprintId,
-                title: "Review 2: 에러 경계",
-                type: "review",
-                scheduledDate: today,
-                durationMinutes: 15,
                 status: "todo",
               },
             ],
@@ -324,16 +252,6 @@ function seededDb(): Db {
                 durationMinutes: 25,
                 status: "todo",
               },
-              {
-                id: plan2Session2Id,
-                moduleId: plan2Module1Id,
-                blueprintId: plan2Blueprint2.blueprintId,
-                title: "Review 1: 타입 추론 연습",
-                type: "review",
-                scheduledDate: tomorrow,
-                durationMinutes: 15,
-                status: "todo",
-              },
             ],
           },
           {
@@ -351,16 +269,6 @@ function seededDb(): Db {
                 durationMinutes: 30,
                 status: "todo",
               },
-              {
-                id: plan2Session4Id,
-                moduleId: plan2Module2Id,
-                blueprintId: plan2Blueprint4.blueprintId,
-                title: "Review 2: 유틸리티 타입",
-                type: "review",
-                scheduledDate: tomorrow,
-                durationMinutes: 20,
-                status: "todo",
-              },
             ],
           },
         ],
@@ -368,13 +276,9 @@ function seededDb(): Db {
     ],
     sessionBlueprints: [
       blueprint1,
-      blueprint2,
       blueprint3,
-      blueprint4,
       plan2Blueprint1,
-      plan2Blueprint2,
       plan2Blueprint3,
-      plan2Blueprint4,
     ],
     sessionRuns: [],
   };

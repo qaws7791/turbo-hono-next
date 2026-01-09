@@ -225,8 +225,9 @@ function mapPlanLevel(
   return "BEGINNER";
 }
 
-function mapPlanSessionType(type: "session" | "review"): "LEARN" | "REVIEW" {
-  return type === "review" ? "REVIEW" : "LEARN";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function mapPlanSessionType(_type: "session"): "LEARN" {
+  return "LEARN";
 }
 
 function mapPlanSessionStatus(

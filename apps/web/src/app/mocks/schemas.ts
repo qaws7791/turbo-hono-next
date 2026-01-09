@@ -76,7 +76,7 @@ export const PlanLevelSchema = z.enum([
 ]);
 export type PlanLevel = z.infer<typeof PlanLevelSchema>;
 
-export const PlanSessionTypeSchema = z.enum(["session", "review"]);
+export const PlanSessionTypeSchema = z.enum(["session"]);
 export type PlanSessionType = z.infer<typeof PlanSessionTypeSchema>;
 
 export const PlanSessionStatusSchema = z.enum([
@@ -320,7 +320,6 @@ export const SessionTemplateCategorySchema = z.enum([
   "micro", // 3-7분 마이크로 세션
   "standard", // 15-25분 표준 세션
   "deep", // 30-60분 심화 세션
-  "review", // 복습 세션
   "assessment", // 평가 세션
 ]);
 export type SessionTemplateCategory = z.infer<

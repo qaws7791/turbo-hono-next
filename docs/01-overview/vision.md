@@ -42,7 +42,6 @@
 - **Learning Progressions**: 학습 진행 이론
 - **Cognitive Load Theory**: 인지 부하 이론
 - **Retrieval Practice**: 인출 연습
-- **Spaced Repetition**: 간격 반복
 - **Knowledge Tracing**: 지식 추적
 - **PKM (Personal Knowledge Management)**: 개인 지식 관리 (Second Brain/Atomic Notes)
 
@@ -64,6 +63,6 @@
 | ----------------------- | ------------------------------ |
 | 수십 개의 메뉴/페이지   | 핵심 화면 + 풀스크린 세션 모드 |
 | 사용자가 코스 구조 설계 | AI가 학습 경로 자동 생성       |
-| 수동 복습               | Spaced Repetition 자동화       |
+| 수동 복습               | AI 기반 맞춤형 학습            |
 | 콘텐츠 중심             | 학습 루프 중심                 |
 | "시험" 느낌의 진단      | 세션 내 자연스러운 이해도 체크 |

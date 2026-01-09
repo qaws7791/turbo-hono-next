@@ -30,7 +30,7 @@ const AiPlanResponseSchema = z.object({
   ),
   sessions: z.array(
     z.object({
-      sessionType: z.enum(["LEARN", "REVIEW"]),
+      sessionType: z.literal("LEARN"),
       title: z.string().min(1),
       objective: z.string().min(1),
       estimatedMinutes: z.number().int().min(5).max(120),

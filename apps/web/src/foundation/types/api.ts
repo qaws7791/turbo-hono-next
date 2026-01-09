@@ -1186,7 +1186,7 @@ export interface paths {
                   /** Format: uuid */
                   moduleId: string | null;
                   /** @enum {string} */
-                  sessionType: "LEARN" | "REVIEW";
+                  sessionType: "LEARN";
                   title: string;
                   objective: string | null;
                   orderIndex: number;
@@ -1539,7 +1539,7 @@ export interface paths {
                 moduleTitle: string;
                 sessionTitle: string;
                 /** @enum {string} */
-                sessionType: "LEARN" | "REVIEW";
+                sessionType: "LEARN";
                 estimatedMinutes: number;
                 /** @enum {string} */
                 status:
@@ -1825,7 +1825,7 @@ export interface paths {
                 sessionId: string;
                 sessionTitle: string;
                 /** @enum {string} */
-                sessionType: "LEARN" | "REVIEW";
+                sessionType: "LEARN";
                 planId: string;
                 planTitle: string;
                 planIcon: string;
@@ -1833,7 +1833,7 @@ export interface paths {
                 summary: {
                   /** Format: uuid */
                   id: string;
-                  reviewsScheduledCount: number;
+
                   /** Format: date-time */
                   createdAt: string;
                 } | null;
@@ -1927,7 +1927,7 @@ export interface paths {
                   title: string;
                   objective: string | null;
                   /** @enum {string} */
-                  sessionType: "LEARN" | "REVIEW";
+                  sessionType: "LEARN";
                   estimatedMinutes: number;
                   module: {
                     /** Format: uuid */
@@ -2114,7 +2114,7 @@ export interface paths {
                   /** Format: uuid */
                   id: string;
                   summaryMd: string;
-                  reviewsScheduledCount: number;
+
                   /** Format: date-time */
                   createdAt: string;
                 } | null;

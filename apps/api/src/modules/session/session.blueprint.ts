@@ -31,9 +31,6 @@ export function buildSessionBlueprint(
 }
 
 function buildSteps(input: BuildSessionBlueprintInput): Array<SessionStep> {
-  if (input.sessionType === "REVIEW") {
-    return buildReviewSteps(input);
-  }
   return buildLearnSteps(input);
 }
 
@@ -119,67 +116,6 @@ function buildLearnSteps(
         description: "이어서 난이도를 한 단계 올려봅니다.",
       },
       estimatedSeconds: 30,
-      intent: "WRAPUP",
-    },
-  ];
-}
-
-function buildReviewSteps(
-  input: BuildSessionBlueprintInput,
-): Array<SessionStep> {
-  return [
-    {
-      id: "session-intro",
-      type: "SESSION_INTRO",
-      planTitle: input.planTitle,
-      moduleTitle: input.moduleTitle,
-      sessionTitle: input.sessionTitle,
-      durationMinutes: input.estimatedMinutes,
-      difficulty: "beginner",
-      learningGoals: [
-        "핵심 정의를 빠르게 복기",
-        "실수하기 쉬운 포인트 점검",
-        "짧은 회상 테스트로 기억 강화",
-      ],
-      questionsToCover: [
-        "핵심 용어를 한 문장으로 설명할 수 있나요?",
-        "주의할 점 1가지를 말할 수 있나요?",
-        "언제/왜 쓰는지 사례를 떠올릴 수 있나요?",
-      ],
-      prerequisites: [],
-      estimatedSeconds: 20,
-      intent: "INTRO",
-    },
-    {
-      id: "flashcard-1",
-      type: "FLASHCARD",
-      front: `${input.sessionTitle}의 핵심 정의를 1문장으로 말해보세요.`,
-      back: `정답이 하나로 고정되기보다는, “정의 → 이유 → 예시” 순서로 설명해보는 것이 좋습니다.\n\n- 정의: 무엇인가?\n- 이유: 왜 필요한가?\n- 예시: 어디에 쓰는가?`,
-      estimatedSeconds: 45,
-      intent: "RETRIEVAL",
-    },
-    {
-      id: "speed-ox-1",
-      type: "SPEED_OX",
-      statement: `${input.sessionTitle}는(은) 맥락과 무관하게 항상 동일한 결과를 보장한다.`,
-      isTrue: false,
-      explanation:
-        "대부분의 개념은 ‘언제/어떤 조건에서’가 중요합니다. 맥락을 함께 기억하세요.",
-      estimatedSeconds: 30,
-      intent: "RETRIEVAL",
-    },
-    {
-      id: "session-summary",
-      type: "SESSION_SUMMARY",
-      celebrationEmoji: "✅",
-      encouragement: "복습 완료. 오늘 큐에서 다음 항목을 이어서 처리해보세요.",
-      completedActivities: ["플래시카드", "스피드 O/X"],
-      keyTakeaways: [
-        "정의를 빠르게 회상할 수 있다",
-        "과도한 일반화를 피한다",
-        "맥락(언제/왜)을 함께 기억한다",
-      ],
-      estimatedSeconds: 20,
       intent: "WRAPUP",
     },
   ];
