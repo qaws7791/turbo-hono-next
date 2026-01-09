@@ -41,7 +41,7 @@
     "./skeleton": "./src/ui/skeleton.tsx",
     "./sonner": "./src/ui/sonner.tsx",
     "./spinner": "./src/ui/spinner.tsx",
-    "./styles.css": "./dist/styles.css",
+    "./styles.css": "./src/styles.css",
     "./switch": "./src/ui/switch.tsx",
     "./table": "./src/ui/table.tsx",
     "./tab-nav": "./src/ui/tab-nav.tsx",
