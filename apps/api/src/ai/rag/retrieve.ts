@@ -131,3 +131,60 @@ export async function retrieveTopChunks(params: {
     })
     .filter((row) => row.content.trim().length > 0);
 }
+
+/**
+ * 특정 청크 범위의 내용을 검색 (chunkIndex 기준)
+ *
+ * 2단계 파이프라인에서 각 세션에 해당하는 청크만 조회할 때 사용
+ */
+export async function retrieveChunkRange(params: {
+  readonly userId: string;
+  readonly materialId: string;
+  readonly startIndex: number;
+  readonly endIndex: number;
+}): Promise<ReadonlyArray<RagSearchResult>> {
+  const store = await getVectorStoreForUser({ userId: params.userId });
+  const collectionId = await store.getOrCreateCollection();
+
+  // chunkIndex 범위로 직접 쿼리
+  const query = `
+    SELECT 
+      id,
+      content,
+      ${store.metadataColumnName} as metadata
+    FROM ${store.computedTableName}
+    WHERE collection_id = $1
+      AND ${store.metadataColumnName}->>'userId' = $2
+      AND ${store.metadataColumnName}->>'materialId' = $3
+      AND (${store.metadataColumnName}->>'chunkIndex')::int >= $4
+      AND (${store.metadataColumnName}->>'chunkIndex')::int <= $5
+    ORDER BY (${store.metadataColumnName}->>'chunkIndex')::int ASC
+  `;
+
+  const result = await store.pool.query(query, [
+    collectionId,
+    params.userId,
+    params.materialId,
+    params.startIndex,
+    params.endIndex,
+  ]);
+
+  return result.rows
+    .map((row) => {
+      const documentId = row.id;
+      if (!documentId) {
+        throw new ApiError(
+          500,
+          "RAG_RETRIEVE_FAILED",
+          "검색 결과의 문서 ID가 없습니다.",
+        );
+      }
+      return {
+        documentId: String(documentId),
+        content: String(row.content ?? ""),
+        metadata: parseRagMetadata(row.metadata),
+        distance: 0, // 범위 검색이므로 distance 없음
+      };
+    })
+    .filter((row) => row.content.trim().length > 0);
+}

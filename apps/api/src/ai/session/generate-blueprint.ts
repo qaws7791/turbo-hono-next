@@ -1,6 +1,6 @@
+import { CONFIG } from "../../lib/config";
 import { requireOpenAi } from "../../lib/openai";
 import { ApiError } from "../../middleware/error-handler";
-import { CONFIG } from "../../lib/config";
 
 import { buildSystemPrompt, buildUserPrompt } from "./prompts";
 
@@ -36,8 +36,6 @@ export async function generateSessionBlueprintWithAi(input: {
         }),
       },
     ],
-    temperature: 0.3,
-    max_tokens: 3000,
     response_format: { type: "json_object" },
   });
 

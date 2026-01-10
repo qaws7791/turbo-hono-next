@@ -1,6 +1,7 @@
 import { err, ok } from "neverthrow";
 
 import { generatePlanWithAi } from "../../../ai/plan/generate";
+import { logger } from "../../../lib/logger";
 import { generatePublicId } from "../../../lib/public-id";
 import { ApiError } from "../../../middleware/error-handler";
 import { CreatePlanInput, CreatePlanResponse } from "../plan.dto";
@@ -26,14 +27,14 @@ export async function createPlan(
     );
   }
   const validated = parseResult.data;
-
+  logger.info({ userId, validated }, "createPlan - validation");
   // 2. Material 조회
   const materialsResult = await planRepository.findMaterialsByIds(
     validated.materialIds,
   );
   if (materialsResult.isErr()) return err(materialsResult.error);
   const materialRows = materialsResult.value;
-
+  logger.info({ userId, materialRows }, "createPlan - material");
   // 3. Material 정렬 및 검증
   const byId = new Map(
     materialRows.map((material) => [material.id, material] as const),
@@ -44,7 +45,7 @@ export async function createPlan(
       (material): material is (typeof materialRows)[number] =>
         material !== undefined,
     );
-
+  logger.info({ userId, ordered }, "createPlan - material order");
   if (ordered.length !== validated.materialIds.length) {
     return err(
       new ApiError(
@@ -87,26 +88,21 @@ export async function createPlan(
   const startDate = parseDateOnly(new Date().toISOString().slice(0, 10));
   const icon = validated.icon ?? "target";
   const color = validated.color ?? "blue";
-
-  let aiPlan;
-  try {
-    aiPlan = await generatePlanWithAi({
-      userId,
-      materialIds: validated.materialIds,
-      goalType: validated.goalType,
-      currentLevel: validated.currentLevel,
-      targetDueDate,
-      specialRequirements: validated.specialRequirements ?? null,
-    });
-  } catch (error) {
-    // AI 생성 실패 시 폴백: 기본 템플릿 사용
-    console.error("AI plan generation failed, using fallback:", error);
-    aiPlan = buildFallbackPlan({
-      materials: ordered,
-      goalType: validated.goalType,
-    });
-  }
-
+  logger.info(
+    { userId, planPublicId, targetDueDate, startDate, icon, color },
+    "createPlan - aiPlan",
+  );
+  // AI를 통한 개인화된 학습 계획 생성 (폴백 없음 - 에러는 그대로 전파)
+  const aiPlan = await generatePlanWithAi({
+    userId,
+    materialIds: validated.materialIds,
+    goalType: validated.goalType,
+    currentLevel: validated.currentLevel,
+    targetDueDate,
+    specialRequirements: validated.specialRequirements ?? null,
+    requestedSessionCount: null, // TODO: API 스키마 확장 후 사용자 입력값 연결
+  });
+  logger.info({ userId, aiPlan }, "createPlan - aiPlan");
   // 5. AI 결과를 DB 형식으로 변환
   const moduleRows = aiPlan.modules.map((mod) => ({
     id: crypto.randomUUID(),
@@ -129,7 +125,10 @@ export async function createPlan(
     createdAt: now,
     updatedAt: now,
   }));
-
+  logger.info(
+    { userId, moduleRows, sessions },
+    "createPlan - moduleRows, sessions",
+  );
   // 6. Plan 트랜잭션 생성
   const createResult = await planRepository.createPlanTransaction({
     userId,
@@ -162,7 +161,7 @@ export async function createPlan(
     sessionRows: sessions.map((session) => ({ ...session, planId: 0 })),
   });
   if (createResult.isErr()) return err(createResult.error);
-
+  logger.info({ userId, createResult }, "createPlan - createResult");
   return ok(
     CreatePlanResponse.parse({
       data: {
@@ -176,64 +175,4 @@ export async function createPlan(
       },
     }),
   );
-}
-
-/**
- * AI 생성 실패 시 사용할 폴백 계획
- */
-function buildFallbackPlan(params: {
-  readonly materials: ReadonlyArray<{
-    readonly id: string;
-    readonly title: string | null;
-  }>;
-  readonly goalType: string;
-}) {
-  const goalLabels: Record<string, string> = {
-    JOB: "취업 준비",
-    CERT: "자격증 취득",
-    WORK: "업무 역량 강화",
-    HOBBY: "자기계발",
-    OTHER: "학습",
-  };
-
-  const title = `${goalLabels[params.goalType] ?? "학습"} 계획`;
-
-  const modules = params.materials.map((mat, idx) => ({
-    title: mat.title ?? `Module ${idx + 1}`,
-    description: `${mat.title ?? "자료"} 학습 모듈`,
-    orderIndex: idx,
-    materialId: mat.id,
-  }));
-
-  const sessions: Array<{
-    sessionType: "LEARN";
-    title: string;
-    objective: string;
-    estimatedMinutes: number;
-    dayOffset: number;
-    moduleIndex: number;
-  }> = [];
-
-  let dayOffset = 0;
-  modules.forEach((mod, modIdx) => {
-    const learnLabels = ["핵심 개념 정리", "심화 학습", "실습 및 정리"];
-    learnLabels.forEach((label, sessIdx) => {
-      sessions.push({
-        sessionType: "LEARN",
-        title: `Session ${sessIdx + 1}: ${label}`,
-        objective: `${mod.title}의 ${label.toLowerCase()}을 완료합니다.`,
-        estimatedMinutes: 30,
-        dayOffset,
-        moduleIndex: modIdx,
-      });
-      dayOffset += 1;
-    });
-  });
-
-  return {
-    title,
-    summary: `체계적인 학습 계획입니다.`,
-    modules,
-    sessions,
-  };
 }

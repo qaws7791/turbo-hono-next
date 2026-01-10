@@ -1,164 +1,106 @@
-import { z } from "zod";
+import { logger } from "../../lib/logger";
+import { getMaterialsChunkStats } from "../rag/stats";
 
-import { requireOpenAi } from "../../lib/openai";
-import { ApiError } from "../../middleware/error-handler";
-import { retrieveTopChunks } from "../rag/retrieve";
-
-import { buildSystemPrompt, buildUserPrompt } from "./prompts";
+import { populateAllSessions } from "./populate";
+import { generatePlanStructure } from "./structure";
 
 import type {
   GeneratePlanInput,
   GeneratePlanResult,
   GeneratedModule,
   GeneratedSession,
-  MaterialContext,
 } from "./types";
 
-/**
- * AI 응답 JSON 스키마
- */
-const AiPlanResponseSchema = z.object({
-  title: z.string().min(1),
-  summary: z.string().min(1),
-  modules: z.array(
-    z.object({
-      title: z.string().min(1),
-      description: z.string(),
-      orderIndex: z.number().int().nonnegative(),
-      materialIndex: z.number().int().nonnegative(),
-    }),
-  ),
-  sessions: z.array(
-    z.object({
-      sessionType: z.literal("LEARN"),
-      title: z.string().min(1),
-      objective: z.string().min(1),
-      estimatedMinutes: z.number().int().min(5).max(120),
-      dayOffset: z.number().int().nonnegative(),
-      moduleIndex: z.number().int().nonnegative(),
-    }),
-  ),
-});
+// materialRepository는 모듈 경계를 넘어 직접 import 할 수 없으므로
+// 필요한 함수만 동적으로 가져옵니다
+async function getMaterialsMetaForPlan(materialIds: ReadonlyArray<string>) {
+  const { materialRepository } = await import(
+    "../../modules/material/material.repository"
+  );
+  return materialRepository.findMaterialsMetaForPlan(materialIds);
+}
 
-type AiPlanResponse = z.infer<typeof AiPlanResponseSchema>;
+// ============================================
+// 2단계 파이프라인 (새로운 방식)
+// ============================================
 
 /**
- * 각 자료에서 RAG를 통해 관련 청크를 검색
+ * 자료 메타정보 및 청크 통계 조회
  */
-async function fetchMaterialContexts(params: {
+async function fetchMaterialsMetadata(params: {
   readonly userId: string;
   readonly materialIds: ReadonlyArray<string>;
-  readonly goalType: string;
-  readonly currentLevel: string;
-}): Promise<ReadonlyArray<MaterialContext>> {
-  // 학습 목표와 수준을 기반으로 검색 쿼리 생성
-  const searchQuery = `${params.goalType} 학습을 위한 핵심 개념, 주요 내용, ${params.currentLevel} 수준에 적합한 설명`;
+}): Promise<
+  ReadonlyArray<{
+    readonly id: string;
+    readonly title: string;
+    readonly chunkCount: number;
+  }>
+> {
+  // DB에서 자료 기본 정보 조회
+  const metaResult = await getMaterialsMetaForPlan(params.materialIds);
+  if (metaResult.isErr()) {
+    logger.warn(
+      { error: metaResult.error },
+      "[fetchMaterialsMetadata] 자료 메타 조회 실패",
+    );
+    return params.materialIds.map((id) => ({
+      id,
+      title: "Unknown Material",
+      chunkCount: 0,
+    }));
+  }
+  const materialsMeta = metaResult.value;
 
-  const results = await retrieveTopChunks({
+  // 청크 통계 조회
+  const statsResult = await getMaterialsChunkStats({
     userId: params.userId,
     materialIds: params.materialIds,
-    query: searchQuery,
-    topK: 20, // 자료당 충분한 컨텍스트 확보
   });
+  if (statsResult.isErr()) {
+    logger.warn(
+      { error: statsResult.error },
+      "[fetchMaterialsMetadata] 청크 통계 조회 실패",
+    );
+    return materialsMeta.map((mat) => ({
+      id: mat.id,
+      title: mat.title,
+      chunkCount: 0,
+    }));
+  }
+  const statsMap = statsResult.value;
 
-  return results.map((result) => ({
-    materialId: result.metadata.materialId,
-    materialTitle: result.metadata.materialTitle,
-    content: result.content,
-    chunkIndex: result.metadata.chunkIndex,
+  // 메타정보와 청크 통계 결합
+  return materialsMeta.map((mat) => ({
+    id: mat.id,
+    title: mat.title,
+    chunkCount: statsMap.get(mat.id)?.chunkCount ?? 0,
   }));
 }
 
 /**
- * 자료별로 컨텍스트를 그룹화
+ * PlanStructure를 GeneratePlanResult로 변환
  */
-function groupContextsByMaterial(
-  contexts: ReadonlyArray<MaterialContext>,
-  materialIds: ReadonlyArray<string>,
-): ReadonlyArray<{
-  readonly materialId: string;
-  readonly materialTitle: string;
-  readonly content: string;
-}> {
-  return materialIds.map((materialId) => {
-    const materialContexts = contexts.filter(
-      (ctx) => ctx.materialId === materialId,
-    );
-
-    if (materialContexts.length === 0) {
-      return {
-        materialId,
-        materialTitle: "Unknown Material",
-        content: "(자료 내용을 가져올 수 없습니다)",
-      };
-    }
-
-    // 청크 인덱스 순으로 정렬하여 연결
-    const sorted = [...materialContexts].sort(
-      (a, b) => a.chunkIndex - b.chunkIndex,
-    );
-
-    return {
-      materialId,
-      materialTitle: sorted[0]!.materialTitle,
-      content: sorted.map((ctx) => ctx.content).join("\n\n"),
-    };
-  });
-}
-
-/**
- * OpenAI를 호출하여 학습 계획 생성
- */
-async function callOpenAiForPlan(params: {
-  readonly systemPrompt: string;
-  readonly userPrompt: string;
-}): Promise<AiPlanResponse> {
-  const openai = requireOpenAi();
-
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: params.systemPrompt },
-      { role: "user", content: params.userPrompt },
-    ],
-    temperature: 0.7,
-    max_tokens: 4000,
-    response_format: { type: "json_object" },
-  });
-
-  const content = completion.choices[0]?.message?.content;
-  if (!content) {
-    throw new ApiError(500, "AI_GENERATION_FAILED", "AI 응답이 없습니다.");
-  }
-
-  try {
-    const parsed = JSON.parse(content);
-    return AiPlanResponseSchema.parse(parsed);
-  } catch {
-    throw new ApiError(
-      500,
-      "AI_GENERATION_FAILED",
-      "AI 응답을 파싱할 수 없습니다.",
-      { rawContent: content.slice(0, 500) },
-    );
-  }
-}
-
-/**
- * AI 응답을 최종 결과 형태로 변환
- */
-function transformAiResponse(
-  response: AiPlanResponse,
+function transformStructureToResult(
+  structure: Awaited<ReturnType<typeof generatePlanStructure>>,
+  populatedSessions: ReadonlyArray<{
+    readonly sessionType: "LEARN";
+    readonly title: string;
+    readonly objective: string;
+    readonly estimatedMinutes: number;
+    readonly dayOffset: number;
+    readonly moduleIndex: number;
+  }>,
   materialIds: ReadonlyArray<string>,
 ): GeneratePlanResult {
-  const modules: Array<GeneratedModule> = response.modules.map((mod) => ({
+  const modules: Array<GeneratedModule> = structure.modules.map((mod) => ({
     title: mod.title,
     description: mod.description,
     orderIndex: mod.orderIndex,
     materialId: materialIds[mod.materialIndex] ?? materialIds[0]!,
   }));
 
-  const sessions: Array<GeneratedSession> = response.sessions.map((sess) => ({
+  const sessions: Array<GeneratedSession> = populatedSessions.map((sess) => ({
     sessionType: sess.sessionType,
     title: sess.title,
     objective: sess.objective,
@@ -168,57 +110,72 @@ function transformAiResponse(
   }));
 
   return {
-    title: response.title,
-    summary: response.summary,
+    title: structure.title,
+    summary: structure.summary,
     modules,
     sessions,
   };
 }
 
 /**
- * AI 기반 개인화된 학습 계획 생성
- *
- * 1. RAG를 통해 각 자료에서 관련 컨텍스트 검색
- * 2. 사용자 수준과 목표에 맞는 프롬프트 생성
- * 3. OpenAI를 통해 개인화된 학습 계획 생성
+ * 2단계 파이프라인으로 학습 계획 생성
  */
-export async function generatePlanWithAi(
+async function generatePlanWithTwoPhase(
   input: GeneratePlanInput,
 ): Promise<GeneratePlanResult> {
-  // 1. RAG를 통해 자료 컨텍스트 검색
-  const rawContexts = await fetchMaterialContexts({
+  // 1. 자료 메타정보 및 청크 통계 조회
+  const materialsWithStats = await fetchMaterialsMetadata({
     userId: input.userId,
     materialIds: input.materialIds,
-    goalType: input.goalType,
-    currentLevel: input.currentLevel,
   });
 
-  // 2. 자료별로 컨텍스트 그룹화
-  const groupedContexts = groupContextsByMaterial(
-    rawContexts,
-    input.materialIds,
-  );
-
-  // 3. 프롬프트 생성
-  const systemPrompt = buildSystemPrompt();
-  const userPrompt = buildUserPrompt({
+  // 2. [1단계] 구조 설계 AI 호출
+  const structure = await generatePlanStructure({
     goalType: input.goalType,
     currentLevel: input.currentLevel,
     targetDueDate: input.targetDueDate,
     specialRequirements: input.specialRequirements,
-    materialContexts: groupedContexts.map((g) => ({
-      materialTitle: g.materialTitle,
-      content: g.content,
-    })),
-    materialCount: input.materialIds.length,
+    requestedSessionCount: input.requestedSessionCount,
+    materials: materialsWithStats,
   });
 
-  // 4. OpenAI 호출
-  const aiResponse = await callOpenAiForPlan({
-    systemPrompt,
-    userPrompt,
-  });
+  logger.info(
+    {
+      sessionCount: structure.sessionCount,
+      reasoning: structure.reasoning,
+    },
+    "[generatePlanWithTwoPhase] 구조 설계 완료",
+  );
 
-  // 5. 결과 변환 및 반환
-  return transformAiResponse(aiResponse, input.materialIds);
+  // 3. [2단계] 세션 상세화 (병렬 처리)
+  const populatedSessions = await populateAllSessions(
+    structure,
+    {
+      userId: input.userId,
+      materials: materialsWithStats,
+      currentLevel: input.currentLevel,
+    },
+    { concurrency: 5 },
+  );
+
+  // 4. 결과 변환
+  return transformStructureToResult(
+    structure,
+    populatedSessions,
+    input.materialIds,
+  );
 }
+
+// ============================================
+// 메인 함수
+// ============================================
+
+/**
+ * AI 기반 개인화된 학습 계획 생성 (2단계 파이프라인)
+ *
+ * 1단계: 메타정보 기반 구조 설계 - 자료 분량에 맞는 세션 수 결정
+ * 2단계: 세션별 상세 내용 생성 - 각 세션에 해당하는 청크로 제목/목표 생성
+ *
+ * 에러 발생 시 폴백 없이 그대로 전파됩니다.
+ */
+export { generatePlanWithTwoPhase as generatePlanWithAi };

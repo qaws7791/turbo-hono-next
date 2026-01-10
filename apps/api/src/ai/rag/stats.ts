@@ -49,3 +49,77 @@ export function countMaterialChunks(params: {
     return parseCount(row.count);
   });
 }
+
+/**
+ * 자료별 청크 통계 정보
+ */
+export type MaterialChunkStats = {
+  readonly materialId: string;
+  readonly chunkCount: number;
+  readonly estimatedMinutes: number; // chunkCount * 5분 기준
+};
+
+/**
+ * 여러 자료의 청크 통계를 한 번에 조회
+ */
+export function getMaterialsChunkStats(params: {
+  readonly userId: string;
+  readonly materialIds: ReadonlyArray<string>;
+}): ResultAsync<Map<string, MaterialChunkStats>, AppError> {
+  return tryPromise(async () => {
+    if (params.materialIds.length === 0) {
+      return new Map<string, MaterialChunkStats>();
+    }
+
+    const store = await getVectorStoreForUser({ userId: params.userId });
+    const collectionId = await store.getOrCreateCollection();
+
+    // 모든 자료의 청크 수를 한 번의 쿼리로 조회
+    const placeholders = params.materialIds
+      .map((_, idx) => `$${idx + 3}`)
+      .join(", ");
+
+    const query = `
+      SELECT 
+        ${store.metadataColumnName}->>'materialId' as material_id,
+        count(*) as chunk_count
+      FROM ${store.computedTableName}
+      WHERE collection_id = $1
+        AND ${store.metadataColumnName}->>'userId' = $2
+        AND ${store.metadataColumnName}->>'materialId' IN (${placeholders})
+      GROUP BY ${store.metadataColumnName}->>'materialId'
+    `;
+
+    const result = await store.pool.query(query, [
+      collectionId,
+      params.userId,
+      ...params.materialIds,
+    ]);
+
+    const statsMap = new Map<string, MaterialChunkStats>();
+
+    // 쿼리 결과를 Map으로 변환
+    for (const row of result.rows) {
+      const materialId = String(row.material_id);
+      const chunkCount = parseCount(row.chunk_count);
+      statsMap.set(materialId, {
+        materialId,
+        chunkCount,
+        estimatedMinutes: Math.ceil(chunkCount * 5), // 청크당 5분 예상
+      });
+    }
+
+    // 쿼리 결과에 없는 자료는 0으로 설정
+    for (const materialId of params.materialIds) {
+      if (!statsMap.has(materialId)) {
+        statsMap.set(materialId, {
+          materialId,
+          chunkCount: 0,
+          estimatedMinutes: 0,
+        });
+      }
+    }
+
+    return statsMap;
+  });
+}

@@ -20,6 +20,7 @@ export type GeneratePlanInput = {
   readonly currentLevel: PlanLevel;
   readonly targetDueDate: Date;
   readonly specialRequirements: string | null;
+  readonly requestedSessionCount: number | null; // 사용자 지정 세션 수 (null = 학습량에 맞춤)
 };
 
 /**
