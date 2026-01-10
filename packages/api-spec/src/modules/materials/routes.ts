@@ -136,6 +136,39 @@ export const completeMaterialUploadRoute = createRoute({
   security: [{ cookieAuth: [] }],
 });
 
+export const completeMaterialUploadStreamRoute = createRoute({
+  tags: ["materials"],
+  method: "post",
+  path: "/api/materials/uploads/complete/stream",
+  summary: "R2 업로드 완료 처리 (SSE 스트림)",
+  description:
+    "SSE를 통해 업로드 완료 처리 진행 상황을 실시간으로 전달합니다.\\n\\n" +
+    "**이벤트 타입**:\\n" +
+    "- `progress`: 진행 상황 업데이트\\n" +
+    "- `complete`: 처리 완료\\n" +
+    "- `error`: 에러 발생",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: CompleteMaterialUploadRequestSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: "SSE 스트림으로 진행 상황을 전달합니다.",
+      content: { "text/event-stream": { schema: z.any() } },
+    },
+    default: {
+      description: "에러 응답",
+      content: { "application/json": { schema: ErrorResponseSchema } },
+    },
+  },
+  security: [{ cookieAuth: [] }],
+});
+
 export const getJobStatusRoute = createRoute({
   tags: ["jobs"],
   method: "get",
@@ -217,6 +250,7 @@ export const materialRoutes = [
   getMaterialDetailRoute,
   initiateMaterialUploadRoute,
   completeMaterialUploadRoute,
+  completeMaterialUploadStreamRoute,
   deleteMaterialRoute,
   updateMaterialTitleRoute,
   getJobStatusRoute,

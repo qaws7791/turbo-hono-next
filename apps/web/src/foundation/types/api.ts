@@ -872,6 +872,76 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/materials/uploads/complete/stream": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * R2 업로드 완료 처리 (SSE 스트림)
+     * @description SSE를 통해 업로드 완료 처리 진행 상황을 실시간으로 전달합니다.\n\n**이벤트 타입**:\n- `progress`: 진행 상황 업데이트\n- `complete`: 처리 완료\n- `error`: 에러 발생
+     */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: {
+        content: {
+          "application/json": {
+            /** Format: uuid */
+            uploadId: string;
+            title?: string;
+            etag?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description SSE 스트림으로 진행 상황을 전달합니다. */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "text/event-stream": unknown;
+          };
+        };
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            "application/json": {
+              error: {
+                code: string;
+                message: string;
+                details?: {
+                  [key: string]: unknown;
+                };
+                validation?: Array<{
+                  field: string;
+                  code: string;
+                  message: string;
+                }>;
+              };
+            };
+          };
+        };
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/jobs/{jobId}": {
     parameters: {
       query?: never;
@@ -1044,7 +1114,7 @@ export interface paths {
     put?: never;
     /**
      * Plan 생성
-     * @description AI가 자료를 분석하여 학습 계획을 생성합니다. 세션과 복습 일정이 자동 생성됩니다.
+     * @description AI가 자료를 분석하여 학습 계획을 생성합니다. 세션이 자동 생성됩니다.
      */
     post: {
       parameters: {
@@ -1510,7 +1580,7 @@ export interface paths {
     };
     /**
      * 오늘 할 일 큐 조회
-     * @description 오늘 학습해야 할 세션 목록을 조회합니다. 복습 예정 개념을 포함합니다.
+     * @description 오늘 학습해야 할 세션 목록을 조회합니다.
      */
     get: {
       parameters: {
@@ -1833,7 +1903,6 @@ export interface paths {
                 summary: {
                   /** Format: uuid */
                   id: string;
-
                   /** Format: date-time */
                   createdAt: string;
                 } | null;
@@ -1947,8 +2016,7 @@ export interface paths {
                   blueprintId: string;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<
-                    | {
+                  steps: Array<| {
                         id: string;
                         estimatedSeconds?: number;
                         /** @enum {string} */
@@ -2097,8 +2165,7 @@ export interface paths {
                           title: string;
                           description?: string;
                         };
-                      }
-                  >;
+                      }>;
                   /** @default 0 */
                   startStepIndex: number;
                 };
@@ -2114,7 +2181,6 @@ export interface paths {
                   /** Format: uuid */
                   id: string;
                   summaryMd: string;
-
                   /** Format: date-time */
                   createdAt: string;
                 } | null;

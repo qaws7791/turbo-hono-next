@@ -77,6 +77,7 @@ export function MaterialsListView() {
             open ? uploadDialog.open() : uploadDialog.close()
           }
           isSubmitting={isSubmitting}
+          progress={uploadMaterialMutation.progress}
           onUpload={handleUpload}
         />
       </PageBody>

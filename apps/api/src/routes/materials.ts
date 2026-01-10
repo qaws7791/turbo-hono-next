@@ -1,5 +1,6 @@
 import {
   completeMaterialUploadRoute,
+  completeMaterialUploadStreamRoute,
   deleteMaterialRoute,
   getJobStatusRoute,
   getMaterialDetailRoute,
@@ -7,11 +8,14 @@ import {
   listMaterialsRoute,
   updateMaterialTitleRoute,
 } from "@repo/api-spec";
+import { streamSSE } from "hono/streaming";
 
 import { handleResult, jsonResult } from "../lib/result-handler";
 import { requireAuth } from "../middleware/auth";
+import { ApiError } from "../middleware/error-handler";
 import {
   completeMaterialUpload,
+  completeMaterialUploadWithProgress,
   deleteMaterial,
   getJobStatus,
   getMaterialDetail,
@@ -97,6 +101,61 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
           );
         },
       );
+    },
+  );
+
+  /* ========== 파일 업로드: 완료 처리 (SSE 스트림) ========== */
+  app.openapi(
+    {
+      ...completeMaterialUploadStreamRoute,
+      middleware: [requireAuth] as const,
+    },
+    async (c) => {
+      const auth = c.get("auth");
+      const body = c.req.valid("json");
+
+      return streamSSE(c, async (stream) => {
+        try {
+          const result = await completeMaterialUploadWithProgress(
+            auth.user.id,
+            body,
+            async (step, progress, message) => {
+              await stream.writeSSE({
+                event: "progress",
+                data: JSON.stringify({ step, progress, message }),
+              });
+            },
+          );
+
+          await stream.writeSSE({
+            event: "complete",
+            data: JSON.stringify({
+              data: {
+                id: result.materialId,
+                title: result.mode === "sync" ? result.title : undefined,
+                processingStatus: result.processingStatus,
+                summary: result.mode === "sync" ? result.summary : null,
+              },
+            }),
+          });
+        } catch (error) {
+          const errorData =
+            error instanceof ApiError
+              ? { code: error.code, message: error.message }
+              : {
+                  code: "UNKNOWN_ERROR",
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : "알 수 없는 오류가 발생했습니다.",
+                };
+
+          await stream.writeSSE({
+            event: "error",
+            data: JSON.stringify(errorData),
+          });
+        }
+      });
     },
   );
 

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { inferMaterialSourceTypeFromFile } from "../../../ai/ingestion/parse";
+import { generateMaterialSummary } from "../../../ai/material";
 import { ingestMaterial } from "../../../ai/rag/ingest";
 import {
   copyObject,
@@ -320,7 +321,12 @@ export function completeMaterialUpload(
         bytes: tempBytes,
       });
 
-      const summary = ingestResult.fullText.slice(0, 240).trim() || null;
+      const summaryResult = await generateMaterialSummary({
+        title,
+        fullText: ingestResult.fullText,
+        mimeType: session.mimeType,
+      });
+      const summary = summaryResult.summary;
 
       const createdAt = new Date();
       await unwrap(

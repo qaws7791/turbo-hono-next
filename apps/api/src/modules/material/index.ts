@@ -1,4 +1,9 @@
 export { completeMaterialUpload } from "./usecases/complete-material-upload";
+export {
+  completeMaterialUploadWithProgress,
+  type ProgressCallback,
+  type UploadProgressStep,
+} from "./usecases/complete-material-upload-stream";
 export { deleteMaterial } from "./usecases/delete-material";
 export { getJobStatus } from "./usecases/get-job-status";
 export { getMaterialDetail } from "./usecases/get-material-detail";
