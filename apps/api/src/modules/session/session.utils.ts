@@ -26,7 +26,11 @@ export function computeStreakDays(
 
   const todayStr = today.toISOString().slice(0, 10);
   const sortedDates = studyDates
-    .map((d) => d.toISOString().slice(0, 10))
+    .map((d) =>
+      (d instanceof Date ? d : new Date(d as string))
+        .toISOString()
+        .slice(0, 10),
+    )
     .sort((a, b) => b.localeCompare(a)); // 최신순 정렬
 
   // 오늘 학습하지 않았으면 streak 0

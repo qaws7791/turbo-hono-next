@@ -665,7 +665,7 @@ export const sessionRepository = {
       }
 
       const rows = await db
-        .select({ total: sql<number>`count(*)` })
+        .select({ total: sql<number>`count(*)`.mapWith(Number) })
         .from(sessionRuns)
         .innerJoin(plans, eq(plans.id, sessionRuns.planId))
         .where(and(...where));
@@ -949,7 +949,10 @@ export const sessionRepository = {
         .orderBy(desc(sql`date(${sessionRuns.endedAt})`))
         .limit(maxDays);
 
-      return rows.map((r) => r.studyDate).filter((d): d is Date => d !== null);
+      return rows
+        .map((r) => r.studyDate)
+        .filter((d): d is string | Date => d !== null)
+        .map((d) => (typeof d === "string" ? new Date(`${d}T00:00:00Z`) : d));
     });
   },
 };
