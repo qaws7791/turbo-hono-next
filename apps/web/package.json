@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "dev:api": "cross-env VITE_MSW=false react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "check-types": "react-router typegen && tsc",
     "lint": "eslint src --ext .ts,.tsx",
@@ -35,6 +36,7 @@
     "@types/node": "^22",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "cross-env": "^10.1.0",
     "msw": "^2.12.7",
     "openapi-typescript": "^7.10.1",
     "tailwindcss": "catalog:",
