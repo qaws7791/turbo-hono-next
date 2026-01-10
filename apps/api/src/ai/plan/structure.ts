@@ -1,3 +1,4 @@
+import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 import { logger } from "../../lib/logger";
@@ -15,22 +16,27 @@ import type { PlanGoalType, PlanLevel } from "./types";
  * 청크 범위 스키마
  */
 const ChunkRangeSchema = z.object({
-  start: z.number().int().nonnegative(),
-  end: z.number().int().nonnegative(),
+  start: z.number().int().nonnegative().describe("청크 시작 인덱스 (0부터)"),
+  end: z.number().int().nonnegative().describe("청크 끝 인덱스"),
 });
 
 /**
  * 1단계 AI 응답 스키마: 학습 구조
+ * 길이 제한을 명시하여 AI가 스키마를 준수하도록 함
  */
 const PlanStructureSchema = z.object({
-  title: z.string().min(1),
-  summary: z.string().min(1),
-  sessionCount: z.number().int().min(1).max(90),
-  reasoning: z.string(),
+  title: z.string().min(1).max(100).describe("계획 제목 (100자 이내)"),
+  summary: z
+    .string()
+    .min(1)
+    .max(300)
+    .describe("계획 요약 (2-3문장, 300자 이내)"),
+  sessionCount: z.number().int().min(1).max(90).describe("총 세션 수 (1-90)"),
+  reasoning: z.string().max(200).describe("세션 수 결정 근거 (1-2문장)"),
   modules: z.array(
     z.object({
-      title: z.string().min(1),
-      description: z.string(),
+      title: z.string().min(1).max(100).describe("모듈 제목"),
+      description: z.string().max(200).describe("모듈 설명"),
       orderIndex: z.number().int().nonnegative(),
       materialIndex: z.number().int().nonnegative(),
       chunkRange: ChunkRangeSchema,
@@ -42,7 +48,7 @@ const PlanStructureSchema = z.object({
       dayOffset: z.number().int().nonnegative(),
       estimatedMinutes: z.number().int().min(5).max(120),
       chunkRange: ChunkRangeSchema,
-      topicHint: z.string(),
+      topicHint: z.string().max(100).describe("세션 주제 힌트 (100자 이내)"),
     }),
   ),
 });
@@ -65,8 +71,8 @@ export type StructurePlanningInput = {
 /**
  * 1단계: 자료 메타정보 기반 학습 구조 설계
  *
+ * OpenAI Structured Outputs를 사용하여 스키마 준수 보장
  * 청크 수와 자료 정보만으로 전체 학습 구조를 설계합니다.
- * 각 세션이 담당할 청크 범위를 지정하여 2단계에서 상세화에 사용됩니다.
  */
 export async function generatePlanStructure(
   input: StructurePlanningInput,
@@ -92,38 +98,33 @@ export async function generatePlanStructure(
     totalChunkCount,
   });
 
-  const completion = await openai.chat.completions.create({
-    model: "gpt-5-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    temperature: 1,
-    response_format: { type: "json_object" },
-  });
-
-  const content = completion.choices[0]?.message?.content;
-  if (!content) {
-    throw new ApiError(
-      500,
-      "AI_GENERATION_FAILED",
-      "AI 응답이 없습니다. (구조 설계)",
-    );
-  }
-
   try {
-    const parsed = JSON.parse(content);
-    return PlanStructureSchema.parse(parsed);
+    const response = await openai.responses.parse({
+      model: "gpt-5-mini",
+      instructions: systemPrompt,
+      input: userPrompt,
+      text: {
+        format: zodTextFormat(PlanStructureSchema, "plan_structure"),
+      },
+    });
+
+    if (!response.output_parsed) {
+      throw new ApiError(
+        500,
+        "AI_GENERATION_FAILED",
+        "AI 응답을 파싱할 수 없습니다. (구조 설계)",
+      );
+    }
+
+    return response.output_parsed;
   } catch (err) {
-    logger.error(
-      { err, contentSample: content.slice(0, 500) },
-      "[generatePlanStructure] 파싱 실패",
-    );
+    if (err instanceof ApiError) throw err;
+    logger.error({ err }, "[generatePlanStructure] AI 구조 설계 실패");
     throw new ApiError(
       500,
       "AI_GENERATION_FAILED",
       "AI 응답을 파싱할 수 없습니다. (구조 설계)",
-      { rawContent: content.slice(0, 500) },
+      { error: String(err) },
     );
   }
 }

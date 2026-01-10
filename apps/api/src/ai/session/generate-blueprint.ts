@@ -8,6 +8,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+/**
+ * AI를 사용하여 세션 블루프린트 생성
+ *
+ * OpenAI Responses API 사용 (템플릿 기반 동적 스키마)
+ */
 export async function generateSessionBlueprintWithAi(input: {
   readonly sessionType: "LEARN";
   readonly planTitle: string;
@@ -19,27 +24,25 @@ export async function generateSessionBlueprintWithAi(input: {
 }): Promise<Record<string, unknown>> {
   const openai = requireOpenAi();
 
-  const completion = await openai.chat.completions.create({
+  const response = await openai.responses.create({
     model: CONFIG.OPENAI_CHAT_MODEL,
-    messages: [
-      { role: "system", content: buildSystemPrompt() },
-      {
-        role: "user",
-        content: buildUserPrompt({
-          sessionType: input.sessionType,
-          planTitle: input.planTitle,
-          moduleTitle: input.moduleTitle,
-          sessionTitle: input.sessionTitle,
-          objective: input.objective,
-          estimatedMinutes: input.estimatedMinutes,
-          template: input.template,
-        }),
-      },
-    ],
-    response_format: { type: "json_object" },
+    instructions: buildSystemPrompt(),
+    input: buildUserPrompt({
+      sessionType: input.sessionType,
+      planTitle: input.planTitle,
+      moduleTitle: input.moduleTitle,
+      sessionTitle: input.sessionTitle,
+      objective: input.objective,
+      estimatedMinutes: input.estimatedMinutes,
+      template: input.template,
+    }),
+    text: {
+      format: { type: "json_object" },
+    },
   });
 
-  const content = completion.choices[0]?.message?.content;
+  // Responses API에서 output_text로 텍스트 응답 추출
+  const content = response.output_text;
   if (!content) {
     throw new ApiError(500, "AI_GENERATION_FAILED", "AI 응답이 없습니다.");
   }

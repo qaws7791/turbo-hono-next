@@ -1,3 +1,4 @@
+import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 import { CONFIG } from "../../lib/config";
@@ -12,7 +13,11 @@ import {
  * AI 응답 스키마
  */
 const SummaryResponseSchema = z.object({
-  summary: z.string().min(1).max(500),
+  summary: z
+    .string()
+    .min(1)
+    .max(500)
+    .describe("학습 자료 요약 (2-3문장, 500자 이내)"),
 });
 
 export type GenerateSummaryParams = {
@@ -37,6 +42,7 @@ function createFallbackSummary(fullText: string): string {
 /**
  * AI를 사용하여 학습 자료 요약 생성
  *
+ * OpenAI Structured Outputs를 사용하여 스키마 준수 보장
  * GPT 모델을 활용하여 학습 자료의 전체 내용을 분석하고
  * 핵심 내용을 2-3문장으로 요약합니다.
  *
@@ -51,36 +57,29 @@ export async function generateMaterialSummary(
   try {
     const openai = requireOpenAi();
 
-    const completion = await openai.chat.completions.create({
+    const response = await openai.responses.parse({
       model: CONFIG.OPENAI_CHAT_MODEL,
-      messages: [
-        { role: "system", content: buildSummarizeSystemPrompt() },
-        {
-          role: "user",
-          content: buildSummarizeUserPrompt({
-            title: params.title,
-            content: params.fullText,
-            mimeType: params.mimeType,
-          }),
-        },
-      ],
-      response_format: { type: "json_object" },
+      instructions: buildSummarizeSystemPrompt(),
+      input: buildSummarizeUserPrompt({
+        title: params.title,
+        content: params.fullText,
+        mimeType: params.mimeType,
+      }),
+      text: {
+        format: zodTextFormat(SummaryResponseSchema, "material_summary"),
+      },
     });
 
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      console.warn("[generateMaterialSummary] AI 응답이 비어있음, 폴백 사용");
+    if (!response.output_parsed) {
+      console.warn("[generateMaterialSummary] AI 응답 파싱 실패, 폴백 사용");
       return {
         summary: createFallbackSummary(params.fullText),
         isAiGenerated: false,
       };
     }
 
-    const parsed = JSON.parse(content);
-    const validated = SummaryResponseSchema.parse(parsed);
-
     return {
-      summary: validated.summary,
+      summary: response.output_parsed.summary,
       isAiGenerated: true,
     };
   } catch (error) {

@@ -50,8 +50,9 @@ function buildLearnSteps(
       sessionTitle: input.sessionTitle,
       durationMinutes: input.estimatedMinutes,
       difficulty: "beginner",
+      // objective가 200자를 초과하면 잘라냄 (learningGoals 스키마 제한)
       learningGoals: objective
-        ? [objective].slice(0, 5)
+        ? [objective.slice(0, 200)].slice(0, 5)
         : [
             `${input.sessionTitle}의 핵심 개념 이해`,
             "개념을 실제 예제로 연결",

@@ -1,3 +1,4 @@
+import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
 
 import { logger } from "../../lib/logger";
@@ -15,10 +16,20 @@ import type { PlanLevel } from "./types";
 
 /**
  * 2단계 AI 응답 스키마: 세션 상세
+ * - title: 120자 이내
+ * - objective: 200자 이내 (learningGoals 제한과 일치)
  */
 const SessionDetailSchema = z.object({
-  title: z.string().min(1),
-  objective: z.string().min(1),
+  title: z
+    .string()
+    .min(1)
+    .max(120)
+    .describe("세션 제목 (구체적이고 동기부여가 되는 표현, 120자 이내)"),
+  objective: z
+    .string()
+    .min(1)
+    .max(200)
+    .describe("학습 목표 (SMART 원칙에 따라 측정 가능하게, 200자 이내)"),
 });
 
 export type SessionDetail = z.infer<typeof SessionDetailSchema>;
@@ -43,6 +54,7 @@ type SessionPopulationInput = {
 
 /**
  * 2단계: 개별 세션 상세 내용 생성
+ * OpenAI Structured Outputs를 사용하여 스키마 준수 보장
  */
 async function populateSessionDetail(
   input: SessionPopulationInput,
@@ -59,35 +71,24 @@ async function populateSessionDetail(
     currentLevel: input.currentLevel,
   });
 
-  const completion = await openai.chat.completions.create({
+  const response = await openai.responses.parse({
     model: "gpt-5-mini",
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    response_format: { type: "json_object" },
+    instructions: systemPrompt,
+    input: userPrompt,
+    text: {
+      format: zodTextFormat(SessionDetailSchema, "session_detail"),
+    },
   });
 
-  const content = completion.choices[0]?.message?.content;
-  if (!content) {
+  if (!response.output_parsed) {
     throw new ApiError(
       500,
       "AI_GENERATION_FAILED",
-      `세션 ${input.sessionIndex + 1} 상세화 AI 응답이 없습니다.`,
+      `세션 ${input.sessionIndex + 1} 상세화 AI 응답 파싱 실패`,
     );
   }
 
-  try {
-    const parsed = JSON.parse(content);
-    return SessionDetailSchema.parse(parsed);
-  } catch (err) {
-    throw new ApiError(
-      500,
-      "AI_GENERATION_FAILED",
-      `세션 ${input.sessionIndex + 1} 상세화 응답 파싱 실패`,
-      { rawContent: content.slice(0, 200), error: String(err) },
-    );
-  }
+  return response.output_parsed;
 }
 
 /**
