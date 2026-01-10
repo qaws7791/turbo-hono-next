@@ -1,6 +1,7 @@
 import { err, ok } from "neverthrow";
 
 import { ApiError } from "../../../middleware/error-handler";
+import { materialRepository } from "../../material/material.repository";
 import { PlanDetailResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
 import { formatIsoDate, formatIsoDatetime } from "../plan.utils";
@@ -48,7 +49,15 @@ export async function getPlanDetail(
     return err(sourceMaterialIdsResult.error);
   const sourceMaterialIds = sourceMaterialIdsResult.value;
 
-  // 5. 진행률 계산
+  // 5. 소스 자료 상세 정보 조회
+  const materialsResult = await materialRepository.findByIds(
+    userId,
+    sourceMaterialIds,
+  );
+  if (materialsResult.isErr()) return err(materialsResult.error);
+  const materialsData = materialsResult.value;
+
+  // 6. 진행률 계산
   const totalSessions = sessions.length;
   const completedSessions = sessions.filter(
     (s) =>
@@ -76,6 +85,12 @@ export async function getPlanDetail(
           totalSessions,
         },
         sourceMaterialIds,
+        materials: materialsData.map((m) => ({
+          id: m.id,
+          title: m.title,
+          summary: m.summary,
+          sourceType: m.sourceType,
+        })),
         modules: modules.map((m) => ({
           id: m.id,
           title: m.title,

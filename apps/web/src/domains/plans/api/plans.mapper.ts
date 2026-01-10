@@ -49,8 +49,7 @@ export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
   return "archived";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function mapSessionType(_type: "LEARN"): PlanSessionType {
+export function mapSessionType(): PlanSessionType {
   return "session";
 }
 
@@ -84,6 +83,7 @@ export function toPlanFromListItem(item: ApiPlanListItem): PlanWithDerived {
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     sourceMaterialIds: item.sourceMaterialIds,
+    materials: [],
     modules: [],
     totalSessions: item.progress.totalSessions,
     progressPercent: computeProgressPercent(item.progress),
@@ -114,7 +114,7 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
           id: session.id,
           moduleId: session.moduleId,
           title: session.title,
-          type: mapSessionType(session.sessionType),
+          type: mapSessionType(),
           scheduledDate: session.scheduledForDate,
           durationMinutes: session.estimatedMinutes,
           status: mapSessionStatus(session.status),
@@ -142,9 +142,26 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
     status: mapPlanStatus(detail.status),
     createdAt: detail.createdAt,
     updatedAt: detail.updatedAt,
-    sourceMaterialIds: detail.sourceMaterialIds,
-    modules,
-    totalSessions,
     progressPercent,
+    totalSessions,
+    sourceMaterialIds: detail.sourceMaterialIds,
+    materials: (
+      (
+        detail as unknown as {
+          materials: Array<{
+            id: string;
+            title: string;
+            summary: string | null;
+            sourceType: string;
+          }>;
+        }
+      ).materials ?? []
+    ).map((m) => ({
+      id: m.id,
+      title: m.title,
+      summary: m.summary ?? undefined,
+      kind: m.sourceType.toLowerCase() as "file" | "url" | "text",
+    })),
+    modules,
   };
 }

@@ -38,7 +38,7 @@ export function usePlanDetail(planId: string): PlanDetailModel {
 
   return {
     plan,
-    sourceMaterials: [],
+    sourceMaterials: plan.materials,
     nextSession,
     canStartSession,
     actions,

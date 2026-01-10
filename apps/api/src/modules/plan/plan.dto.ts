@@ -168,6 +168,14 @@ export const PlanDetailResponse = z.object({
     updatedAt: z.string().datetime(),
     progress: PlanProgress,
     sourceMaterialIds: z.array(z.string().uuid()),
+    materials: z.array(
+      z.object({
+        id: z.string().uuid(),
+        title: z.string(),
+        summary: z.string().nullable(),
+        sourceType: z.string(),
+      }),
+    ),
     modules: z.array(PlanModuleItem),
     sessions: z.array(PlanSessionItem),
   }),

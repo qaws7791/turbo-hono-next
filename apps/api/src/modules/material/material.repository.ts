@@ -135,6 +135,26 @@ export const materialRepository = {
     });
   },
 
+  findByIds(
+    userId: string,
+    materialIds: Array<string>,
+  ): ResultAsync<Array<typeof materials.$inferSelect>, AppError> {
+    return tryPromise(async () => {
+      if (materialIds.length === 0) return [];
+      const db = getDb();
+      return db
+        .select()
+        .from(materials)
+        .where(
+          and(
+            inArray(materials.id, materialIds),
+            eq(materials.userId, userId),
+            isNull(materials.deletedAt),
+          ),
+        );
+    });
+  },
+
   findByIdForUser(
     userId: string,
     materialId: string,
@@ -530,6 +550,47 @@ export const materialRepository = {
         .where(eq(materialJobs.id, jobId))
         .limit(1);
       return rows[0] ?? null;
+    });
+  },
+
+  /**
+   * 학습 계획 생성을 위한 자료 메타정보 조회
+   * 2단계 파이프라인의 1단계에서 사용
+   */
+  findMaterialsMetaForPlan(materialIds: ReadonlyArray<string>): ResultAsync<
+    ReadonlyArray<{
+      id: string;
+      title: string;
+      fileSize: number | null;
+      mimeType: string | null;
+    }>,
+    AppError
+  > {
+    return tryPromise(async () => {
+      if (materialIds.length === 0) return [];
+      const db = getDb();
+
+      // 자료 기본 정보를 조회
+      const rows = await db
+        .select({
+          id: materials.id,
+          title: materials.title,
+          fileSize: materials.fileSize,
+          mimeType: materials.mimeType,
+        })
+        .from(materials)
+        .where(
+          and(
+            inArray(materials.id, [...materialIds]),
+            isNull(materials.deletedAt),
+          ),
+        );
+
+      // 입력 순서대로 정렬
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      return materialIds
+        .map((id) => byId.get(id))
+        .filter((row): row is NonNullable<typeof row> => row !== undefined);
     });
   },
 };

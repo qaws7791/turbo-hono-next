@@ -33,6 +33,7 @@ export type Plan = {
   createdAt: string;
   updatedAt: string;
   sourceMaterialIds: Array<string>;
+  materials: Array<PlanSourceMaterial>;
   modules: Array<PlanModule>;
 };
 
