@@ -11,6 +11,8 @@ export { listRunCheckins } from "./usecases/list-run-checkins";
 export { saveProgress } from "./usecases/save-progress";
 export { updatePlanSession } from "./usecases/update-plan-session";
 
+export { SessionBlueprint, SessionStepSchema } from "./session.dto";
+
 export type {
   AbandonSessionRunResponse,
   CompleteSessionRunResponse,
@@ -32,6 +34,7 @@ export type {
   SessionRunStatus,
   UpdatePlanSessionInput,
   UpdatePlanSessionResponse,
+  SessionStep,
   UpdateSessionRunProgressInput,
   UpdateSessionRunProgressResponse,
 } from "./session.dto";
