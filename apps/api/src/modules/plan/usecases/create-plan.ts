@@ -118,6 +118,7 @@ export async function createPlan(
     sessionType: sess.sessionType,
     title: sess.title,
     objective: sess.objective,
+    sourceReferences: [...sess.sourceReferences],
     orderIndex: idx,
     scheduledForDate: addDays(startDate, sess.dayOffset),
     estimatedMinutes: sess.estimatedMinutes,

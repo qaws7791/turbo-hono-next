@@ -90,6 +90,13 @@ function transformStructureToResult(
     readonly estimatedMinutes: number;
     readonly dayOffset: number;
     readonly moduleIndex: number;
+    readonly sourceReferences: ReadonlyArray<{
+      readonly materialId: string;
+      readonly chunkRange: {
+        readonly start: number;
+        readonly end: number;
+      };
+    }>;
   }>,
   materialIds: ReadonlyArray<string>,
 ): GeneratePlanResult {
@@ -107,6 +114,7 @@ function transformStructureToResult(
     estimatedMinutes: sess.estimatedMinutes,
     dayOffset: sess.dayOffset,
     moduleIndex: Math.min(sess.moduleIndex, modules.length - 1),
+    sourceReferences: sess.sourceReferences,
   }));
 
   return {

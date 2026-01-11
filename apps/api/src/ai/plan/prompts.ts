@@ -152,9 +152,7 @@ export function buildStructurePlanningSystemPrompt(): string {
 - 하루 1~3세션 배치
 - 각 세션 25~50분
 - 자료(모듈)별로 세션 균등 분배
-
-## 응답 형식
-반드시 JSON 형식으로 응답하세요.`;
+`;
 }
 
 /**
@@ -210,45 +208,7 @@ ${LEVEL_CONSIDERATIONS[params.currentLevel]}
 ${params.specialRequirements ? `\n### 특별 요구사항\n${params.specialRequirements}` : ""}
 
 ## 요청
-위 정보를 바탕으로 학습 구조를 설계해주세요.
-
-응답은 반드시 아래 JSON 형식을 따라주세요:
-\`\`\`json
-{
-  "title": "계획 제목",
-  "summary": "계획 요약 (2-3문장)",
-  "sessionCount": ${recommendedSessions},
-  "reasoning": "세션 수 결정 근거 (1-2문장)",
-  "modules": [
-    {
-      "title": "모듈 제목",
-      "description": "모듈 설명",
-      "orderIndex": 0,
-      "materialIndex": 0,
-      "chunkRange": { "start": 0, "end": 10 }
-    }
-  ],
-  "sessionSkeletons": [
-    {
-      "moduleIndex": 0,
-      "dayOffset": 0,
-      "estimatedMinutes": 30,
-      "chunkRange": { "start": 0, "end": 2 },
-      "topicHint": "해당 세션에서 다룰 주제 힌트"
-    }
-  ]
-}
-\`\`\`
-
-### JSON 필드 설명
-- sessionCount: 총 세션 수
-- reasoning: 세션 수를 이렇게 결정한 이유
-- modules.materialIndex: 0부터 시작하는 자료 인덱스
-- modules.chunkRange: 해당 모듈이 담당하는 청크 범위
-- sessionSkeletons.chunkRange: 해당 세션이 담당하는 청크 범위 (materialIndex 기준)
-- sessionSkeletons.topicHint: 해당 세션의 주제 힌트 (2단계에서 상세화에 사용)
-
-중요: JSON 외의 텍스트는 포함하지 마세요.`;
+위 정보를 바탕으로 최적의 학습 구조를 설계해주세요.`;
 }
 
 /**

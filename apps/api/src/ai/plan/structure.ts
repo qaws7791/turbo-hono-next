@@ -25,32 +25,69 @@ const ChunkRangeSchema = z.object({
  * 길이 제한을 명시하여 AI가 스키마를 준수하도록 함
  */
 const PlanStructureSchema = z.object({
-  title: z.string().min(1).max(100).describe("계획 제목 (100자 이내)"),
+  title: z
+    .string()
+    .min(1)
+    .max(100)
+    .describe("계획 제목 (예: JavaScript 기초 마스터하기)"),
   summary: z
     .string()
     .min(1)
     .max(300)
     .describe("계획 요약 (2-3문장, 300자 이내)"),
   sessionCount: z.number().int().min(1).max(90).describe("총 세션 수 (1-90)"),
-  reasoning: z.string().max(200).describe("세션 수 결정 근거 (1-2문장)"),
-  modules: z.array(
-    z.object({
-      title: z.string().min(1).max(100).describe("모듈 제목"),
-      description: z.string().max(200).describe("모듈 설명"),
-      orderIndex: z.number().int().nonnegative(),
-      materialIndex: z.number().int().nonnegative(),
-      chunkRange: ChunkRangeSchema,
-    }),
-  ),
-  sessionSkeletons: z.array(
-    z.object({
-      moduleIndex: z.number().int().nonnegative(),
-      dayOffset: z.number().int().nonnegative(),
-      estimatedMinutes: z.number().int().min(5).max(120),
-      chunkRange: ChunkRangeSchema,
-      topicHint: z.string().max(100).describe("세션 주제 힌트 (100자 이내)"),
-    }),
-  ),
+  reasoning: z
+    .string()
+    .max(200)
+    .describe("세션 수를 이렇게 결정한 이유 (1-2문장)"),
+  modules: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(100).describe("모듈 제목"),
+        description: z.string().max(200).describe("모듈 설명"),
+        orderIndex: z
+          .number()
+          .int()
+          .nonnegative()
+          .describe("모듈 순서 (0부터)"),
+        materialIndex: z
+          .number()
+          .int()
+          .nonnegative()
+          .describe("0부터 시작하는 자료 인덱스 (자료 순서 그대로)"),
+        chunkRange: ChunkRangeSchema.describe("해당 모듈이 담당하는 청크 범위"),
+      }),
+    )
+    .describe("학습 모듈 목록"),
+  sessionSkeletons: z
+    .array(
+      z.object({
+        moduleIndex: z
+          .number()
+          .int()
+          .nonnegative()
+          .describe("해당 세션이 속한 모듈의 인덱스"),
+        dayOffset: z
+          .number()
+          .int()
+          .nonnegative()
+          .describe("오늘(0)부터 시작하는 일 수"),
+        estimatedMinutes: z
+          .number()
+          .int()
+          .min(5)
+          .max(120)
+          .describe("예상 학습 시간 (분)"),
+        chunkRange: ChunkRangeSchema.describe(
+          "해당 세션이 담당하는 청크 범위 (materialIndex 기준)",
+        ),
+        topicHint: z
+          .string()
+          .max(100)
+          .describe("해당 세션의 주제 힌트 (2단계에서 상세화에 사용)"),
+      }),
+    )
+    .describe("학습 세션 스켈레톤 목록"),
 });
 
 export type PlanStructure = z.infer<typeof PlanStructureSchema>;

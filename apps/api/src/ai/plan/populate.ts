@@ -41,6 +41,10 @@ export type PopulatedSession = {
   readonly estimatedMinutes: number;
   readonly dayOffset: number;
   readonly moduleIndex: number;
+  readonly sourceReferences: ReadonlyArray<{
+    materialId: string;
+    chunkRange: { start: number; end: number };
+  }>;
 };
 
 type SessionPopulationInput = {
@@ -151,6 +155,7 @@ export async function populateAllSessions(
           estimatedMinutes: skeleton.estimatedMinutes,
           dayOffset: skeleton.dayOffset,
           moduleIndex: skeleton.moduleIndex,
+          sourceReferences: [],
         };
       }
 
@@ -163,6 +168,7 @@ export async function populateAllSessions(
           estimatedMinutes: skeleton.estimatedMinutes,
           dayOffset: skeleton.dayOffset,
           moduleIndex: skeleton.moduleIndex,
+          sourceReferences: [],
         };
       }
 
@@ -192,6 +198,9 @@ export async function populateAllSessions(
           estimatedMinutes: skeleton.estimatedMinutes,
           dayOffset: skeleton.dayOffset,
           moduleIndex: skeleton.moduleIndex,
+          sourceReferences: [
+            { materialId: material.id, chunkRange: skeleton.chunkRange },
+          ],
         };
       }
 
@@ -212,6 +221,9 @@ export async function populateAllSessions(
         estimatedMinutes: skeleton.estimatedMinutes,
         dayOffset: skeleton.dayOffset,
         moduleIndex: skeleton.moduleIndex,
+        sourceReferences: [
+          { materialId: material.id, chunkRange: skeleton.chunkRange },
+        ],
       };
     },
     options.concurrency,

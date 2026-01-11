@@ -43,6 +43,13 @@ export type GeneratedSession = {
   readonly estimatedMinutes: number;
   readonly dayOffset: number; // 시작일로부터의 일 수
   readonly moduleIndex: number; // 모듈 인덱스 (0-based)
+  readonly sourceReferences: ReadonlyArray<{
+    readonly materialId: string;
+    readonly chunkRange: {
+      readonly start: number;
+      readonly end: number;
+    };
+  }>;
 };
 
 /**
