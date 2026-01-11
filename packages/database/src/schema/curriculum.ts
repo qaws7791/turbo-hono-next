@@ -4,6 +4,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -59,6 +60,12 @@ export const planSessions = pgTable(
     orderIndex: integer("order_index").notNull(),
     scheduledForDate: date("scheduled_for_date", { mode: "date" }).notNull(),
     estimatedMinutes: integer("estimated_minutes").notNull(),
+    sourceReferences: jsonb("source_references").$type<
+      Array<{
+        materialId: string;
+        chunkRange: { start: number; end: number };
+      }>
+    >(),
     status: planSessionStatusEnum("status").notNull().default("SCHEDULED"),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .$defaultFn(() => new Date())
