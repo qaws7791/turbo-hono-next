@@ -1,8 +1,8 @@
 import { err, ok } from "neverthrow";
 
+import { retrieveChunkRange } from "../../../ai/rag/retrieve";
 import { generateSessionBlueprintWithAi } from "../../../ai/session/generate-blueprint";
 import { ApiError } from "../../../middleware/error-handler";
-import { buildSessionBlueprint } from "../session.blueprint";
 import { SessionBlueprint, SessionRunDetailResponse } from "../session.dto";
 import { sessionRepository } from "../session.repository";
 import { isoDateTime } from "../session.utils";
@@ -13,19 +13,6 @@ import type {
   PlanSessionType,
   SessionRunDetailResponse as SessionRunDetailResponseType,
 } from "../session.dto";
-
-function isBlueprintCompatibleWithTemplate(input: {
-  readonly blueprint: SessionBlueprint;
-  readonly template: SessionBlueprint;
-}): boolean {
-  if (input.blueprint.steps.length !== input.template.steps.length)
-    return false;
-  return input.blueprint.steps.every((step, index) => {
-    const templateStep = input.template.steps[index];
-    if (!templateStep) return false;
-    return step.id === templateStep.id && step.type === templateStep.type;
-  });
-}
 
 export async function getRunDetail(
   userId: string,
@@ -70,17 +57,24 @@ export async function getRunDetail(
     : null;
 
   if (!blueprint) {
-    const template = buildSessionBlueprint({
-      sessionType,
-      planTitle: detail.plan.title,
-      moduleTitle,
-      sessionTitle: detail.session.title,
-      objective: detail.session.objective,
-      estimatedMinutes: detail.session.estimatedMinutes,
-      createdAt: detail.run.startedAt,
-    });
-
     try {
+      const chunkContents: Array<string> = [];
+      if (detail.session.sourceReferences.length > 0) {
+        const chunksList = await Promise.all(
+          detail.session.sourceReferences.map((ref) =>
+            retrieveChunkRange({
+              userId,
+              materialId: ref.materialId,
+              startIndex: ref.chunkRange.start,
+              endIndex: ref.chunkRange.end,
+            }),
+          ),
+        );
+        for (const chunks of chunksList) {
+          chunkContents.push(...chunks.map((c) => c.content));
+        }
+      }
+
       const generated = await generateSessionBlueprintWithAi({
         sessionType,
         planTitle: detail.plan.title,
@@ -88,32 +82,30 @@ export async function getRunDetail(
         sessionTitle: detail.session.title,
         objective: detail.session.objective,
         estimatedMinutes: detail.session.estimatedMinutes,
-        template,
+        createdAt: detail.run.startedAt,
+        chunkContents,
       });
 
-      const parse = SessionBlueprint.safeParse({
-        ...generated,
-        blueprintId: template.blueprintId, // 템플릿의 ID 유지
-      });
-      blueprint =
-        parse.success &&
-        isBlueprintCompatibleWithTemplate({
-          blueprint: parse.data,
-          template,
-        })
-          ? {
-              ...parse.data,
-              schemaVersion: template.schemaVersion,
-              createdAt: template.createdAt,
-              startStepIndex: template.startStepIndex,
-            }
-          : null;
-    } catch {
-      blueprint = null;
-    }
-
-    if (!blueprint) {
-      blueprint = SessionBlueprint.parse(template);
+      const parseResult = SessionBlueprint.safeParse(generated);
+      if (!parseResult.success) {
+        return err(
+          new ApiError(
+            500,
+            "AI_GENERATION_FAILED",
+            "세션 구성을 생성하는 데 실패했습니다. (스키마 불일치)",
+          ),
+        );
+      }
+      blueprint = parseResult.data;
+    } catch (error) {
+      return err(
+        new ApiError(
+          500,
+          "AI_GENERATION_FAILED",
+          "AI가 학습 세션을 생성하는 중 오류가 발생했습니다.",
+          { error: error instanceof Error ? error.message : String(error) },
+        ),
+      );
     }
 
     const insertBlueprintResult = await sessionRepository.upsertRunBlueprint({

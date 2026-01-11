@@ -25,6 +25,7 @@ import type {
   SessionCheckinKind,
   SessionExitReason,
   SessionRunStatus,
+  SessionSourceReference,
 } from "./session.dto";
 
 export const sessionRepository = {
@@ -443,6 +444,7 @@ export const sessionRepository = {
         objective: string | null;
         sessionType: string;
         estimatedMinutes: number;
+        sourceReferences: Array<SessionSourceReference> | null;
       };
       module: { id: string; title: string } | null;
       plan: {
@@ -478,6 +480,7 @@ export const sessionRepository = {
             objective: planSessions.objective,
             sessionType: planSessions.sessionType,
             estimatedMinutes: planSessions.estimatedMinutes,
+            sourceReferences: planSessions.sourceReferences,
           },
           module: {
             id: planModules.id,
@@ -518,7 +521,10 @@ export const sessionRepository = {
           endedAt: row.run.endedAt ?? null,
           exitReason: row.run.exitReason ?? null,
         },
-        session: row.session,
+        session: {
+          ...row.session,
+          sourceReferences: row.session.sourceReferences ?? [],
+        },
         module: row.module && row.module.id ? row.module : null,
         plan: row.plan,
         summary: row.summary && row.summary.id ? row.summary : null,
@@ -937,7 +943,7 @@ export const sessionRepository = {
       // endedAt을 날짜별로 그룹화하여 최근 maxDays일간의 학습 날짜 조회
       const rows = await db
         .selectDistinct({
-          studyDate: sql<Date>`date(${sessionRuns.endedAt})`,
+          studyDate: sql<string>`date(${sessionRuns.endedAt})`,
         })
         .from(sessionRuns)
         .where(
@@ -951,8 +957,8 @@ export const sessionRepository = {
 
       return rows
         .map((r) => r.studyDate)
-        .filter((d): d is string | Date => d !== null)
-        .map((d) => (typeof d === "string" ? new Date(`${d}T00:00:00Z`) : d));
+        .filter((d): d is string => d !== null)
+        .map((d) => new Date(`${d}T00:00:00Z`));
     });
   },
 };
