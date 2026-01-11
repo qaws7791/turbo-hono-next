@@ -1,5 +1,6 @@
 export type SessionStepType =
   | "SESSION_INTRO"
+  | "LEARN_CONTENT"
   | "SESSION_SUMMARY"
   | "CHECK"
   | "CLOZE"
@@ -44,6 +45,12 @@ export type SessionIntroStep = SessionStepBase & {
   learningGoals: Array<string>;
   questionsToCover: Array<string>;
   prerequisites: Array<string>;
+};
+
+export type LearnContentStep = SessionStepBase & {
+  type: "LEARN_CONTENT";
+  title: string;
+  contentMd: string;
 };
 
 export type CheckStep = SessionStepBase & {
@@ -103,6 +110,7 @@ export type SessionSummaryStep = SessionStepBase & {
 
 export type SessionStep =
   | SessionIntroStep
+  | LearnContentStep
   | CheckStep
   | ClozeStep
   | MatchingStep

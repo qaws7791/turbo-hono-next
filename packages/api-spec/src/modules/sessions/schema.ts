@@ -70,6 +70,7 @@ export const SessionActivityKindSchema = z.enum([
 
 export const SessionStepTypeSchema = z.enum([
   "SESSION_INTRO",
+  "LEARN_CONTENT",
   "CHECK",
   "CLOZE",
   "MATCHING",
@@ -117,6 +118,12 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     learningGoals: z.array(z.string().min(1).max(200)).min(1).max(5),
     questionsToCover: z.array(z.string().min(1).max(200)).min(1).max(5),
     prerequisites: z.array(z.string().min(1).max(100)).max(5).default([]),
+  }),
+
+  SessionStepBaseSchema.extend({
+    type: z.literal("LEARN_CONTENT"),
+    title: z.string().min(1).max(120),
+    contentMd: z.string().min(1).max(10_000),
   }),
 
   SessionStepBaseSchema.extend({

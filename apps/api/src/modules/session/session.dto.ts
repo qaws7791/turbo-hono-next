@@ -16,6 +16,17 @@ export const PlanSessionStatusSchema = z.enum([
 ]);
 export type PlanSessionStatus = z.infer<typeof PlanSessionStatusSchema>;
 
+export const SessionSourceReferenceSchema = z.object({
+  materialId: z.string().uuid(),
+  chunkRange: z.object({
+    start: z.number().int().nonnegative(),
+    end: z.number().int().nonnegative(),
+  }),
+});
+export type SessionSourceReference = z.infer<
+  typeof SessionSourceReferenceSchema
+>;
+
 export const HomeQueueSessionItem = z.object({
   kind: z.literal("SESSION"),
   sessionId: PublicIdSchema,
@@ -59,6 +70,7 @@ export type SessionRunStatus = z.infer<typeof SessionRunStatusSchema>;
 
 export const SessionStepTypeSchema = z.enum([
   "SESSION_INTRO",
+  "LEARN_CONTENT",
   "CHECK",
   "CLOZE",
   "MATCHING",
@@ -95,8 +107,8 @@ const SessionStepBaseSchema = z.object({
     .int()
     .positive()
     .max(60 * 60)
-    .optional(),
-  intent: SessionStepIntentSchema.optional(),
+    .nullable(),
+  intent: SessionStepIntentSchema.nullable(),
 });
 
 export const SessionStepSchema = z.discriminatedUnion("type", [
@@ -113,11 +125,17 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
   }),
 
   SessionStepBaseSchema.extend({
+    type: z.literal("LEARN_CONTENT"),
+    title: z.string().min(1).max(120),
+    contentMd: z.string().min(1).max(10_000),
+  }),
+
+  SessionStepBaseSchema.extend({
     type: z.literal("CHECK"),
     question: z.string().min(1).max(500),
     options: z.array(z.string().min(1).max(200)).length(4),
     answerIndex: z.number().int().min(0).max(3),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -126,7 +144,7 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     blankId: z.string().min(1).max(50),
     options: z.array(z.string().min(1).max(100)).length(4),
     answerIndex: z.number().int().min(0).max(3),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -154,7 +172,7 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     type: z.literal("SPEED_OX"),
     statement: z.string().min(1).max(300),
     isTrue: z.boolean(),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -163,14 +181,14 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     question: z.string().min(1).max(500),
     options: z.array(z.string().min(1).max(300)).min(2).max(4),
     correctIndex: z.number().int().min(0).max(3),
-    feedback: z.string().max(500).optional(),
+    feedback: z.string().max(500).nullable(),
   }),
 
   SessionStepBaseSchema.extend({
     type: z.literal("SESSION_SUMMARY"),
     celebrationEmoji: z.string().min(1).max(10).default("🎉"),
     encouragement: z.string().min(1).max(200),
-    studyTimeMinutes: z.number().int().min(0).optional(),
+    studyTimeMinutes: z.number().int().min(0).nullable(),
     completedActivities: z
       .array(z.string().min(1).max(100))
       .max(10)
@@ -179,9 +197,9 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     nextSessionPreview: z
       .object({
         title: z.string().min(1).max(120),
-        description: z.string().max(200).optional(),
+        description: z.string().max(200).nullable(),
       })
-      .optional(),
+      .nullable(),
   }),
 ]);
 export type SessionStep = z.infer<typeof SessionStepSchema>;
