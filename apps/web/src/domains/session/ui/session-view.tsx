@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@repo/ui/dialog";
 import {
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   Clock,
@@ -19,6 +20,8 @@ import {
   XCircle,
 } from "lucide-react";
 import * as React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import type { SessionController, SessionStep } from "../model/types";
 
@@ -26,6 +29,8 @@ function stepLabel(stepType: string): string {
   switch (stepType) {
     case "SESSION_INTRO":
       return "오늘 배울 내용이에요 🎯";
+    case "LEARN_CONTENT":
+      return "개념을 익혀봐요 📚";
     case "CHECK":
       return "확인해볼까요? ✏️";
     case "CLOZE":
@@ -227,6 +232,11 @@ export function SessionView({
                 </div>
               ) : null}
             </div>
+          ) : null}
+
+          {/* === LEARN_CONTENT (개념 학습) === */}
+          {activeStep.type === "LEARN_CONTENT" ? (
+            <LearnContentStep step={activeStep} />
           ) : null}
 
           {/* === CHECK (4지선다) === */}
@@ -439,6 +449,41 @@ export function SessionView({
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// ============================================================
+// LEARN_CONTENT Step Component
+// ============================================================
+function LearnContentStep({
+  step,
+}: {
+  step: Extract<SessionStep, { type: "LEARN_CONTENT" }>;
+}) {
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <BookOpen className="w-6 h-6 text-primary" />
+          {step.title}
+        </h1>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none prose-headings:font-bold prose-p:leading-relaxed prose-pre:bg-muted prose-pre:p-4 prose-pre:rounded-lg">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {step.contentMd}
+          </ReactMarkdown>
+        </CardContent>
+      </Card>
+
+      <div className="flex justify-center py-4">
+        <div className="text-sm text-muted-foreground flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-full">
+          <Sparkles className="w-4 h-4 text-primary" />
+          개념을 충분히 읽고 이해했다면 다음으로 넘어가세요.
+        </div>
+      </div>
     </div>
   );
 }
