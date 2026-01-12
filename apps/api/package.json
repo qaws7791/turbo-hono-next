@@ -30,6 +30,7 @@
     "dotenv": "^17.2.2",
     "drizzle-orm": "catalog:",
     "hono": "^4.9.7",
+    "langchain": "^1.2.7",
     "mammoth": "^1.11.0",
     "neverthrow": "^8.2.0",
     "openai": "^6.16.0",

@@ -4,6 +4,7 @@ import {
   materialJobs,
   materialUploads,
   materials,
+  outlineNodes,
   planSourceMaterials,
   plans,
 } from "@repo/database/schema";
@@ -420,6 +421,23 @@ export const materialRepository = {
     });
   },
 
+  replaceOutlineNodes(
+    materialId: string,
+    rows: ReadonlyArray<typeof outlineNodes.$inferInsert>,
+  ): ResultAsync<void, AppError> {
+    return tryPromise(async () => {
+      const db = getDb();
+      await db.transaction(async (tx) => {
+        await tx
+          .delete(outlineNodes)
+          .where(eq(outlineNodes.materialId, materialId));
+        if (rows.length > 0) {
+          await tx.insert(outlineNodes).values(Array.from(rows));
+        }
+      });
+    });
+  },
+
   insertMaterialChunks(
     chunks: Array<typeof materialChunks.$inferInsert>,
   ): ResultAsync<void, AppError> {
@@ -591,6 +609,54 @@ export const materialRepository = {
       return materialIds
         .map((id) => byId.get(id))
         .filter((row): row is NonNullable<typeof row> => row !== undefined);
+    });
+  },
+
+  findOutlineNodesForPlan(materialIds: ReadonlyArray<string>): ResultAsync<
+    ReadonlyArray<{
+      materialId: string;
+      id: string;
+      parentId: string | null;
+      nodeType: string;
+      title: string;
+      summary: string | null;
+      orderIndex: number;
+      depth: number;
+      path: string;
+      keywords: Array<string> | null;
+      metadataJson: {
+        pageStart?: number;
+        pageEnd?: number;
+        lineStart?: number;
+        lineEnd?: number;
+      } | null;
+    }>,
+    AppError
+  > {
+    return tryPromise(async () => {
+      if (materialIds.length === 0) return [];
+      const db = getDb();
+      return db
+        .select({
+          materialId: outlineNodes.materialId,
+          id: outlineNodes.id,
+          parentId: outlineNodes.parentId,
+          nodeType: outlineNodes.nodeType,
+          title: outlineNodes.title,
+          summary: outlineNodes.summary,
+          keywords: outlineNodes.keywords,
+          metadataJson: outlineNodes.metadataJson,
+          orderIndex: outlineNodes.orderIndex,
+          depth: outlineNodes.depth,
+          path: outlineNodes.path,
+        })
+        .from(outlineNodes)
+        .where(inArray(outlineNodes.materialId, [...materialIds]))
+        .orderBy(
+          asc(outlineNodes.materialId),
+          asc(outlineNodes.depth),
+          asc(outlineNodes.path),
+        );
     });
   },
 };

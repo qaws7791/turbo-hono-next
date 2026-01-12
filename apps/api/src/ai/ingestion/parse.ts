@@ -1,6 +1,13 @@
 import { createHash } from "node:crypto";
 
+import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+
 import { ApiError } from "../../middleware/error-handler";
+import { withTempFile } from "../rag/temp-file";
+
+import type { Document } from "@langchain/core/documents";
 
 export type ParsedSegment = {
   readonly text: string;
@@ -44,83 +51,99 @@ export async function readUploadedFile(file: File): Promise<ParsedFile> {
   };
 }
 
-export async function parseTextSource(text: string): Promise<ParseResult> {
-  const normalized = text.trim();
-  return {
-    titleHint: null,
-    segments: [{ text: normalized }],
-    fullText: normalized,
-  };
-}
+async function parseSimpleText(
+  bytes: Uint8Array,
+  extension: ".txt" | ".md",
+): Promise<ParseResult> {
+  return withTempFile({ bytes, extension }, async (filePath) => {
+    const loader = new TextLoader(filePath);
+    const docs = await loader.load();
 
-type PdfTextItem = { readonly str: string };
-const isPdfTextItem = (value: unknown): value is PdfTextItem => {
-  if (!value || typeof value !== "object") return false;
-  return typeof (value as { str?: unknown }).str === "string";
-};
-
-async function parsePdf(bytes: Uint8Array): Promise<ParseResult> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const loadingTask = pdfjs.getDocument({ data: bytes });
-  const pdf = await loadingTask.promise;
-
-  const pages: Array<ParsedSegment> = [];
-  for (let i = 1; i <= pdf.numPages; i += 1) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const text = content.items
-      .map((item: unknown) => (isPdfTextItem(item) ? item.str : ""))
-      .filter((s: string) => s.trim().length > 0)
-      .join(" ")
+    const text = docs
+      .map((doc: Document) => doc.pageContent)
+      .join("\n\n")
       .replace(/\s+/g, " ")
       .trim();
-    if (text.length > 0) {
-      pages.push({ text, pageStart: i, pageEnd: i });
+
+    if (!text) {
+      throw new ApiError(
+        400,
+        "MATERIAL_PARSE_FAILED",
+        "텍스트를 추출할 수 없습니다.",
+      );
     }
-  }
 
-  await pdf.destroy();
+    return {
+      titleHint: null,
+      segments: [{ text }],
+      fullText: text,
+      pageCount: 1,
+    };
+  });
+}
 
-  const fullText = pages.map((p) => p.text).join("\n\n");
-  if (!fullText) {
-    throw new ApiError(
-      400,
-      "MATERIAL_PARSE_FAILED",
-      "PDF 텍스트를 추출할 수 없습니다.",
-    );
-  }
+async function parsePdf(bytes: Uint8Array): Promise<ParseResult> {
+  return withTempFile({ bytes, extension: ".pdf" }, async (filePath) => {
+    const loader = new PDFLoader(filePath, { splitPages: true });
+    const docs = await loader.load();
 
-  return {
-    titleHint: null,
-    segments: pages,
-    fullText,
-    pageCount: pdf.numPages,
-  };
+    const pages: Array<ParsedSegment> = docs.map((doc) => ({
+      text: doc.pageContent.replace(/\s+/g, " ").trim(),
+      pageStart: doc.metadata.loc?.pageNumber,
+      pageEnd: doc.metadata.loc?.pageNumber,
+    }));
+
+    const fullText = pages
+      .map((p) => p.text)
+      .filter((t) => t.length > 0)
+      .join("\n\n");
+
+    if (!fullText) {
+      throw new ApiError(
+        400,
+        "MATERIAL_PARSE_FAILED",
+        "PDF 텍스트를 추출할 수 없습니다.",
+      );
+    }
+
+    const totalPages =
+      docs.length > 0 ? (docs[0]?.metadata.pdf?.totalPages ?? docs.length) : 0;
+
+    return {
+      titleHint: null,
+      segments: pages,
+      fullText,
+      pageCount: totalPages,
+    };
+  });
 }
 
 async function parseDocx(bytes: Uint8Array): Promise<ParseResult> {
-  const mammothModule = await import("mammoth");
-  const mammoth = mammothModule as unknown as {
-    extractRawText: (options: { buffer: Buffer }) => Promise<{ value: string }>;
-  };
+  return withTempFile({ bytes, extension: ".docx" }, async (filePath) => {
+    const loader = new DocxLoader(filePath);
+    const docs = await loader.load();
 
-  const { value } = await mammoth.extractRawText({
-    buffer: Buffer.from(bytes),
+    const text = docs
+      .map((doc: Document) => doc.pageContent)
+      .join("\n\n")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (!text) {
+      throw new ApiError(
+        400,
+        "MATERIAL_PARSE_FAILED",
+        "DOCX 텍스트를 추출할 수 없습니다.",
+      );
+    }
+
+    return {
+      titleHint: null,
+      segments: [{ text }],
+      fullText: text,
+      pageCount: 1,
+    };
   });
-  const text = value.replace(/\s+/g, " ").trim();
-  if (!text) {
-    throw new ApiError(
-      400,
-      "MATERIAL_PARSE_FAILED",
-      "DOCX 텍스트를 추출할 수 없습니다.",
-    );
-  }
-
-  return {
-    titleHint: null,
-    segments: [{ text }],
-    fullText: text,
-  };
 }
 
 function getFileExt(filename: string | null): string | null {
@@ -183,10 +206,8 @@ export async function parseFileBytesSource(
   });
 
   if (kind === "PDF") return parsePdf(source.bytes);
-  if (kind === "MARKDOWN" || kind === "TEXT") {
-    const text = Buffer.from(source.bytes).toString("utf8").trim();
-    return parseTextSource(text);
-  }
+  if (kind === "MARKDOWN") return parseSimpleText(source.bytes, ".md");
+  if (kind === "TEXT") return parseSimpleText(source.bytes, ".txt");
   if (kind === "DOCX") return parseDocx(source.bytes);
 
   const ext = getFileExt(source.originalFilename);

@@ -140,7 +140,7 @@ ${materialsSection}
  */
 export function buildStructurePlanningSystemPrompt(): string {
   return `당신은 전문 학습 플래너 AI입니다.
-제공된 학습 자료의 메타정보(분량, 청크 수 등)를 바탕으로 최적의 학습 구조를 설계합니다.
+제공된 학습 자료의 메타정보(분량, 청크 수 등)와 문서 지도/섹션 요약을 바탕으로 최적의 학습 구조를 설계합니다.
 
 ## 세션 수 결정 가이드라인
 - 청크 2~3개당 1세션 권장 (청크 1개 ≈ 약 1000자, 학습 시간 약 5분)
@@ -152,6 +152,11 @@ export function buildStructurePlanningSystemPrompt(): string {
 - 하루 1~3세션 배치
 - 각 세션 25~50분
 - 자료(모듈)별로 세션 균등 분배
+
+## 문서 지도/섹션 요약 활용 원칙
+- 문서 지도(outline)는 "무엇을 어떤 순서로 학습할지"를 정하는 구조 신호입니다.
+- topicHint에는 가능한 한 섹션 제목/핵심 토픽을 반영하세요.
+- chunkRange는 실제 분량 배분을 위한 용도이므로, outline과 완벽히 1:1로 매핑되지 않아도 됩니다.
 `;
 }
 
@@ -167,18 +172,43 @@ export function buildStructurePlanningUserPrompt(params: {
   readonly materials: ReadonlyArray<{
     readonly title: string;
     readonly chunkCount: number;
+    readonly outline: ReadonlyArray<{
+      readonly depth: number;
+      readonly path: string;
+      readonly title: string;
+      readonly summary: string | null;
+      readonly keywords: ReadonlyArray<string> | null;
+      readonly metadataJson: {
+        readonly pageStart?: number;
+        readonly pageEnd?: number;
+        readonly lineStart?: number;
+        readonly lineEnd?: number;
+      } | null;
+    }>;
   }>;
   readonly totalChunkCount: number;
 }): string {
   const dueDate = params.targetDueDate.toISOString().slice(0, 10);
   const today = new Date().toISOString().slice(0, 10);
 
-  const materialsSection = params.materials
-    .map(
-      (mat, idx) =>
-        `- 자료 ${idx + 1}: "${mat.title}" (청크 ${mat.chunkCount}개, 예상 ${mat.chunkCount * 5}분)`,
-    )
-    .join("\n");
+  const materialsJson = JSON.stringify(
+    params.materials.map((mat, idx) => ({
+      index: idx + 1,
+      title: mat.title,
+      chunkCount: mat.chunkCount,
+      estimatedMinutes: mat.chunkCount * 5,
+      outline: mat.outline.map((n) => ({
+        depth: n.depth,
+        path: n.path,
+        title: n.title,
+        summary: n.summary,
+        keywords: n.keywords,
+        metadata: n.metadataJson,
+      })),
+    })),
+    null,
+    2,
+  );
 
   const sessionCountHint = params.requestedSessionCount
     ? `사용자 희망 세션 수: ${params.requestedSessionCount}개`
@@ -198,8 +228,11 @@ export function buildStructurePlanningUserPrompt(params: {
 - **목표 완료일**: ${dueDate}
 - **${sessionCountHint}**
 
-### 자료 분량 정보
-${materialsSection}
+### 자료 분량 및 구조 정보 (JSON)
+\`\`\`json
+${materialsJson}
+\`\`\`
+
 - **총 청크 수**: ${params.totalChunkCount}개
 - **권장 세션 수**: ${recommendedSessions}개 (청크 2~3개당 1세션 기준)
 

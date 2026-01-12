@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 
-import { inferMaterialSourceTypeFromFile } from "../../../ai/ingestion/parse";
-import { generateMaterialSummary } from "../../../ai/material";
+import {
+  inferMaterialSourceTypeFromFile,
+  parseFileBytesSource,
+} from "../../../ai/ingestion/parse";
 import { ingestMaterial } from "../../../ai/rag/ingest";
 import {
   copyObject,
@@ -16,6 +18,8 @@ import {
   CreateMaterialResult,
 } from "../material.dto";
 import { materialRepository } from "../material.repository";
+
+import { analyzeMaterialForOutline } from "./build-material-outline";
 
 import type { Result, ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -371,7 +375,22 @@ export async function completeMaterialUploadWithProgress(
 
     // Step 6: ANALYZING (60% -> 90%) - 가장 오래 걸리는 단계
     await notify("ANALYZING", 60);
-    const ingestResult = await ingestMaterial({
+    const parsed = await parseFileBytesSource({
+      bytes: tempBytes,
+      mimeType: session.mimeType,
+      originalFilename: session.originalFilename,
+      fileSize: tempBytes.length,
+    });
+
+    const analyzed = await analyzeMaterialForOutline({
+      materialId,
+      title,
+      fullText: parsed.fullText,
+      mimeType: session.mimeType,
+    });
+    const summary = analyzed.summary;
+
+    await ingestMaterial({
       userId,
       materialId,
       materialTitle: title,
@@ -380,13 +399,6 @@ export async function completeMaterialUploadWithProgress(
       bytes: tempBytes,
     });
     await notify("ANALYZING", 90, "🤖 분석이 거의 완료되었어요!");
-
-    const summaryResult = await generateMaterialSummary({
-      title,
-      fullText: ingestResult.fullText,
-      mimeType: session.mimeType,
-    });
-    const summary = summaryResult.summary;
 
     // Step 7: FINALIZING (95%)
     await notify("FINALIZING", 95);
@@ -398,7 +410,7 @@ export async function completeMaterialUploadWithProgress(
         sourceType,
         title,
         originalFilename: session.originalFilename,
-        rawText: ingestResult.fullText,
+        rawText: parsed.fullText,
         storageProvider: "R2",
         storageKey: finalKey,
         mimeType: session.mimeType,
@@ -410,6 +422,10 @@ export async function completeMaterialUploadWithProgress(
         createdAt,
         updatedAt: createdAt,
       }),
+    );
+
+    await unwrap(
+      materialRepository.replaceOutlineNodes(materialId, analyzed.outlineRows),
     );
 
     await unwrap(
@@ -470,6 +486,15 @@ export async function completeMaterialUploadWithProgress(
         await store.delete({
           filter: { userId, materialId },
         });
+      }
+    } catch {
+      // ignore cleanup error
+    }
+
+    // best-effort cleanup (material row)
+    try {
+      if (materialId) {
+        await unwrap(materialRepository.hardDelete(materialId));
       }
     } catch {
       // ignore cleanup error

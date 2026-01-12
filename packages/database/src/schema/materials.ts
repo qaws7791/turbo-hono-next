@@ -191,9 +191,16 @@ export const outlineNodes = pgTable(
     nodeType: outlineNodeTypeEnum("node_type").notNull(),
     title: text("title").notNull(),
     summary: text("summary"),
+    keywords: text("keywords").array(),
     orderIndex: integer("order_index").notNull(),
     depth: integer("depth").notNull(),
     path: text("path").notNull(),
+    metadataJson: jsonb("metadata_json").$type<{
+      pageStart?: number;
+      pageEnd?: number;
+      lineStart?: number;
+      lineEnd?: number;
+    }>(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .$defaultFn(() => new Date())
       .notNull(),

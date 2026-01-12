@@ -20,6 +20,13 @@ async function getMaterialsMetaForPlan(materialIds: ReadonlyArray<string>) {
   return materialRepository.findMaterialsMetaForPlan(materialIds);
 }
 
+async function getOutlineNodesForPlan(materialIds: ReadonlyArray<string>) {
+  const { materialRepository } = await import(
+    "../../modules/material/material.repository"
+  );
+  return materialRepository.findOutlineNodesForPlan(materialIds);
+}
+
 // ============================================
 // 2단계 파이프라인 (새로운 방식)
 // ============================================
@@ -35,6 +42,19 @@ async function fetchMaterialsMetadata(params: {
     readonly id: string;
     readonly title: string;
     readonly chunkCount: number;
+    readonly outline: ReadonlyArray<{
+      readonly depth: number;
+      readonly path: string;
+      readonly title: string;
+      readonly summary: string | null;
+      readonly keywords: ReadonlyArray<string> | null;
+      readonly metadataJson: {
+        readonly pageStart?: number;
+        readonly pageEnd?: number;
+        readonly lineStart?: number;
+        readonly lineEnd?: number;
+      } | null;
+    }>;
   }>
 > {
   // DB에서 자료 기본 정보 조회
@@ -48,9 +68,47 @@ async function fetchMaterialsMetadata(params: {
       id,
       title: "Unknown Material",
       chunkCount: 0,
+      outline: [],
     }));
   }
   const materialsMeta = metaResult.value;
+
+  const outlineResult = await getOutlineNodesForPlan(params.materialIds);
+  if (outlineResult.isErr()) {
+    logger.warn(
+      { error: outlineResult.error },
+      "[fetchMaterialsMetadata] outline 조회 실패",
+    );
+  }
+  const outlineRows = outlineResult.isOk() ? outlineResult.value : [];
+  const outlineByMaterialId = new Map<
+    string,
+    Array<{
+      readonly depth: number;
+      readonly path: string;
+      readonly title: string;
+      readonly summary: string | null;
+      readonly keywords: ReadonlyArray<string> | null;
+      readonly metadataJson: {
+        readonly pageStart?: number;
+        readonly pageEnd?: number;
+        readonly lineStart?: number;
+        readonly lineEnd?: number;
+      } | null;
+    }>
+  >();
+  for (const row of outlineRows) {
+    const current = outlineByMaterialId.get(row.materialId) ?? [];
+    current.push({
+      depth: row.depth,
+      path: row.path,
+      title: row.title,
+      summary: row.summary ?? null,
+      keywords: row.keywords ?? null,
+      metadataJson: row.metadataJson ?? null,
+    });
+    outlineByMaterialId.set(row.materialId, current);
+  }
 
   // 청크 통계 조회
   const statsResult = await getMaterialsChunkStats({
@@ -66,6 +124,7 @@ async function fetchMaterialsMetadata(params: {
       id: mat.id,
       title: mat.title,
       chunkCount: 0,
+      outline: [],
     }));
   }
   const statsMap = statsResult.value;
@@ -75,6 +134,7 @@ async function fetchMaterialsMetadata(params: {
     id: mat.id,
     title: mat.title,
     chunkCount: statsMap.get(mat.id)?.chunkCount ?? 0,
+    outline: outlineByMaterialId.get(mat.id) ?? [],
   }));
 }
 

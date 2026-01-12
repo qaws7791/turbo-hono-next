@@ -102,6 +102,19 @@ export type StructurePlanningInput = {
     readonly id: string;
     readonly title: string;
     readonly chunkCount: number;
+    readonly outline: ReadonlyArray<{
+      readonly depth: number;
+      readonly path: string;
+      readonly title: string;
+      readonly summary: string | null;
+      readonly keywords: ReadonlyArray<string> | null;
+      readonly metadataJson: {
+        readonly pageStart?: number;
+        readonly pageEnd?: number;
+        readonly lineStart?: number;
+        readonly lineEnd?: number;
+      } | null;
+    }>;
   }>;
 };
 
@@ -131,6 +144,7 @@ export async function generatePlanStructure(
     materials: input.materials.map((mat) => ({
       title: mat.title,
       chunkCount: mat.chunkCount,
+      outline: mat.outline,
     })),
     totalChunkCount,
   });
