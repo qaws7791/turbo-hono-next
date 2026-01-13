@@ -84,7 +84,9 @@ export async function createPlan(
   // 4. AI를 통한 개인화된 학습 계획 생성
   const now = new Date();
   const planPublicId = generatePublicId();
-  const targetDueDate = parseDateOnly(validated.targetDueDate);
+  const targetDueDate = validated.targetDueDate
+    ? parseDateOnly(validated.targetDueDate)
+    : null;
   const startDate = parseDateOnly(new Date().toISOString().slice(0, 10));
   const icon = validated.icon ?? "target";
   const color = validated.color ?? "blue";

@@ -1132,7 +1132,7 @@ export interface paths {
             /** @enum {string} */
             currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
             /** Format: date */
-            targetDueDate: string;
+            targetDueDate: string | null;
             specialRequirements?: string;
             icon?: string;
             color?: string;
@@ -1233,7 +1233,7 @@ export interface paths {
                 /** @enum {string} */
                 currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
                 /** Format: date */
-                targetDueDate: string;
+                targetDueDate: string | null;
                 specialRequirements: string | null;
                 /** Format: date-time */
                 createdAt: string;
@@ -2016,7 +2016,8 @@ export interface paths {
                   blueprintId: string;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<| {
+                  steps: Array<
+                    | {
                         id: string;
                         estimatedSeconds?: number;
                         /** @enum {string} */
@@ -2165,7 +2166,8 @@ export interface paths {
                           title: string;
                           description?: string;
                         };
-                      }>;
+                      }
+                  >;
                   /** @default 0 */
                   startStepIndex: number;
                 };

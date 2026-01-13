@@ -20,13 +20,12 @@ function computeTargetDueDate(input: {
   durationMode: "custom" | "adaptive";
   durationValue?: number;
   durationUnit?: "days" | "weeks" | "months";
-}): string {
-  const base = new Date();
+}): string | null {
   if (input.durationMode !== "custom") {
-    base.setDate(base.getDate() + 30);
-    return base.toISOString().slice(0, 10);
+    return null;
   }
 
+  const base = new Date();
   const rawValue = input.durationValue ?? 30;
   const value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 30;
   const unit = input.durationUnit ?? "days";

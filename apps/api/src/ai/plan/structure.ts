@@ -95,7 +95,7 @@ export type PlanStructure = z.infer<typeof PlanStructureSchema>;
 export type StructurePlanningInput = {
   readonly goalType: PlanGoalType;
   readonly currentLevel: PlanLevel;
-  readonly targetDueDate: Date;
+  readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly requestedSessionCount: number | null;
   readonly materials: ReadonlyArray<{

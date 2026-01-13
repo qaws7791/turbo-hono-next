@@ -50,7 +50,7 @@ export function buildSystemPrompt(): string {
 export function buildUserPrompt(params: {
   readonly goalType: PlanGoalType;
   readonly currentLevel: PlanLevel;
-  readonly targetDueDate: Date;
+  readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly materialContexts: ReadonlyArray<{
     readonly materialTitle: string;
@@ -58,7 +58,9 @@ export function buildUserPrompt(params: {
   }>;
   readonly materialCount: number;
 }): string {
-  const dueDate = params.targetDueDate.toISOString().slice(0, 10);
+  const dueDate = params.targetDueDate
+    ? params.targetDueDate.toISOString().slice(0, 10)
+    : "지정되지 않음";
   const today = new Date().toISOString().slice(0, 10);
 
   const materialsSection = params.materialContexts
@@ -166,7 +168,7 @@ export function buildStructurePlanningSystemPrompt(): string {
 export function buildStructurePlanningUserPrompt(params: {
   readonly goalType: PlanGoalType;
   readonly currentLevel: PlanLevel;
-  readonly targetDueDate: Date;
+  readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly requestedSessionCount: number | null;
   readonly materials: ReadonlyArray<{
@@ -188,7 +190,9 @@ export function buildStructurePlanningUserPrompt(params: {
   }>;
   readonly totalChunkCount: number;
 }): string {
-  const dueDate = params.targetDueDate.toISOString().slice(0, 10);
+  const dueDateStr = params.targetDueDate
+    ? params.targetDueDate.toISOString().slice(0, 10)
+    : "지정되지 않음 (학습량에 따라 자유롭게 결정)";
   const today = new Date().toISOString().slice(0, 10);
 
   const materialsJson = JSON.stringify(
@@ -212,7 +216,7 @@ export function buildStructurePlanningUserPrompt(params: {
 
   const sessionCountHint = params.requestedSessionCount
     ? `사용자 희망 세션 수: ${params.requestedSessionCount}개`
-    : `학습량에 맞춤 (AI가 적절한 세션 수 결정)`;
+    : `학습량에 맞춤 (AI가 분량에 맞춰 최적의 세션 수 결정)`;
 
   const recommendedSessions = Math.max(
     1,
@@ -225,8 +229,19 @@ export function buildStructurePlanningUserPrompt(params: {
 - **학습 목표**: ${GOAL_TYPE_LABELS[params.goalType]}
 - **현재 수준**: ${LEVEL_LABELS[params.currentLevel]}
 - **오늘 날짜**: ${today}
-- **목표 완료일**: ${dueDate}
+- **목표 완료일**: ${dueDateStr}
 - **${sessionCountHint}**
+
+${
+  !params.targetDueDate
+    ? `
+### 기간 및 분량 가이드 (매우 중요)
+- 현재 완료 목표일이 지정되지 않았습니다.
+- **기간에 관계없이 제공된 자료의 분량에만 집중**하여 가장 효과적으로 학습할 수 있는 세션 수를 결정하세요.
+- 권장 세션 수(${recommendedSessions}개)를 참고하되, AI가 판단하기에 더 효율적인 배분이 있다면 가감하여 결정해도 좋습니다.
+`
+    : ""
+}
 
 ### 자료 분량 및 구조 정보 (JSON)
 \`\`\`json
