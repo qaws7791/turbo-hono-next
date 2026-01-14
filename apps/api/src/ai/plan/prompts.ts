@@ -31,134 +31,33 @@ const LEVEL_CONSIDERATIONS: Record<PlanLevel, string> = {
 - 최신 트렌드와 베스트 프랙티스 포함`,
 };
 
-export function buildSystemPrompt(): string {
-  return `당신은 전문 학습 플래너 AI입니다.
-사용자가 제공한 학습 자료의 내용을 분석하고, 개인의 수준과 목표에 맞는 최적의 학습 계획을 생성합니다.
-
-## 역할
-1. 학습 자료 내용을 깊이 이해하고 핵심 개념을 파악합니다.
-2. 사용자의 현재 수준에 맞게 난이도를 조절합니다.
-3. 학습 목표를 고려하여 효과적인 커리큘럼을 설계합니다.
-
-## 규칙
-- 각 세션은 25~50분 단위로 구성합니다.
-- 하루에 1~3개의 세션을 배치합니다.
-- 모든 응답은 한국어로 작성합니다.
-- 세션 목표(objective)는 구체적이고 측정 가능하게 작성합니다.`;
-}
-
-export function buildUserPrompt(params: {
-  readonly goalType: PlanGoalType;
-  readonly currentLevel: PlanLevel;
-  readonly targetDueDate: Date | null;
-  readonly specialRequirements: string | null;
-  readonly materialContexts: ReadonlyArray<{
-    readonly materialTitle: string;
-    readonly content: string;
-  }>;
-  readonly materialCount: number;
-}): string {
-  const dueDate = params.targetDueDate
-    ? params.targetDueDate.toISOString().slice(0, 10)
-    : "지정되지 않음";
-  const today = new Date().toISOString().slice(0, 10);
-
-  const materialsSection = params.materialContexts
-    .map(
-      (ctx, idx) => `
-### 자료 ${idx + 1}: ${ctx.materialTitle}
-\`\`\`
-${ctx.content}
-\`\`\``,
-    )
-    .join("\n");
-
-  const requirementsSection = params.specialRequirements
-    ? `
-## 특별 요구사항
-${params.specialRequirements}`
-    : "";
-
-  return `## 학습 계획 생성 요청
-
-### 기본 정보
-- **학습 목표**: ${GOAL_TYPE_LABELS[params.goalType]}
-- **현재 수준**: ${LEVEL_LABELS[params.currentLevel]}
-- **오늘 날짜**: ${today}
-- **목표 완료일**: ${dueDate}
-- **자료 개수**: ${params.materialCount}개
-
-### 수준별 고려사항
-${LEVEL_CONSIDERATIONS[params.currentLevel]}
-${requirementsSection}
-
-## 학습 자료 내용
-${materialsSection}
-
-## 요청
-위 자료 내용과 사용자 정보를 바탕으로 개인화된 학습 계획을 생성해주세요.
-
-응답은 반드시 아래 JSON 형식을 따라주세요:
-\`\`\`json
-{
-  "title": "계획 제목 (예: JavaScript 기초 마스터하기)",
-  "summary": "계획 요약 설명 (2-3문장)",
-  "modules": [
-    {
-      "title": "모듈 제목",
-      "description": "모듈 설명",
-      "orderIndex": 0,
-      "materialIndex": 0
-    }
-  ],
-  "sessions": [
-    {
-      "sessionType": "LEARN",
-      "title": "세션 제목",
-      "objective": "구체적인 학습 목표",
-      "estimatedMinutes": 30,
-      "dayOffset": 0,
-      "moduleIndex": 0
-    }
-  ]
-}
-\`\`\`
-
-### JSON 필드 설명
-- modules.materialIndex: 0부터 시작하는 자료 인덱스 (자료 순서 그대로)
-- sessions.sessionType: "LEARN" (학습)
-- sessions.dayOffset: 오늘(0)부터 시작하는 일 수
-- sessions.moduleIndex: 해당 세션이 속한 모듈의 인덱스
-
-중요: JSON 외의 텍스트는 포함하지 마세요.`;
-}
-
 // ============================================
 // 2단계 파이프라인용 프롬프트
 // ============================================
 
 /**
  * 1단계: 구조 설계를 위한 시스템 프롬프트
+ * - 모듈 구조 설계에 집중 (sessionSkeletons 제거)
+ * - 각 모듈에 sessionCount를 배정하여 2단계에서 모듈 단위로 세션 생성
  */
 export function buildStructurePlanningSystemPrompt(): string {
   return `당신은 전문 학습 플래너 AI입니다.
-제공된 학습 자료의 메타정보(분량, 청크 수 등)와 문서 지도/섹션 요약을 바탕으로 최적의 학습 구조를 설계합니다.
+제공된 학습 자료의 메타정보(분량, 청크 수 등)와 문서 구조를 바탕으로 최적의 학습 모듈 구조를 설계합니다.
 
-## 세션 수 결정 가이드라인
+## 모듈 설계 원칙
+- 각 모듈은 논리적으로 연관된 주제들을 묶습니다
+- 모듈별로 1~10개의 세션을 배정합니다 (sessionCount)
+- 모듈의 chunkRange는 해당 모듈이 담당하는 자료의 범위입니다
+
+## 세션 수 분배 가이드라인
 - 청크 2~3개당 1세션 권장 (청크 1개 ≈ 약 1000자, 학습 시간 약 5분)
-- 최소 1세션, 최대 90세션
-- 사용자가 세션 수를 지정한 경우 해당 값을 존중하되, 지나치게 비현실적이면 적절히 조절
-  예) 청크 2개인데 50세션 요청 → 2~3세션으로 조절하고 reasoning에 이유 설명
+- 모듈별 청크 분량에 비례하여 sessionCount를 할당하세요
+- 모든 모듈의 sessionCount 합이 전체 권장 세션 수와 근접해야 합니다
+- 사용자가 세션 수를 지정한 경우 해당 값을 존중하되, 비현실적이면 적절히 조절
 
-## 세션 배치 원칙
-- 하루 1~3세션 배치
-- 각 세션 25~50분
-- 자료(모듈)별로 세션 균등 분배
-
-## 문서 지도/섹션 요약 활용 원칙
-- 문서 지도(outline)는 "무엇을 어떤 순서로 학습할지"를 정하는 구조 신호입니다.
-- topicHint에는 가능한 한 섹션 제목/핵심 토픽을 반영하세요.
-- chunkRange는 실제 분량 배분을 위한 용도이므로, outline과 완벽히 1:1로 매핑되지 않아도 됩니다.
+## 문서 구조 활용 원칙
+- 문서 지도(outline)를 참고하여 모듈의 논리적 경계를 결정하세요
+- chunkRange는 실제 분량 배분을 위한 용도입니다
 `;
 }
 
@@ -260,57 +159,67 @@ ${params.specialRequirements ? `\n### 특별 요구사항\n${params.specialRequi
 }
 
 /**
- * 2단계: 세션 상세화를 위한 시스템 프롬프트
+ * 2단계: 모듈별 세션 일괄 생성을 위한 시스템 프롬프트
+ * - 기존: 개별 세션 상세화 → 변경: 모듈 내 모든 세션 일괄 생성
  */
-export function buildSessionPopulationSystemPrompt(): string {
-  return `당신은 학습 세션 설계 전문가입니다.
-제공된 학습 자료 청크를 바탕으로 세션의 제목과 학습 목표를 구체화합니다.
+export function buildModulePopulationSystemPrompt(): string {
+  return `당신은 학습 모듈 설계 전문가입니다.
+제공된 학습 자료 청크들을 바탕으로 모듈 내 여러 세션을 일괄 설계합니다.
 
 ## 세션 설계 원칙
-- 제목: 구체적이고 동기부여가 되는 표현 (예: "핵심 개념 마스터하기")
-- 목표: SMART 원칙에 따라 측정 가능하게 작성
+- 모듈의 전체 흐름을 고려하여 세션을 순차적으로 구성합니다
+- 각 세션은 이전 세션의 내용을 자연스럽게 이어받아야 합니다
+- 세션 제목: 구체적이고 동기부여가 되는 표현 (120자 이내)
+- 학습 목표: SMART 원칙에 따라 측정 가능하게 (200자 이내)
 - 모든 응답은 한국어로 작성
 
+## 시간 배분
+- 각 세션 예상 학습 시간은 25~50분 사이로 설정
+- 청크 분량에 비례하여 시간 할당
+
+## 청크 할당
+- 각 세션에 담당할 청크 범위를 지정하세요 (모듈 내 상대 인덱스, 0부터 시작)
+- 청크는 순차적으로 할당되어야 하며, 겹치거나 빠지는 청크가 없어야 합니다
+
 ## 응답 형식
-반드시 JSON 형식으로 응답하세요.`;
+반드시 세션 객체의 배열로 응답하세요.`;
 }
 
 /**
- * 2단계: 세션 상세화를 위한 사용자 프롬프트
+ * 2단계: 모듈별 세션 일괄 생성을 위한 사용자 프롬프트
  */
-export function buildSessionPopulationUserPrompt(params: {
+export function buildModulePopulationUserPrompt(params: {
   readonly moduleTitle: string;
-  readonly sessionIndex: number;
-  readonly totalSessions: number;
-  readonly topicHint: string;
+  readonly moduleDescription: string;
+  readonly moduleIndex: number;
+  readonly totalModules: number;
+  readonly sessionCount: number;
   readonly chunkContents: ReadonlyArray<string>;
   readonly currentLevel: PlanLevel;
 }): string {
   const chunksSection = params.chunkContents
-    .map((content, idx) => `### 청크 ${idx + 1}\n${content}`)
+    .map((content, idx) => `### 청크 ${idx + 1} (인덱스: ${idx})\n${content}`)
     .join("\n\n");
 
-  return `## 세션 상세화 요청
+  return `## 모듈 세션 일괄 생성 요청
 
-### 세션 정보
-- **모듈**: ${params.moduleTitle}
-- **세션**: ${params.sessionIndex + 1}/${params.totalSessions}
-- **주제 힌트**: ${params.topicHint}
+### 모듈 정보
+- **모듈 제목**: ${params.moduleTitle}
+- **모듈 설명**: ${params.moduleDescription}
+- **모듈 순서**: ${params.moduleIndex + 1}/${params.totalModules}
+- **생성할 세션 수**: ${params.sessionCount}개
+- **제공된 청크 수**: ${params.chunkContents.length}개
 - **학습자 수준**: ${LEVEL_LABELS[params.currentLevel]}
 
 ### 학습 자료 내용
 ${chunksSection}
 
 ## 요청
-위 내용을 바탕으로 세션의 제목과 학습 목표를 작성해주세요.
+위 내용을 바탕으로 정확히 ${params.sessionCount}개의 세션을 설계해주세요.
+각 세션은 모듈의 흐름에 맞게 순차적으로 구성되어야 합니다.
 
-응답은 반드시 아래 JSON 형식을 따라주세요:
-\`\`\`json
-{
-  "title": "세션 제목 (구체적이고 동기부여가 되는 표현)",
-  "objective": "학습 목표 (SMART 원칙에 따라 측정 가능하게)"
-}
-\`\`\`
-
-중요: JSON 외의 텍스트는 포함하지 마세요.`;
+**중요**: 
+- 청크 인덱스는 0부터 시작하는 모듈 내 상대 인덱스입니다
+- 모든 청크가 세션에 할당되어야 합니다
+- 청크는 순차적으로 할당하세요 (예: 세션1이 0-2, 세션2가 3-5)`;
 }

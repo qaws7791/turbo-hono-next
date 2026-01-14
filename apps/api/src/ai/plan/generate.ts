@@ -209,13 +209,17 @@ async function generatePlanWithTwoPhase(
 
   logger.info(
     {
-      sessionCount: structure.sessionCount,
+      moduleCount: structure.modules.length,
+      totalSessionCount: structure.modules.reduce(
+        (sum, m) => sum + m.sessionCount,
+        0,
+      ),
       reasoning: structure.reasoning,
     },
     "[generatePlanWithTwoPhase] 구조 설계 완료",
   );
 
-  // 3. [2단계] 세션 상세화 (병렬 처리)
+  // 3. [2단계] 모듈별 세션 생성 (병렬 처리)
   const populatedSessions = await populateAllSessions(
     structure,
     {
@@ -223,7 +227,7 @@ async function generatePlanWithTwoPhase(
       materials: materialsWithStats,
       currentLevel: input.currentLevel,
     },
-    { concurrency: 5 },
+    { concurrency: 3 }, // 모듈 단위 호출이므로 동시성 감소
   );
 
   // 4. 결과 변환
@@ -241,8 +245,8 @@ async function generatePlanWithTwoPhase(
 /**
  * AI 기반 개인화된 학습 계획 생성 (2단계 파이프라인)
  *
- * 1단계: 메타정보 기반 구조 설계 - 자료 분량에 맞는 세션 수 결정
- * 2단계: 세션별 상세 내용 생성 - 각 세션에 해당하는 청크로 제목/목표 생성
+ * 1단계: 메타정보 기반 구조 설계 - 모듈 구조와 모듈별 세션 수 결정
+ * 2단계: 모듈별 세션 생성 - 각 모듈의 청크로 세션 제목/목표 일괄 생성
  *
  * 에러 발생 시 폴백 없이 그대로 전파됩니다.
  */
