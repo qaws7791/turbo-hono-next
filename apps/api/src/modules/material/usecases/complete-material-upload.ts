@@ -65,19 +65,6 @@ function normalizeMimeType(value: string | null): string | null {
   return value.split(";")[0]?.trim().toLowerCase() ?? null;
 }
 
-function inferTitle(params: {
-  readonly title: string | undefined;
-  readonly titleHint: string | null;
-  readonly originalFilename: string | null;
-}): string {
-  return (
-    params.title?.trim() ||
-    params.titleHint ||
-    params.originalFilename ||
-    "Untitled"
-  );
-}
-
 async function unwrap<T>(
   result: ResultAsync<T, AppError> | Promise<Result<T, AppError>>,
 ): Promise<T> {
@@ -310,12 +297,6 @@ export function completeMaterialUpload(
       });
       await deleteObject({ key: session.objectKey });
 
-      const title = inferTitle({
-        title: validated.title,
-        titleHint: null,
-        originalFilename: session.originalFilename,
-      });
-
       const parsed = await parseFileBytesSource({
         bytes: tempBytes,
         mimeType: session.mimeType,
@@ -325,16 +306,16 @@ export function completeMaterialUpload(
 
       const analyzed = await analyzeMaterialForOutline({
         materialId,
-        title,
         fullText: parsed.fullText,
         mimeType: session.mimeType,
       });
       const summary = analyzed.summary;
+      const finalTitle = analyzed.title;
 
       await ingestMaterial({
         userId,
         materialId,
-        materialTitle: title,
+        materialTitle: finalTitle,
         originalFilename: session.originalFilename ?? null,
         mimeType: session.mimeType,
         bytes: tempBytes,
@@ -346,7 +327,7 @@ export function completeMaterialUpload(
           id: materialId,
           userId,
           sourceType,
-          title,
+          title: finalTitle,
           originalFilename: session.originalFilename,
           rawText: parsed.fullText,
           storageProvider: "R2",
@@ -382,7 +363,7 @@ export function completeMaterialUpload(
       return CreateMaterialResult.parse({
         mode: "sync",
         materialId,
-        title,
+        title: finalTitle,
         processingStatus: "READY",
         summary,
       });

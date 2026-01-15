@@ -7,7 +7,6 @@ type OutlineNodeRow = NewOutlineNode;
 
 type BuildOutlineParams = {
   readonly materialId: string;
-  readonly title: string;
   readonly fullText: string;
   readonly mimeType: string | null;
 };
@@ -88,10 +87,10 @@ export async function analyzeMaterialForOutline(
   params: BuildOutlineParams,
 ): Promise<{
   readonly summary: string;
+  readonly title: string;
   readonly outlineRows: ReadonlyArray<OutlineNodeRow>;
 }> {
   const analyzed = await analyzeMaterial({
-    title: params.title,
     fullText: params.fullText,
     mimeType: params.mimeType,
   });
@@ -104,7 +103,7 @@ export async function analyzeMaterialForOutline(
     materialId: params.materialId,
     parentId: null,
     nodeType: "SECTION",
-    title: params.title,
+    title: analyzed.title,
     summary: analyzed.summary,
     keywords: [],
     orderIndex: 0,
@@ -122,5 +121,9 @@ export async function analyzeMaterialForOutline(
     maxNodes: 200,
   });
 
-  return { summary: analyzed.summary, outlineRows: [rootRow, ...childRows] };
+  return {
+    summary: analyzed.summary,
+    title: analyzed.title,
+    outlineRows: [rootRow, ...childRows],
+  };
 }
