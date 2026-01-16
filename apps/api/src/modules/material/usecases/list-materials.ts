@@ -1,10 +1,10 @@
 import { err, ok } from "neverthrow";
 
 import { createPaginationMeta } from "../../../lib/pagination";
+import { isoDateRequired } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { ListMaterialsInput, ListMaterialsResponse } from "../material.dto";
 import { materialRepository } from "../material.repository";
-import { isoDateRequired } from "../material.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";

@@ -1,11 +1,11 @@
 import { err, ok } from "neverthrow";
 
-import { retrieveChunkRange } from "../../../ai/rag/retrieve";
-import { generateSessionBlueprintWithAi } from "../../../ai/session/generate-blueprint";
+import { ragRetriever } from "../../../ai/rag";
+import { sessionBlueprintGenerator } from "../../../ai/session";
+import { isoDateTime } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { SessionBlueprint, SessionRunDetailResponse } from "../session.dto";
 import { sessionRepository } from "../session.repository";
-import { isoDateTime } from "../session.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -59,10 +59,13 @@ export async function getRunDetail(
   if (!blueprint) {
     try {
       const chunkContents: Array<string> = [];
-      if (detail.session.sourceReferences.length > 0) {
+      if (
+        detail.session.sourceReferences &&
+        detail.session.sourceReferences.length > 0
+      ) {
         const chunksList = await Promise.all(
           detail.session.sourceReferences.map((ref) =>
-            retrieveChunkRange({
+            ragRetriever.retrieveRange({
               userId,
               materialId: ref.materialId,
               startIndex: ref.chunkRange.start,
@@ -75,7 +78,7 @@ export async function getRunDetail(
         }
       }
 
-      const generated = await generateSessionBlueprintWithAi({
+      const generated = await sessionBlueprintGenerator.generate({
         sessionType,
         planTitle: detail.plan.title,
         moduleTitle,

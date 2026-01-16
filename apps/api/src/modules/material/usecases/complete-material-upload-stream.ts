@@ -1,10 +1,7 @@
 import { createHash } from "node:crypto";
 
-import {
-  inferMaterialSourceTypeFromFile,
-  parseFileBytesSource,
-} from "../../../ai/ingestion/parse";
-import { ingestMaterial } from "../../../ai/rag/ingest";
+import { documentParser } from "../../../ai/ingestion/parse";
+import { ragIngestor, ragVectorStoreManager } from "../../../ai/rag";
 import {
   copyObject,
   deleteObject,
@@ -337,7 +334,7 @@ export async function completeMaterialUploadWithProgress(
       );
     }
 
-    const sourceType = inferMaterialSourceTypeFromFile({
+    const sourceType = documentParser.inferMaterialSourceTypeFromFile({
       mimeType: session.mimeType,
       originalFilename: session.originalFilename,
     });
@@ -375,7 +372,7 @@ export async function completeMaterialUploadWithProgress(
 
     // Step 6: ANALYZING (60% -> 90%) - 가장 오래 걸리는 단계
     await notify("ANALYZING", 60);
-    const parsed = await parseFileBytesSource({
+    const parsed = await documentParser.parseFileBytesSource({
       bytes: tempBytes,
       mimeType: session.mimeType,
       originalFilename: session.originalFilename,
@@ -384,13 +381,12 @@ export async function completeMaterialUploadWithProgress(
 
     const analyzed = await analyzeMaterialForOutline({
       materialId,
-      title,
       fullText: parsed.fullText,
       mimeType: session.mimeType,
     });
     const summary = analyzed.summary;
 
-    await ingestMaterial({
+    await ragIngestor.ingest({
       userId,
       materialId,
       materialTitle: title,
@@ -403,14 +399,16 @@ export async function completeMaterialUploadWithProgress(
     // Step 7: FINALIZING (95%)
     await notify("FINALIZING", 95);
     const createdAt = new Date();
+    const cleanTitle = title.replace(/\0/g, "");
+    const cleanSummary = summary?.replace(/\0/g, "") ?? null;
+
     await unwrap(
       materialRepository.insertMaterial({
         id: materialId,
         userId,
         sourceType,
-        title,
+        title: cleanTitle,
         originalFilename: session.originalFilename,
-        rawText: parsed.fullText,
         storageProvider: "R2",
         storageKey: finalKey,
         mimeType: session.mimeType,
@@ -418,7 +416,7 @@ export async function completeMaterialUploadWithProgress(
         checksum,
         processingStatus: "READY",
         processedAt: createdAt,
-        summary,
+        summary: cleanSummary,
         createdAt,
         updatedAt: createdAt,
       }),
@@ -476,19 +474,15 @@ export async function completeMaterialUploadWithProgress(
       // ignore cleanup error
     }
 
-    // best-effort cleanup (vector index)
-    try {
-      if (materialId) {
-        const { getVectorStoreForUser } = await import(
-          "../../../ai/rag/vector-store"
-        );
-        const store = await getVectorStoreForUser({ userId });
+    if (materialId) {
+      try {
+        const store = await ragVectorStoreManager.getStoreForUser({ userId });
         await store.delete({
           filter: { userId, materialId },
         });
+      } catch {
+        // ignore cleanup error
       }
-    } catch {
-      // ignore cleanup error
     }
 
     // best-effort cleanup (material row)

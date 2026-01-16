@@ -1,6 +1,6 @@
 import { err, ok } from "neverthrow";
 
-import { isSupportedMaterialFile } from "../../../ai/ingestion/parse";
+import { documentParser } from "../../../ai/ingestion/parse";
 import { createPresignedPutUrl } from "../../../lib/r2";
 import { ApiError } from "../../../middleware/error-handler";
 import {
@@ -61,7 +61,7 @@ export async function initiateMaterialUpload(
   }
 
   // 3. 파일 형식 검증
-  if (!isSupportedMaterialFile({ mimeType, originalFilename })) {
+  if (!documentParser.isSupportedMaterialFile({ mimeType, originalFilename })) {
     return err(
       new ApiError(
         400,

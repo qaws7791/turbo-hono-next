@@ -10,7 +10,7 @@
 
 ### 금지/제한 범주
 
-MVP에서는 별도 필터링 없이 OpenAI 기본 필터 의존
+MVP에서는 별도 필터링 없이 모델(Provider) 기본 안전 필터에 1차 의존
 
 ### 향후 대응
 
@@ -24,16 +24,9 @@ MVP에서는 별도 필터링 없이 OpenAI 기본 필터 의존
 
 ## 모델 응답 필터링
 
-### OpenAI 기본 필터
+### 모델 기본 필터
 
-- content_filter 결과 확인
-- 필터링된 응답 시 대체 메시지
-
-```typescript
-if (response.choices[0].finish_reason === "content_filter") {
-  return { content: "이 질문에는 답변드릴 수 없습니다." };
-}
-```
+- 모델 응답이 차단/필터링된 경우 대체 메시지 반환
 
 ---
 

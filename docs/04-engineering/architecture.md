@@ -50,8 +50,8 @@ flowchart LR
   end
 
   subgraph X[External]
-    OAIE[OpenAI Embeddings API]
-    OAIL[OpenAI GPT-5-mini API]
+    GEME[Gemini Embeddings API]
+    GEML[Gemini LLM API]
   end
 
   B --> FE --> API
@@ -59,8 +59,8 @@ flowchart LR
   SV --> DB
   SV --> R2
   SV --> AI
-  AI --> OAIE
-  AI --> OAIL
+  AI --> GEME
+  AI --> GEML
   DB --- VEC
 ```
 
@@ -71,7 +71,7 @@ flowchart LR
 - **PostgreSQL(Neon)**: 핵심 엔티티(Plans/Sessions/Materials) 및 운영 메타데이터
 - **pgvector**: 임베딩 벡터 및 검색용 인덱스(문서 청크 기반)
 - **R2**: 원본 파일(PDF 등) 저장, 다운로드/미리보기용 서명 URL 제공 가능
-- **OpenAI**: 임베딩 생성 및 LLM 응답 생성
+- **Gemini**: 임베딩 생성 및 LLM 응답 생성
 - **LangChain**: RAG 체인 구성(리트리버/프롬프트/후처리), 확장 가능한 오케스트레이션 계층
 
 ---
@@ -172,7 +172,7 @@ sequenceDiagram
   participant API
   participant R2 as Cloudflare R2
   participant DB as Postgres(Neon)
-  participant Emb as OpenAI Embeddings
+  participant Emb as Gemini Embeddings
 
   Client->>API: POST /materials (file + metadata)
   API->>R2: Upload raw file
@@ -209,7 +209,7 @@ sequenceDiagram
   participant Client
   participant API
   participant DB as Postgres(Neon)
-  participant LLM as OpenAI LLM
+  participant LLM as Gemini LLM
 
   Client->>API: POST /plans (selectedMaterialIds, metadata)
   API->>DB: Validate ownership + materials status
@@ -238,7 +238,7 @@ sequenceDiagram
   participant Client
   participant API
   participant DB as Postgres(Neon)
-  participant LLM as OpenAI LLM
+  participant LLM as Gemini LLM
 
   Client->>API: POST /chat (planId, sessionId, message)
   API->>DB: Load Plan snapshot + session context
@@ -329,7 +329,7 @@ sequenceDiagram
 ## 5.4. 운영 관측성(Observability)
 
 - 요청 단위 로그(요청ID/사용자ID/planId 등)와 에러 스택을 남깁니다.
-- AI 호출(OpenAI)은 **비용/지연/실패율**이 중요하므로 다음 메트릭을 권장합니다.
+- AI 호출(Gemini)은 **비용/지연/실패율**이 중요하므로 다음 메트릭을 권장합니다.
   - 임베딩 호출 수/토큰 추정/지연
   - LLM 호출 수/지연/재시도
   - RAG 검색 Top-K 및 hit rate(선택)

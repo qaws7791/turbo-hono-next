@@ -69,7 +69,7 @@ interface Chunk {
 
 ### 모델
 
-- **OpenAI text-embedding-3-small** (MVP)
+- **Gemini gemini-embedding-001** (MVP)
 - 차원: 1536
 
 ### 배치 처리
@@ -79,10 +79,7 @@ async function embedChunks(chunks: Chunk[]) {
   const batchSize = 100;
   for (let i = 0; i < chunks.length; i += batchSize) {
     const batch = chunks.slice(i, i + batchSize);
-    const vectors = await openai.embeddings.create({
-      model: "text-embedding-3-small",
-      input: batch.map((c) => c.content),
-    });
+    const { vectors } = await embedTexts(batch.map((c) => c.content));
     await storeEmbeddings(batch, vectors);
   }
 }

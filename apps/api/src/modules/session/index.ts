@@ -5,9 +5,9 @@ export { createRunActivity } from "./usecases/create-run-activity";
 export { createRunCheckin } from "./usecases/create-run-checkin";
 export { getHomeQueue } from "./usecases/get-home-queue";
 export { getRunDetail } from "./usecases/get-run-detail";
-export { listSessionRuns } from "./usecases/list-session-runs";
 export { listRunActivities } from "./usecases/list-run-activities";
 export { listRunCheckins } from "./usecases/list-run-checkins";
+export { listSessionRuns } from "./usecases/list-session-runs";
 export { saveProgress } from "./usecases/save-progress";
 export { updatePlanSession } from "./usecases/update-plan-session";
 
@@ -21,20 +21,19 @@ export type {
   CreateSessionRunResponse,
   CreateSessionRunResult,
   HomeQueueResponse,
-  ListSessionRunsInput,
-  ListSessionRunsResponse,
-  SessionRunListItem,
-  SessionBlueprint,
-  SessionCheckin,
-  SessionActivity,
   ListSessionActivitiesResponse,
   ListSessionCheckinsResponse,
+  ListSessionRunsInput,
+  ListSessionRunsResponse,
+  SessionActivity,
+  SessionCheckin,
   SessionExitReason,
   SessionRunDetailResponse,
+  SessionRunListItem,
   SessionRunStatus,
+  SessionStep,
   UpdatePlanSessionInput,
   UpdatePlanSessionResponse,
-  SessionStep,
   UpdateSessionRunProgressInput,
   UpdateSessionRunProgressResponse,
 } from "./session.dto";

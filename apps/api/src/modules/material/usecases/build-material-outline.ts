@@ -1,4 +1,4 @@
-import { analyzeMaterial } from "../../../ai/material";
+import { materialAnalyzer } from "../../../ai/material";
 
 import type { NewOutlineNode } from "@repo/database/types";
 import type { MaterialOutlineNode } from "../../../ai/material";
@@ -55,8 +55,8 @@ function flattenOutline(params: {
         materialId: params.materialId,
         parentId,
         nodeType: node.nodeType,
-        title: node.title,
-        summary: node.summary,
+        title: node.title.replace(/\0/g, ""),
+        summary: node.summary.replace(/\0/g, ""),
         keywords: [...node.keywords],
         orderIndex: i,
         depth,
@@ -90,7 +90,7 @@ export async function analyzeMaterialForOutline(
   readonly title: string;
   readonly outlineRows: ReadonlyArray<OutlineNodeRow>;
 }> {
-  const analyzed = await analyzeMaterial({
+  const analyzed = await materialAnalyzer.analyze({
     fullText: params.fullText,
     mimeType: params.mimeType,
   });
@@ -98,13 +98,16 @@ export async function analyzeMaterialForOutline(
   const rootId = crypto.randomUUID();
   const rootPath = "0";
 
+  const cleanTitle = analyzed.title.replace(/\0/g, "");
+  const cleanSummary = analyzed.summary.replace(/\0/g, "");
+
   const rootRow: OutlineNodeRow = {
     id: rootId,
     materialId: params.materialId,
     parentId: null,
     nodeType: "SECTION",
-    title: analyzed.title,
-    summary: analyzed.summary,
+    title: cleanTitle,
+    summary: cleanSummary,
     keywords: [],
     orderIndex: 0,
     depth: 0,
@@ -122,8 +125,8 @@ export async function analyzeMaterialForOutline(
   });
 
   return {
-    summary: analyzed.summary,
-    title: analyzed.title,
+    summary: cleanSummary,
+    title: cleanTitle,
     outlineRows: [rootRow, ...childRows],
   };
 }

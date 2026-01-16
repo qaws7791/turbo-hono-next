@@ -60,7 +60,7 @@ app.post("/materials", async (c) => {
 ### AI Layer (테스트 가능하게)
 
 - Ingestion, Retrieval, Generation 분리
-- 외부 API(OpenAI) 호출 격리
+- 외부 API(Gemini) 호출 격리
 - Mock 가능한 인터페이스
 
 ---

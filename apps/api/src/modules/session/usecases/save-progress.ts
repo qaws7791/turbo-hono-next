@@ -1,12 +1,12 @@
 import { err, ok } from "neverthrow";
 
+import { isoDateTime } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import {
   UpdateSessionRunProgressInput,
   UpdateSessionRunProgressResponse,
 } from "../session.dto";
 import { sessionRepository } from "../session.repository";
-import { isoDateTime } from "../session.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";

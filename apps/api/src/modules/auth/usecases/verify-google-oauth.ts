@@ -1,6 +1,11 @@
 import { err, ok } from "neverthrow";
 
 import { CONFIG } from "../../../lib/config";
+import {
+  computeSessionExpiresAt,
+  generateToken,
+  sha256Hex,
+} from "../auth.utils";
 import { ApiError } from "../../../middleware/error-handler";
 import { VerifyGoogleOAuthInput } from "../auth.dto";
 import {
@@ -16,11 +21,6 @@ import {
   updateUserLastLogin,
   updateUserProfile,
 } from "../auth.repository";
-import {
-  computeSessionExpiresAt,
-  generateToken,
-  sha256Hex,
-} from "../auth.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";

@@ -1,12 +1,9 @@
 import { err, ok } from "neverthrow";
 
+import { parseDateOnly } from "../../../lib/utils/date";
 import { HomeQueueResponse } from "../session.dto";
 import { sessionRepository } from "../session.repository";
-import {
-  computeStreakDays,
-  generateCoachingMessage,
-  parseDateOnly,
-} from "../session.utils";
+import { computeStreakDays, generateCoachingMessage } from "../session.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";

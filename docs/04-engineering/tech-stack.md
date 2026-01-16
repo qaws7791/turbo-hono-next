@@ -86,17 +86,17 @@
 
 ## AI/ML
 
-| 기술                  | 용도                         |
-| --------------------- | ---------------------------- |
-| **LangChain**         | RAG 파이프라인               |
-| **OpenAI GPT-5-mini** | LLM 및 임베딩                |
-| **pdf-parse**         | PDF 텍스트 추출              |
-| **neverthrow**        | 타입 안전한 에러 핸들링 (BE) |
+| 기술           | 용도                         |
+| -------------- | ---------------------------- |
+| **LangChain**  | RAG 파이프라인               |
+| **Gemini**     | LLM 및 임베딩                |
+| **pdf-parse**  | PDF 텍스트 추출              |
+| **neverthrow** | 타입 안전한 에러 핸들링 (BE) |
 
 ### 의사결정 근거
 
 - LangChain은 RAG 파이프라인 구축에 유연함
-- OpenAI는 임베딩과 생성 모두 지원
+- Gemini는 임베딩과 생성 모두 지원
 - PDF 처리를 위한 pdf-parse 및 pdfjs-dist 라이브러리 사용
 - neverthrow를 통해 Result 패턴 기반의 예측 가능한 에러 처리 도입
 

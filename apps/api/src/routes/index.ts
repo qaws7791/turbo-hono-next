@@ -1,5 +1,4 @@
 import { registerAuthRoutes } from "./auth";
-import { registerChatRoutes } from "./chat";
 import { registerMaterialRoutes } from "./materials";
 import { registerPlanRoutes } from "./plans";
 import { registerSessionRoutes } from "./sessions";
@@ -13,5 +12,4 @@ export function registerRoutes(app: OpenAPIHono): void {
   registerMaterialRoutes(app);
   registerPlanRoutes(app);
   registerSessionRoutes(app);
-  registerChatRoutes(app);
 }

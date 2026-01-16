@@ -1,12 +1,12 @@
 import { err, ok } from "neverthrow";
 
-import { generatePlanWithAi } from "../../../ai/plan/generate";
+import { generatePlanWithAi } from "../../../ai/plan";
 import { logger } from "../../../lib/logger";
 import { generatePublicId } from "../../../lib/public-id";
+import { addDays, parseDateOnly } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { CreatePlanInput, CreatePlanResponse } from "../plan.dto";
 import { planRepository } from "../plan.repository";
-import { addDays, parseDateOnly } from "../plan.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -132,6 +132,11 @@ export async function createPlan(
     { userId, moduleRows, sessions },
     "createPlan - moduleRows, sessions",
   );
+
+  const sessionCount = sessions.length;
+  const finalTargetDueDate = targetDueDate
+    ? targetDueDate
+    : addDays(new Date(), sessionCount);
   // 6. Plan 트랜잭션 생성
   const createResult = await planRepository.createPlanTransaction({
     userId,
@@ -144,7 +149,7 @@ export async function createPlan(
       status: "ACTIVE",
       goalType: validated.goalType,
       currentLevel: validated.currentLevel,
-      targetDueDate,
+      targetDueDate: finalTargetDueDate,
       specialRequirements: validated.specialRequirements ?? null,
       startedAt: now,
       createdAt: now,

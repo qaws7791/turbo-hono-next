@@ -1,18 +1,4 @@
-export function parseDateOnly(isoDate: string): Date {
-  const [year, month, day] = isoDate.split("-").map((value) => Number(value));
-  if (!year || !month || !day) return new Date(isoDate);
-  return new Date(Date.UTC(year, month - 1, day));
-}
-
-export function addDays(date: Date, days: number): Date {
-  const next = new Date(date.getTime());
-  next.setUTCDate(next.getUTCDate() + days);
-  return next;
-}
-
-export function isoDateTime(value: Date): string {
-  return value.toISOString();
-}
+import { addDays } from "../../lib/utils/date";
 
 /**
  * 학습 날짜 목록에서 연속 학습 일수를 계산합니다.
@@ -26,11 +12,7 @@ export function computeStreakDays(
 
   const todayStr = today.toISOString().slice(0, 10);
   const sortedDates = studyDates
-    .map((d) =>
-      (d instanceof Date ? d : new Date(d as string))
-        .toISOString()
-        .slice(0, 10),
-    )
+    .map((d) => d.toISOString().slice(0, 10))
     .sort((a, b) => b.localeCompare(a)); // 최신순 정렬
 
   // 오늘 학습하지 않았으면 streak 0

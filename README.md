@@ -104,9 +104,9 @@ R2_ENDPOINT=
 R2_PUBLIC_URL=
 
 # (선택) AI
-OPENAI_API_KEY=
-OPENAI_CHAT_MODEL=gpt-4o-mini
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+GEMINI_API_KEY=
+GEMINI_CHAT_MODEL=gemini-2.5-flash-lite
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 ```
 
 추가 환경 변수 참고:
@@ -203,7 +203,7 @@ flowchart LR
     direction TB
     PG[("🟣 PostgreSQL<br/>(pgvector)")]
     R2["🪣 Cloudflare R2<br/>(File Storage)"]
-    OAI["🤖 OpenAI API<br/>(Embedding/Chat)"]
+    GEM["🤖 Gemini API<br/>(Embedding/Chat)"]
     GOOG["🔐 Google OAuth"]
     RS["✉️ Resend<br/>(Email)"]
   end

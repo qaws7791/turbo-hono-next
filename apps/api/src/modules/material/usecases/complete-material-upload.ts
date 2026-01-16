@@ -1,10 +1,7 @@
 import { createHash } from "node:crypto";
 
-import {
-  inferMaterialSourceTypeFromFile,
-  parseFileBytesSource,
-} from "../../../ai/ingestion/parse";
-import { ingestMaterial } from "../../../ai/rag/ingest";
+import { documentParser } from "../../../ai/ingestion/parse";
+import { ragIngestor, ragVectorStoreManager } from "../../../ai/rag";
 import {
   copyObject,
   deleteObject,
@@ -269,7 +266,7 @@ export function completeMaterialUpload(
         );
       }
 
-      const sourceType = inferMaterialSourceTypeFromFile({
+      const sourceType = documentParser.inferMaterialSourceTypeFromFile({
         mimeType: session.mimeType,
         originalFilename: session.originalFilename,
       });
@@ -297,7 +294,7 @@ export function completeMaterialUpload(
       });
       await deleteObject({ key: session.objectKey });
 
-      const parsed = await parseFileBytesSource({
+      const parsed = await documentParser.parseFileBytesSource({
         bytes: tempBytes,
         mimeType: session.mimeType,
         originalFilename: session.originalFilename,
@@ -312,7 +309,7 @@ export function completeMaterialUpload(
       const summary = analyzed.summary;
       const finalTitle = analyzed.title;
 
-      await ingestMaterial({
+      await ragIngestor.ingest({
         userId,
         materialId,
         materialTitle: finalTitle,
@@ -322,14 +319,16 @@ export function completeMaterialUpload(
       });
 
       const createdAt = new Date();
+      const cleanTitle = finalTitle.replace(/\0/g, "");
+      const cleanSummary = summary?.replace(/\0/g, "") ?? null;
+
       await unwrap(
         materialRepository.insertMaterial({
           id: materialId,
           userId,
           sourceType,
-          title: finalTitle,
+          title: cleanTitle,
           originalFilename: session.originalFilename,
-          rawText: parsed.fullText,
           storageProvider: "R2",
           storageKey: finalKey,
           mimeType: session.mimeType,
@@ -337,7 +336,7 @@ export function completeMaterialUpload(
           checksum,
           processingStatus: "READY",
           processedAt: createdAt,
-          summary,
+          summary: cleanSummary,
           createdAt,
           updatedAt: createdAt,
         }),
@@ -398,10 +397,7 @@ export function completeMaterialUpload(
       // best-effort cleanup (vector index)
       try {
         if (materialId) {
-          const { getVectorStoreForUser } = await import(
-            "../../../ai/rag/vector-store"
-          );
-          const store = await getVectorStoreForUser({ userId });
+          const store = await ragVectorStoreManager.getStoreForUser({ userId });
           await store.delete({
             filter: { userId, materialId },
           });

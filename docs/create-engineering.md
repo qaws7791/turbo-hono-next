@@ -96,7 +96,7 @@
   사용자 단위 레이트리밋, 비용 폭주 방지(토큰 예산, 호출 제한), 캐싱 정책.
 
 - **`04-engineering/backend/observability.md`**
-  로그 상관관계 ID, 핵심 메트릭(OpenAI 호출/지연/실패율, retrieval hit rate), Sentry/Posthog 연동 기준.
+  로그 상관관계 ID, 핵심 메트릭(Gemini 호출/지연/실패율, retrieval hit rate), Sentry/Posthog 연동 기준.
 
 - **`04-engineering/backend/migrations-and-seeding.md`**
   Drizzle 마이그레이션 규칙, 시드 데이터(샘플 학습 자료 및 계획 등), 환경별 데이터 전략.

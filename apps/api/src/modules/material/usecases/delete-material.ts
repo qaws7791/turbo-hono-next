@@ -1,6 +1,6 @@
 import { err, ok } from "neverthrow";
 
-import { getVectorStoreForUser } from "../../../ai/rag/vector-store";
+import { ragVectorStoreManager } from "../../../ai/rag";
 import { deleteObject } from "../../../lib/r2";
 import { ApiError } from "../../../middleware/error-handler";
 import { DeleteMaterialResponse } from "../material.dto";
@@ -59,7 +59,7 @@ export async function deleteMaterial(
   }
 
   // 5. 벡터 인덱스 삭제
-  const store = await getVectorStoreForUser({ userId });
+  const store = await ragVectorStoreManager.getStoreForUser({ userId });
   await store.delete({
     filter: {
       userId,

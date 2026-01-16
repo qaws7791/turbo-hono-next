@@ -10,9 +10,9 @@ AI 호출 비용 관리, 토큰 예산, abuse 방지 정책을 정의합니다.
 
 | 기능      | API               | 비용 요인      |
 | --------- | ----------------- | -------------- |
-| 임베딩    | OpenAI Embeddings | 입력 토큰 수   |
-| 대화      | OpenAI Chat       | 입력/출력 토큰 |
-| Plan 생성 | OpenAI Chat       | 컨텍스트 크기  |
+| 임베딩    | Gemini Embeddings | 입력 토큰 수   |
+| 대화      | Gemini Chat       | 입력/출력 토큰 |
+| Plan 생성 | Gemini Chat       | 컨텍스트 크기  |
 
 ---
 

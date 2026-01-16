@@ -1,10 +1,10 @@
 import { err, ok } from "neverthrow";
 
-import { countMaterialChunks } from "../../../ai/rag/stats";
+import { ragRetriever } from "../../../ai/rag";
+import { isoDate, isoDateRequired } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { GetMaterialDetailResponse } from "../material.dto";
 import { materialRepository } from "../material.repository";
-import { isoDate, isoDateRequired } from "../material.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
@@ -31,7 +31,7 @@ export async function getMaterialDetail(
   }
 
   // 2. 청크 수 조회
-  const chunkCountResult = await countMaterialChunks({
+  const chunkCountResult = await ragRetriever.countMaterialChunks({
     userId,
     materialId,
   });

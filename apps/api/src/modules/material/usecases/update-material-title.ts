@@ -1,10 +1,10 @@
 import { err, ok } from "neverthrow";
 import { z } from "zod";
 
+import { isoDateRequired } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { UpdateMaterialTitleResponse } from "../material.dto";
 import { materialRepository } from "../material.repository";
-import { isoDateRequired } from "../material.utils";
 
 import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
