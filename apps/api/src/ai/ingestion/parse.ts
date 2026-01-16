@@ -1,11 +1,9 @@
 import { createHash } from "node:crypto";
 
-import { TextLoader } from "@langchain/classic/document_loaders/fs/text";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 import { ApiError } from "../../middleware/error-handler";
-import { withTempFile } from "../rag/temp-file";
 
 import type { Document } from "@langchain/core/documents";
 
@@ -38,30 +36,78 @@ export type FileBytesSource = {
   readonly fileSize: number;
 };
 
-export async function readUploadedFile(file: File): Promise<ParsedFile> {
-  const arrayBuffer = await file.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  const checksumSha256Hex = createHash("sha256").update(bytes).digest("hex");
-  return {
-    bytes,
-    checksumSha256Hex,
-    mimeType: file.type || null,
-    originalFilename: file.name || null,
-    fileSize: file.size,
-  };
-}
+export type MaterialSourceType = "FILE" | "TEXT";
 
-async function parseSimpleText(
-  bytes: Uint8Array,
-  extension: ".txt" | ".md",
-): Promise<ParseResult> {
-  return withTempFile({ bytes, extension }, async (filePath) => {
-    const loader = new TextLoader(filePath);
-    const docs = await loader.load();
+type SupportedFileKind = "PDF" | "MARKDOWN" | "TEXT" | "DOCX";
 
-    const text = docs
-      .map((doc: Document) => doc.pageContent)
-      .join("\n\n")
+export class DocumentParser {
+  async parseFileSource(file: File): Promise<{
+    parsed: ParseResult;
+    file: ParsedFile;
+  }> {
+    const parsedFile = await this.readUploadedFile(file);
+    const parsed = await this.parseFileBytesSource({
+      bytes: parsedFile.bytes,
+      mimeType: parsedFile.mimeType,
+      originalFilename: parsedFile.originalFilename,
+      fileSize: parsedFile.fileSize,
+    });
+    return { parsed, file: parsedFile };
+  }
+
+  async parseFileBytesSource(source: FileBytesSource): Promise<ParseResult> {
+    const kind = this.inferSupportedFileKind({
+      mimeType: source.mimeType,
+      originalFilename: source.originalFilename,
+    });
+
+    if (kind === "PDF") return this.parsePdf(source.bytes);
+    if (kind === "MARKDOWN") return this.parseSimpleText(source.bytes);
+    if (kind === "TEXT") return this.parseSimpleText(source.bytes);
+    if (kind === "DOCX") return this.parseDocx(source.bytes);
+
+    const ext = this.getFileExt(source.originalFilename);
+    throw new ApiError(
+      400,
+      "MATERIAL_UNSUPPORTED_TYPE",
+      "지원하지 않는 파일 형식입니다.",
+      { mimeType: source.mimeType, ext },
+    );
+  }
+
+  async readUploadedFile(file: File): Promise<ParsedFile> {
+    const arrayBuffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    const checksumSha256Hex = createHash("sha256").update(bytes).digest("hex");
+    return {
+      bytes,
+      checksumSha256Hex,
+      mimeType: file.type || null,
+      originalFilename: file.name || null,
+      fileSize: file.size,
+    };
+  }
+
+  inferMaterialSourceTypeFromFile(params: {
+    readonly mimeType: string | null;
+    readonly originalFilename: string | null;
+  }): MaterialSourceType | null {
+    const kind = this.inferSupportedFileKind(params);
+    if (kind === "PDF" || kind === "DOCX") return "FILE";
+    if (kind === "MARKDOWN" || kind === "TEXT") return "TEXT";
+    return null;
+  }
+
+  isSupportedMaterialFile(params: {
+    readonly mimeType: string | null;
+    readonly originalFilename: string | null;
+  }): boolean {
+    return this.inferSupportedFileKind(params) !== null;
+  }
+
+  private async parseSimpleText(bytes: Uint8Array): Promise<ParseResult> {
+    const text = Buffer.from(bytes)
+      .toString("utf8")
       .replace(/\s+/g, " ")
       .trim();
 
@@ -79,12 +125,11 @@ async function parseSimpleText(
       fullText: text,
       pageCount: 1,
     };
-  });
-}
+  }
 
-async function parsePdf(bytes: Uint8Array): Promise<ParseResult> {
-  return withTempFile({ bytes, extension: ".pdf" }, async (filePath) => {
-    const loader = new PDFLoader(filePath, { splitPages: true });
+  private async parsePdf(bytes: Uint8Array): Promise<ParseResult> {
+    const blob = new Blob([Buffer.from(bytes)], { type: "application/pdf" });
+    const loader = new PDFLoader(blob, { splitPages: true });
     const docs = await loader.load();
 
     const pages: Array<ParsedSegment> = docs.map((doc) => ({
@@ -115,12 +160,13 @@ async function parsePdf(bytes: Uint8Array): Promise<ParseResult> {
       fullText,
       pageCount: totalPages,
     };
-  });
-}
+  }
 
-async function parseDocx(bytes: Uint8Array): Promise<ParseResult> {
-  return withTempFile({ bytes, extension: ".docx" }, async (filePath) => {
-    const loader = new DocxLoader(filePath);
+  private async parseDocx(bytes: Uint8Array): Promise<ParseResult> {
+    const blob = new Blob([Buffer.from(bytes)], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    const loader = new DocxLoader(blob);
     const docs = await loader.load();
 
     const text = docs
@@ -143,92 +189,37 @@ async function parseDocx(bytes: Uint8Array): Promise<ParseResult> {
       fullText: text,
       pageCount: 1,
     };
-  });
-}
-
-function getFileExt(filename: string | null): string | null {
-  if (!filename) return null;
-  const idx = filename.lastIndexOf(".");
-  if (idx === -1) return null;
-  return filename.slice(idx + 1).toLowerCase();
-}
-
-type SupportedFileKind = "PDF" | "MARKDOWN" | "TEXT" | "DOCX";
-
-function inferSupportedFileKind(params: {
-  readonly mimeType: string | null;
-  readonly originalFilename: string | null;
-}): SupportedFileKind | null {
-  const ext = getFileExt(params.originalFilename);
-  const mime = params.mimeType;
-
-  if (mime === "application/pdf" || ext === "pdf") return "PDF";
-  if (mime === "text/markdown" || ext === "md" || ext === "markdown") {
-    return "MARKDOWN";
-  }
-  if (mime === "text/plain" || ext === "txt") return "TEXT";
-  if (
-    mime ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
-    ext === "docx"
-  ) {
-    return "DOCX";
   }
 
-  return null;
+  private getFileExt(filename: string | null): string | null {
+    if (!filename) return null;
+    const idx = filename.lastIndexOf(".");
+    if (idx === -1) return null;
+    return filename.slice(idx + 1).toLowerCase();
+  }
+
+  private inferSupportedFileKind(params: {
+    readonly mimeType: string | null;
+    readonly originalFilename: string | null;
+  }): SupportedFileKind | null {
+    const ext = this.getFileExt(params.originalFilename);
+    const mime = params.mimeType;
+
+    if (mime === "application/pdf" || ext === "pdf") return "PDF";
+    if (mime === "text/markdown" || ext === "md" || ext === "markdown") {
+      return "MARKDOWN";
+    }
+    if (mime === "text/plain" || ext === "txt") return "TEXT";
+    if (
+      mime ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      ext === "docx"
+    ) {
+      return "DOCX";
+    }
+
+    return null;
+  }
 }
 
-export type MaterialSourceType = "FILE" | "TEXT";
-
-export function inferMaterialSourceTypeFromFile(params: {
-  readonly mimeType: string | null;
-  readonly originalFilename: string | null;
-}): MaterialSourceType | null {
-  const kind = inferSupportedFileKind(params);
-  if (kind === "PDF" || kind === "DOCX") return "FILE";
-  if (kind === "MARKDOWN" || kind === "TEXT") return "TEXT";
-  return null;
-}
-
-export function isSupportedMaterialFile(params: {
-  readonly mimeType: string | null;
-  readonly originalFilename: string | null;
-}): boolean {
-  return inferSupportedFileKind(params) !== null;
-}
-
-export async function parseFileBytesSource(
-  source: FileBytesSource,
-): Promise<ParseResult> {
-  const kind = inferSupportedFileKind({
-    mimeType: source.mimeType,
-    originalFilename: source.originalFilename,
-  });
-
-  if (kind === "PDF") return parsePdf(source.bytes);
-  if (kind === "MARKDOWN") return parseSimpleText(source.bytes, ".md");
-  if (kind === "TEXT") return parseSimpleText(source.bytes, ".txt");
-  if (kind === "DOCX") return parseDocx(source.bytes);
-
-  const ext = getFileExt(source.originalFilename);
-  throw new ApiError(
-    400,
-    "MATERIAL_UNSUPPORTED_TYPE",
-    "지원하지 않는 파일 형식입니다.",
-    { mimeType: source.mimeType, ext },
-  );
-}
-
-export async function parseFileSource(file: File): Promise<{
-  parsed: ParseResult;
-  file: ParsedFile;
-}> {
-  const parsedFile = await readUploadedFile(file);
-  const parsed = await parseFileBytesSource({
-    bytes: parsedFile.bytes,
-    mimeType: parsedFile.mimeType,
-    originalFilename: parsedFile.originalFilename,
-    fileSize: parsedFile.fileSize,
-  });
-  return { parsed, file: parsedFile };
-}
+export const documentParser = new DocumentParser();

@@ -1,9 +1,10 @@
 import { PGVectorStore } from "@langchain/community/vectorstores/pgvector";
-import { OpenAIEmbeddings } from "@langchain/openai";
 import pg from "pg";
 
 import { CONFIG } from "../../lib/config";
 import { ApiError } from "../../middleware/error-handler";
+
+import { GoogleCustomEmbeddings } from "./google-embeddings";
 
 import type { Pool, PoolConfig } from "pg";
 
@@ -17,125 +18,61 @@ const COLUMN_CONFIG = {
   metadataColumnName: "metadata",
 } as const;
 
-const MODEL_DIMENSIONS: Record<string, number> = {
-  "text-embedding-3-small": 1536,
-  "text-embedding-3-large": 3072,
-  "text-embedding-ada-002": 1536,
-};
+export class RagVectorStoreManager {
+  private pool: Pool | null = null;
 
-let sharedPool: Pool | null = null;
-let sharedEmbeddings: OpenAIEmbeddings | null = null;
-let initPromise: Promise<void> | null = null;
-
-function normalizeModelName(value: string): string {
-  let normalized = value.trim();
-  normalized = normalized.replace(/,+$/, "");
-
-  const quotePairs: ReadonlyArray<readonly [string, string]> = [
-    ['"', '"'],
-    ["'", "'"],
-    ["`", "`"],
-  ];
-
-  for (const [start, end] of quotePairs) {
-    if (normalized.startsWith(start) && normalized.endsWith(end)) {
-      normalized = normalized.slice(
-        start.length,
-        normalized.length - end.length,
-      );
-      break;
+  private inferSslConfig(databaseUrl: string): PoolConfig["ssl"] | undefined {
+    if (
+      databaseUrl.includes("sslmode=require") ||
+      databaseUrl.includes("ssl=true") ||
+      databaseUrl.includes("channel_binding=require")
+    ) {
+      return { rejectUnauthorized: false };
     }
+    return undefined;
   }
 
-  normalized = normalized.replace(/^["'`]+/, "").replace(/["'`]+$/, "");
-  normalized = normalized.trim().replace(/,+$/, "");
-  return normalized;
-}
-
-function inferSslConfig(databaseUrl: string): PoolConfig["ssl"] | undefined {
-  if (
-    databaseUrl.includes("sslmode=require") ||
-    databaseUrl.includes("ssl=true") ||
-    databaseUrl.includes("channel_binding=require")
-  ) {
-    return { rejectUnauthorized: false };
+  private requireDatabaseUrl(): string {
+    if (!CONFIG.DATABASE_URL) {
+      throw new ApiError(500, "CONFIG_ERROR", "DATABASE_URL is required");
+    }
+    return CONFIG.DATABASE_URL;
   }
-  return undefined;
-}
 
-function requireDatabaseUrl(): string {
-  if (!CONFIG.DATABASE_URL) {
-    throw new ApiError(500, "CONFIG_ERROR", "DATABASE_URL is required");
-  }
-  return CONFIG.DATABASE_URL;
-}
-
-function getPool(): Pool {
-  if (sharedPool) return sharedPool;
-  const databaseUrl = requireDatabaseUrl();
-  sharedPool = new pg.Pool({
-    connectionString: databaseUrl,
-    ssl: inferSslConfig(databaseUrl),
-    max: 10,
-  });
-  return sharedPool;
-}
-
-function getEmbeddings(): OpenAIEmbeddings {
-  if (sharedEmbeddings) return sharedEmbeddings;
-
-  const model = normalizeModelName(CONFIG.OPENAI_EMBEDDING_MODEL);
-  sharedEmbeddings = new OpenAIEmbeddings({
-    apiKey: CONFIG.OPENAI_API_KEY,
-    model,
-  });
-
-  return sharedEmbeddings;
-}
-
-function collectionNameForUser(userId: string): string {
-  return `user:${userId}`;
-}
-
-async function ensureInitialized(): Promise<void> {
-  if (initPromise) return initPromise;
-  initPromise = (async () => {
-    const pool = getPool();
-
-    // PGVectorStore.ensureTableInDatabase() uses gen_random_uuid()
-    await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
-
-    const model = normalizeModelName(CONFIG.OPENAI_EMBEDDING_MODEL);
-    const dimensions = MODEL_DIMENSIONS[model];
-
-    const store = await PGVectorStore.initialize(getEmbeddings(), {
-      pool,
-      tableName: TABLE_NAME,
-      collectionTableName: COLLECTION_TABLE_NAME,
-      columns: COLUMN_CONFIG,
-      distanceStrategy: "cosine",
-      dimensions,
+  public getPool(): Pool {
+    if (this.pool) return this.pool;
+    const databaseUrl = this.requireDatabaseUrl();
+    this.pool = new pg.Pool({
+      connectionString: databaseUrl,
+      ssl: this.inferSslConfig(databaseUrl),
+      max: 10,
     });
+    return this.pool;
+  }
 
-    store.client?.release();
-    store.client = undefined;
-  })();
+  private collectionNameForUser(userId: string): string {
+    return `user:${userId}`;
+  }
 
-  return initPromise;
+  public async getStoreForUser(params: {
+    readonly userId: string;
+  }): Promise<PGVectorStore> {
+    return new PGVectorStore(
+      new GoogleCustomEmbeddings({
+        apiKey: CONFIG.GEMINI_EMBEDDING_API_KEY,
+        model: CONFIG.GEMINI_EMBEDDING_MODEL,
+      }),
+      {
+        pool: this.getPool(),
+        tableName: TABLE_NAME,
+        collectionTableName: COLLECTION_TABLE_NAME,
+        collectionName: this.collectionNameForUser(params.userId),
+        columns: COLUMN_CONFIG,
+        distanceStrategy: "cosine",
+        skipInitializationCheck: true,
+      },
+    );
+  }
 }
 
-export async function getVectorStoreForUser(params: {
-  readonly userId: string;
-}): Promise<PGVectorStore> {
-  await ensureInitialized();
-
-  return new PGVectorStore(getEmbeddings(), {
-    pool: getPool(),
-    tableName: TABLE_NAME,
-    collectionTableName: COLLECTION_TABLE_NAME,
-    collectionName: collectionNameForUser(params.userId),
-    columns: COLUMN_CONFIG,
-    distanceStrategy: "cosine",
-    skipInitializationCheck: true,
-  });
-}
+export const ragVectorStoreManager = new RagVectorStoreManager();

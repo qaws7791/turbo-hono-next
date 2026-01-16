@@ -96,7 +96,7 @@ export function buildStructurePlanningUserPrompt(params: {
 
   const materialsJson = JSON.stringify(
     params.materials.map((mat, idx) => ({
-      index: idx + 1,
+      index: idx,
       title: mat.title,
       chunkCount: mat.chunkCount,
       estimatedMinutes: mat.chunkCount * 5,

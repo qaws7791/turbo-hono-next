@@ -1,9 +1,14 @@
-export { generatePlanWithAi } from "./generate";
+import { learningPlanGenerator } from "./generator";
+
+export const generatePlanWithAi = learningPlanGenerator.generate.bind(
+  learningPlanGenerator,
+);
+
 export type {
-  GeneratePlanInput,
-  GeneratePlanResult,
   GeneratedModule,
   GeneratedSession,
+  GeneratePlanInput,
+  GeneratePlanResult,
   MaterialContext,
   PlanGoalType,
   PlanLevel,
