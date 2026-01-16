@@ -103,8 +103,9 @@ const SessionStepBaseSchema = z.object({
     .int()
     .positive()
     .max(60 * 60)
+    .nullable()
     .optional(),
-  intent: SessionStepIntentSchema.optional(),
+  intent: SessionStepIntentSchema.nullable().optional(),
 });
 
 export const SessionStepSchema = z.discriminatedUnion("type", [
@@ -131,7 +132,7 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     question: z.string().min(1).max(500),
     options: z.array(z.string().min(1).max(200)).length(4),
     answerIndex: z.number().int().min(0).max(3),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable().optional(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -140,7 +141,7 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     blankId: z.string().min(1).max(50),
     options: z.array(z.string().min(1).max(100)).length(4),
     answerIndex: z.number().int().min(0).max(3),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable().optional(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -168,7 +169,7 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     type: z.literal("SPEED_OX"),
     statement: z.string().min(1).max(300),
     isTrue: z.boolean(),
-    explanation: z.string().max(500).optional(),
+    explanation: z.string().max(500).nullable().optional(),
   }),
 
   SessionStepBaseSchema.extend({
@@ -177,14 +178,14 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     question: z.string().min(1).max(500),
     options: z.array(z.string().min(1).max(300)).min(2).max(4),
     correctIndex: z.number().int().min(0).max(3),
-    feedback: z.string().max(500).optional(),
+    feedback: z.string().max(500).nullable().optional(),
   }),
 
   SessionStepBaseSchema.extend({
     type: z.literal("SESSION_SUMMARY"),
     celebrationEmoji: z.string().min(1).max(10).default("🎉"),
     encouragement: z.string().min(1).max(200),
-    studyTimeMinutes: z.number().int().min(0).optional(),
+    studyTimeMinutes: z.number().int().min(0).nullable().optional(),
     completedActivities: z
       .array(z.string().min(1).max(100))
       .max(10)
@@ -193,8 +194,9 @@ export const SessionStepSchema = z.discriminatedUnion("type", [
     nextSessionPreview: z
       .object({
         title: z.string().min(1).max(120),
-        description: z.string().max(200).optional(),
+        description: z.string().max(200).nullable().optional(),
       })
+      .nullable()
       .optional(),
   }),
 ]);

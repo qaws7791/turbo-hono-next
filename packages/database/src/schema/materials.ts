@@ -40,7 +40,6 @@ export const materials = pgTable(
     title: text("title").notNull(),
     originalFilename: text("original_filename"),
     sourceUrl: text("source_url"),
-    rawText: text("raw_text"),
     storageProvider: storageProviderEnum("storage_provider").default("R2"),
     storageKey: text("storage_key"),
     mimeType: text("mime_type"),
