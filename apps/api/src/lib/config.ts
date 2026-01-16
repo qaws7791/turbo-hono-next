@@ -28,21 +28,24 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_EMAIL: z.email().optional(),
 
-  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
-  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
-  R2_BUCKET_NAME: z.string().min(1).optional(),
-  R2_ENDPOINT: z.string().min(1).optional(),
-  R2_PUBLIC_URL: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1),
+  R2_SECRET_ACCESS_KEY: z.string().min(1),
+  R2_BUCKET_NAME: z.string().min(1),
+  R2_ENDPOINT: z.string().min(1),
+  R2_PUBLIC_URL: z.string().min(1),
 
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_CHAT_MODEL: z.string().min(1).default("gpt-5-mini-2025-08-07"),
-  OPENAI_EMBEDDING_MODEL: z.string().min(1).default("text-embedding-3-small"),
+  GOOGLE_API_KEY: z.string().min(1).optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  GEMINI_CHAT_MODEL: z.string().min(1).default("gemini-2.5-flash-lite"),
+  GEMINI_EMBEDDING_MODEL: z.string().min(1).default("gemini-embedding-001"),
+  GEMINI_EMBEDDING_API_KEY: z.string().min(1),
 });
 
 const parsed = envSchema.parse(process.env);
 
 export const CONFIG = {
   ...parsed,
+  AI_API_KEY: parsed.GEMINI_API_KEY ?? parsed.GOOGLE_API_KEY,
   COOKIE_SECURE: parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production",
   EMAIL_DELIVERY_MODE:
     parsed.EMAIL_DELIVERY_MODE ??
