@@ -124,6 +124,9 @@ export function getRunDetail(deps: {
 
           blueprint = parseResult.data;
         } catch (error) {
+          if (error instanceof ApiError) {
+            throw error;
+          }
           throw new ApiError(
             500,
             "AI_GENERATION_FAILED",

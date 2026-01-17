@@ -64,12 +64,14 @@ SSoT(실제 사용/검증 기준):
 
 ### AI (선택: 챗/RAG 기능 사용 시 필요)
 
-| 변수                     | 설명             | 기본값                  |
-| ------------------------ | ---------------- | ----------------------- |
-| `GEMINI_API_KEY`         | Gemini API 키    |                         |
-| `GEMINI_CHAT_MODEL`      | Chat 모델        | `gemini-2.5-flash-lite` |
-| `GEMINI_EMBEDDING_MODEL` | Embedding 모델   | `gemini-embedding-001`  |
-| `GOOGLE_API_KEY` (선택)  | 호환 API 키 변수 |                         |
+| 변수                     | 설명              | 기본값                  |
+| ------------------------ | ----------------- | ----------------------- |
+| `OPENAI_API_KEY`         | OpenAI API 키     |                         |
+| `OPENAI_SESSION_MODEL`   | Session 생성 모델 | `gpt-5-nano`            |
+| `GEMINI_API_KEY`         | Gemini API 키     |                         |
+| `GEMINI_CHAT_MODEL`      | Chat 모델         | `gemini-2.5-flash-lite` |
+| `GEMINI_EMBEDDING_MODEL` | Embedding 모델    | `gemini-embedding-001`  |
+| `GOOGLE_API_KEY` (선택)  | 호환 API 키 변수  |                         |
 
 ---
 
@@ -108,6 +110,9 @@ R2_SECRET_ACCESS_KEY=
 R2_BUCKET_NAME=
 R2_ENDPOINT=
 R2_PUBLIC_URL=
+
+OPENAI_API_KEY=
+OPENAI_SESSION_MODEL=gpt-5-nano
 
 GEMINI_API_KEY=
 GEMINI_CHAT_MODEL=gemini-2.5-flash-lite

@@ -1,4 +1,7 @@
-import { getAiModels } from "../../lib/ai";
+import { zodTextFormat } from "openai/helpers/zod";
+
+import { CONFIG } from "../../lib/config";
+import { getOpenAIClient } from "../../lib/openai";
 import { SessionBlueprint } from "../../modules/session";
 
 import { AiSessionBlueprintSpecSchema } from "./schema";
@@ -38,15 +41,22 @@ export class SessionBlueprintGenerator {
       chunkContents: input.chunkContents,
     });
 
-    const spec = await getAiModels().chat.generateStructuredOutput(
-      {
-        config: {
-          systemInstruction: systemPrompt,
-        },
-        contents: [userPrompt],
+    const response = await getOpenAIClient().responses.parse({
+      model: CONFIG.OPENAI_SESSION_MODEL,
+      instructions: systemPrompt,
+      input: userPrompt,
+      text: {
+        format: zodTextFormat(
+          AiSessionBlueprintSpecSchema,
+          "ai_session_blueprint_spec",
+        ),
       },
-      AiSessionBlueprintSpecSchema,
-    );
+    });
+
+    const spec = response.output_parsed;
+    if (!spec) {
+      throw new Error("Failed to parse AI session blueprint spec");
+    }
 
     return this.buildBlueprintFromSpec({
       spec,
