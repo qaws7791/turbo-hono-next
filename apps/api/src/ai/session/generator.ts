@@ -1,7 +1,6 @@
-import { zodTextFormat } from "openai/helpers/zod";
+import z from "zod";
 
-import { CONFIG } from "../../lib/config";
-import { getOpenAIClient } from "../../lib/openai";
+import { getAiModels } from "../../lib/ai";
 import { SessionBlueprint } from "../../modules/session";
 
 import { AiSessionBlueprintSpecSchema } from "./schema";
@@ -41,19 +40,15 @@ export class SessionBlueprintGenerator {
       chunkContents: input.chunkContents,
     });
 
-    const response = await getOpenAIClient().responses.parse({
-      model: CONFIG.OPENAI_SESSION_MODEL,
-      instructions: systemPrompt,
-      input: userPrompt,
-      text: {
-        format: zodTextFormat(
-          AiSessionBlueprintSpecSchema,
-          "ai_session_blueprint_spec",
-        ),
+    const json = await getAiModels().chat.generateJson({
+      config: {
+        systemInstruction: systemPrompt,
       },
+      contents: [userPrompt],
     });
 
-    const spec = response.output_parsed;
+    const spec = AiSessionBlueprintSpecSchema.parse(json);
+
     if (!spec) {
       throw new Error("Failed to parse AI session blueprint spec");
     }
@@ -503,12 +498,23 @@ useState는 React에서 **컴포넌트의 상태를 관리**하는 가장 기본
 
 ## ⚠️ 품질 기준 (절대 준수)
 
-1. **독립성**: 이 세션만으로 완전한 학습이 가능해야 합니다.
-2. **일관성**: 모든 퀴즈/활동의 내용은 앞선 LEARN_CONTENT에서 다룬 것이어야 합니다.
-3. **완전성**: placeholder(예: "여기에 설명 입력", "TODO", "참고 자료 참조") 포함 금지.
-4. **정확성**: 모든 내용은 사실에 기반해야 하며, 할루시네이션 주의.
-5. **구조**: 학습 흐름은 INTRO -> LEARN -> (CHECK/CLOZE/MATCHING 등 다양한 활동 혼합) -> SUMMARY
-6. **분량**: 지정된 시간(estimatedMinutes) 내에 소화 가능한 분량이어야 합니다.`;
+501: 1. **구성 순서(필수)**:
+502:    - 첫 번째 스텝은 반드시 \`SESSION_INTRO\`여야 합니다.
+503:    - 마지막 스텝은 반드시 \`SESSION_SUMMARY\`여야 합니다.
+504:    - 중간에는 최소 1개의 \`LEARN_CONTENT\`와 최소 1개 이상의 상호작용 스텝(퀴즈/활동)이 포함되어야 합니다.
+505: 2. **독립성**: 이 세션만으로 완전한 학습이 가능해야 합니다.
+506: 3. **일관성**: 모든 퀴즈/활동의 내용은 앞선 LEARN_CONTENT에서 다룬 것이어야 합니다.
+507: 4. **완전성**: placeholder(예: "여기에 설명 입력", "TODO", "참고 자료 참조") 포함 금지.
+508: 5. **정확성**: 모든 내용은 사실에 기반해야 하며, 할루시네이션 주의.
+509: 6. **분량**: 지정된 시간(estimatedMinutes) 내에 소화 가능한 분량이어야 합니다.
+
+## 📋 출력 JSON 스키마
+응답은 반드시 아래 JSON 스키마를 준수해야 합니다:
+
+\`\`\`json
+${JSON.stringify(z.toJSONSchema(AiSessionBlueprintSpecSchema), null, 2)}
+\`\`\`
+`;
   }
 
   private buildUserPrompt(params: {

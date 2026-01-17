@@ -78,6 +78,30 @@ export class ChatModel {
     const result = schema.parse(JSON.parse(text));
     return result;
   }
+
+  async generateJson({
+    config,
+    ...params
+  }: Omit<GenerateContentParameters, "model" | "config"> & {
+    config?: Omit<
+      NonNullable<GenerateContentParameters["config"]>,
+      "responseMimeType"
+    >;
+  }): Promise<unknown> {
+    const response = await this.genAI.models.generateContent({
+      model: this.model,
+      config: {
+        responseMimeType: "application/json",
+        ...config,
+      },
+      ...params,
+    });
+    const text = response.text;
+    if (!text) {
+      throw new Error("Failed to generate JSON output");
+    }
+    return JSON.parse(text);
+  }
 }
 
 export type AiModels = {
