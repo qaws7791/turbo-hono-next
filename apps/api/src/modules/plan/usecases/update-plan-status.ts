@@ -1,85 +1,75 @@
-import { err, ok } from "neverthrow";
-
+import { tryPromise, unwrap } from "../../../lib/result";
 import { ApiError } from "../../../middleware/error-handler";
-import { PlanStatusSchema, UpdatePlanStatusResponse } from "../plan.dto";
-import { planRepository } from "../plan.repository";
+import { UpdatePlanStatusResponse } from "../plan.dto";
 import { validateStatusTransition } from "../plan.utils";
 
-import { activatePlan } from "./activate-plan";
-
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
 import type {
   PlanStatus,
   UpdatePlanStatusResponse as UpdatePlanStatusResponseType,
 } from "../plan.dto";
+import type { PlanRepository } from "../plan.repository";
 
-export async function updatePlanStatus(
-  userId: string,
-  planId: string,
-  nextStatus: PlanStatus,
-): Promise<Result<UpdatePlanStatusResponseType, AppError>> {
-  const now = new Date();
+export function updatePlanStatus(deps: {
+  readonly planRepository: PlanRepository;
+  readonly activatePlan: (
+    userId: string,
+    planId: string,
+  ) => ResultAsync<{ data: { id: string; status: PlanStatus } }, AppError>;
+}) {
+  return function updatePlanStatus(
+    userId: string,
+    planId: string,
+    nextStatus: PlanStatus,
+  ): ResultAsync<UpdatePlanStatusResponseType, AppError> {
+    if (nextStatus === "ACTIVE") {
+      return deps.activatePlan(userId, planId);
+    }
 
-  // 1. 입력 검증
-  const parseResult = PlanStatusSchema.safeParse(nextStatus);
-  if (!parseResult.success) {
-    return err(
-      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
-    );
-  }
-  const validatedStatus = parseResult.data;
+    return tryPromise(async () => {
+      const now = new Date();
 
-  // 2. Plan 조회
-  const planResult = await planRepository.findByPublicId(userId, planId);
-  if (planResult.isErr()) return err(planResult.error);
-  const plan = planResult.value;
+      const plan = await unwrap(
+        deps.planRepository.findByPublicId(userId, planId),
+      );
+      if (!plan) {
+        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+          planId,
+        });
+      }
 
-  if (!plan) {
-    return err(
-      new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-        planId,
-      }),
-    );
-  }
+      if (!validateStatusTransition(plan.status, nextStatus)) {
+        throw new ApiError(
+          400,
+          "INVALID_REQUEST",
+          "허용되지 않는 상태 전이입니다.",
+          {
+            from: plan.status,
+            to: nextStatus,
+          },
+        );
+      }
 
-  // 3. ACTIVE 상태로의 전환은 activatePlan 사용
-  if (validatedStatus === "ACTIVE") {
-    return activatePlan(userId, planId);
-  }
+      const materialIds = await unwrap(
+        deps.planRepository.listSourceMaterialIds(plan.id),
+      );
 
-  // 4. 상태 전이 검증
-  if (!validateStatusTransition(plan.status, validatedStatus)) {
-    return err(
-      new ApiError(400, "INVALID_REQUEST", "허용되지 않는 상태 전이입니다.", {
-        from: plan.status,
-        to: validatedStatus,
-      }),
-    );
-  }
+      await unwrap(
+        deps.planRepository.updatePlanStatusTransaction({
+          planId: plan.id,
+          status: nextStatus,
+          now,
+        }),
+      );
 
-  // 5. 소스 Material ID 조회
-  const materialIdsResult = await planRepository.listSourceMaterialIds(plan.id);
-  if (materialIdsResult.isErr()) return err(materialIdsResult.error);
-  const materialIds = materialIdsResult.value;
+      if (nextStatus === "ARCHIVED") {
+        await unwrap(deps.planRepository.gcZombieMaterials(materialIds));
+      }
 
-  // 6. Plan 상태 업데이트 트랜잭션
-  const updateResult = await planRepository.updatePlanStatusTransaction({
-    planId: plan.id,
-    status: validatedStatus,
-    now,
-  });
-  if (updateResult.isErr()) return err(updateResult.error);
-
-  // 7. ARCHIVED 상태인 경우 좀비 Material 정리
-  if (validatedStatus === "ARCHIVED") {
-    const gcResult = await planRepository.gcZombieMaterials(materialIds);
-    if (gcResult.isErr()) return err(gcResult.error);
-  }
-
-  return ok(
-    UpdatePlanStatusResponse.parse({
-      data: { id: plan.publicId, status: validatedStatus },
-    }),
-  );
+      return UpdatePlanStatusResponse.parse({
+        data: { id: plan.publicId, status: nextStatus },
+      });
+    });
+  };
 }

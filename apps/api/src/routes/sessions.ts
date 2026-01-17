@@ -14,30 +14,26 @@ import {
 } from "@repo/api-spec";
 
 import { handleResult, jsonResult } from "../lib/result-handler";
-import { requireAuth } from "../middleware/auth";
-import {
-  abandonRun,
-  completeRun,
-  createOrRecoverRun,
-  createRunActivity,
-  createRunCheckin,
-  getHomeQueue,
-  getRunDetail,
-  listRunActivities,
-  listRunCheckins,
-  listSessionRuns,
-  saveProgress,
-  updatePlanSession,
-} from "../modules/session";
+import { createRequireAuthMiddleware } from "../middleware/auth";
 
+import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
-export function registerSessionRoutes(app: OpenAPIHono): void {
+export function registerSessionRoutes(app: OpenAPIHono, deps: AppDeps): void {
+  const requireAuth = createRequireAuthMiddleware({
+    config: deps.config,
+    authService: deps.services.auth,
+  });
+
   app.openapi(
     { ...homeQueueRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      return jsonResult(c, getHomeQueue(auth.user.id), 200);
+      return jsonResult(
+        c,
+        deps.services.session.getHomeQueue(auth.user.id),
+        200,
+      );
     },
   );
 
@@ -49,7 +45,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const headers = c.req.valid("header");
       const idempotencyKey = headers["Idempotency-Key"];
       return handleResult(
-        createOrRecoverRun(auth.user.id, sessionId, idempotencyKey),
+        deps.services.session.createOrRecoverRun(
+          auth.user.id,
+          sessionId,
+          idempotencyKey,
+        ),
         (created) => c.json({ data: created.data }, created.statusCode),
       );
     },
@@ -63,7 +63,7 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const body = c.req.valid("json");
       return jsonResult(
         c,
-        updatePlanSession(auth.user.id, sessionId, body),
+        deps.services.session.updatePlanSession(auth.user.id, sessionId, body),
         200,
       );
     },
@@ -74,7 +74,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
-      return jsonResult(c, getRunDetail(auth.user.id, runId), 200);
+      return jsonResult(
+        c,
+        deps.services.session.getRunDetail(auth.user.id, runId),
+        200,
+      );
     },
   );
 
@@ -83,7 +87,17 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const query = c.req.valid("query");
-      return jsonResult(c, listSessionRuns(auth.user.id, query), 200);
+
+      const params = {
+        page: query.page ?? 1,
+        limit: query.limit ?? 20,
+        status: query.status,
+      };
+      return jsonResult(
+        c,
+        deps.services.session.listSessionRuns(auth.user.id, params),
+        200,
+      );
     },
   );
 
@@ -92,7 +106,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
-      return jsonResult(c, listRunCheckins(auth.user.id, runId), 200);
+      return jsonResult(
+        c,
+        deps.services.session.listRunCheckins(auth.user.id, runId),
+        200,
+      );
     },
   );
 
@@ -102,7 +120,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, createRunCheckin(auth.user.id, runId, body), 201);
+      return jsonResult(
+        c,
+        deps.services.session.createRunCheckin(auth.user.id, runId, body),
+        201,
+      );
     },
   );
 
@@ -111,7 +133,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
-      return jsonResult(c, listRunActivities(auth.user.id, runId), 200);
+      return jsonResult(
+        c,
+        deps.services.session.listRunActivities(auth.user.id, runId),
+        200,
+      );
     },
   );
 
@@ -121,7 +147,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, createRunActivity(auth.user.id, runId, body), 201);
+      return jsonResult(
+        c,
+        deps.services.session.createRunActivity(auth.user.id, runId, body),
+        201,
+      );
     },
   );
 
@@ -131,7 +161,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, saveProgress(auth.user.id, runId, body), 200);
+      return jsonResult(
+        c,
+        deps.services.session.saveProgress(auth.user.id, runId, body),
+        200,
+      );
     },
   );
 
@@ -140,7 +174,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
-      return jsonResult(c, completeRun(auth.user.id, runId), 200);
+      return jsonResult(
+        c,
+        deps.services.session.completeRun(auth.user.id, runId),
+        200,
+      );
     },
   );
 
@@ -150,7 +188,11 @@ export function registerSessionRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const { runId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, abandonRun(auth.user.id, runId, body.reason), 200);
+      return jsonResult(
+        c,
+        deps.services.session.abandonRun(auth.user.id, runId, body.reason),
+        200,
+      );
     },
   );
 }

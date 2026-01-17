@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { chatAI } from "../../lib/ai";
+import { getAiModels } from "../../lib/ai";
 
 export type MaterialOutlineNode = {
   readonly nodeType: "SECTION" | "TOPIC";
@@ -102,7 +102,7 @@ export class MaterialAnalyzer {
     });
 
     try {
-      const parsed = await chatAI.generateStructuredOutput(
+      const parsed = await getAiModels().chat.generateStructuredOutput(
         {
           config: {
             systemInstruction: systemPrompt,

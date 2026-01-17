@@ -1,43 +1,47 @@
-import { err, ok } from "neverthrow";
-
+import { tryPromise, unwrap } from "../../../lib/result";
 import { isoDateTime } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
 import { ListSessionCheckinsResponse } from "../session.dto";
-import { sessionRepository } from "../session.repository";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
 import type { ListSessionCheckinsResponse as ListSessionCheckinsResponseType } from "../session.dto";
+import type { SessionRepository } from "../session.repository";
 
-export async function listRunCheckins(
-  userId: string,
-  runId: string,
-): Promise<Result<ListSessionCheckinsResponseType, AppError>> {
-  const runResult = await sessionRepository.findRunByPublicId(userId, runId);
-  if (runResult.isErr()) return err(runResult.error);
-  const run = runResult.value;
+export function listRunCheckins(deps: {
+  readonly sessionRepository: SessionRepository;
+}) {
+  return function listRunCheckins(
+    userId: string,
+    runId: string,
+  ): ResultAsync<ListSessionCheckinsResponseType, AppError> {
+    return tryPromise(async () => {
+      const run = await unwrap(
+        deps.sessionRepository.findRunByPublicId(userId, runId),
+      );
 
-  if (!run) {
-    return err(
-      new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
-        runId,
-      }),
-    );
-  }
+      if (!run) {
+        throw new ApiError(
+          404,
+          "SESSION_NOT_FOUND",
+          "세션을 찾을 수 없습니다.",
+          {
+            runId,
+          },
+        );
+      }
 
-  const rowsResult = await sessionRepository.listCheckins(run.id);
-  if (rowsResult.isErr()) return err(rowsResult.error);
-  const rows = rowsResult.value;
+      const rows = await unwrap(deps.sessionRepository.listCheckins(run.id));
 
-  return ok(
-    ListSessionCheckinsResponse.parse({
-      data: rows.map((row) => ({
-        id: row.id,
-        kind: row.kind,
-        prompt: row.prompt,
-        responseJson: row.responseJson ?? null,
-        recordedAt: isoDateTime(row.recordedAt),
-      })),
-    }),
-  );
+      return ListSessionCheckinsResponse.parse({
+        data: rows.map((row) => ({
+          id: row.id,
+          kind: row.kind,
+          prompt: row.prompt,
+          responseJson: row.responseJson ?? null,
+          recordedAt: isoDateTime(row.recordedAt),
+        })),
+      });
+    });
+  };
 }

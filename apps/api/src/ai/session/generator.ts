@@ -1,4 +1,4 @@
-import { chatAI } from "../../lib/ai";
+import { getAiModels } from "../../lib/ai";
 import { SessionBlueprint } from "../../modules/session";
 
 import { AiSessionBlueprintSpecSchema } from "./schema";
@@ -38,7 +38,7 @@ export class SessionBlueprintGenerator {
       chunkContents: input.chunkContents,
     });
 
-    const spec = await chatAI.generateStructuredOutput(
+    const spec = await getAiModels().chat.generateStructuredOutput(
       {
         config: {
           systemInstruction: systemPrompt,

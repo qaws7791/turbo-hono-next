@@ -11,6 +11,12 @@ export { listSessionRuns } from "./usecases/list-session-runs";
 export { saveProgress } from "./usecases/save-progress";
 export { updatePlanSession } from "./usecases/update-plan-session";
 
+export { createSessionService } from "./session.service";
+export type { SessionService } from "./session.service";
+
+export { createSessionRepository } from "./session.repository";
+export type { SessionRepository } from "./session.repository";
+
 export { SessionBlueprint, SessionStepSchema } from "./session.dto";
 
 export type {

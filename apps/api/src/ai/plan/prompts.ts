@@ -57,7 +57,9 @@ export function buildStructurePlanningSystemPrompt(): string {
 
 ## 문서 구조 활용 원칙
 - 문서 지도(outline)를 참고하여 모듈의 논리적 경계를 결정하세요
-- chunkRange는 실제 분량 배분을 위한 용도입니다
+- chunkRange는 실제 분량 배분을 위한 용도입니다.
+- **매우 중요**: 각 자료의 chunkRange는 0부터 시작하여 (chunkCount - 1) 사이여야 합니다. 범위를 벗어나는 인덱스를 지정하지 마세요.
+- **매우 중요**: start와 end는 포함(inclusive) 관계입니다. (예: 0~2는 0, 1, 2번 청크를 의미)
 `;
 }
 
@@ -170,7 +172,7 @@ export function buildModulePopulationSystemPrompt(): string {
 - 모듈의 전체 흐름을 고려하여 세션을 순차적으로 구성합니다
 - 각 세션은 이전 세션의 내용을 자연스럽게 이어받아야 합니다
 - 세션 제목: 구체적이고 동기부여가 되는 표현 (120자 이내)
-- 학습 목표: SMART 원칙에 따라 측정 가능하게 (200자 이내)
+- 학습 목표: SMART 원칙에 따라 측정 가능하게 (300자 이내)
 - 모든 응답은 한국어로 작성
 
 ## 시간 배분

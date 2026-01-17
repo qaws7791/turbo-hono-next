@@ -3,6 +3,7 @@ import { Embeddings } from "@langchain/core/embeddings";
 
 import { EMBEDDING_DIMENSIONS } from "../../lib/ai";
 import { CONFIG } from "../../lib/config";
+import { ApiError } from "../../middleware/error-handler";
 
 import type { EmbeddingsParams } from "@langchain/core/embeddings";
 
@@ -19,8 +20,17 @@ export class GoogleCustomEmbeddings extends Embeddings {
 
   constructor(fields?: GoogleCustomEmbeddingsParams) {
     super(fields ?? {});
+    const apiKey =
+      fields?.apiKey ?? CONFIG.AI_EMBEDDING_API_KEY ?? CONFIG.AI_API_KEY;
+    if (!apiKey) {
+      throw new ApiError(
+        503,
+        "AI_UNAVAILABLE",
+        "AI 기능이 설정되지 않았습니다.",
+      );
+    }
     this.client = new GoogleGenAI({
-      apiKey: fields?.apiKey ?? CONFIG.GEMINI_EMBEDDING_API_KEY,
+      apiKey,
     });
     this.model = fields?.model ?? CONFIG.GEMINI_EMBEDDING_MODEL;
     this.dimensions = fields?.dimensions ?? EMBEDDING_DIMENSIONS;

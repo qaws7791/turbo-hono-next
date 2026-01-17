@@ -25,6 +25,19 @@ export function getClientIp(c: Context): string | null {
   return first && first.length > 0 ? first : null;
 }
 
+export function createOptionalRateLimitMiddleware(
+  enabled: boolean,
+  options: RateLimitOptions,
+) {
+  if (!enabled) {
+    return createMiddleware(async (_c, next) => {
+      await next();
+    });
+  }
+
+  return createRateLimitMiddleware(options);
+}
+
 export function createRateLimitMiddleware(options: RateLimitOptions) {
   const buckets = new Map<string, RateLimitBucket>();
 

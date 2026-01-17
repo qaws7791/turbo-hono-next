@@ -11,6 +11,12 @@ export { initiateMaterialUpload } from "./usecases/initiate-material-upload";
 export { listMaterials } from "./usecases/list-materials";
 export { updateMaterialTitle } from "./usecases/update-material-title";
 
+export { createMaterialService } from "./material.service";
+export type { MaterialService } from "./material.service";
+
+export { createMaterialRepository } from "./material.repository";
+export type { MaterialRepository } from "./material.repository";
+
 export type {
   CompleteMaterialUploadInput,
   CreateMaterialResult,

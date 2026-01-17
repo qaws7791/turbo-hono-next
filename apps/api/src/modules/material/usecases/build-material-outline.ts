@@ -1,7 +1,8 @@
-import { materialAnalyzer } from "../../../ai/material";
-
 import type { NewOutlineNode } from "@repo/database/types";
-import type { MaterialOutlineNode } from "../../../ai/material";
+import type {
+  MaterialAnalyzerPort,
+  MaterialOutlineNode,
+} from "../material.ports";
 
 type OutlineNodeRow = NewOutlineNode;
 
@@ -84,13 +85,14 @@ function flattenOutline(params: {
 }
 
 export async function analyzeMaterialForOutline(
+  deps: { readonly materialAnalyzer: MaterialAnalyzerPort },
   params: BuildOutlineParams,
 ): Promise<{
   readonly summary: string;
   readonly title: string;
   readonly outlineRows: ReadonlyArray<OutlineNodeRow>;
 }> {
-  const analyzed = await materialAnalyzer.analyze({
+  const analyzed = await deps.materialAnalyzer.analyze({
     fullText: params.fullText,
     mimeType: params.mimeType,
   });

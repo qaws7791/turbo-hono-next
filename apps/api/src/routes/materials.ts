@@ -11,22 +11,19 @@ import {
 import { streamSSE } from "hono/streaming";
 
 import { handleResult, jsonResult } from "../lib/result-handler";
-import { requireAuth } from "../middleware/auth";
-import { ApiError } from "../middleware/error-handler";
-import {
-  completeMaterialUpload,
-  completeMaterialUploadWithProgress,
-  deleteMaterial,
-  getJobStatus,
-  getMaterialDetail,
-  initiateMaterialUpload,
-  listMaterials,
-  updateMaterialTitle,
-} from "../modules/material";
+import { throwAppError } from "../lib/result";
+import { createRequireAuthMiddleware } from "../middleware/auth";
+import { toApiErrorResponse } from "../middleware/error-handler";
 
+import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
-export function registerMaterialRoutes(app: OpenAPIHono): void {
+export function registerMaterialRoutes(app: OpenAPIHono, deps: AppDeps): void {
+  const requireAuth = createRequireAuthMiddleware({
+    config: deps.config,
+    authService: deps.services.auth,
+  });
+
   /* ========== 목록 조회 ========== */
   app.openapi(
     { ...listMaterialsRoute, middleware: [requireAuth] as const },
@@ -42,7 +39,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
         sort: query.sort,
       };
 
-      return jsonResult(c, listMaterials(auth.user.id, params), 200);
+      return jsonResult(
+        c,
+        deps.services.material.listMaterials(auth.user.id, params),
+        200,
+      );
     },
   );
 
@@ -52,7 +53,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { materialId } = c.req.valid("param");
-      return jsonResult(c, getMaterialDetail(auth.user.id, materialId), 200);
+      return jsonResult(
+        c,
+        deps.services.material.getMaterialDetail(auth.user.id, materialId),
+        200,
+      );
     },
   );
 
@@ -62,7 +67,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const body = c.req.valid("json");
-      return jsonResult(c, initiateMaterialUpload(auth.user.id, body), 200);
+      return jsonResult(
+        c,
+        deps.services.material.initiateMaterialUpload(auth.user.id, body),
+        200,
+      );
     },
   );
 
@@ -73,7 +82,7 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const body = c.req.valid("json");
       return handleResult(
-        completeMaterialUpload(auth.user.id, body),
+        deps.services.material.completeMaterialUpload(auth.user.id, body),
         (created) => {
           if (created.mode === "sync") {
             return c.json(
@@ -113,19 +122,27 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const body = c.req.valid("json");
+      const requestId = c.get("requestId");
 
       return streamSSE(c, async (stream) => {
         try {
-          const result = await completeMaterialUploadWithProgress(
-            auth.user.id,
-            body,
-            async (step, progress, message) => {
-              await stream.writeSSE({
-                event: "progress",
-                data: JSON.stringify({ step, progress, message }),
-              });
-            },
-          );
+          const resultAsync =
+            deps.services.material.completeMaterialUploadWithProgress(
+              auth.user.id,
+              body,
+              async (step, progress) => {
+                await stream.writeSSE({
+                  event: "progress",
+                  data: JSON.stringify({ step, progress }),
+                });
+              },
+            );
+
+          const resultResult = await resultAsync;
+          if (resultResult.isErr()) {
+            throwAppError(resultResult.error);
+          }
+          const result = resultResult.value;
 
           await stream.writeSSE({
             event: "complete",
@@ -139,20 +156,9 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
             }),
           });
         } catch (error) {
-          const errorData =
-            error instanceof ApiError
-              ? { code: error.code, message: error.message }
-              : {
-                  code: "UNKNOWN_ERROR",
-                  message:
-                    error instanceof Error
-                      ? error.message
-                      : "알 수 없는 오류가 발생했습니다.",
-                };
-
           await stream.writeSSE({
             event: "error",
-            data: JSON.stringify(errorData),
+            data: JSON.stringify(toApiErrorResponse(error, requestId).body),
           });
         }
       });
@@ -165,7 +171,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { materialId } = c.req.valid("param");
-      return jsonResult(c, deleteMaterial(auth.user.id, materialId), 200);
+      return jsonResult(
+        c,
+        deps.services.material.deleteMaterial(auth.user.id, materialId),
+        200,
+      );
     },
   );
 
@@ -178,7 +188,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
       const body = c.req.valid("json");
       return jsonResult(
         c,
-        updateMaterialTitle(auth.user.id, materialId, body.title),
+        deps.services.material.updateMaterialTitle(
+          auth.user.id,
+          materialId,
+          body.title,
+        ),
         200,
       );
     },
@@ -190,7 +204,11 @@ export function registerMaterialRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { jobId } = c.req.valid("param");
-      return jsonResult(c, getJobStatus(auth.user.id, jobId), 200);
+      return jsonResult(
+        c,
+        deps.services.material.getJobStatus(auth.user.id, jobId),
+        200,
+      );
     },
   );
 }

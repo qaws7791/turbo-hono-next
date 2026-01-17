@@ -19,6 +19,14 @@ export type R2Context = {
 };
 
 function createR2Client(): S3Client | null {
+  if (
+    !CONFIG.R2_ENDPOINT ||
+    !CONFIG.R2_ACCESS_KEY_ID ||
+    !CONFIG.R2_SECRET_ACCESS_KEY
+  ) {
+    return null;
+  }
+
   return new S3Client({
     region: "auto",
     endpoint: CONFIG.R2_ENDPOINT,
@@ -32,7 +40,7 @@ function createR2Client(): S3Client | null {
 const r2Client = createR2Client();
 
 export function requireR2(): R2Context {
-  if (!r2Client) {
+  if (!r2Client || !CONFIG.R2_BUCKET_NAME) {
     throw new ApiError(
       503,
       "STORAGE_UNAVAILABLE",

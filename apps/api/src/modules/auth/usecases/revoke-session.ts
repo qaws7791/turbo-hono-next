@@ -1,10 +1,13 @@
-import { revokeSession as revokeSessionRecord } from "../auth.repository";
-
-import type { Result } from "neverthrow";
 import type { AppError } from "../../../lib/result";
+import type { AuthRepository } from "../auth.repository";
+import type { ResultAsync } from "neverthrow";
 
-export async function revokeSession(
-  sessionId: string,
-): Promise<Result<void, AppError>> {
-  return revokeSessionRecord(sessionId, new Date());
+export function revokeSession(deps: {
+  readonly authRepository: AuthRepository;
+}) {
+  return function revokeSession(
+    sessionId: string,
+  ): ResultAsync<void, AppError> {
+    return deps.authRepository.revokeSession(sessionId, new Date());
+  };
 }

@@ -9,20 +9,17 @@ import {
 } from "@repo/api-spec";
 
 import { jsonResult } from "../lib/result-handler";
-import { requireAuth } from "../middleware/auth";
-import {
-  activatePlan,
-  createPlan,
-  deletePlan,
-  getPlanDetail,
-  listPlans,
-  updatePlan,
-  updatePlanStatus,
-} from "../modules/plan";
+import { createRequireAuthMiddleware } from "../middleware/auth";
 
+import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 
-export function registerPlanRoutes(app: OpenAPIHono): void {
+export function registerPlanRoutes(app: OpenAPIHono, deps: AppDeps): void {
+  const requireAuth = createRequireAuthMiddleware({
+    config: deps.config,
+    authService: deps.services.auth,
+  });
+
   app.openapi(
     { ...listPlansRoute, middleware: [requireAuth] as const },
     async (c) => {
@@ -31,7 +28,7 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
 
       return jsonResult(
         c,
-        listPlans(auth.user.id, {
+        deps.services.plan.listPlans(auth.user.id, {
           page: query.page ?? 1,
           limit: query.limit ?? 20,
           status: query.status,
@@ -46,7 +43,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { planId } = c.req.valid("param");
-      return jsonResult(c, getPlanDetail(auth.user.id, planId), 200);
+      return jsonResult(
+        c,
+        deps.services.plan.getPlanDetail(auth.user.id, planId),
+        200,
+      );
     },
   );
 
@@ -55,7 +56,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const body = c.req.valid("json");
-      return jsonResult(c, createPlan(auth.user.id, body), 201);
+      return jsonResult(
+        c,
+        deps.services.plan.createPlan(auth.user.id, body),
+        201,
+      );
     },
   );
 
@@ -65,7 +70,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
       const auth = c.get("auth");
       const { planId } = c.req.valid("param");
       const body = c.req.valid("json");
-      return jsonResult(c, updatePlan(auth.user.id, planId, body), 200);
+      return jsonResult(
+        c,
+        deps.services.plan.updatePlan(auth.user.id, planId, body),
+        200,
+      );
     },
   );
 
@@ -77,7 +86,7 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
       const body = c.req.valid("json");
       return jsonResult(
         c,
-        updatePlanStatus(auth.user.id, planId, body.status),
+        deps.services.plan.updatePlanStatus(auth.user.id, planId, body.status),
         200,
       );
     },
@@ -88,7 +97,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { planId } = c.req.valid("param");
-      return jsonResult(c, activatePlan(auth.user.id, planId), 200);
+      return jsonResult(
+        c,
+        deps.services.plan.activatePlan(auth.user.id, planId),
+        200,
+      );
     },
   );
 
@@ -97,7 +110,11 @@ export function registerPlanRoutes(app: OpenAPIHono): void {
     async (c) => {
       const auth = c.get("auth");
       const { planId } = c.req.valid("param");
-      return jsonResult(c, deletePlan(auth.user.id, planId), 200);
+      return jsonResult(
+        c,
+        deps.services.plan.deletePlan(auth.user.id, planId),
+        200,
+      );
     },
   );
 }

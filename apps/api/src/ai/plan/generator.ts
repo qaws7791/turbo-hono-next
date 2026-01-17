@@ -1,6 +1,8 @@
-import { chatAI } from "../../lib/ai";
+import { getAiModels } from "../../lib/ai";
+import { getDb } from "../../lib/db";
 import { logger } from "../../lib/logger";
 import { ApiError } from "../../middleware/error-handler";
+import { createMaterialRepository } from "../../modules/material";
 import { ragRetriever } from "../rag";
 
 import {
@@ -112,9 +114,7 @@ export class LearningPlanGenerator {
     userId: string,
     materialIds: ReadonlyArray<string>,
   ): Promise<Array<MaterialMetadata>> {
-    const { materialRepository } = await import(
-      "../../modules/material/material.repository"
-    );
+    const materialRepository = createMaterialRepository(getDb());
 
     const [metaResult, outlineResult, statsResult] = await Promise.all([
       materialRepository.findMaterialsMetaForPlan(materialIds),
@@ -203,7 +203,7 @@ export class LearningPlanGenerator {
     });
 
     try {
-      return await chatAI.generateStructuredOutput(
+      return await getAiModels().chat.generateStructuredOutput(
         {
           config: {
             systemInstruction: systemPrompt,
@@ -273,19 +273,32 @@ export class LearningPlanGenerator {
       );
     }
 
+    const startIndex = Math.max(0, module.chunkRange.start);
+    const endIndex = Math.min(material.chunkCount - 1, module.chunkRange.end);
+
     const chunks = await ragRetriever.retrieveRange({
       userId: context.userId,
       materialId: material.id,
-      startIndex: module.chunkRange.start,
-      endIndex: module.chunkRange.end,
+      startIndex,
+      endIndex,
     });
 
     const chunkContents = chunks.map((c) => c.content);
     if (chunkContents.length === 0) {
+      logger.error(
+        {
+          moduleTitle: module.title,
+          materialId: material.id,
+          requestedRange: module.chunkRange,
+          actualRange: { startIndex, endIndex },
+          materialChunkCount: material.chunkCount,
+        },
+        "[LearningPlanGenerator] 청크 조회 결과 없음",
+      );
       throw new ApiError(
         500,
         "EMPTY_MATERIAL_CHUNKS",
-        `모듈 "${module.title}"의 학습 내용을 불러올 수 없습니다.`,
+        `모듈 "${module.title}"의 학습 내용을 불러올 수 없습니다. (범위: ${startIndex}-${endIndex}, 전체: ${material.chunkCount})`,
       );
     }
 
@@ -301,7 +314,7 @@ export class LearningPlanGenerator {
         currentLevel: context.currentLevel,
       });
 
-      const parsed = await chatAI.generateStructuredOutput(
+      const parsed = await getAiModels().chat.generateStructuredOutput(
         {
           config: {
             systemInstruction: systemPrompt,

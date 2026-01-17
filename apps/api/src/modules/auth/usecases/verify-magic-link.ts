@@ -1,150 +1,134 @@
-import { err, ok } from "neverthrow";
-
-import { CONFIG } from "../../../lib/config";
+import { tryPromise, unwrap } from "../../../lib/result";
+import { ApiError } from "../../../middleware/error-handler";
 import {
   computeSessionExpiresAt,
   generateToken,
   sha256Hex,
   validateRedirectPath,
 } from "../auth.utils";
-import { ApiError } from "../../../middleware/error-handler";
-import { VerifyMagicLinkInput } from "../auth.dto";
-import {
-  consumeMagicLinkToken,
-  createUser,
-  findMagicLinkTokenByHash,
-  findUserByEmail,
-  insertAuthSession,
-  updateUserLastLogin,
-} from "../auth.repository";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
+import type { Config } from "../../../lib/config";
 import type { AppError } from "../../../lib/result";
 import type { VerifyMagicLinkInput as VerifyMagicLinkInputType } from "../auth.dto";
+import type { AuthRepository } from "../auth.repository";
 import type { RequestContext } from "../types";
 
 async function upsertUserByEmail(
+  deps: {
+    readonly authRepository: AuthRepository;
+  },
   email: string,
   now: Date,
-): Promise<
-  Result<
-    {
-      readonly id: string;
-      readonly email: string;
-      readonly displayName: string;
-    },
-    AppError
-  >
-> {
-  const existingResult = await findUserByEmail(email);
-  if (existingResult.isErr()) return err(existingResult.error);
-  const existing = existingResult.value;
+): Promise<{
+  readonly id: string;
+  readonly email: string;
+  readonly displayName: string;
+}> {
+  const existing = await unwrap(deps.authRepository.findUserByEmail(email));
 
   if (existing) {
-    const updateResult = await updateUserLastLogin(existing.id, now);
-    if (updateResult.isErr()) return err(updateResult.error);
+    await unwrap(deps.authRepository.updateUserLastLogin(existing.id, now));
 
-    return ok({
+    return {
       id: existing.id,
       email: existing.email,
       displayName: existing.displayName,
-    });
+    };
   }
 
   const displayName = email.split("@")[0] || "User";
-  const createResult = await createUser({ email, displayName, now });
-  if (createResult.isErr()) return err(createResult.error);
-  const created = createResult.value;
+  const created = await unwrap(
+    deps.authRepository.createUser({
+      email,
+      displayName,
+      now,
+    }),
+  );
 
-  return ok({
+  return {
     id: created.id,
     email: created.email,
     displayName: created.displayName,
-  });
+  };
 }
 
-export async function verifyMagicLink(
-  input: VerifyMagicLinkInputType,
-  ctx: RequestContext,
-): Promise<
-  Result<
+export function verifyMagicLink(deps: {
+  readonly authRepository: AuthRepository;
+  readonly config: Config;
+}) {
+  return function verifyMagicLink(
+    input: VerifyMagicLinkInputType,
+    ctx: RequestContext,
+  ): ResultAsync<
     {
       redirectPath: string;
       sessionToken: string;
       sessionId: string;
     },
     AppError
-  >
-> {
-  // 1. 입력 검증
-  const parseResult = VerifyMagicLinkInput.safeParse(input);
-  if (!parseResult.success) {
-    return err(
-      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
-    );
-  }
-  const validated = parseResult.data;
+  > {
+    return tryPromise(async () => {
+      const tokenHash = sha256Hex(input.token);
+      const now = new Date();
 
-  const tokenHash = sha256Hex(validated.token);
-  const now = new Date();
+      // 1. 토큰 조회
+      const record = await unwrap(
+        deps.authRepository.findMagicLinkTokenByHash(tokenHash),
+      );
 
-  // 2. 토큰 조회
-  const recordResult = await findMagicLinkTokenByHash(tokenHash);
-  if (recordResult.isErr()) return err(recordResult.error);
-  const record = recordResult.value;
+      // 2. 토큰 유효성 검증
+      if (!record) {
+        throw new ApiError(
+          400,
+          "MAGIC_LINK_INVALID",
+          "유효하지 않은 토큰입니다.",
+        );
+      }
+      if (record.consumedAt) {
+        throw new ApiError(400, "MAGIC_LINK_USED", "이미 사용된 토큰입니다.");
+      }
+      if (record.expiresAt.getTime() < now.getTime()) {
+        throw new ApiError(400, "MAGIC_LINK_EXPIRED", "토큰이 만료되었습니다.");
+      }
+      if (!validateRedirectPath(record.redirectPath)) {
+        throw new ApiError(
+          400,
+          "INVALID_REDIRECT",
+          "redirectPath가 허용되지 않습니다.",
+        );
+      }
 
-  // 3. 토큰 유효성 검증
-  if (!record) {
-    return err(
-      new ApiError(400, "MAGIC_LINK_INVALID", "유효하지 않은 토큰입니다."),
-    );
-  }
-  if (record.consumedAt) {
-    return err(new ApiError(400, "MAGIC_LINK_USED", "이미 사용된 토큰입니다."));
-  }
-  if (record.expiresAt.getTime() < now.getTime()) {
-    return err(
-      new ApiError(400, "MAGIC_LINK_EXPIRED", "토큰이 만료되었습니다."),
-    );
-  }
-  if (!validateRedirectPath(record.redirectPath)) {
-    return err(
-      new ApiError(
-        400,
-        "INVALID_REDIRECT",
-        "redirectPath가 허용되지 않습니다.",
-      ),
-    );
-  }
+      // 3. 토큰 소비 처리
+      await unwrap(deps.authRepository.consumeMagicLinkToken(record.id, now));
 
-  // 4. 토큰 소비 처리
-  const consumeResult = await consumeMagicLinkToken(record.id, now);
-  if (consumeResult.isErr()) return err(consumeResult.error);
+      // 4. 사용자 조회/생성
+      const user = await upsertUserByEmail(deps, record.email, now);
 
-  // 5. 사용자 조회/생성
-  const userResult = await upsertUserByEmail(record.email, now);
-  if (userResult.isErr()) return err(userResult.error);
-  const user = userResult.value;
+      // 5. 세션 생성
+      const sessionToken = generateToken();
+      const sessionTokenHash = sha256Hex(sessionToken);
+      const expiresAt = computeSessionExpiresAt(
+        now,
+        deps.config.SESSION_DURATION_DAYS,
+      );
 
-  // 6. 세션 생성
-  const sessionToken = generateToken();
-  const sessionTokenHash = sha256Hex(sessionToken);
-  const expiresAt = computeSessionExpiresAt(now, CONFIG.SESSION_DURATION_DAYS);
+      const session = await unwrap(
+        deps.authRepository.insertAuthSession({
+          userId: user.id,
+          sessionTokenHash,
+          expiresAt,
+          createdIp: ctx.ipAddress,
+          userAgent: ctx.userAgent,
+          createdAt: now,
+        }),
+      );
 
-  const sessionResult = await insertAuthSession({
-    userId: user.id,
-    sessionTokenHash,
-    expiresAt,
-    createdIp: ctx.ipAddress,
-    userAgent: ctx.userAgent,
-    createdAt: now,
-  });
-  if (sessionResult.isErr()) return err(sessionResult.error);
-  const session = sessionResult.value;
-
-  return ok({
-    redirectPath: record.redirectPath,
-    sessionToken,
-    sessionId: session.id,
-  });
+      return {
+        redirectPath: record.redirectPath,
+        sessionToken,
+        sessionId: session.id,
+      };
+    });
+  };
 }

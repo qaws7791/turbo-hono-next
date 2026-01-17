@@ -4,6 +4,12 @@ import { verifyGoogleOAuth } from "./usecases/verify-google-oauth";
 import { verifyMagicLink } from "./usecases/verify-magic-link";
 import { getSessionByToken } from "./usecases/get-session";
 
+export { createAuthRepository } from "./auth.repository";
+export type { AuthRepository } from "./auth.repository";
+
+export { createAuthService } from "./auth.service";
+export type { AuthService } from "./auth.service";
+
 export type { AuthContext, RequestContext } from "./types";
 
 export { validateRedirectPath } from "./auth.utils";

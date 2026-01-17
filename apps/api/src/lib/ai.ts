@@ -1,24 +1,29 @@
 import { GoogleGenAI } from "@google/genai";
 import z from "zod";
 
+import { ApiError } from "../middleware/error-handler";
+
 import { CONFIG } from "./config";
 
 import type { GenerateContentParameters } from "@google/genai";
+import type { Config } from "./config";
 
 export const EMBEDDING_DIMENSIONS = 1536 as const;
 
 export class EmbeddingModel {
   private genAI: GoogleGenAI;
+  private model: string;
 
-  constructor(genAI: GoogleGenAI) {
-    this.genAI = genAI;
+  constructor(params: { readonly genAI: GoogleGenAI; readonly model: string }) {
+    this.genAI = params.genAI;
+    this.model = params.model;
   }
 
   async embedContent(
     contents: string | Array<string>,
   ): Promise<Array<Array<number>>> {
     const response = await this.genAI.models.embedContent({
-      model: CONFIG.GEMINI_EMBEDDING_MODEL,
+      model: this.model,
       contents,
       config: {
         taskType: "RETRIEVAL_DOCUMENT",
@@ -38,9 +43,11 @@ export class EmbeddingModel {
 
 export class ChatModel {
   private genAI: GoogleGenAI;
+  private model: string;
 
-  constructor(genAI: GoogleGenAI) {
-    this.genAI = genAI;
+  constructor(params: { readonly genAI: GoogleGenAI; readonly model: string }) {
+    this.genAI = params.genAI;
+    this.model = params.model;
   }
 
   async generateStructuredOutput<T extends z.ZodTypeAny>(
@@ -56,7 +63,7 @@ export class ChatModel {
     schema: T,
   ) {
     const response = await this.genAI.models.generateContent({
-      model: CONFIG.GEMINI_CHAT_MODEL,
+      model: this.model,
       config: {
         responseMimeType: "application/json",
         responseJsonSchema: z.toJSONSchema(schema),
@@ -73,10 +80,35 @@ export class ChatModel {
   }
 }
 
-export const embeddingAI = new EmbeddingModel(
-  new GoogleGenAI({ apiKey: CONFIG.GEMINI_EMBEDDING_API_KEY }),
-);
+export type AiModels = {
+  readonly chat: ChatModel;
+  readonly embedding: EmbeddingModel;
+};
 
-export const chatAI = new ChatModel(
-  new GoogleGenAI({ apiKey: CONFIG.GEMINI_API_KEY }),
-);
+export function createAiModels(config: Config): AiModels {
+  const chatApiKey = config.AI_API_KEY;
+  if (!chatApiKey) {
+    throw new ApiError(503, "AI_UNAVAILABLE", "AI 기능이 설정되지 않았습니다.");
+  }
+
+  const embeddingApiKey = config.AI_EMBEDDING_API_KEY ?? chatApiKey;
+
+  return {
+    chat: new ChatModel({
+      genAI: new GoogleGenAI({ apiKey: chatApiKey }),
+      model: config.GEMINI_CHAT_MODEL,
+    }),
+    embedding: new EmbeddingModel({
+      genAI: new GoogleGenAI({ apiKey: embeddingApiKey }),
+      model: config.GEMINI_EMBEDDING_MODEL,
+    }),
+  };
+}
+
+let cachedAiModels: AiModels | null = null;
+
+export function getAiModels(): AiModels {
+  if (cachedAiModels) return cachedAiModels;
+  cachedAiModels = createAiModels(CONFIG);
+  return cachedAiModels;
+}

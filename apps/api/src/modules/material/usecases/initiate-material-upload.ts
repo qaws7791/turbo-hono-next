@@ -1,18 +1,16 @@
-import { err, ok } from "neverthrow";
-
-import { documentParser } from "../../../ai/ingestion/parse";
-import { createPresignedPutUrl } from "../../../lib/r2";
+import { tryPromise, unwrap } from "../../../lib/result";
 import { ApiError } from "../../../middleware/error-handler";
-import {
-  InitiateMaterialUploadInput,
-  InitiateMaterialUploadResponse,
-} from "../material.dto";
-import { materialRepository } from "../material.repository";
+import { InitiateMaterialUploadResponse } from "../material.dto";
 import { MAX_FILE_BYTES } from "../material.utils";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
-import type { InitiateMaterialUploadResponse as InitiateMaterialUploadResponseType } from "../material.dto";
+import type {
+  InitiateMaterialUploadInput as InitiateMaterialUploadInputType,
+  InitiateMaterialUploadResponse as InitiateMaterialUploadResponseType,
+} from "../material.dto";
+import type { DocumentParserPort, R2StoragePort } from "../material.ports";
+import type { MaterialRepository } from "../material.repository";
 
 function getSafeExt(originalFilename: string): string | null {
   const idx = originalFilename.lastIndexOf(".");
@@ -35,88 +33,88 @@ function buildTempObjectKey(params: {
   return `tmp/materials/${params.userId}/${yyyy}/${mm}/${params.uploadId}${suffix}`;
 }
 
-export async function initiateMaterialUpload(
-  userId: string,
-  input: unknown,
-): Promise<Result<InitiateMaterialUploadResponseType, AppError>> {
-  // 1. 입력 검증
-  const parseResult = InitiateMaterialUploadInput.safeParse(input);
-  if (!parseResult.success) {
-    return err(
-      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
-    );
-  }
-  const validated = parseResult.data;
+export function initiateMaterialUpload(deps: {
+  readonly materialRepository: MaterialRepository;
+  readonly documentParser: DocumentParserPort;
+  readonly r2: R2StoragePort;
+}) {
+  return function initiateMaterialUpload(
+    userId: string,
+    input: InitiateMaterialUploadInputType,
+  ): ResultAsync<InitiateMaterialUploadResponseType, AppError> {
+    return tryPromise(async () => {
+      const originalFilename = input.originalFilename.trim();
+      const mimeType = input.mimeType.trim();
 
-  const originalFilename = validated.originalFilename.trim();
-  const mimeType = validated.mimeType.trim();
+      if (input.fileSize > MAX_FILE_BYTES) {
+        throw new ApiError(
+          400,
+          "MATERIAL_FILE_TOO_LARGE",
+          "파일 크기가 너무 큽니다.",
+          {
+            maxBytes: MAX_FILE_BYTES,
+          },
+        );
+      }
 
-  // 2. 파일 크기 검증
-  if (validated.fileSize > MAX_FILE_BYTES) {
-    return err(
-      new ApiError(400, "MATERIAL_FILE_TOO_LARGE", "파일 크기가 너무 큽니다.", {
-        maxBytes: MAX_FILE_BYTES,
-      }),
-    );
-  }
+      if (
+        !deps.documentParser.isSupportedMaterialFile({
+          mimeType,
+          originalFilename,
+        })
+      ) {
+        throw new ApiError(
+          400,
+          "MATERIAL_UNSUPPORTED_TYPE",
+          "지원하지 않는 파일 형식입니다.",
+          { mimeType, originalFilename },
+        );
+      }
 
-  // 3. 파일 형식 검증
-  if (!documentParser.isSupportedMaterialFile({ mimeType, originalFilename })) {
-    return err(
-      new ApiError(
-        400,
-        "MATERIAL_UNSUPPORTED_TYPE",
-        "지원하지 않는 파일 형식입니다.",
-        { mimeType, originalFilename },
-      ),
-    );
-  }
-
-  const now = new Date();
-  const uploadId = crypto.randomUUID();
-  const expiresInSeconds = 300;
-  const expiresAt = new Date(now.getTime() + expiresInSeconds * 1000);
-  const objectKey = buildTempObjectKey({
-    userId,
-    uploadId,
-    originalFilename,
-    now,
-  });
-
-  // 4. 업로드 세션 생성
-  const insertResult = await materialRepository.insertUploadSession({
-    id: uploadId,
-    userId,
-    status: "INITIATED",
-    expiresAt,
-    objectKey,
-    mimeType,
-    fileSize: validated.fileSize,
-    originalFilename,
-    createdAt: now,
-    updatedAt: now,
-  });
-  if (insertResult.isErr()) return err(insertResult.error);
-
-  // 5. Presigned URL 생성
-  const { url } = await createPresignedPutUrl({
-    key: objectKey,
-    contentType: mimeType,
-    expiresInSeconds,
-  });
-
-  return ok(
-    InitiateMaterialUploadResponse.parse({
-      data: {
+      const now = new Date();
+      const uploadId = crypto.randomUUID();
+      const expiresInSeconds = 300;
+      const expiresAt = new Date(now.getTime() + expiresInSeconds * 1000);
+      const objectKey = buildTempObjectKey({
+        userId,
         uploadId,
-        objectKey,
-        uploadUrl: url,
-        method: "PUT",
-        headers: {
-          "Content-Type": mimeType,
+        originalFilename,
+        now,
+      });
+
+      await unwrap(
+        deps.materialRepository.insertUploadSession({
+          id: uploadId,
+          userId,
+          status: "INITIATED",
+          expiresAt,
+          objectKey,
+          mimeType,
+          fileSize: input.fileSize,
+          originalFilename,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
+
+      const { url } = await deps.r2.createPresignedPutUrl({
+        key: objectKey,
+        contentType: mimeType,
+        expiresInSeconds,
+      });
+
+      return InitiateMaterialUploadResponse.parse({
+        data: {
+          uploadId,
+          objectKey,
+          uploadUrl: url,
+          method: "PUT",
+          headers: {
+            "Content-Type": mimeType,
+          },
+          expiresAt: expiresAt.toISOString(),
         },
-        expiresAt: expiresAt.toISOString(),
-      },
-    }),
-  );
+      });
+    });
+  };
 }

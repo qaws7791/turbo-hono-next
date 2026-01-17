@@ -1,43 +1,42 @@
-import { err, ok } from "neverthrow";
-
+import { tryPromise, unwrap } from "../../../lib/result";
 import { ApiError } from "../../../middleware/error-handler";
 import { ActivatePlanResponse } from "../plan.dto";
-import { planRepository } from "../plan.repository";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
 import type { ActivatePlanResponse as ActivatePlanResponseType } from "../plan.dto";
+import type { PlanRepository } from "../plan.repository";
 
-export async function activatePlan(
-  userId: string,
-  planId: string,
-): Promise<Result<ActivatePlanResponseType, AppError>> {
-  const now = new Date();
+export function activatePlan(deps: {
+  readonly planRepository: PlanRepository;
+}) {
+  return function activatePlan(
+    userId: string,
+    planId: string,
+  ): ResultAsync<ActivatePlanResponseType, AppError> {
+    return tryPromise(async () => {
+      const now = new Date();
 
-  // 1. Plan 조회
-  const planResult = await planRepository.findByPublicId(userId, planId);
-  if (planResult.isErr()) return err(planResult.error);
-  const plan = planResult.value;
+      const plan = await unwrap(
+        deps.planRepository.findByPublicId(userId, planId),
+      );
+      if (!plan) {
+        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+          planId,
+        });
+      }
 
-  if (!plan) {
-    return err(
-      new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-        planId,
-      }),
-    );
-  }
+      await unwrap(
+        deps.planRepository.activatePlanTransaction({
+          plan: { id: plan.id },
+          userId,
+          now,
+        }),
+      );
 
-  // 2. Plan 활성화 트랜잭션 실행
-  const activateResult = await planRepository.activatePlanTransaction({
-    plan: { id: plan.id },
-    userId,
-    now,
-  });
-  if (activateResult.isErr()) return err(activateResult.error);
-
-  return ok(
-    ActivatePlanResponse.parse({
-      data: { id: plan.publicId, status: "ACTIVE" as const },
-    }),
-  );
+      return ActivatePlanResponse.parse({
+        data: { id: plan.publicId, status: "ACTIVE" as const },
+      });
+    });
+  };
 }

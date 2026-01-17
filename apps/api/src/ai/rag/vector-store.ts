@@ -39,6 +39,18 @@ export class RagVectorStoreManager {
     return CONFIG.DATABASE_URL;
   }
 
+  private requireEmbeddingApiKey(): string {
+    const apiKey = CONFIG.AI_EMBEDDING_API_KEY ?? CONFIG.AI_API_KEY;
+    if (!apiKey) {
+      throw new ApiError(
+        503,
+        "AI_UNAVAILABLE",
+        "AI 기능이 설정되지 않았습니다.",
+      );
+    }
+    return apiKey;
+  }
+
   public getPool(): Pool {
     if (this.pool) return this.pool;
     const databaseUrl = this.requireDatabaseUrl();
@@ -59,7 +71,7 @@ export class RagVectorStoreManager {
   }): Promise<PGVectorStore> {
     return new PGVectorStore(
       new GoogleCustomEmbeddings({
-        apiKey: CONFIG.GEMINI_EMBEDDING_API_KEY,
+        apiKey: this.requireEmbeddingApiKey(),
         model: CONFIG.GEMINI_EMBEDDING_MODEL,
       }),
       {

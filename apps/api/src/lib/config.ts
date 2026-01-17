@@ -28,26 +28,76 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().min(1).optional(),
   RESEND_EMAIL: z.email().optional(),
 
-  R2_ACCESS_KEY_ID: z.string().min(1),
-  R2_SECRET_ACCESS_KEY: z.string().min(1),
-  R2_BUCKET_NAME: z.string().min(1),
-  R2_ENDPOINT: z.string().min(1),
-  R2_PUBLIC_URL: z.string().min(1),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET_NAME: z.string().min(1).optional(),
+  R2_ENDPOINT: z.string().min(1).optional(),
+  R2_PUBLIC_URL: z.string().min(1).optional(),
 
+  AI_API_KEY: z.string().min(1).optional(),
   GOOGLE_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   GEMINI_CHAT_MODEL: z.string().min(1).default("gemini-2.5-flash-lite"),
   GEMINI_EMBEDDING_MODEL: z.string().min(1).default("gemini-embedding-001"),
-  GEMINI_EMBEDDING_API_KEY: z.string().min(1),
+  AI_EMBEDDING_API_KEY: z.string().min(1).optional(),
+  GEMINI_EMBEDDING_API_KEY: z.string().min(1).optional(),
+
+  RATE_LIMIT_ENABLED: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
+    .optional(),
 });
 
-const parsed = envSchema.parse(process.env);
+export type Config = ReturnType<typeof loadConfig>;
 
-export const CONFIG = {
-  ...parsed,
-  AI_API_KEY: parsed.GEMINI_API_KEY ?? parsed.GOOGLE_API_KEY,
-  COOKIE_SECURE: parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production",
-  EMAIL_DELIVERY_MODE:
-    parsed.EMAIL_DELIVERY_MODE ??
-    (parsed.NODE_ENV === "production" ? "resend" : "log"),
-};
+export function loadConfig(env: NodeJS.ProcessEnv): {
+  readonly NODE_ENV: "development" | "test" | "production";
+  readonly SERVICE_NAME: string;
+  readonly PORT: number;
+  readonly BASE_URL: string;
+  readonly FRONTEND_URL: string;
+  readonly DATABASE_URL?: string;
+  readonly SESSION_COOKIE_NAME: string;
+  readonly SESSION_DURATION_DAYS: number;
+  readonly COOKIE_DOMAIN?: string;
+  readonly COOKIE_SECURE: boolean;
+  readonly GOOGLE_CLIENT_ID?: string;
+  readonly GOOGLE_CLIENT_SECRET?: string;
+  readonly EMAIL_DELIVERY_MODE: "resend" | "log";
+  readonly RESEND_API_KEY?: string;
+  readonly RESEND_EMAIL?: string;
+  readonly R2_ACCESS_KEY_ID?: string;
+  readonly R2_SECRET_ACCESS_KEY?: string;
+  readonly R2_BUCKET_NAME?: string;
+  readonly R2_ENDPOINT?: string;
+  readonly R2_PUBLIC_URL?: string;
+  readonly AI_API_KEY?: string;
+  readonly AI_EMBEDDING_API_KEY?: string;
+  readonly GOOGLE_API_KEY?: string;
+  readonly GEMINI_API_KEY?: string;
+  readonly GEMINI_CHAT_MODEL: string;
+  readonly GEMINI_EMBEDDING_MODEL: string;
+  readonly GEMINI_EMBEDDING_API_KEY?: string;
+  readonly RATE_LIMIT_ENABLED: boolean;
+} {
+  const parsed = envSchema.parse(env);
+
+  const aiApiKey =
+    parsed.AI_API_KEY ?? parsed.GEMINI_API_KEY ?? parsed.GOOGLE_API_KEY;
+
+  const aiEmbeddingApiKey =
+    parsed.AI_EMBEDDING_API_KEY ?? parsed.GEMINI_EMBEDDING_API_KEY ?? aiApiKey;
+
+  return {
+    ...parsed,
+    AI_API_KEY: aiApiKey,
+    AI_EMBEDDING_API_KEY: aiEmbeddingApiKey,
+    COOKIE_SECURE: parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production",
+    EMAIL_DELIVERY_MODE:
+      parsed.EMAIL_DELIVERY_MODE ??
+      (parsed.NODE_ENV === "production" ? "resend" : "log"),
+    RATE_LIMIT_ENABLED: parsed.RATE_LIMIT_ENABLED ?? parsed.NODE_ENV !== "test",
+  };
+}
+
+export const CONFIG = loadConfig(process.env);

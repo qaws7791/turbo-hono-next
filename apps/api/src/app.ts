@@ -3,24 +3,25 @@ import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { cors } from "hono/cors";
 
-import { CONFIG } from "./lib/config";
-import { errorHandlerMiddleware } from "./middleware/error-handler";
-import { loggerMiddleware } from "./middleware/logger";
+import { createErrorHandlerMiddleware } from "./middleware/error-handler";
+import { createLoggerMiddleware } from "./middleware/logger";
 import {
-  createRateLimitMiddleware,
+  createOptionalRateLimitMiddleware,
   getClientIp,
 } from "./middleware/rate-limit";
 import { requestIdMiddleware } from "./middleware/request-id";
 import { registerRoutes } from "./routes";
 
-export function createApp(): OpenAPIHono {
+import type { AppDeps } from "./app-deps";
+
+export function createApp(deps: AppDeps): OpenAPIHono {
   const app = new OpenAPIHono();
 
   app.use("*", requestIdMiddleware);
-  app.use("*", loggerMiddleware);
+  app.use("*", createLoggerMiddleware(deps.logger));
   app.use(
     "/api/*",
-    createRateLimitMiddleware({
+    createOptionalRateLimitMiddleware(deps.config.RATE_LIMIT_ENABLED, {
       windowMs: 60 * 1000,
       max: 60,
       keyGenerator: (c) => getClientIp(c) ?? "unknown",
@@ -29,7 +30,7 @@ export function createApp(): OpenAPIHono {
   app.use(
     "*",
     cors({
-      origin: [CONFIG.FRONTEND_URL],
+      origin: [deps.config.FRONTEND_URL],
       credentials: true,
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowHeaders: ["Content-Type", "Idempotency-Key", "X-Request-ID"],
@@ -39,9 +40,9 @@ export function createApp(): OpenAPIHono {
   app.get("/openapi.json", (c) => c.json(generateOpenApiDocument()));
   app.get("/docs", Scalar({ url: "/openapi.json" }));
 
-  registerRoutes(app);
+  registerRoutes(app, deps);
 
-  app.onError(errorHandlerMiddleware);
+  app.onError(createErrorHandlerMiddleware(deps.logger));
 
   return app;
 }

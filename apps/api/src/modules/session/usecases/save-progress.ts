@@ -1,69 +1,67 @@
-import { err, ok } from "neverthrow";
-
+import { tryPromise, unwrap } from "../../../lib/result";
 import { isoDateTime } from "../../../lib/utils/date";
 import { ApiError } from "../../../middleware/error-handler";
-import {
-  UpdateSessionRunProgressInput,
-  UpdateSessionRunProgressResponse,
-} from "../session.dto";
-import { sessionRepository } from "../session.repository";
+import { UpdateSessionRunProgressResponse } from "../session.dto";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
 import type {
   UpdateSessionRunProgressInput as UpdateSessionRunProgressInputType,
   UpdateSessionRunProgressResponse as UpdateSessionRunProgressResponseType,
 } from "../session.dto";
+import type { SessionRepository } from "../session.repository";
 
-export async function saveProgress(
-  userId: string,
-  runId: string,
-  input: UpdateSessionRunProgressInputType,
-): Promise<Result<UpdateSessionRunProgressResponseType, AppError>> {
-  const now = new Date();
+export function saveProgress(deps: {
+  readonly sessionRepository: SessionRepository;
+}) {
+  return function saveProgress(
+    userId: string,
+    runId: string,
+    input: UpdateSessionRunProgressInputType,
+  ): ResultAsync<UpdateSessionRunProgressResponseType, AppError> {
+    return tryPromise(async () => {
+      const now = new Date();
 
-  // 1. 입력 검증
-  const parseResult = UpdateSessionRunProgressInput.safeParse(input);
-  if (!parseResult.success) {
-    return err(
-      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
-    );
-  }
-  const validated = parseResult.data;
+      // 1. Run 조회
+      const run = await unwrap(
+        deps.sessionRepository.findRunByPublicId(userId, runId),
+      );
 
-  // 2. Run 조회
-  const runResult = await sessionRepository.findRunByPublicId(userId, runId);
-  if (runResult.isErr()) return err(runResult.error);
-  const run = runResult.value;
+      if (!run) {
+        throw new ApiError(
+          404,
+          "SESSION_NOT_FOUND",
+          "세션을 찾을 수 없습니다.",
+          {
+            runId,
+          },
+        );
+      }
 
-  if (!run) {
-    return err(
-      new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
-        runId,
-      }),
-    );
-  }
+      if (run.status !== "RUNNING") {
+        throw new ApiError(
+          400,
+          "INVALID_REQUEST",
+          "진행 중인 세션이 아닙니다.",
+          {
+            status: run.status,
+          },
+        );
+      }
 
-  if (run.status !== "RUNNING") {
-    return err(
-      new ApiError(400, "INVALID_REQUEST", "진행 중인 세션이 아닙니다.", {
-        status: run.status,
-      }),
-    );
-  }
+      // 2. 진행 상황 스냅샷 저장
+      await unwrap(
+        deps.sessionRepository.insertProgressSnapshot({
+          sessionRunId: run.id,
+          stepIndex: input.stepIndex,
+          payloadJson: input.inputs,
+          createdAt: now,
+        }),
+      );
 
-  // 3. 진행 상황 스냅샷 저장
-  const insertResult = await sessionRepository.insertProgressSnapshot({
-    sessionRunId: run.id,
-    stepIndex: validated.stepIndex,
-    payloadJson: validated.inputs as Record<string, unknown>,
-    createdAt: now,
-  });
-  if (insertResult.isErr()) return err(insertResult.error);
-
-  return ok(
-    UpdateSessionRunProgressResponse.parse({
-      data: { runId: run.publicId, savedAt: isoDateTime(now) },
-    }),
-  );
+      return UpdateSessionRunProgressResponse.parse({
+        data: { runId: run.publicId, savedAt: isoDateTime(now) },
+      });
+    });
+  };
 }

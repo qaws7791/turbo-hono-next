@@ -36,3 +36,11 @@ export function tryPromise<T>(fn: () => Promise<T>): ResultAsync<T, AppError> {
     toAppError(cause),
   );
 }
+
+export async function unwrap<T>(result: ResultAsync<T, AppError>): Promise<T> {
+  const awaited = await result;
+  if (awaited.isErr()) {
+    throwAppError(awaited.error);
+  }
+  return awaited.value;
+}

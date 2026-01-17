@@ -68,8 +68,8 @@ export const ModuleSessionSchema = z.object({
   objective: z
     .string()
     .min(1)
-    .max(200)
-    .describe("학습 목표 (SMART 원칙에 따라 측정 가능하게, 200자 이내)"),
+    .max(300)
+    .describe("학습 목표 (SMART 원칙에 따라 측정 가능하게, 300자 이내)"),
   estimatedMinutes: z
     .number()
     .int()

@@ -10,47 +10,51 @@ import {
 } from "@repo/api-spec";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
-import { CONFIG } from "../lib/config";
 import { handleResult, jsonResult } from "../lib/result-handler";
-import { requireAuth } from "../middleware/auth";
+import { createRequireAuthMiddleware } from "../middleware/auth";
 import { ApiError } from "../middleware/error-handler";
 import {
-  createRateLimitMiddleware,
+  createOptionalRateLimitMiddleware,
   getClientIp,
 } from "../middleware/rate-limit";
-import {
-  requestMagicLink,
-  revokeSession,
-  validateRedirectPath,
-  verifyGoogleOAuth,
-  verifyMagicLink,
-} from "../modules/auth";
 
+import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
-
-const requestMagicLinkRateLimit = createRateLimitMiddleware({
-  windowMs: 60 * 1000,
-  max: 5,
-  keyGenerator: (c) => getClientIp(c) ?? "unknown",
-});
-
-const verifyMagicLinkRateLimit = createRateLimitMiddleware({
-  windowMs: 60 * 1000,
-  max: 10,
-  keyGenerator: (c) => getClientIp(c) ?? "unknown",
-});
 
 const OAUTH_STATE_COOKIE_NAME = "oauth_state";
 const OAUTH_REDIRECT_COOKIE_NAME = "oauth_redirect_path";
 const OAUTH_COOKIE_PATH = "/api/auth/google";
 const OAUTH_COOKIE_MAX_AGE_SEC = 10 * 60;
 
-export function registerAuthRoutes(app: OpenAPIHono): void {
+export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
+  const requireAuth = createRequireAuthMiddleware({
+    config: deps.config,
+    authService: deps.services.auth,
+  });
+
+  const requestMagicLinkRateLimit = createOptionalRateLimitMiddleware(
+    deps.config.RATE_LIMIT_ENABLED,
+    {
+      windowMs: 60 * 1000,
+      max: 5,
+      keyGenerator: (c) => getClientIp(c) ?? "unknown",
+    },
+  );
+
+  const verifyMagicLinkRateLimit = createOptionalRateLimitMiddleware(
+    deps.config.RATE_LIMIT_ENABLED,
+    {
+      windowMs: 60 * 1000,
+      max: 10,
+      keyGenerator: (c) => getClientIp(c) ?? "unknown",
+    },
+  );
+
   app.openapi(authGoogleRoute, async (c) => {
     const { redirectPath } = c.req.valid("query");
 
     const nextRedirectPath = redirectPath ?? "/home";
-    if (!validateRedirectPath(nextRedirectPath)) {
+    if (!deps.services.auth.validateRedirectPath(nextRedirectPath)) {
       throw new ApiError(
         400,
         "INVALID_REDIRECT",
@@ -58,8 +62,8 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
       );
     }
 
-    const clientId = CONFIG.GOOGLE_CLIENT_ID;
-    const clientSecret = CONFIG.GOOGLE_CLIENT_SECRET;
+    const clientId = deps.config.GOOGLE_CLIENT_ID;
+    const clientSecret = deps.config.GOOGLE_CLIENT_SECRET;
     if (!clientId || !clientSecret) {
       throw new ApiError(
         500,
@@ -72,25 +76,25 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
 
     setCookie(c, OAUTH_STATE_COOKIE_NAME, state, {
       httpOnly: true,
-      secure: CONFIG.COOKIE_SECURE,
+      secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
       path: OAUTH_COOKIE_PATH,
-      domain: CONFIG.COOKIE_DOMAIN,
+      domain: deps.config.COOKIE_DOMAIN,
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
     setCookie(c, OAUTH_REDIRECT_COOKIE_NAME, nextRedirectPath, {
       httpOnly: true,
-      secure: CONFIG.COOKIE_SECURE,
+      secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
       path: OAUTH_COOKIE_PATH,
-      domain: CONFIG.COOKIE_DOMAIN,
+      domain: deps.config.COOKIE_DOMAIN,
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
     const redirectUri = new URL(
       "/api/auth/google/callback",
-      CONFIG.BASE_URL,
+      deps.config.BASE_URL,
     ).toString();
 
     const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -113,11 +117,11 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
 
     deleteCookie(c, OAUTH_STATE_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
-      domain: CONFIG.COOKIE_DOMAIN,
+      domain: deps.config.COOKIE_DOMAIN,
     });
     deleteCookie(c, OAUTH_REDIRECT_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
-      domain: CONFIG.COOKIE_DOMAIN,
+      domain: deps.config.COOKIE_DOMAIN,
     });
 
     if (!expectedState || expectedState !== state) {
@@ -128,7 +132,7 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
       );
     }
 
-    if (!validateRedirectPath(redirectPath)) {
+    if (!deps.services.auth.validateRedirectPath(redirectPath)) {
       throw new ApiError(
         400,
         "INVALID_REDIRECT",
@@ -141,20 +145,20 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
     const userAgent = c.req.header("user-agent");
 
     return handleResult(
-      verifyGoogleOAuth({ code }, { ipAddress, userAgent }),
+      deps.services.auth.verifyGoogleOAuth({ code }, { ipAddress, userAgent }),
       (verified) => {
-        setCookie(c, CONFIG.SESSION_COOKIE_NAME, verified.sessionToken, {
+        setCookie(c, deps.config.SESSION_COOKIE_NAME, verified.sessionToken, {
           httpOnly: true,
-          secure: CONFIG.COOKIE_SECURE,
+          secure: deps.config.COOKIE_SECURE,
           sameSite: "lax",
           path: "/",
-          domain: CONFIG.COOKIE_DOMAIN,
-          maxAge: 60 * 60 * 24 * CONFIG.SESSION_DURATION_DAYS,
+          domain: deps.config.COOKIE_DOMAIN,
+          maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
         });
 
         const redirectUrl = new URL(
           redirectPath,
-          CONFIG.FRONTEND_URL,
+          deps.config.FRONTEND_URL,
         ).toString();
         return c.redirect(redirectUrl, 302);
       },
@@ -174,7 +178,7 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
 
       return jsonResult(
         c,
-        requestMagicLink(body, { ipAddress, userAgent }),
+        deps.services.auth.requestMagicLink(body, { ipAddress, userAgent }),
         200,
       );
     },
@@ -192,20 +196,20 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
       const userAgent = c.req.header("user-agent");
 
       return handleResult(
-        verifyMagicLink({ token }, { ipAddress, userAgent }),
+        deps.services.auth.verifyMagicLink({ token }, { ipAddress, userAgent }),
         (verified) => {
-          setCookie(c, CONFIG.SESSION_COOKIE_NAME, verified.sessionToken, {
+          setCookie(c, deps.config.SESSION_COOKIE_NAME, verified.sessionToken, {
             httpOnly: true,
-            secure: CONFIG.COOKIE_SECURE,
+            secure: deps.config.COOKIE_SECURE,
             sameSite: "lax",
             path: "/",
-            domain: CONFIG.COOKIE_DOMAIN,
-            maxAge: 60 * 60 * 24 * CONFIG.SESSION_DURATION_DAYS,
+            domain: deps.config.COOKIE_DOMAIN,
+            maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
           });
 
           const redirectUrl = new URL(
             verified.redirectPath,
-            CONFIG.FRONTEND_URL,
+            deps.config.FRONTEND_URL,
           ).toString();
           return c.redirect(redirectUrl, 302);
         },
@@ -225,13 +229,16 @@ export function registerAuthRoutes(app: OpenAPIHono): void {
     { ...authLogoutRoute, middleware: [requireAuth] as const },
     async (c) => {
       const auth = c.get("auth");
-      return handleResult(revokeSession(auth.session.id), () => {
-        deleteCookie(c, CONFIG.SESSION_COOKIE_NAME, {
-          path: "/",
-          domain: CONFIG.COOKIE_DOMAIN,
-        });
-        return c.json({ message: "로그아웃되었습니다." }, 200);
-      });
+      return handleResult(
+        deps.services.auth.revokeSession(auth.session.id),
+        () => {
+          deleteCookie(c, deps.config.SESSION_COOKIE_NAME, {
+            path: "/",
+            domain: deps.config.COOKIE_DOMAIN,
+          });
+          return c.json({ message: "로그아웃되었습니다." }, 200);
+        },
+      );
     },
   );
 }

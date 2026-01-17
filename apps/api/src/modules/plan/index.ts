@@ -6,6 +6,12 @@ export { listPlans } from "./usecases/list-plans";
 export { updatePlan } from "./usecases/update-plan";
 export { updatePlanStatus } from "./usecases/update-plan-status";
 
+export { createPlanService } from "./plan.service";
+export type { PlanService } from "./plan.service";
+
+export { createPlanRepository } from "./plan.repository";
+export type { PlanRepository } from "./plan.repository";
+
 export type {
   ActivatePlanResponse,
   CreatePlanInput,

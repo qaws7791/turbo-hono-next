@@ -1,70 +1,79 @@
-import { err, ok } from "neverthrow";
-
-import { CONFIG } from "../../../lib/config";
 import { ApiError } from "../../../middleware/error-handler";
-import { RequestMagicLinkInput } from "../auth.dto";
-import { insertMagicLinkToken, sendLoginLinkEmail } from "../auth.repository";
+import { throwAppError, tryPromise } from "../../../lib/result";
 import { generateToken, sha256Hex, validateRedirectPath } from "../auth.utils";
 
-import type { Result } from "neverthrow";
+import type { ResultAsync } from "neverthrow";
+import type { Config } from "../../../lib/config";
 import type { AppError } from "../../../lib/result";
 import type { RequestMagicLinkInput as RequestMagicLinkInputType } from "../auth.dto";
+import type { AuthRepository } from "../auth.repository";
 import type { RequestContext } from "../types";
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 
-export async function requestMagicLink(
-  input: RequestMagicLinkInputType,
-  ctx: RequestContext,
-): Promise<Result<{ message: string }, AppError>> {
-  // 1. 입력 검증
-  const parseResult = RequestMagicLinkInput.safeParse(input);
-  if (!parseResult.success) {
-    return err(
-      new ApiError(400, "VALIDATION_ERROR", parseResult.error.message),
-    );
-  }
-  const validated = parseResult.data;
+export function requestMagicLink(deps: {
+  readonly authRepository: AuthRepository;
+  readonly config: Config;
+}) {
+  return function requestMagicLink(
+    input: RequestMagicLinkInputType,
+    ctx: RequestContext,
+  ): ResultAsync<{ message: string }, AppError> {
+    return tryPromise(async () => {
+      // 1. redirectPath 검증
+      if (!validateRedirectPath(input.redirectPath)) {
+        throw new ApiError(
+          400,
+          "INVALID_REDIRECT",
+          "redirectPath가 허용되지 않습니다.",
+        );
+      }
 
-  // 2. redirectPath 검증
-  if (!validateRedirectPath(validated.redirectPath)) {
-    return err(
-      new ApiError(
-        400,
-        "INVALID_REDIRECT",
-        "redirectPath가 허용되지 않습니다.",
-      ),
-    );
-  }
+      // 2. 토큰 생성
+      const token = generateToken();
+      const tokenHash = sha256Hex(token);
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + MAGIC_LINK_TTL_MS);
 
-  // 3. 토큰 생성
-  const token = generateToken();
-  const tokenHash = sha256Hex(token);
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + MAGIC_LINK_TTL_MS);
+      // 3. 토큰 저장
+      await deps.authRepository
+        .insertMagicLinkToken({
+          email: input.email,
+          tokenHash,
+          expiresAt,
+          redirectPath: input.redirectPath,
+          createdIp: ctx.ipAddress,
+          userAgent: ctx.userAgent,
+          createdAt: now,
+        })
+        .match(
+          () => undefined,
+          (error) => {
+            throwAppError(error);
+          },
+        );
 
-  // 4. 토큰 저장
-  const insertResult = await insertMagicLinkToken({
-    email: validated.email,
-    tokenHash,
-    expiresAt,
-    redirectPath: validated.redirectPath,
-    createdIp: ctx.ipAddress,
-    userAgent: ctx.userAgent,
-    createdAt: now,
-  });
-  if (insertResult.isErr()) return err(insertResult.error);
+      // 4. 검증 URL 생성
+      const verifyUrl = new URL(
+        "/api/auth/magic-link/verify",
+        deps.config.BASE_URL,
+      );
+      verifyUrl.searchParams.set("token", token);
 
-  // 5. 검증 URL 생성
-  const verifyUrl = new URL("/api/auth/magic-link/verify", CONFIG.BASE_URL);
-  verifyUrl.searchParams.set("token", token);
+      // 5. 이메일 발송
+      await deps.authRepository
+        .sendLoginLinkEmail({
+          email: input.email,
+          verifyUrl: verifyUrl.toString(),
+        })
+        .match(
+          () => undefined,
+          (error) => {
+            throwAppError(error);
+          },
+        );
 
-  // 6. 이메일 발송
-  const sendResult = await sendLoginLinkEmail({
-    email: validated.email,
-    verifyUrl: verifyUrl.toString(),
-  });
-  if (sendResult.isErr()) return err(sendResult.error);
-
-  return ok({ message: "로그인 링크가 이메일로 전송되었습니다." });
+      return { message: "로그인 링크가 이메일로 전송되었습니다." };
+    });
+  };
 }

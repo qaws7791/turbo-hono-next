@@ -1,30 +1,31 @@
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
-import { CONFIG } from "../lib/config";
 import { throwAppError } from "../lib/result";
-import { getSessionByToken } from "../modules/auth";
 
 import { ApiError } from "./error-handler";
 
-import type { AuthContext } from "../modules/auth";
+import type { RequestIdVariables } from "./request-id";
+import type { AuthContext, AuthService } from "../modules/auth";
+import type { Config } from "../lib/config";
 
 export type AuthVariables = {
   auth: AuthContext;
-};
+} & RequestIdVariables;
 
 export type OptionalAuthVariables = {
   auth?: AuthContext;
-};
+} & RequestIdVariables;
 
-export const requireAuth = createMiddleware<{ Variables: AuthVariables }>(
-  async (c, next) => {
-    const token = getCookie(c, CONFIG.SESSION_COOKIE_NAME);
-    if (!token) {
-      throw new ApiError(401, "UNAUTHORIZED", "로그인이 필요합니다.");
-    }
+export function createRequireAuthMiddleware(deps: {
+  readonly config: Config;
+  readonly authService: AuthService;
+}) {
+  return createMiddleware<{ Variables: AuthVariables }>(async (c, next) => {
+    const token = getCookie(c, deps.config.SESSION_COOKIE_NAME);
+    if (!token) throw new ApiError(401, "UNAUTHORIZED", "로그인이 필요합니다.");
 
-    const sessionResult = await getSessionByToken(token, {
+    const sessionResult = await deps.authService.getSessionByToken(token, {
       ipAddress:
         c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for"),
       userAgent: c.req.header("user-agent"),
@@ -42,23 +43,28 @@ export const requireAuth = createMiddleware<{ Variables: AuthVariables }>(
 
     c.set("auth", session);
     await next();
-  },
-);
+  });
+}
 
-export const optionalAuth = createMiddleware<{
-  Variables: OptionalAuthVariables;
-}>(async (c, next) => {
-  const token = getCookie(c, CONFIG.SESSION_COOKIE_NAME);
-  if (token) {
-    const sessionResult = await getSessionByToken(token, {
-      ipAddress:
-        c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for"),
-      userAgent: c.req.header("user-agent"),
-    });
+export function createOptionalAuthMiddleware(deps: {
+  readonly config: Config;
+  readonly authService: AuthService;
+}) {
+  return createMiddleware<{ Variables: OptionalAuthVariables }>(
+    async (c, next) => {
+      const token = getCookie(c, deps.config.SESSION_COOKIE_NAME);
+      if (token) {
+        const sessionResult = await deps.authService.getSessionByToken(token, {
+          ipAddress:
+            c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for"),
+          userAgent: c.req.header("user-agent"),
+        });
 
-    if (sessionResult.isOk() && sessionResult.value) {
-      c.set("auth", sessionResult.value);
-    }
-  }
-  await next();
-});
+        if (sessionResult.isOk() && sessionResult.value) {
+          c.set("auth", sessionResult.value);
+        }
+      }
+      await next();
+    },
+  );
+}
