@@ -473,6 +473,74 @@ export function createAuthRepository(deps: AuthRepositoryDeps) {
         return parsed.data;
       });
     },
+
+    /**
+     * Google ID 토큰을 검증합니다.
+     * - JWT 서명 검증 (Google 공개 키 사용)
+     * - aud 클레임 검증 (Client ID 일치 확인)
+     * - iss 클레임 검증 (accounts.google.com 확인)
+     * - exp 클레임 검증 (토큰 만료 확인)
+     */
+    verifyGoogleIdToken(input: {
+      readonly idToken: string;
+      readonly clientId: string;
+    }): ResultAsync<GoogleUserInfo, AppError> {
+      return tryPromise(async () => {
+        const { OAuth2Client } = await import("google-auth-library");
+        const client = new OAuth2Client();
+
+        try {
+          const ticket = await client.verifyIdToken({
+            idToken: input.idToken,
+            audience: input.clientId,
+          });
+
+          const payload = ticket.getPayload();
+          if (!payload) {
+            throw new ApiError(
+              401,
+              "GOOGLE_ID_TOKEN_INVALID",
+              "ID 토큰 페이로드가 없습니다.",
+            );
+          }
+
+          if (!payload.iss) {
+            throw new ApiError(
+              401,
+              "GOOGLE_ID_TOKEN_INVALID_ISSUER",
+              "잘못된 발급자입니다.",
+            );
+          }
+
+          // sub, email 필수 확인
+          if (!payload.sub || !payload.email) {
+            throw new ApiError(
+              401,
+              "GOOGLE_ID_TOKEN_MISSING_CLAIMS",
+              "ID 토큰에 필수 클레임이 없습니다.",
+            );
+          }
+
+          return {
+            sub: payload.sub,
+            email: payload.email,
+            email_verified: payload.email_verified,
+            name: payload.name,
+            picture: payload.picture,
+            locale: payload.locale,
+          };
+        } catch (e) {
+          if (e instanceof ApiError) throw e;
+
+          logger.warn({ error: e }, "google_id_token_verification_failed");
+          throw new ApiError(
+            401,
+            "GOOGLE_ID_TOKEN_VERIFICATION_FAILED",
+            "ID 토큰 검증에 실패했습니다.",
+          );
+        }
+      });
+    },
   };
 }
 

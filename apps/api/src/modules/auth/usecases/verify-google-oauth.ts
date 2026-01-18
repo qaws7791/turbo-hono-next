@@ -264,9 +264,20 @@ export function verifyGoogleOAuth(deps: {
         }),
       );
 
-      // 3. Google 사용자 정보 조회
+      // 3. ID 토큰 검증 (필수)
+      if (!token.id_token) {
+        throw new ApiError(
+          502,
+          "GOOGLE_ID_TOKEN_MISSING",
+          "ID 토큰이 응답에 포함되지 않았습니다.",
+        );
+      }
+
       const userInfo = await unwrap(
-        deps.authRepository.fetchGoogleUserInfo(token.access_token),
+        deps.authRepository.verifyGoogleIdToken({
+          idToken: token.id_token,
+          clientId,
+        }),
       );
 
       // 4. 이메일 인증 확인
