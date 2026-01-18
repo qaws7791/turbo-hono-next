@@ -219,7 +219,7 @@ const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 await db.insert(magicLinkTokens).values({
   email,
   tokenHash,
-  expiresAt: dayjs().add(15, "minute").toDate(),
+  expiresAt: dayjs().add(10, "minute").toDate(),
   redirectPath,
   createdIp,
   userAgent,

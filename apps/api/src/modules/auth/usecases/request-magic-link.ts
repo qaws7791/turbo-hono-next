@@ -1,5 +1,5 @@
-import { ApiError } from "../../../middleware/error-handler";
 import { throwAppError, tryPromise } from "../../../lib/result";
+import { ApiError } from "../../../middleware/error-handler";
 import { generateToken, sha256Hex, validateRedirectPath } from "../auth.utils";
 
 import type { ResultAsync } from "neverthrow";
@@ -9,7 +9,7 @@ import type { RequestMagicLinkInput as RequestMagicLinkInputType } from "../auth
 import type { AuthRepository } from "../auth.repository";
 import type { RequestContext } from "../types";
 
-const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
+const MAGIC_LINK_TTL_MS = 10 * 60 * 1000;
 
 export function requestMagicLink(deps: {
   readonly authRepository: AuthRepository;
