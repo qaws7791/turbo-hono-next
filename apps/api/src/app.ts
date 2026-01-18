@@ -10,6 +10,7 @@ import {
   getClientIp,
 } from "./middleware/rate-limit";
 import { requestIdMiddleware } from "./middleware/request-id";
+import { secureHeadersMiddleware } from "./middleware/secure-headers";
 import { registerRoutes } from "./routes";
 
 import type { AppDeps } from "./app-deps";
@@ -19,6 +20,7 @@ export function createApp(deps: AppDeps): OpenAPIHono {
 
   app.use("*", requestIdMiddleware);
   app.use("*", createLoggerMiddleware(deps.logger));
+  app.use("*", secureHeadersMiddleware);
   app.use(
     "/api/*",
     createOptionalRateLimitMiddleware(deps.config.RATE_LIMIT_ENABLED, {
