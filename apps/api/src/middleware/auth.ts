@@ -5,9 +5,9 @@ import { throwAppError } from "../lib/result";
 
 import { ApiError } from "./error-handler";
 
-import type { RequestIdVariables } from "./request-id";
-import type { AuthContext, AuthService } from "../modules/auth";
 import type { Config } from "../lib/config";
+import type { AuthContext, AuthService } from "../modules/auth";
+import type { RequestIdVariables } from "./request-id";
 
 export type AuthVariables = {
   auth: AuthContext;
@@ -22,7 +22,7 @@ export function createRequireAuthMiddleware(deps: {
   readonly authService: AuthService;
 }) {
   return createMiddleware<{ Variables: AuthVariables }>(async (c, next) => {
-    const token = getCookie(c, deps.config.SESSION_COOKIE_NAME);
+    const token = getCookie(c, deps.config.SESSION_COOKIE_NAME_FULL);
     if (!token) throw new ApiError(401, "UNAUTHORIZED", "로그인이 필요합니다.");
 
     const sessionResult = await deps.authService.getSessionByToken(token, {
@@ -52,7 +52,7 @@ export function createOptionalAuthMiddleware(deps: {
 }) {
   return createMiddleware<{ Variables: OptionalAuthVariables }>(
     async (c, next) => {
-      const token = getCookie(c, deps.config.SESSION_COOKIE_NAME);
+      const token = getCookie(c, deps.config.SESSION_COOKIE_NAME_FULL);
       if (token) {
         const sessionResult = await deps.authService.getSessionByToken(token, {
           ipAddress:

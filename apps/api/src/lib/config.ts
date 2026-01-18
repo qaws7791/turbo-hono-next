@@ -15,7 +15,6 @@ const envSchema = z.object({
   SESSION_COOKIE_NAME: z.string().min(1).default("session"),
   SESSION_DURATION_DAYS: z.coerce.number().int().min(1).max(30).default(7),
 
-  COOKIE_DOMAIN: z.string().min(1).optional(),
   COOKIE_SECURE: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
@@ -61,8 +60,8 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
   readonly FRONTEND_URL: string;
   readonly DATABASE_URL?: string;
   readonly SESSION_COOKIE_NAME: string;
+  readonly SESSION_COOKIE_NAME_FULL: string;
   readonly SESSION_DURATION_DAYS: number;
-  readonly COOKIE_DOMAIN?: string;
   readonly COOKIE_SECURE: boolean;
   readonly GOOGLE_CLIENT_ID?: string;
   readonly GOOGLE_CLIENT_SECRET?: string;
@@ -95,6 +94,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
 
   return {
     ...parsed,
+    SESSION_COOKIE_NAME_FULL: `__Secure-${parsed.SESSION_COOKIE_NAME}`,
     AI_API_KEY: aiApiKey,
     AI_EMBEDDING_API_KEY: aiEmbeddingApiKey,
     COOKIE_SECURE: parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production",

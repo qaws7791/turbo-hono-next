@@ -91,7 +91,6 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
@@ -100,7 +99,6 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
@@ -109,7 +107,6 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
@@ -126,15 +123,12 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
     // 쿠키 정리
     deleteCookie(c, OAUTH_STATE_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
     });
     deleteCookie(c, OAUTH_CODE_VERIFIER_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
     });
     deleteCookie(c, OAUTH_REDIRECT_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
-      domain: deps.config.COOKIE_DOMAIN,
     });
 
     // OAuth 에러 처리 (사용자 취소, 권한 거부 등)
@@ -196,14 +190,18 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
         { ipAddress, userAgent },
       ),
       (verified) => {
-        setCookie(c, deps.config.SESSION_COOKIE_NAME, verified.sessionToken, {
-          httpOnly: true,
-          secure: deps.config.COOKIE_SECURE,
-          sameSite: "lax",
-          path: "/",
-          domain: deps.config.COOKIE_DOMAIN,
-          maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
-        });
+        setCookie(
+          c,
+          deps.config.SESSION_COOKIE_NAME_FULL,
+          verified.sessionToken,
+          {
+            httpOnly: true,
+            secure: deps.config.COOKIE_SECURE,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
+          },
+        );
 
         const redirectUrl = new URL(
           redirectPath,
@@ -247,14 +245,18 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       return handleResult(
         deps.services.auth.verifyMagicLink({ token }, { ipAddress, userAgent }),
         (verified) => {
-          setCookie(c, deps.config.SESSION_COOKIE_NAME, verified.sessionToken, {
-            httpOnly: true,
-            secure: deps.config.COOKIE_SECURE,
-            sameSite: "lax",
-            path: "/",
-            domain: deps.config.COOKIE_DOMAIN,
-            maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
-          });
+          setCookie(
+            c,
+            deps.config.SESSION_COOKIE_NAME_FULL,
+            verified.sessionToken,
+            {
+              httpOnly: true,
+              secure: deps.config.COOKIE_SECURE,
+              sameSite: "lax",
+              path: "/",
+              maxAge: 60 * 60 * 24 * deps.config.SESSION_DURATION_DAYS,
+            },
+          );
 
           const redirectUrl = new URL(
             verified.redirectPath,
@@ -281,9 +283,8 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       return handleResult(
         deps.services.auth.revokeSession(auth.session.id),
         () => {
-          deleteCookie(c, deps.config.SESSION_COOKIE_NAME, {
+          deleteCookie(c, deps.config.SESSION_COOKIE_NAME_FULL, {
             path: "/",
-            domain: deps.config.COOKIE_DOMAIN,
           });
           return c.json({ message: "로그아웃되었습니다." }, 200);
         },

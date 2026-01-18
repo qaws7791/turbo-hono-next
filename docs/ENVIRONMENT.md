@@ -30,12 +30,13 @@ SSoT(실제 사용/검증 기준):
 
 ### 세션/쿠키
 
-| 변수                    | 설명                                          | 기본값    |
-| ----------------------- | --------------------------------------------- | --------- |
-| `SESSION_COOKIE_NAME`   | 세션 쿠키 이름                                | `session` |
-| `SESSION_DURATION_DAYS` | 세션 만료 기간(일)                            | `7`       |
-| `COOKIE_DOMAIN`         | 쿠키 도메인(선택)                             |           |
-| `COOKIE_SECURE`         | `true`/`false`(선택, 미설정 시 NODE_ENV 기반) |           |
+| 변수                    | 설명                                               | 기본값    |
+| ----------------------- | -------------------------------------------------- | --------- |
+| `SESSION_COOKIE_NAME`   | 세션 쿠키 기본 이름 (실제 쿠키명: `__Secure-{값}`) | `session` |
+| `SESSION_DURATION_DAYS` | 세션 만료 기간(일)                                 | `7`       |
+| `COOKIE_SECURE`         | `true`/`false`(선택, 미설정 시 NODE_ENV 기반)      |           |
+
+> **Note**: 세션 쿠키는 `__Secure-` 접두사가 자동으로 추가되며, `Domain` 속성 없이 설정됩니다.
 
 ### OAuth (선택)
 
@@ -98,7 +99,6 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lolog
 
 SESSION_COOKIE_NAME=session
 SESSION_DURATION_DAYS=7
-COOKIE_DOMAIN=localhost
 COOKIE_SECURE=false
 
 EMAIL_DELIVERY_MODE=log
