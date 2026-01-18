@@ -1,4 +1,3 @@
-import { getPlanGoalLabel, getPlanLevelLabel } from "../../model";
 import { PlanStatusBadge } from "../plan-status-badge";
 
 import type { PlanWithDerived } from "../../model";
@@ -11,7 +10,7 @@ type PlanHeaderSectionProps = {
  * 플랜 헤더 섹션
  *
  * - 플랜 제목 및 상태 뱃지
- * - 목표, 수준, 문서 수 메타 정보
+ * - 문서 수 메타 정보
  */
 export function PlanHeaderSection({ plan }: PlanHeaderSectionProps) {
   return (
@@ -21,8 +20,7 @@ export function PlanHeaderSection({ plan }: PlanHeaderSectionProps) {
         <PlanStatusBadge status={plan.status} />
       </div>
       <div className="text-muted-foreground text-sm">
-        목표 {getPlanGoalLabel(plan.goal)} · 수준{" "}
-        {getPlanLevelLabel(plan.level)} · 문서 {plan.sourceMaterialIds.length}개
+        문서 {plan.sourceMaterialIds.length}개
       </div>
     </div>
   );

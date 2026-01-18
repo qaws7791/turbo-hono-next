@@ -77,8 +77,6 @@ export function createPlan(deps: {
       const aiPlan = await deps.planGeneration.generatePlan({
         userId,
         materialIds: input.materialIds,
-        goalType: input.goalType,
-        currentLevel: input.currentLevel,
         targetDueDate,
         specialRequirements: input.specialRequirements ?? null,
         requestedSessionCount: null,
@@ -122,8 +120,6 @@ export function createPlan(deps: {
             icon,
             color,
             status: "ACTIVE",
-            goalType: input.goalType,
-            currentLevel: input.currentLevel,
             targetDueDate: finalTargetDueDate,
             specialRequirements: input.specialRequirements ?? null,
             startedAt: now,

@@ -22,7 +22,7 @@ export function WizardFooter({
 }: WizardFooterProps) {
   return (
     <div className="flex justify-end">
-      {step < 3 ? (
+      {step === 1 ? (
         <Button
           onClick={onNext}
           disabled={isSubmitting}

@@ -1,40 +1,3 @@
-import type { PlanGoalType, PlanLevel } from "./types";
-
-const GOAL_TYPE_LABELS: Record<PlanGoalType, string> = {
-  JOB: "취업/이직 준비",
-  CERT: "자격증 취득",
-  WORK: "업무 역량 강화",
-  HOBBY: "취미/자기계발",
-  OTHER: "기타 학습",
-};
-
-const LEVEL_LABELS: Record<PlanLevel, string> = {
-  BEGINNER: "입문자 (해당 분야 경험 없음)",
-  INTERMEDIATE: "중급자 (기본 개념 이해, 실습 경험 있음)",
-  ADVANCED: "고급자 (실무 경험 있음, 심화 학습 필요)",
-};
-
-const LEVEL_CONSIDERATIONS: Record<PlanLevel, string> = {
-  BEGINNER: `
-- 기초 개념부터 차근차근 설명
-- 전문 용어는 쉬운 설명과 함께 제공
-- 실습보다 이해 위주의 학습 권장`,
-  INTERMEDIATE: `
-- 기본 개념은 간략히 확인
-- 실습과 응용에 더 많은 시간 배분
-- 심화 개념으로의 연결 고리 제공
-- 실제 사례 기반 학습 권장`,
-  ADVANCED: `
-- 기초 설명 최소화, 핵심 포인트 집중
-- 고급 기법과 최적화 전략 중심
-- 실무 적용 시나리오 위주
-- 최신 트렌드와 베스트 프랙티스 포함`,
-};
-
-// ============================================
-// 2단계 파이프라인용 프롬프트
-// ============================================
-
 /**
  * 1단계: 구조 설계를 위한 시스템 프롬프트
  * - 모듈 구조 설계에 집중 (sessionSkeletons 제거)
@@ -44,16 +7,21 @@ export function buildStructurePlanningSystemPrompt(): string {
   return `당신은 전문 학습 플래너 AI입니다.
 제공된 학습 자료의 메타정보(분량, 청크 수 등)와 문서 구조를 바탕으로 최적의 학습 모듈 구조를 설계합니다.
 
+## 의사결정 우선순위 (Absolute Priority)
+1. **사용자의 특별 요구사항** (예: "기간 단축", "핵심 요약", "상세 학습")
+2. 사용자가 지정한 희망 세션 수
+3. 자료 분량 기반의 권장 가이드
+
 ## 모듈 설계 원칙
 - 각 모듈은 논리적으로 연관된 주제들을 묶습니다
 - 모듈별로 1~10개의 세션을 배정합니다 (sessionCount)
 - 모듈의 chunkRange는 해당 모듈이 담당하는 자료의 범위입니다
 
 ## 세션 수 분배 가이드라인
-- 청크 2~3개당 1세션 권장 (청크 1개 ≈ 약 1000자, 학습 시간 약 5분)
-- 모듈별 청크 분량에 비례하여 sessionCount를 할당하세요
-- 모든 모듈의 sessionCount 합이 전체 권장 세션 수와 근접해야 합니다
-- 사용자가 세션 수를 지정한 경우 해당 값을 존중하되, 비현실적이면 적절히 조절
+- 기본 가이드는 청크 2~3개당 1세션(세션당 약 5000자/15분)입니다.
+- **하지만 위 우선순위에 따라, 사용자가 짧은 기간이나 요약을 원하면 위 가이드를 과감히 무시하고 압축하세요.**
+- 예: 100개의 청크라도 "하루 완성"을 원하면 핵심만 추려 5~6개 세션으로 구성해야 합니다.
+- 사용자가 세션 수를 지정한 경우 해당 값을 최대한 존중하세요.
 
 ## 문서 구조 활용 원칙
 - 문서 지도(outline)를 참고하여 모듈의 논리적 경계를 결정하세요
@@ -67,8 +35,6 @@ export function buildStructurePlanningSystemPrompt(): string {
  * 1단계: 구조 설계를 위한 사용자 프롬프트
  */
 export function buildStructurePlanningUserPrompt(params: {
-  readonly goalType: PlanGoalType;
-  readonly currentLevel: PlanLevel;
   readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly requestedSessionCount: number | null;
@@ -127,8 +93,6 @@ export function buildStructurePlanningUserPrompt(params: {
   return `## 학습 구조 설계 요청
 
 ### 기본 정보
-- **학습 목표**: ${GOAL_TYPE_LABELS[params.goalType]}
-- **현재 수준**: ${LEVEL_LABELS[params.currentLevel]}
 - **오늘 날짜**: ${today}
 - **목표 완료일**: ${dueDateStr}
 - **${sessionCountHint}**
@@ -136,10 +100,10 @@ export function buildStructurePlanningUserPrompt(params: {
 ${
   !params.targetDueDate
     ? `
-### 기간 및 분량 가이드 (매우 중요)
+### 기간 및 분량 가이드
 - 현재 완료 목표일이 지정되지 않았습니다.
-- **기간에 관계없이 제공된 자료의 분량에만 집중**하여 가장 효과적으로 학습할 수 있는 세션 수를 결정하세요.
-- 권장 세션 수(${recommendedSessions}개)를 참고하되, AI가 판단하기에 더 효율적인 배분이 있다면 가감하여 결정해도 좋습니다.
+- 특별한 요구사항이 없다면 자료의 분량을 기준으로 충분히 학습할 수 있는 계획을 세워주세요.
+- 단, 아래 '특별 요구사항'이 있다면 그 내용을 최우선으로 반영하여 세션 수를 조절해야 합니다.
 `
     : ""
 }
@@ -150,10 +114,8 @@ ${materialsJson}
 \`\`\`
 
 - **총 청크 수**: ${params.totalChunkCount}개
-- **권장 세션 수**: ${recommendedSessions}개 (청크 2~3개당 1세션 기준)
-
-### 수준별 고려사항
-${LEVEL_CONSIDERATIONS[params.currentLevel]}
+- **분량 기반 단순 권장 세션 수**: ${recommendedSessions}개
+  > *참고: 위 권장 수는 단순 분량 비례 계산값입니다. 사용자가 '짧은 기간'이나 '요약'을 요청했다면 이 수치를 무시하고 과감하게 줄여서 설계하세요.*
 ${params.specialRequirements ? `\n### 특별 요구사항\n${params.specialRequirements}` : ""}
 
 ## 요청
@@ -197,7 +159,6 @@ export function buildModulePopulationUserPrompt(params: {
   readonly totalModules: number;
   readonly sessionCount: number;
   readonly chunkContents: ReadonlyArray<string>;
-  readonly currentLevel: PlanLevel;
 }): string {
   const chunksSection = params.chunkContents
     .map((content, idx) => `### 청크 ${idx + 1} (인덱스: ${idx})\n${content}`)
@@ -211,7 +172,6 @@ export function buildModulePopulationUserPrompt(params: {
 - **모듈 순서**: ${params.moduleIndex + 1}/${params.totalModules}
 - **생성할 세션 수**: ${params.sessionCount}개
 - **제공된 청크 수**: ${params.chunkContents.length}개
-- **학습자 수준**: ${LEVEL_LABELS[params.currentLevel]}
 
 ### 학습 자료 내용
 ${chunksSection}

@@ -4,7 +4,6 @@ import { Separator } from "@repo/ui/separator";
 import { usePlanWizard } from "../application";
 
 import {
-  StepGoalSetting,
   StepMaterialSelect,
   StepScheduleSetting,
   WizardBackButton,
@@ -15,12 +14,9 @@ import {
 import { PageBody, PageHeader } from "~/domains/app-shell";
 
 /**
- * 학습 계획 생성 위저드 View 컴포넌트
- *
- * 3단계로 구성된 위저드:
- * - Step 1: 자료 선택
- * - Step 2: 학습 목표 및 레벨 설정
- * - Step 3: 기한 및 요구사항 설정
+ * Step 2: 기한 및 요구사항 설정 단계
+ * - 목표 기한 설정 (adaptive / custom)
+ * - 특별 요구사항 입력
  */
 export function PlanWizardView() {
   const wizard = usePlanWizard();
@@ -49,9 +45,6 @@ export function PlanWizardView() {
               />
             )}
             {wizard.model.step === 2 && (
-              <StepGoalSetting model={wizard.model} />
-            )}
-            {wizard.model.step === 3 && (
               <StepScheduleSetting model={wizard.model} />
             )}
             <Separator />
@@ -76,7 +69,7 @@ function WizardTitle() {
     <div className="space-y-1">
       <h2 className="text-foreground text-xl font-semibold">학습 계획 생성</h2>
       <p className="text-muted-foreground text-sm">
-        3단계로 1분 내 학습 계획을 생성합니다.
+        2단계로 1분 내 학습 계획을 생성합니다.
       </p>
     </div>
   );

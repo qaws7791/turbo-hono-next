@@ -1,10 +1,8 @@
-import type { PlanGoalType, PlanLevel } from "./plan.dto";
+// No imports needed from plan.dto for these types
 
 export type PlanGenerationRequest = {
   readonly userId: string;
   readonly materialIds: ReadonlyArray<string>;
-  readonly goalType: PlanGoalType;
-  readonly currentLevel: PlanLevel;
   readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly requestedSessionCount: number | null;

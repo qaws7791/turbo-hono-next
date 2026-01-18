@@ -13,23 +13,9 @@ export const PlanStatusSchema = z.enum([
 ]);
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
 
-export const PlanGoalTypeSchema = z.enum([
-  "JOB",
-  "CERT",
-  "WORK",
-  "HOBBY",
-  "OTHER",
-]);
-export type PlanGoalType = z.infer<typeof PlanGoalTypeSchema>;
-
-export const PlanLevelSchema = z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]);
-export type PlanLevel = z.infer<typeof PlanLevelSchema>;
-
 export const CreatePlanInput = z.object({
   materialIds: z.array(z.string().uuid()).min(1).max(5),
-  goalType: PlanGoalTypeSchema,
-  currentLevel: PlanLevelSchema,
-  targetDueDate: z.iso.date().nullable(),
+  targetDueDate: z.string().date().nullable(),
   specialRequirements: z.string().max(2000).optional(),
   icon: z.string().max(50).optional(),
   color: z.string().max(50).optional(),
@@ -70,8 +56,6 @@ export const PlanListItem = z.object({
   icon: z.string(),
   color: z.string(),
   status: PlanStatusSchema,
-  goalType: PlanGoalTypeSchema,
-  currentLevel: PlanLevelSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   progress: PlanProgress,
@@ -160,8 +144,6 @@ export const PlanDetailResponse = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
-    goalType: PlanGoalTypeSchema,
-    currentLevel: PlanLevelSchema,
     targetDueDate: z.string().date().nullable(),
     specialRequirements: z.string().nullable(),
     createdAt: z.string().datetime(),

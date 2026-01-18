@@ -19,7 +19,6 @@ import type {
   GeneratePlanResult,
   GeneratedModule,
   GeneratedSession,
-  PlanLevel,
 } from "./types";
 
 /**
@@ -100,7 +99,6 @@ export class LearningPlanGenerator {
     const sessions = await this.populateAllModules(structure, {
       userId: input.userId,
       materials: materialsMetadata,
-      currentLevel: input.currentLevel,
     });
 
     // 4. 결과 변환 및 반환
@@ -189,8 +187,6 @@ export class LearningPlanGenerator {
 
     const systemPrompt = buildStructurePlanningSystemPrompt();
     const userPrompt = buildStructurePlanningUserPrompt({
-      goalType: input.goalType,
-      currentLevel: input.currentLevel,
       targetDueDate: input.targetDueDate,
       specialRequirements: input.specialRequirements,
       requestedSessionCount: input.requestedSessionCount,
@@ -230,7 +226,6 @@ export class LearningPlanGenerator {
     context: {
       userId: string;
       materials: Array<MaterialMetadata>;
-      currentLevel: PlanLevel;
     },
   ): Promise<Array<GeneratedSession>> {
     const results: Array<Array<RawPopulatedSession>> =
@@ -261,7 +256,6 @@ export class LearningPlanGenerator {
     context: {
       userId: string;
       materials: Array<MaterialMetadata>;
-      currentLevel: PlanLevel;
     },
   ): Promise<Array<RawPopulatedSession>> {
     const material = context.materials[module.materialIndex];
@@ -311,7 +305,6 @@ export class LearningPlanGenerator {
         totalModules,
         sessionCount: module.sessionCount,
         chunkContents,
-        currentLevel: context.currentLevel,
       });
 
       const parsed = await getAiModels().chat.generateStructuredOutput(

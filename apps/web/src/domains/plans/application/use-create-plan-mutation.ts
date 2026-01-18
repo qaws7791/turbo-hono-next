@@ -2,14 +2,9 @@ import * as React from "react";
 import { useNavigate } from "react-router";
 
 import { createPlan as createPlanApi } from "../api";
-import { mapCurrentLevelToApi, mapGoalTypeToApi } from "../api/plans.mapper";
-
-import type { PlanGoal, PlanLevel } from "../model/types";
 
 export type CreatePlanInput = {
   sourceMaterialIds: Array<string>;
-  goal: PlanGoal;
-  level: PlanLevel;
   durationMode: "custom" | "adaptive";
   durationValue?: number;
   durationUnit?: "days" | "weeks" | "months";
@@ -50,8 +45,6 @@ export function useCreatePlanMutation(): {
 
         const plan = await createPlanApi({
           materialIds: input.sourceMaterialIds,
-          goalType: mapGoalTypeToApi(input.goal),
-          currentLevel: mapCurrentLevelToApi(input.level),
           targetDueDate,
           specialRequirements: input.notes,
         });

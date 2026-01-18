@@ -207,29 +207,6 @@ function mapPlanStatus(
   return "ARCHIVED";
 }
 
-function mapPlanGoalType(
-  goal: ReturnType<typeof getPlan>["goal"],
-): "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER" {
-  if (goal === "career") return "JOB";
-  if (goal === "certificate") return "CERT";
-  if (goal === "work") return "WORK";
-  if (goal === "hobby") return "HOBBY";
-  return "OTHER";
-}
-
-function mapPlanLevel(
-  level: ReturnType<typeof getPlan>["level"],
-): "BEGINNER" | "INTERMEDIATE" | "ADVANCED" {
-  if (level === "intermediate") return "INTERMEDIATE";
-  if (level === "advanced") return "ADVANCED";
-  return "BEGINNER";
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function mapPlanSessionType(_type: "session"): "LEARN" {
-  return "LEARN";
-}
-
 function mapPlanSessionStatus(
   status: "todo" | "in_progress" | "completed",
 ): "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" {
@@ -665,8 +642,6 @@ export const handlers = [
         icon: p.icon,
         color: p.color,
         status: mapPlanStatus(p.status),
-        goalType: mapPlanGoalType(p.goal),
-        currentLevel: mapPlanLevel(p.level),
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         progress: { completedSessions, totalSessions },
@@ -712,8 +687,6 @@ export const handlers = [
         icon: plan.icon,
         color: plan.color,
         status: mapPlanStatus(plan.status),
-        goalType: mapPlanGoalType(plan.goal),
-        currentLevel: mapPlanLevel(plan.level),
         targetDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
           .slice(0, 10),
@@ -732,7 +705,7 @@ export const handlers = [
           m.sessions.map((s, sessionIndex) => ({
             id: s.id,
             moduleId: m.id,
-            sessionType: mapPlanSessionType(s.type),
+            sessionType: "LEARN",
             title: s.title,
             objective: null,
             orderIndex: moduleIndex * 100 + sessionIndex,
@@ -764,18 +737,8 @@ export const handlers = [
     try {
       const plan = createPlan({
         sourceMaterialIds: body.materialIds,
-        goal: (() => {
-          if (body.goalType === "JOB") return "career";
-          if (body.goalType === "CERT") return "certificate";
-          if (body.goalType === "WORK") return "work";
-          if (body.goalType === "HOBBY") return "hobby";
-          return "work";
-        })(),
-        level: (() => {
-          if (body.currentLevel === "INTERMEDIATE") return "intermediate";
-          if (body.currentLevel === "ADVANCED") return "advanced";
-          return "basic";
-        })(),
+        goal: "work",
+        level: "basic",
         durationMode: "adaptive",
         notes: body.specialRequirements ?? undefined,
       });
@@ -890,7 +853,7 @@ export const handlers = [
       planTitle: i.planTitle,
       moduleTitle: i.moduleTitle,
       sessionTitle: i.sessionTitle,
-      sessionType: mapPlanSessionType(i.type),
+      sessionType: "LEARN" as const,
       estimatedMinutes: i.durationMinutes,
       status: mapPlanSessionStatus(i.status),
       planIcon: i.planIcon,
@@ -1174,7 +1137,7 @@ export const handlers = [
           sessionId: run.sessionId,
           title: run.sessionTitle,
           objective: null,
-          sessionType: found ? mapPlanSessionType(found.session.type) : "LEARN",
+          sessionType: "LEARN",
           estimatedMinutes: found?.session.durationMinutes ?? 15,
           module: found
             ? { id: found.module.id, title: found.module.title }
@@ -1367,7 +1330,7 @@ export const handlers = [
             : 0,
         sessionId: r.sessionId,
         sessionTitle: found?.session.title ?? "",
-        sessionType: found ? mapPlanSessionType(found.session.type) : "LEARN",
+        sessionType: "LEARN",
         planId: r.planId,
         planTitle: plan?.title ?? "",
         planIcon: plan?.icon ?? "target",

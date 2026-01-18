@@ -15,12 +15,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import {
-  planCurrentLevelEnum,
-  planGenerationRequestStatusEnum,
-  planGoalTypeEnum,
-  planStatusEnum,
-} from "./enums";
+import { planGenerationRequestStatusEnum, planStatusEnum } from "./enums";
 import { users } from "./identity";
 import { materials } from "./materials";
 import { timestamps } from "./shared";
@@ -39,9 +34,6 @@ export const planGenerationRequests = pgTable(
     status: planGenerationRequestStatusEnum("status")
       .notNull()
       .default("DRAFT"),
-    goalType: planGoalTypeEnum("goal_type").notNull(),
-    goalText: text("goal_text"),
-    currentLevel: planCurrentLevelEnum("current_level").notNull(),
     targetDueDate: date("target_due_date", { mode: "date" }).notNull(),
     specialRequirements: text("special_requirements"),
     previewJson: jsonb("preview_json").$type<Record<string, unknown>>(),
@@ -89,9 +81,6 @@ export const plans = pgTable(
     icon: text("icon").notNull().default("target"),
     color: text("color").notNull().default("blue"),
     status: planStatusEnum("status").notNull().default("PAUSED"),
-    goalType: planGoalTypeEnum("goal_type").notNull(),
-    goalText: text("goal_text"),
-    currentLevel: planCurrentLevelEnum("current_level").notNull(),
     targetDueDate: date("target_due_date", { mode: "date" }).notNull(),
     specialRequirements: text("special_requirements"),
     startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }),

@@ -17,7 +17,7 @@ export function WizardHeader({ step, error }: WizardHeaderProps) {
   return (
     <CardHeader className="space-y-2">
       <div className="flex items-center justify-between gap-3">
-        <CardTitle className="text-base">{step}단계/3</CardTitle>
+        <CardTitle className="text-base">{step}단계/2</CardTitle>
       </div>
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
     </CardHeader>

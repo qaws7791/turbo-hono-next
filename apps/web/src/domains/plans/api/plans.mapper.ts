@@ -1,46 +1,12 @@
 import type {
-  PlanGoal,
-  PlanLevel,
   PlanSessionStatus,
   PlanSessionType,
   PlanStatus,
   PlanWithDerived,
 } from "../model/types";
-import type {
-  ApiPlanDetail,
-  ApiPlanListItem,
-  PlanCreateBody,
-} from "./plans.dto";
+import type { ApiPlanDetail, ApiPlanListItem } from "./plans.dto";
 
-export function mapGoalType(goalType: ApiPlanListItem["goalType"]): PlanGoal {
-  if (goalType === "JOB") return "career";
-  if (goalType === "CERT") return "certificate";
-  if (goalType === "WORK") return "work";
-  return "hobby";
-}
-
-export function mapGoalTypeToApi(goal: PlanGoal): PlanCreateBody["goalType"] {
-  if (goal === "career") return "JOB";
-  if (goal === "certificate") return "CERT";
-  if (goal === "work") return "WORK";
-  return "HOBBY";
-}
-
-export function mapCurrentLevel(
-  level: ApiPlanDetail["currentLevel"],
-): PlanLevel {
-  if (level === "ADVANCED") return "advanced";
-  if (level === "INTERMEDIATE") return "intermediate";
-  return "novice";
-}
-
-export function mapCurrentLevelToApi(
-  level: PlanLevel,
-): PlanCreateBody["currentLevel"] {
-  if (level === "advanced") return "ADVANCED";
-  if (level === "intermediate") return "INTERMEDIATE";
-  return "BEGINNER";
-}
+// Mappers for goal and level are removed
 
 export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
   if (status === "ACTIVE") return "active";
@@ -77,8 +43,6 @@ export function toPlanFromListItem(item: ApiPlanListItem): PlanWithDerived {
     title: item.title,
     icon: item.icon,
     color: item.color,
-    goal: mapGoalType(item.goalType),
-    level: mapCurrentLevel(item.currentLevel),
     status: mapPlanStatus(item.status),
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
@@ -137,8 +101,6 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
     title: detail.title,
     icon: detail.icon,
     color: detail.color,
-    goal: mapGoalType(detail.goalType),
-    level: mapCurrentLevel(detail.currentLevel),
     status: mapPlanStatus(detail.status),
     createdAt: detail.createdAt,
     updatedAt: detail.updatedAt,

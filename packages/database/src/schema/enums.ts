@@ -46,18 +46,7 @@ export const planGenerationRequestStatusEnum = pgEnum(
   "plan_generation_request_status",
   ["DRAFT", "SUBMITTED", "GENERATING", "SUCCEEDED", "FAILED", "CANCELED"],
 );
-export const planGoalTypeEnum = pgEnum("plan_goal_type", [
-  "JOB",
-  "CERT",
-  "WORK",
-  "HOBBY",
-  "OTHER",
-]);
-export const planCurrentLevelEnum = pgEnum("plan_current_level", [
-  "BEGINNER",
-  "INTERMEDIATE",
-  "ADVANCED",
-]);
+
 export const planStatusEnum = pgEnum("plan_status", [
   "ACTIVE",
   "PAUSED",

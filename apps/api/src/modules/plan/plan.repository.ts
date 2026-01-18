@@ -46,8 +46,6 @@ export function createPlanRepository(db: Database) {
         icon: string;
         color: string;
         status: PlanStatus;
-        goalType: string;
-        currentLevel: string;
         createdAt: Date;
         updatedAt: Date;
       }>,
@@ -66,8 +64,6 @@ export function createPlanRepository(db: Database) {
             icon: plans.icon,
             color: plans.color,
             status: plans.status,
-            goalType: plans.goalType,
-            currentLevel: plans.currentLevel,
             createdAt: plans.createdAt,
             updatedAt: plans.updatedAt,
           })
@@ -131,8 +127,6 @@ export function createPlanRepository(db: Database) {
         icon: string;
         color: string;
         status: PlanStatus;
-        goalType: string;
-        currentLevel: string;
         targetDueDate: Date;
         specialRequirements: string | null;
         createdAt: Date;
@@ -149,8 +143,6 @@ export function createPlanRepository(db: Database) {
             icon: plans.icon,
             color: plans.color,
             status: plans.status,
-            goalType: plans.goalType,
-            currentLevel: plans.currentLevel,
             targetDueDate: plans.targetDueDate,
             specialRequirements: plans.specialRequirements,
             createdAt: plans.createdAt,

@@ -20,8 +20,6 @@ export type {
   ListPlansInput,
   ListPlansResponse,
   PlanDetailResponse,
-  PlanGoalType,
-  PlanLevel,
   PlanStatus,
   UpdatePlanInput,
   UpdatePlanResponse,

@@ -1,23 +1,11 @@
 // 공통 타입 정의
 
 /**
- * 학습 목표 유형
- */
-export type PlanGoalType = "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
-
-/**
- * 현재 학습 수준
- */
-export type PlanLevel = "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
-
-/**
  * AI 기반 학습 계획 생성에 필요한 입력 정보
  */
 export type GeneratePlanInput = {
   readonly userId: string;
   readonly materialIds: ReadonlyArray<string>;
-  readonly goalType: PlanGoalType;
-  readonly currentLevel: PlanLevel;
   readonly targetDueDate: Date | null;
   readonly specialRequirements: string | null;
   readonly requestedSessionCount: number | null; // 사용자 지정 세션 수 (null = 학습량에 맞춤)

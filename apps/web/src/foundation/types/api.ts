@@ -1065,10 +1065,6 @@ export interface paths {
                 color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
-                /** @enum {string} */
-                goalType: "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
-                /** @enum {string} */
-                currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -1127,10 +1123,6 @@ export interface paths {
         content: {
           "application/json": {
             materialIds: Array<string>;
-            /** @enum {string} */
-            goalType: "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
-            /** @enum {string} */
-            currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
             /** Format: date */
             targetDueDate: string | null;
             specialRequirements?: string;
@@ -1228,10 +1220,6 @@ export interface paths {
                 color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
-                /** @enum {string} */
-                goalType: "JOB" | "CERT" | "WORK" | "HOBBY" | "OTHER";
-                /** @enum {string} */
-                currentLevel: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
                 /** Format: date */
                 targetDueDate: string | null;
                 specialRequirements: string | null;
@@ -2016,17 +2004,17 @@ export interface paths {
                   blueprintId: string;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<
-                    | {
+                  steps: Array<| {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "SESSION_INTRO";
                         planTitle: string;
@@ -2042,49 +2030,68 @@ export interface paths {
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
+                        /** @enum {string} */
+                        type: "LEARN_CONTENT";
+                        title: string;
+                        contentMd: string;
+                      }
+                    | {
+                        id: string;
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
+                        intent?:
+                          | "INTRO"
+                          | "EXPLAIN"
+                          | "RETRIEVAL"
+                          | "PRACTICE"
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "CHECK";
                         question: string;
                         options: Array<string>;
                         answerIndex: number;
-                        explanation?: string;
+                        explanation?: string | null;
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "CLOZE";
                         sentence: string;
                         blankId: string;
                         options: Array<string>;
                         answerIndex: number;
-                        explanation?: string;
+                        explanation?: string | null;
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "MATCHING";
                         instruction: string;
@@ -2096,14 +2103,15 @@ export interface paths {
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "FLASHCARD";
                         front: string;
@@ -2111,63 +2119,65 @@ export interface paths {
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "SPEED_OX";
                         statement: string;
                         isTrue: boolean;
-                        explanation?: string;
+                        explanation?: string | null;
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "APPLICATION";
                         scenario: string;
                         question: string;
                         options: Array<string>;
                         correctIndex: number;
-                        feedback?: string;
+                        feedback?: string | null;
                       }
                     | {
                         id: string;
-                        estimatedSeconds?: number;
-                        /** @enum {string} */
+                        estimatedSeconds?: number | null;
+                        /** @enum {string|null} */
                         intent?:
                           | "INTRO"
                           | "EXPLAIN"
                           | "RETRIEVAL"
                           | "PRACTICE"
-                          | "WRAPUP";
+                          | "WRAPUP"
+                          | null;
                         /** @enum {string} */
                         type: "SESSION_SUMMARY";
                         /** @default 🎉 */
                         celebrationEmoji: string;
                         encouragement: string;
-                        studyTimeMinutes?: number;
+                        studyTimeMinutes?: number | null;
                         /** @default [] */
                         completedActivities: Array<string>;
                         keyTakeaways: Array<string>;
                         nextSessionPreview?: {
                           title: string;
-                          description?: string;
-                        };
-                      }
-                  >;
+                          description?: string | null;
+                        } | null;
+                      }>;
                   /** @default 0 */
                   startStepIndex: number;
                 };

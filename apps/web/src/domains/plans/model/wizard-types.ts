@@ -1,6 +1,4 @@
-import type { PlanGoal, PlanLevel } from "./types";
-
-export type PlanWizardStep = 1 | 2 | 3;
+export type PlanWizardStep = 1 | 2;
 
 export type PlanWizardMaterial = {
   id: string;
@@ -13,8 +11,6 @@ export type PlanWizardMaterial = {
 export type PlanWizardValues = {
   selectedMaterialIds: Array<string>;
   search: string;
-  goal: PlanGoal;
-  level: PlanLevel;
   durationMode: "custom" | "adaptive";
   durationValue: string;
   durationUnit: "days" | "weeks" | "months";
@@ -34,8 +30,6 @@ export type PlanWizardModel = {
   derived: PlanWizardDerived;
   setSearch: (value: string) => void;
   toggleMaterial: (materialId: string) => void;
-  setGoal: (value: PlanGoal) => void;
-  setLevel: (value: PlanLevel) => void;
   setDurationMode: (value: "custom" | "adaptive") => void;
   setDurationValue: (value: string) => void;
   setDurationUnit: (value: "days" | "weeks" | "months") => void;

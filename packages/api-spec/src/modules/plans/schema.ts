@@ -13,15 +13,6 @@ export const PlanStatusSchema = z.enum([
   "COMPLETED",
 ]);
 
-export const PlanGoalTypeSchema = z.enum([
-  "JOB",
-  "CERT",
-  "WORK",
-  "HOBBY",
-  "OTHER",
-]);
-export const PlanLevelSchema = z.enum(["BEGINNER", "INTERMEDIATE", "ADVANCED"]);
-
 export const PlanProgressSchema = z.object({
   completedSessions: z.number().int().nonnegative(),
   totalSessions: z.number().int().nonnegative(),
@@ -33,8 +24,6 @@ export const PlanListItemSchema = z.object({
   icon: z.string(),
   color: z.string(),
   status: PlanStatusSchema,
-  goalType: PlanGoalTypeSchema,
-  currentLevel: PlanLevelSchema,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   progress: PlanProgressSchema,
@@ -54,8 +43,6 @@ export const PlanListResponseSchema = z.object({
 
 export const CreatePlanRequestSchema = z.object({
   materialIds: z.array(z.uuid()).min(1).max(5),
-  goalType: PlanGoalTypeSchema,
-  currentLevel: PlanLevelSchema,
   targetDueDate: z.iso.date().nullable(),
   specialRequirements: z.string().max(2000).optional(),
   icon: z.string().max(50).optional(),
@@ -103,8 +90,6 @@ export const PlanDetailResponseSchema = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
-    goalType: PlanGoalTypeSchema,
-    currentLevel: PlanLevelSchema,
     targetDueDate: z.iso.date().nullable(),
     specialRequirements: z.string().nullable(),
     createdAt: z.iso.datetime(),

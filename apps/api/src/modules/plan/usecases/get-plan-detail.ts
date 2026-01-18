@@ -59,8 +59,6 @@ export function getPlanDetail(deps: {
           icon: plan.icon,
           color: plan.color,
           status: plan.status,
-          goalType: plan.goalType,
-          currentLevel: plan.currentLevel,
           targetDueDate: formatIsoDate(plan.targetDueDate),
           specialRequirements: plan.specialRequirements ?? null,
           createdAt: formatIsoDatetime(plan.createdAt),

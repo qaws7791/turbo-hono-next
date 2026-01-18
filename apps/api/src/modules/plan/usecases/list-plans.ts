@@ -51,8 +51,6 @@ export function listPlans(deps: { readonly planRepository: PlanRepository }) {
             icon: row.icon,
             color: row.color,
             status: row.status,
-            goalType: row.goalType,
-            currentLevel: row.currentLevel,
             createdAt: row.createdAt.toISOString(),
             updatedAt: row.updatedAt.toISOString(),
             progress: {

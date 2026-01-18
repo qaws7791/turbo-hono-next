@@ -3,32 +3,12 @@ import * as React from "react";
 import { canSelectMaterial } from "../model";
 
 import type {
-  PlanGoal,
-  PlanLevel,
   PlanWizardMaterial,
   PlanWizardModel,
   PlanWizardStep,
   PlanWizardValues,
 } from "../model";
 import type { CreatePlanInput } from "./use-create-plan-mutation";
-
-function isPlanGoal(value: string): value is PlanGoal {
-  return (
-    value === "career" ||
-    value === "certificate" ||
-    value === "work" ||
-    value === "hobby"
-  );
-}
-
-function isPlanLevel(value: string): value is PlanLevel {
-  return (
-    value === "novice" ||
-    value === "basic" ||
-    value === "intermediate" ||
-    value === "advanced"
-  );
-}
 
 export function usePlanWizardForm(input: {
   materials: Array<PlanWizardMaterial>;
@@ -40,8 +20,6 @@ export function usePlanWizardForm(input: {
   const [values, setValues] = React.useState<PlanWizardValues>({
     selectedMaterialIds: [],
     search: "",
-    goal: "work",
-    level: "basic",
     durationMode: "adaptive",
     durationValue: "",
     durationUnit: "weeks",
@@ -87,16 +65,6 @@ export function usePlanWizardForm(input: {
     });
   }, []);
 
-  const setGoal = React.useCallback((value: PlanGoal) => {
-    if (!isPlanGoal(value)) return;
-    setValues((prev) => ({ ...prev, goal: value }));
-  }, []);
-
-  const setLevel = React.useCallback((value: PlanLevel) => {
-    if (!isPlanLevel(value)) return;
-    setValues((prev) => ({ ...prev, level: value }));
-  }, []);
-
   const setDurationMode = React.useCallback((value: "custom" | "adaptive") => {
     setValues((prev) => ({ ...prev, durationMode: value }));
   }, []);
@@ -134,15 +102,11 @@ export function usePlanWizardForm(input: {
       setStep(2);
       return;
     }
-    if (step === 2) {
-      setStep(3);
-    }
   }, [hasInvalidSelection, step, values.selectedMaterialIds.length]);
 
   const goBack = React.useCallback(() => {
     setError(null);
     if (step === 2) setStep(1);
-    if (step === 3) setStep(2);
   }, [step]);
 
   const submit = React.useCallback(() => {
@@ -168,8 +132,6 @@ export function usePlanWizardForm(input: {
 
     const planInput: CreatePlanInput = {
       sourceMaterialIds: values.selectedMaterialIds,
-      goal: values.goal,
-      level: values.level,
       durationMode: values.durationMode,
       durationValue:
         values.durationMode === "custom"
@@ -194,8 +156,6 @@ export function usePlanWizardForm(input: {
     },
     setSearch,
     toggleMaterial,
-    setGoal,
-    setLevel,
     setDurationMode,
     setDurationValue,
     setDurationUnit,

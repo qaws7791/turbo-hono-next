@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   bigint,
   bigserial,
@@ -17,7 +18,6 @@ import {
   varchar,
   vector,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 export const authProvider = pgEnum("auth_provider", ["GOOGLE"]);
 export const chatMessageRole = pgEnum("chat_message_role", [
@@ -58,22 +58,11 @@ export const outlineNodeType = pgEnum("outline_node_type", [
   "SECTION",
   "TOPIC",
 ]);
-export const planCurrentLevel = pgEnum("plan_current_level", [
-  "BEGINNER",
-  "INTERMEDIATE",
-  "ADVANCED",
-]);
 export const planGenerationRequestStatus = pgEnum(
   "plan_generation_request_status",
   ["DRAFT", "SUBMITTED", "GENERATING", "SUCCEEDED", "FAILED", "CANCELED"],
 );
-export const planGoalType = pgEnum("plan_goal_type", [
-  "JOB",
-  "CERT",
-  "WORK",
-  "HOBBY",
-  "OTHER",
-]);
+
 export const planSessionStatus = pgEnum("plan_session_status", [
   "SCHEDULED",
   "IN_PROGRESS",
@@ -614,9 +603,6 @@ export const planGenerationRequests = pgTable(
     id: uuid().primaryKey().notNull(),
     userId: uuid("user_id").notNull(),
     status: planGenerationRequestStatus().default("DRAFT").notNull(),
-    goalType: planGoalType("goal_type").notNull(),
-    goalText: text("goal_text"),
-    currentLevel: planCurrentLevel("current_level").notNull(),
     targetDueDate: date("target_due_date").notNull(),
     specialRequirements: text("special_requirements"),
     previewJson: jsonb("preview_json"),
@@ -765,9 +751,6 @@ export const plans = pgTable(
     icon: text().default("target").notNull(),
     color: text().default("blue").notNull(),
     status: planStatus().default("PAUSED").notNull(),
-    goalType: planGoalType("goal_type").notNull(),
-    goalText: text("goal_text"),
-    currentLevel: planCurrentLevel("current_level").notNull(),
     targetDueDate: date("target_due_date").notNull(),
     specialRequirements: text("special_requirements"),
     startedAt: timestamp("started_at", { withTimezone: true, mode: "string" }),

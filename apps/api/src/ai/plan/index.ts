@@ -10,6 +10,4 @@ export type {
   GeneratePlanInput,
   GeneratePlanResult,
   MaterialContext,
-  PlanGoalType,
-  PlanLevel,
 } from "./types";
