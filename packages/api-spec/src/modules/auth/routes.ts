@@ -41,8 +41,10 @@ export const authGoogleCallbackRoute = createRoute({
     "Google OAuth 인증 완료 후 콜백 처리를 담당합니다. 세션 쿠키를 발급합니다.",
   request: {
     query: z.object({
-      code: z.string().min(1),
-      state: z.string().min(1),
+      code: z.string().min(1).optional(),
+      state: z.string().min(1).optional(),
+      error: z.string().optional(),
+      error_description: z.string().optional(),
     }),
   },
   responses: {

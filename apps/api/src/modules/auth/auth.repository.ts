@@ -1,11 +1,11 @@
-import { and, eq, gt, isNull } from "drizzle-orm";
-import { z } from "zod";
 import {
   authAccounts,
   authSessions,
   magicLinkTokens,
   users,
 } from "@repo/database/schema";
+import { and, eq, gt, isNull } from "drizzle-orm";
+import { z } from "zod";
 
 import { tryPromise } from "../../lib/result";
 import { ApiError } from "../../middleware/error-handler";
@@ -366,55 +366,67 @@ export function createAuthRepository(deps: AuthRepositoryDeps) {
 
     exchangeGoogleOAuthCode(input: {
       readonly code: string;
+      readonly codeVerifier: string;
       readonly clientId: string;
       readonly clientSecret: string;
       readonly redirectUri: string;
     }): ResultAsync<GoogleTokenResponse, AppError> {
       return tryPromise(async () => {
-        const body = new URLSearchParams({
-          code: input.code,
-          client_id: input.clientId,
-          client_secret: input.clientSecret,
-          redirect_uri: input.redirectUri,
-          grant_type: "authorization_code",
-        });
+        const { Google, OAuth2RequestError, ArcticFetchError } = await import(
+          "arctic"
+        );
+        const google = new Google(
+          input.clientId,
+          input.clientSecret,
+          input.redirectUri,
+        );
 
-        const res = await fetch("https://oauth2.googleapis.com/token", {
-          method: "POST",
-          headers: { "content-type": "application/x-www-form-urlencoded" },
-          body,
-        });
+        try {
+          const tokens = await google.validateAuthorizationCode(
+            input.code,
+            input.codeVerifier,
+          );
 
-        const json = (await res.json().catch(() => null)) as unknown;
-        if (!res.ok) {
-          return Promise.reject(
-            new ApiError(
+          return {
+            access_token: tokens.accessToken(),
+            token_type: "Bearer",
+            expires_in: tokens.accessTokenExpiresAt()
+              ? Math.floor(
+                  (tokens.accessTokenExpiresAt()!.getTime() - Date.now()) /
+                    1000,
+                )
+              : undefined,
+            refresh_token: tokens.hasRefreshToken()
+              ? tokens.refreshToken()
+              : undefined,
+            scope: undefined,
+            id_token: (() => {
+              try {
+                return tokens.idToken();
+              } catch {
+                return undefined;
+              }
+            })(),
+          };
+        } catch (e) {
+          if (e instanceof OAuth2RequestError) {
+            throw new ApiError(
               502,
               "GOOGLE_TOKEN_EXCHANGE_FAILED",
-              "토큰 교환 실패",
-              {
-                status: res.status,
-                body: json,
-              },
-            ),
-          );
-        }
-
-        const parsed = googleTokenResponseSchema.safeParse(json);
-        if (!parsed.success) {
-          return Promise.reject(
-            new ApiError(
+              `토큰 교환 실패: ${e.code}`,
+              { code: e.code, description: e.description },
+            );
+          }
+          if (e instanceof ArcticFetchError) {
+            throw new ApiError(
               502,
-              "GOOGLE_TOKEN_RESPONSE_INVALID",
-              "토큰 응답 형식이 올바르지 않습니다.",
-              {
-                issues: parsed.error.issues,
-              },
-            ),
-          );
+              "GOOGLE_TOKEN_EXCHANGE_FAILED",
+              "Google OAuth 서버 연결 실패",
+              { cause: String(e.cause) },
+            );
+          }
+          throw e;
         }
-
-        return parsed.data;
       });
     },
 
@@ -466,16 +478,16 @@ export function createAuthRepository(deps: AuthRepositoryDeps) {
 
 export type AuthRepository = ReturnType<typeof createAuthRepository>;
 
-const googleTokenResponseSchema = z.object({
-  access_token: z.string().min(1),
-  token_type: z.string().min(1),
-  expires_in: z.number().optional(),
-  refresh_token: z.string().min(1).optional(),
-  scope: z.string().min(1).optional(),
-  id_token: z.string().min(1).optional(),
-});
-
-export type GoogleTokenResponse = z.infer<typeof googleTokenResponseSchema>;
+// Arctic 사용으로 Zod 스키마 런타임 검증은 더 이상 필요 없음
+// 타입 정의만 유지
+export type GoogleTokenResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in?: number;
+  refresh_token?: string;
+  scope?: string;
+  id_token?: string;
+};
 
 const googleUserInfoSchema = z.object({
   sub: z.string().min(1),

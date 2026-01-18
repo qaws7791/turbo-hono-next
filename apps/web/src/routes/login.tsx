@@ -18,7 +18,10 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirectTo");
-  return { redirectTo };
+  const oauthError = url.searchParams.get("error");
+  const oauthErrorDescription = url.searchParams.get("error_description");
+
+  return { redirectTo, oauthError, oauthErrorDescription };
 }
 
 export default function LoginRoute() {

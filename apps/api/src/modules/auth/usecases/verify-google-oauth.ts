@@ -253,10 +253,11 @@ export function verifyGoogleOAuth(deps: {
         deps.config.BASE_URL,
       ).toString();
 
-      // 2. Google OAuth 코드 교환
+      // 2. Google OAuth 코드 교환 (PKCE)
       const token = await unwrap(
         deps.authRepository.exchangeGoogleOAuthCode({
           code: input.code,
+          codeVerifier: input.codeVerifier,
           clientId,
           clientSecret,
           redirectUri,

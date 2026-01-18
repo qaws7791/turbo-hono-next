@@ -1,3 +1,4 @@
+import { Alert, AlertDescription, AlertTitle } from "@repo/ui/alert";
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -10,8 +11,9 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { Spinner } from "@repo/ui/spinner";
+import { AlertCircle, X } from "lucide-react";
 import * as React from "react";
-import { Link, useLoaderData } from "react-router";
+import { Link, useLoaderData, useNavigate } from "react-router";
 
 import { useGoogleLogin, useMagicLinkLogin } from "../application";
 import { formatSeconds } from "../model/format-seconds";
@@ -19,10 +21,43 @@ import { formatSeconds } from "../model/format-seconds";
 import type { clientLoader } from "~/routes/login";
 import type { LoginViewState } from "../model/types";
 
+/**
+ * OAuth 에러 코드를 사용자 친화적인 메시지로 변환
+ */
+function getOAuthErrorMessage(error: string): string {
+  switch (error) {
+    case "access_denied":
+      return "로그인이 취소되었습니다.";
+    case "state_mismatch":
+      return "보안 오류가 발생했습니다. 다시 시도해주세요.";
+    case "missing_code":
+      return "인증 코드가 누락되었습니다. 다시 시도해주세요.";
+    case "missing_verifier":
+      return "인증 세션이 만료되었습니다. 다시 시도해주세요.";
+    case "server_error":
+      return "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+    default:
+      return "로그인 중 오류가 발생했습니다. 다시 시도해주세요.";
+  }
+}
+
 export function LoginView() {
-  const { redirectTo } = useLoaderData<typeof clientLoader>();
+  const { redirectTo, oauthError, oauthErrorDescription } =
+    useLoaderData<typeof clientLoader>();
   const { state, sendMagicLink, resetToIdle } = useMagicLinkLogin();
   const { continueWithGoogle } = useGoogleLogin();
+  const navigate = useNavigate();
+  const [showError, setShowError] = React.useState(!!oauthError);
+
+  // OAuth 에러 Alert 닫기 시 URL에서 에러 파라미터 제거
+  const handleDismissError = () => {
+    setShowError(false);
+    // URL에서 error 파라미터 제거
+    const url = new URL(window.location.href);
+    url.searchParams.delete("error");
+    url.searchParams.delete("error_description");
+    navigate(url.pathname + url.search, { replace: true });
+  };
 
   return (
     <div className="bg-background text-foreground min-h-svh">
@@ -35,6 +70,33 @@ export function LoginView() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {/* OAuth 에러 표시 */}
+            {showError && oauthError && (
+              <Alert
+                variant="destructive"
+                className="relative"
+              >
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>로그인 실패</AlertTitle>
+                <AlertDescription>
+                  {getOAuthErrorMessage(oauthError)}
+                  {oauthErrorDescription && (
+                    <span className="text-muted-foreground ml-1 text-xs">
+                      ({oauthErrorDescription})
+                    </span>
+                  )}
+                </AlertDescription>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-2 h-6 w-6"
+                  onClick={handleDismissError}
+                >
+                  <X className="h-4 w-4" />
+                  <span className="sr-only">닫기</span>
+                </Button>
+              </Alert>
+            )}
             {state.view === "sent" ? (
               <MagicLinkSentStatus
                 state={state}

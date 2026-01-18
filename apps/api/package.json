@@ -29,6 +29,7 @@
     "@repo/api-spec": "workspace:*",
     "@repo/database": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.18",
+    "arctic": "^3.7.0",
     "dotenv": "^17.2.2",
     "drizzle-orm": "catalog:",
     "hono": "^4.9.7",

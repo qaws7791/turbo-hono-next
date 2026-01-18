@@ -1,5 +1,3 @@
-import { randomBytes } from "node:crypto";
-
 import {
   authGoogleCallbackRoute,
   authGoogleRoute,
@@ -8,6 +6,7 @@ import {
   authRequestMagicLinkRoute,
   authVerifyMagicLinkRoute,
 } from "@repo/api-spec";
+import * as arctic from "arctic";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
 import { handleResult, jsonResult } from "../lib/result-handler";
@@ -18,11 +17,12 @@ import {
   getClientIp,
 } from "../middleware/rate-limit";
 
-import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { AppDeps } from "../app-deps";
 
 const OAUTH_STATE_COOKIE_NAME = "oauth_state";
 const OAUTH_REDIRECT_COOKIE_NAME = "oauth_redirect_path";
+const OAUTH_CODE_VERIFIER_COOKIE_NAME = "oauth_code_verifier";
 const OAUTH_COOKIE_PATH = "/api/auth/google";
 const OAUTH_COOKIE_MAX_AGE_SEC = 10 * 60;
 
@@ -72,9 +72,30 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       );
     }
 
-    const state = randomBytes(16).toString("hex");
+    // Arctic을 사용하여 state와 codeVerifier 생성 (PKCE)
+    const state = arctic.generateState();
+    const codeVerifier = arctic.generateCodeVerifier();
 
+    const redirectUri = new URL(
+      "/api/auth/google/callback",
+      deps.config.BASE_URL,
+    ).toString();
+
+    const google = new arctic.Google(clientId, clientSecret, redirectUri);
+    const scopes = ["openid", "email", "profile"];
+    const url = google.createAuthorizationURL(state, codeVerifier, scopes);
+
+    // 쿠키에 state, codeVerifier, redirectPath 저장
     setCookie(c, OAUTH_STATE_COOKIE_NAME, state, {
+      httpOnly: true,
+      secure: deps.config.COOKIE_SECURE,
+      sameSite: "lax",
+      path: OAUTH_COOKIE_PATH,
+      domain: deps.config.COOKIE_DOMAIN,
+      maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
+    });
+
+    setCookie(c, OAUTH_CODE_VERIFIER_COOKIE_NAME, codeVerifier, {
       httpOnly: true,
       secure: deps.config.COOKIE_SECURE,
       sameSite: "lax",
@@ -92,30 +113,22 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       maxAge: OAUTH_COOKIE_MAX_AGE_SEC,
     });
 
-    const redirectUri = new URL(
-      "/api/auth/google/callback",
-      deps.config.BASE_URL,
-    ).toString();
-
-    const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("scope", "openid email profile");
-    url.searchParams.set("state", state);
-    url.searchParams.set("include_granted_scopes", "true");
-    url.searchParams.set("prompt", "select_account");
-
     return c.redirect(url.toString(), 302);
   });
 
   app.openapi(authGoogleCallbackRoute, async (c) => {
-    const { code, state } = c.req.valid("query");
+    const { code, state, error, error_description } = c.req.valid("query");
 
     const expectedState = getCookie(c, OAUTH_STATE_COOKIE_NAME);
+    const codeVerifier = getCookie(c, OAUTH_CODE_VERIFIER_COOKIE_NAME);
     const redirectPath = getCookie(c, OAUTH_REDIRECT_COOKIE_NAME) ?? "/home";
 
+    // 쿠키 정리
     deleteCookie(c, OAUTH_STATE_COOKIE_NAME, {
+      path: OAUTH_COOKIE_PATH,
+      domain: deps.config.COOKIE_DOMAIN,
+    });
+    deleteCookie(c, OAUTH_CODE_VERIFIER_COOKIE_NAME, {
       path: OAUTH_COOKIE_PATH,
       domain: deps.config.COOKIE_DOMAIN,
     });
@@ -124,12 +137,45 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
       domain: deps.config.COOKIE_DOMAIN,
     });
 
-    if (!expectedState || expectedState !== state) {
-      throw new ApiError(
-        400,
-        "OAUTH_STATE_MISMATCH",
-        "OAuth state가 올바르지 않습니다.",
+    // OAuth 에러 처리 (사용자 취소, 권한 거부 등)
+    if (error) {
+      deps.logger?.warn(
+        { error, error_description },
+        "oauth.google.callback_error",
       );
+
+      const errorUrl = new URL("/login", deps.config.FRONTEND_URL);
+      errorUrl.searchParams.set("error", error);
+      if (error_description) {
+        errorUrl.searchParams.set("error_description", error_description);
+      }
+      return c.redirect(errorUrl.toString(), 302);
+    }
+
+    // code가 없으면 에러
+    if (!code) {
+      const errorUrl = new URL("/login", deps.config.FRONTEND_URL);
+      errorUrl.searchParams.set("error", "missing_code");
+      return c.redirect(errorUrl.toString(), 302);
+    }
+
+    // state 검증
+    if (!expectedState || expectedState !== state) {
+      deps.logger?.warn(
+        { expectedState: !!expectedState, receivedState: !!state },
+        "oauth.google.state_mismatch",
+      );
+      const errorUrl = new URL("/login", deps.config.FRONTEND_URL);
+      errorUrl.searchParams.set("error", "state_mismatch");
+      return c.redirect(errorUrl.toString(), 302);
+    }
+
+    // codeVerifier가 없으면 에러 (PKCE 필수)
+    if (!codeVerifier) {
+      deps.logger?.warn({}, "oauth.google.missing_code_verifier");
+      const errorUrl = new URL("/login", deps.config.FRONTEND_URL);
+      errorUrl.searchParams.set("error", "missing_verifier");
+      return c.redirect(errorUrl.toString(), 302);
     }
 
     if (!deps.services.auth.validateRedirectPath(redirectPath)) {
@@ -145,7 +191,10 @@ export function registerAuthRoutes(app: OpenAPIHono, deps: AppDeps): void {
     const userAgent = c.req.header("user-agent");
 
     return handleResult(
-      deps.services.auth.verifyGoogleOAuth({ code }, { ipAddress, userAgent }),
+      deps.services.auth.verifyGoogleOAuth(
+        { code, codeVerifier },
+        { ipAddress, userAgent },
+      ),
       (verified) => {
         setCookie(c, deps.config.SESSION_COOKIE_NAME, verified.sessionToken, {
           httpOnly: true,

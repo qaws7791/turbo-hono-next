@@ -13,5 +13,6 @@ export type VerifyMagicLinkInput = z.infer<typeof VerifyMagicLinkInput>;
 
 export const VerifyGoogleOAuthInput = z.object({
   code: z.string().min(1),
+  codeVerifier: z.string().min(1),
 });
 export type VerifyGoogleOAuthInput = z.infer<typeof VerifyGoogleOAuthInput>;
