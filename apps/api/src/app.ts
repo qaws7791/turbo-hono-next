@@ -1,7 +1,9 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { generateOpenApiDocument } from "@repo/api-spec/openapi";
 import { Scalar } from "@scalar/hono-api-reference";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
+import { csrf } from "hono/csrf";
 
 import { createErrorHandlerMiddleware } from "./middleware/error-handler";
 import { createLoggerMiddleware } from "./middleware/logger";
@@ -21,6 +23,25 @@ export function createApp(deps: AppDeps): OpenAPIHono {
   app.use("*", requestIdMiddleware);
   app.use("*", createLoggerMiddleware(deps.logger));
   app.use("*", secureHeadersMiddleware);
+
+  // Request Size Limits: 256KB
+  app.use(
+    "*",
+    bodyLimit({
+      maxSize: 256 * 1024,
+      onError: (c) => {
+        return c.text("Request Entity Too Large", 413);
+      },
+    }),
+  );
+
+  // CSRF Defense in Depth
+  app.use(
+    "*",
+    csrf({
+      origin: deps.config.FRONTEND_URL,
+    }),
+  );
   app.use(
     "/api/*",
     createOptionalRateLimitMiddleware(deps.config.RATE_LIMIT_ENABLED, {
