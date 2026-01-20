@@ -35,9 +35,9 @@ export function createApp(deps: AppDeps): OpenAPIHono {
     }),
   );
 
-  // CSRF Defense in Depth
+  // CSRF Defense in Depth (API 경로에만 적용)
   app.use(
-    "*",
+    "/api/*",
     csrf({
       origin: deps.config.FRONTEND_URL,
     }),
@@ -60,7 +60,26 @@ export function createApp(deps: AppDeps): OpenAPIHono {
     }),
   );
 
-  app.get("/openapi.json", (c) => c.json(generateOpenApiDocument()));
+  app.get("/openapi.json", (c) => {
+    try {
+      return c.json(generateOpenApiDocument());
+    } catch (error) {
+      deps.logger.error(
+        {
+          error:
+            error instanceof Error ? error.message : "Non-Error object caught",
+          errorDetail: JSON.stringify(
+            error,
+            Object.getOwnPropertyNames(error),
+            2,
+          ),
+          stack: error instanceof Error ? error.stack : undefined,
+        },
+        "Failed to generate OpenAPI document",
+      );
+      throw error;
+    }
+  });
   app.get("/docs", Scalar({ url: "/openapi.json" }));
 
   registerRoutes(app, deps);

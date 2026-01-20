@@ -17,8 +17,17 @@ export const secureHeadersMiddleware = secureHeaders({
   strictTransportSecurity: "max-age=31536000; includeSubDomains",
 
   // CSP 설정 (API 서버용 최소 설정)
+  // Scalar API Reference UI는 CDN에서 스크립트/스타일을 로드함
   contentSecurityPolicy: {
     defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+    styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+    fontSrc: [
+      "'self'",
+      "https://fonts.gstatic.com",
+      "https://fonts.scalar.com",
+    ],
+    connectSrc: ["'self'"],
     frameAncestors: ["'none'"],
   },
 });
