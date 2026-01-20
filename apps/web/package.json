@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "build": "react-router build",
-    "dev": "react-router dev",
-    "dev:api": "cross-env VITE_MSW=false react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "dev": "cross-env VITE_MSW=true react-router dev",
+    "dev:api": "react-router dev",
+    "start": "npx serve -s build/client -l 5173",
     "check-types": "react-router typegen && tsc",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
