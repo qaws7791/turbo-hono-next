@@ -1,3 +1,7 @@
+import { ok, safeTry } from "neverthrow";
+
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../../lib/result";
 import type { NewOutlineNode } from "@repo/database/types";
 import type {
   MaterialAnalyzerPort,
@@ -43,9 +47,8 @@ function flattenOutline(params: {
     const { parentId, parentPath, depth, nodes } = frame;
     if (depth > 3) continue;
 
-    for (let i = 0; i < nodes.length; i += 1) {
+    for (const [i, node] of nodes.entries()) {
       if (rows.length >= params.maxNodes) break;
-      const node = nodes[i];
       if (!node) continue;
 
       const id = crypto.randomUUID();
@@ -84,51 +87,56 @@ function flattenOutline(params: {
   return rows;
 }
 
-export async function analyzeMaterialForOutline(
+export function analyzeMaterialForOutline(
   deps: { readonly materialAnalyzer: MaterialAnalyzerPort },
   params: BuildOutlineParams,
-): Promise<{
-  readonly summary: string;
-  readonly title: string;
-  readonly outlineRows: ReadonlyArray<OutlineNodeRow>;
-}> {
-  const analyzed = await deps.materialAnalyzer.analyze({
-    fullText: params.fullText,
-    mimeType: params.mimeType,
+): ResultAsync<
+  {
+    readonly summary: string;
+    readonly title: string;
+    readonly outlineRows: ReadonlyArray<OutlineNodeRow>;
+  },
+  AppError
+> {
+  return safeTry(async function* () {
+    const analyzed = yield* deps.materialAnalyzer.analyze({
+      fullText: params.fullText,
+      mimeType: params.mimeType,
+    });
+
+    const rootId = crypto.randomUUID();
+    const rootPath = "0";
+
+    const cleanTitle = analyzed.title.replace(/\0/g, "");
+    const cleanSummary = analyzed.summary.replace(/\0/g, "");
+
+    const rootRow: OutlineNodeRow = {
+      id: rootId,
+      materialId: params.materialId,
+      parentId: null,
+      nodeType: "SECTION",
+      title: cleanTitle,
+      summary: cleanSummary,
+      keywords: [],
+      orderIndex: 0,
+      depth: 0,
+      path: rootPath,
+      metadataJson: {},
+    };
+
+    const childRows = flattenOutline({
+      materialId: params.materialId,
+      rootId,
+      rootPath,
+      depth: 1,
+      nodes: analyzed.outline,
+      maxNodes: 200,
+    });
+
+    return ok({
+      summary: cleanSummary,
+      title: cleanTitle,
+      outlineRows: [rootRow, ...childRows],
+    });
   });
-
-  const rootId = crypto.randomUUID();
-  const rootPath = "0";
-
-  const cleanTitle = analyzed.title.replace(/\0/g, "");
-  const cleanSummary = analyzed.summary.replace(/\0/g, "");
-
-  const rootRow: OutlineNodeRow = {
-    id: rootId,
-    materialId: params.materialId,
-    parentId: null,
-    nodeType: "SECTION",
-    title: cleanTitle,
-    summary: cleanSummary,
-    keywords: [],
-    orderIndex: 0,
-    depth: 0,
-    path: rootPath,
-    metadataJson: {},
-  };
-
-  const childRows = flattenOutline({
-    materialId: params.materialId,
-    rootId,
-    rootPath,
-    depth: 1,
-    nodes: analyzed.outline,
-    maxNodes: 200,
-  });
-
-  return {
-    summary: cleanSummary,
-    title: cleanTitle,
-    outlineRows: [rootRow, ...childRows],
-  };
 }

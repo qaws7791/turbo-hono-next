@@ -3,9 +3,13 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
+import { tryPromise } from "../../lib/result";
 import { ApiError } from "../../middleware/error-handler";
 
 import { ragVectorStoreManager } from "./vector-store";
+
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 
 export type IngestMaterialParams = {
   readonly userId: string;
@@ -30,88 +34,92 @@ export class RagIngestor {
     chunkOverlap: 200,
   });
 
-  public async ingest(
+  public ingest(
     params: IngestMaterialParams,
-  ): Promise<IngestMaterialResult> {
-    const baseDocs = await this.loadDocuments({
-      bytes: params.bytes,
-      mimeType: params.mimeType,
-      originalFilename: params.originalFilename,
-    });
-
-    const fullText = this.normalizeText(
-      baseDocs.map((d) => d.pageContent).join("\n\n"),
-    );
-
-    if (!fullText) {
-      throw new ApiError(
-        400,
-        "MATERIAL_PARSE_FAILED",
-        "문서에서 텍스트를 추출할 수 없습니다.",
-      );
-    }
-
-    const splitDocs = await this.splitter.splitDocuments(Array.from(baseDocs));
-    if (splitDocs.length === 0) {
-      throw new ApiError(
-        400,
-        "MATERIAL_PARSE_FAILED",
-        "문서를 청크로 분할할 수 없습니다.",
-      );
-    }
-
-    const ragDocs: Array<Document<Record<string, unknown>>> = [];
-    splitDocs.forEach((doc, chunkIndex) => {
-      const content = this.normalizeText(doc.pageContent);
-      if (!content) return;
-
-      const pageNumber = this.extractPageNumber(doc.metadata);
-      const metadata: Record<string, unknown> = {
-        userId: params.userId,
-        materialId: params.materialId,
-        materialTitle: params.materialTitle,
-        originalFilename: params.originalFilename,
+  ): ResultAsync<IngestMaterialResult, AppError> {
+    return tryPromise(async () => {
+      const baseDocs = await this.loadDocuments({
+        bytes: params.bytes,
         mimeType: params.mimeType,
-        source: "material",
-        chunkIndex,
-        ...(pageNumber ? { pageNumber } : {}),
-      };
+        originalFilename: params.originalFilename,
+      });
 
-      ragDocs.push(
-        new Document<Record<string, unknown>>({
-          pageContent: content,
-          metadata,
-        }),
+      const fullText = this.normalizeText(
+        baseDocs.map((d) => d.pageContent).join("\n\n"),
       );
-    });
 
-    if (ragDocs.length === 0) {
-      throw new ApiError(
-        400,
-        "MATERIAL_PARSE_FAILED",
-        "문서를 청크로 변환할 수 없습니다.",
+      if (!fullText) {
+        throw new ApiError(
+          400,
+          "MATERIAL_PARSE_FAILED",
+          "문서에서 텍스트를 추출할 수 없습니다.",
+        );
+      }
+
+      const splitDocs = await this.splitter.splitDocuments(
+        Array.from(baseDocs),
       );
-    }
+      if (splitDocs.length === 0) {
+        throw new ApiError(
+          400,
+          "MATERIAL_PARSE_FAILED",
+          "문서를 청크로 분할할 수 없습니다.",
+        );
+      }
 
-    const store = await ragVectorStoreManager.getStoreForUser({
-      userId: params.userId,
-    });
+      const ragDocs: Array<Document<Record<string, unknown>>> = [];
+      splitDocs.forEach((doc, chunkIndex) => {
+        const content = this.normalizeText(doc.pageContent);
+        if (!content) return;
 
-    // Re-indexing: delete existing docs for this material.
-    await store.delete({
-      filter: {
+        const pageNumber = this.extractPageNumber(doc.metadata);
+        const metadata: Record<string, unknown> = {
+          userId: params.userId,
+          materialId: params.materialId,
+          materialTitle: params.materialTitle,
+          originalFilename: params.originalFilename,
+          mimeType: params.mimeType,
+          source: "material",
+          chunkIndex,
+          ...(pageNumber ? { pageNumber } : {}),
+        };
+
+        ragDocs.push(
+          new Document<Record<string, unknown>>({
+            pageContent: content,
+            metadata,
+          }),
+        );
+      });
+
+      if (ragDocs.length === 0) {
+        throw new ApiError(
+          400,
+          "MATERIAL_PARSE_FAILED",
+          "문서를 청크로 변환할 수 없습니다.",
+        );
+      }
+
+      const store = await ragVectorStoreManager.getStoreForUser({
         userId: params.userId,
-        materialId: params.materialId,
-      },
+      });
+
+      // Re-indexing: delete existing docs for this material.
+      await store.delete({
+        filter: {
+          userId: params.userId,
+          materialId: params.materialId,
+        },
+      });
+
+      await store.addDocuments(ragDocs);
+
+      return {
+        chunkCount: ragDocs.length,
+        fullText,
+        titleHint: null,
+      };
     });
-
-    await store.addDocuments(ragDocs);
-
-    return {
-      chunkCount: ragDocs.length,
-      fullText,
-      titleHint: null,
-    };
   }
 
   private async loadDocuments(params: {

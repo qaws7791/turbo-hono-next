@@ -19,10 +19,10 @@ export function createOpenAIClient(config: Config): OpenAI {
   return new OpenAI({ apiKey });
 }
 
-let cachedOpenAIClient: OpenAI | null = null;
+const cachedOpenAIClientRef: { current: OpenAI | null } = { current: null };
 
 export function getOpenAIClient(): OpenAI {
-  if (cachedOpenAIClient) return cachedOpenAIClient;
-  cachedOpenAIClient = createOpenAIClient(CONFIG);
-  return cachedOpenAIClient;
+  if (cachedOpenAIClientRef.current) return cachedOpenAIClientRef.current;
+  cachedOpenAIClientRef.current = createOpenAIClient(CONFIG);
+  return cachedOpenAIClientRef.current;
 }

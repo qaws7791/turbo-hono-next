@@ -1,5 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { isoDate, isoDateRequired } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { GetMaterialDetailResponse } from "../material.dto";
 
@@ -17,42 +19,46 @@ export function getMaterialDetail(deps: {
     userId: string,
     materialId: string,
   ): ResultAsync<GetMaterialDetailResponseType, AppError> {
-    return tryPromise(async () => {
-      const material = await unwrap(
-        deps.materialRepository.findByIdForUser(userId, materialId),
+    return safeTry(async function* () {
+      const material = yield* deps.materialRepository.findByIdForUser(
+        userId,
+        materialId,
       );
-
       if (!material || material.deletedAt) {
-        throw new ApiError(
-          404,
-          "MATERIAL_NOT_FOUND",
-          "자료를 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "MATERIAL_NOT_FOUND", "자료를 찾을 수 없습니다.", {
             materialId,
-          },
+          }),
         );
       }
 
-      const chunkCount = await unwrap(
-        deps.ragRetriever.countMaterialChunks({ userId, materialId }),
+      const chunkCount = yield* deps.ragRetriever.countMaterialChunks({
+        userId,
+        materialId,
+      });
+
+      const response = yield* parseOrInternalError(
+        GetMaterialDetailResponse,
+        {
+          data: {
+            id: material.id,
+            title: material.title,
+
+            originalFilename: material.originalFilename ?? null,
+            mimeType: material.mimeType ?? null,
+            fileSize: material.fileSize ?? null,
+            processingStatus: material.processingStatus,
+            processedAt: isoDate(material.processedAt),
+            summary: material.summary ?? null,
+            chunkCount,
+            createdAt: isoDateRequired(material.createdAt),
+            updatedAt: isoDateRequired(material.updatedAt),
+          },
+        },
+        "GetMaterialDetailResponse",
       );
 
-      return GetMaterialDetailResponse.parse({
-        data: {
-          id: material.id,
-          title: material.title,
-          sourceType: material.sourceType,
-          originalFilename: material.originalFilename ?? null,
-          mimeType: material.mimeType ?? null,
-          fileSize: material.fileSize ?? null,
-          processingStatus: material.processingStatus,
-          processedAt: isoDate(material.processedAt),
-          summary: material.summary ?? null,
-          chunkCount,
-          createdAt: isoDateRequired(material.createdAt),
-          updatedAt: isoDateRequired(material.updatedAt),
-        },
-      });
+      return ok(response);
     });
   };
 }

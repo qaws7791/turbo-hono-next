@@ -15,6 +15,7 @@ import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
 import { generatePublicId } from "../../lib/public-id";
 import { tryPromise } from "../../lib/result";
 
+import type { Database } from "@repo/database";
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
 import type {
@@ -26,7 +27,6 @@ import type {
   SessionRunStatus,
   SessionSourceReference,
 } from "./session.dto";
-import type { Database } from "@repo/database";
 
 export function createSessionRepository(db: Database) {
   return {
@@ -44,7 +44,7 @@ export function createSessionRepository(db: Database) {
         planTitle: string;
         planIcon: string;
         planColor: string;
-        moduleTitle: string | null;
+        moduleTitle: string;
       }>,
       AppError
     > {
@@ -64,7 +64,7 @@ export function createSessionRepository(db: Database) {
           })
           .from(planSessions)
           .innerJoin(plans, eq(plans.id, planSessions.planId))
-          .leftJoin(planModules, eq(planModules.id, planSessions.moduleId))
+          .innerJoin(planModules, eq(planModules.id, planSessions.moduleId))
           .where(
             and(
               eq(plans.userId, userId),
@@ -438,7 +438,7 @@ export function createSessionRepository(db: Database) {
         session: {
           publicId: string;
           title: string;
-          objective: string | null;
+          objective: string;
           sessionType: string;
           estimatedMinutes: number;
           sourceReferences: Array<SessionSourceReference> | null;

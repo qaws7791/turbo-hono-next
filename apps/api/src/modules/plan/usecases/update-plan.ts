@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { UpdatePlanResponse } from "../plan.dto";
 
@@ -16,43 +18,50 @@ export function updatePlan(deps: { readonly planRepository: PlanRepository }) {
     planId: string,
     input: UpdatePlanInputType,
   ): ResultAsync<UpdatePlanResponseType, AppError> {
-    return tryPromise(async () => {
-      const plan = await unwrap(
-        deps.planRepository.findByPublicId(userId, planId),
-      );
-
+    return safeTry(async function* () {
+      const plan = yield* deps.planRepository.findByPublicId(userId, planId);
       if (!plan) {
-        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-          planId,
-        });
+        return err(
+          new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+            planId,
+          }),
+        );
       }
 
       const now = new Date();
-      const updateData: {
+      const updateData = {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.icon !== undefined ? { icon: input.icon } : {}),
+        ...(input.color !== undefined ? { color: input.color } : {}),
+        ...(input.status !== undefined ? { status: input.status } : {}),
+      } satisfies {
         title?: string;
         icon?: string;
         color?: string;
         status?: typeof input.status;
-      } = {};
+      };
 
-      if (input.title !== undefined) updateData.title = input.title;
-      if (input.icon !== undefined) updateData.icon = input.icon;
-      if (input.color !== undefined) updateData.color = input.color;
-      if (input.status !== undefined) updateData.status = input.status;
-
-      const updated = await unwrap(
-        deps.planRepository.updatePlan(plan.id, updateData, now),
+      const updated = yield* deps.planRepository.updatePlan(
+        plan.id,
+        updateData,
+        now,
       );
 
-      return UpdatePlanResponse.parse({
-        data: {
-          id: updated.id,
-          title: updated.title,
-          icon: updated.icon,
-          color: updated.color,
-          status: updated.status,
+      const response = yield* parseOrInternalError(
+        UpdatePlanResponse,
+        {
+          data: {
+            id: updated.id,
+            title: updated.title,
+            icon: updated.icon,
+            color: updated.color,
+            status: updated.status,
+          },
         },
-      });
+        "UpdatePlanResponse",
+      );
+
+      return ok(response);
     });
   };
 }

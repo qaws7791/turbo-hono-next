@@ -1,5 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { isoDateRequired } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { UpdateMaterialTitleResponse } from "../material.dto";
 
@@ -16,36 +18,36 @@ export function updateMaterialTitle(deps: {
     materialId: string,
     title: string,
   ): ResultAsync<UpdateMaterialTitleResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const updatedAt = new Date();
 
-      const row = await unwrap(
-        deps.materialRepository.updateTitle(
-          userId,
-          materialId,
-          title,
-          updatedAt,
-        ),
+      const row = yield* deps.materialRepository.updateTitle(
+        userId,
+        materialId,
+        title,
+        updatedAt,
       );
-
       if (!row) {
-        throw new ApiError(
-          404,
-          "MATERIAL_NOT_FOUND",
-          "자료를 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "MATERIAL_NOT_FOUND", "자료를 찾을 수 없습니다.", {
             materialId,
-          },
+          }),
         );
       }
 
-      return UpdateMaterialTitleResponse.parse({
-        data: {
-          id: row.id,
-          title: row.title,
-          updatedAt: isoDateRequired(row.updatedAt),
+      const response = yield* parseOrInternalError(
+        UpdateMaterialTitleResponse,
+        {
+          data: {
+            id: row.id,
+            title: row.title,
+            updatedAt: isoDateRequired(row.updatedAt),
+          },
         },
-      });
+        "UpdateMaterialTitleResponse",
+      );
+
+      return ok(response);
     });
   };
 }

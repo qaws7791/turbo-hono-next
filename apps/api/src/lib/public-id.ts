@@ -13,20 +13,22 @@ export function generatePublicId(): string {
     );
   }
 
-  let id = "";
+  const chars: Array<string> = [];
   const bytes = new Uint8Array(PUBLIC_ID_STEP);
 
-  while (id.length < PUBLIC_ID_LENGTH) {
+  while (chars.length < PUBLIC_ID_LENGTH) {
     crypto.getRandomValues(bytes);
     for (const byte of bytes) {
       const index = byte & PUBLIC_ID_MASK;
       if (index >= PUBLIC_ID_ALPHABET.length) continue;
-      id += PUBLIC_ID_ALPHABET[index];
-      if (id.length >= PUBLIC_ID_LENGTH) return id;
+      const char = PUBLIC_ID_ALPHABET[index];
+      if (!char) continue;
+      chars.push(char);
+      if (chars.length >= PUBLIC_ID_LENGTH) return chars.join("");
     }
   }
 
-  return id;
+  return chars.join("");
 }
 
 export function isPublicId(value: string): boolean {

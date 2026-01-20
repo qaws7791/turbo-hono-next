@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { ActivatePlanResponse } from "../plan.dto";
 
@@ -14,29 +16,33 @@ export function activatePlan(deps: {
     userId: string,
     planId: string,
   ): ResultAsync<ActivatePlanResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      const plan = await unwrap(
-        deps.planRepository.findByPublicId(userId, planId),
-      );
+      const plan = yield* deps.planRepository.findByPublicId(userId, planId);
       if (!plan) {
-        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-          planId,
-        });
+        return err(
+          new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+            planId,
+          }),
+        );
       }
 
-      await unwrap(
-        deps.planRepository.activatePlanTransaction({
-          plan: { id: plan.id },
-          userId,
-          now,
-        }),
+      yield* deps.planRepository.activatePlanTransaction({
+        plan: { id: plan.id },
+        userId,
+        now,
+      });
+
+      const response = yield* parseOrInternalError(
+        ActivatePlanResponse,
+        {
+          data: { id: plan.publicId, status: "ACTIVE" as const },
+        },
+        "ActivatePlanResponse",
       );
 
-      return ActivatePlanResponse.parse({
-        data: { id: plan.publicId, status: "ACTIVE" as const },
-      });
+      return ok(response);
     });
   };
 }

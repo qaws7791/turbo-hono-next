@@ -1,4 +1,5 @@
-import { throwAppError, tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { ApiError } from "../../../middleware/error-handler";
 
 import type { ResultAsync } from "neverthrow";
@@ -14,47 +15,45 @@ export function createOrRecoverRun(deps: {
     sessionId: string,
     idempotencyKey?: string,
   ): ResultAsync<CreateSessionRunResult, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      const session = await unwrap(
-        deps.sessionRepository.findSessionByPublicId(userId, sessionId),
+      const session = yield* deps.sessionRepository.findSessionByPublicId(
+        userId,
+        sessionId,
       );
-
       if (!session) {
-        throw new ApiError(
-          404,
-          "SESSION_NOT_FOUND",
-          "세션을 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
             sessionId,
-          },
+          }),
         );
       }
 
       if (idempotencyKey) {
-        const idempotentRun = await unwrap(
-          deps.sessionRepository.findRunByIdempotencyKey(
+        const idempotentRun =
+          yield* deps.sessionRepository.findRunByIdempotencyKey(
             userId,
             idempotencyKey,
-          ),
-        );
+          );
 
         if (idempotentRun) {
           if (idempotentRun.sessionId !== session.id) {
-            throw new ApiError(
-              409,
-              "IDEMPOTENCY_KEY_CONFLICT",
-              "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
-              { idempotencyKey, sessionId },
+            return err(
+              new ApiError(
+                409,
+                "IDEMPOTENCY_KEY_CONFLICT",
+                "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
+                { idempotencyKey, sessionId },
+              ),
             );
           }
 
-          const currentStep = await unwrap(
-            deps.sessionRepository.getLastSnapshotStep(idempotentRun.id),
+          const currentStep = yield* deps.sessionRepository.getLastSnapshotStep(
+            idempotentRun.id,
           );
 
-          return {
+          return ok({
             statusCode: 201 as const,
             data: {
               runId: idempotentRun.publicId,
@@ -63,36 +62,41 @@ export function createOrRecoverRun(deps: {
               isRecovery: false,
               currentStep,
             },
-          };
+          });
         }
       }
 
       if (session.status === "COMPLETED") {
-        throw new ApiError(
-          400,
-          "SESSION_ALREADY_COMPLETED",
-          "이미 완료된 세션입니다.",
+        return err(
+          new ApiError(
+            400,
+            "SESSION_ALREADY_COMPLETED",
+            "이미 완료된 세션입니다.",
+          ),
         );
       }
       if (session.status === "SKIPPED" || session.status === "CANCELED") {
-        throw new ApiError(
-          400,
-          "INVALID_REQUEST",
-          "건너뜀/취소된 세션은 시작할 수 없습니다. 다시 예정으로 변경해주세요.",
-          { status: session.status },
+        return err(
+          new ApiError(
+            400,
+            "INVALID_REQUEST",
+            "건너뜀/취소된 세션은 시작할 수 없습니다. 다시 예정으로 변경해주세요.",
+            { status: session.status },
+          ),
         );
       }
 
-      const existing = await unwrap(
-        deps.sessionRepository.findRunningRun(userId, session.id),
+      const existing = yield* deps.sessionRepository.findRunningRun(
+        userId,
+        session.id,
       );
 
       if (existing) {
-        const currentStep = await unwrap(
-          deps.sessionRepository.getLastSnapshotStep(existing.id),
+        const currentStep = yield* deps.sessionRepository.getLastSnapshotStep(
+          existing.id,
         );
 
-        return {
+        return ok({
           statusCode: 200 as const,
           data: {
             runId: existing.publicId,
@@ -101,7 +105,7 @@ export function createOrRecoverRun(deps: {
             isRecovery: true,
             currentStep,
           },
-        };
+        });
       }
 
       const createResult =
@@ -118,28 +122,27 @@ export function createOrRecoverRun(deps: {
 
       if (createResult.isErr()) {
         if (idempotencyKey) {
-          const run = await unwrap(
-            deps.sessionRepository.findRunByIdempotencyKey(
-              userId,
-              idempotencyKey,
-            ),
+          const run = yield* deps.sessionRepository.findRunByIdempotencyKey(
+            userId,
+            idempotencyKey,
           );
 
           if (run) {
             if (run.sessionId !== session.id) {
-              throw new ApiError(
-                409,
-                "IDEMPOTENCY_KEY_CONFLICT",
-                "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
-                { idempotencyKey, sessionId },
+              return err(
+                new ApiError(
+                  409,
+                  "IDEMPOTENCY_KEY_CONFLICT",
+                  "Idempotency-Key가 다른 세션에서 이미 사용되었습니다.",
+                  { idempotencyKey, sessionId },
+                ),
               );
             }
 
-            const currentStep = await unwrap(
-              deps.sessionRepository.getLastSnapshotStep(run.id),
-            );
+            const currentStep =
+              yield* deps.sessionRepository.getLastSnapshotStep(run.id);
 
-            return {
+            return ok({
               statusCode: 201 as const,
               data: {
                 runId: run.publicId,
@@ -148,20 +151,21 @@ export function createOrRecoverRun(deps: {
                 isRecovery: false,
                 currentStep,
               },
-            };
+            });
           }
         }
 
-        const existingRetry = await unwrap(
-          deps.sessionRepository.findRunningRun(userId, session.id),
+        const existingRetry = yield* deps.sessionRepository.findRunningRun(
+          userId,
+          session.id,
         );
 
         if (existingRetry) {
-          const currentStep = await unwrap(
-            deps.sessionRepository.getLastSnapshotStep(existingRetry.id),
+          const currentStep = yield* deps.sessionRepository.getLastSnapshotStep(
+            existingRetry.id,
           );
 
-          return {
+          return ok({
             statusCode: 200 as const,
             data: {
               runId: existingRetry.publicId,
@@ -170,13 +174,13 @@ export function createOrRecoverRun(deps: {
               isRecovery: true,
               currentStep,
             },
-          };
+          });
         }
 
-        throwAppError(createResult.error);
+        return err(createResult.error);
       }
 
-      return {
+      return ok({
         statusCode: 201 as const,
         data: {
           runId: createResult.value.publicId,
@@ -185,7 +189,7 @@ export function createOrRecoverRun(deps: {
           isRecovery: false,
           currentStep: 0,
         },
-      };
+      });
     });
   };
 }

@@ -44,8 +44,13 @@ export class GoogleCustomEmbeddings extends Embeddings {
     const BATCH_SIZE = 100;
     const allVectors: Array<Array<number>> = [];
 
-    for (let i = 0; i < sanitizedTexts.length; i += BATCH_SIZE) {
-      const batch = sanitizedTexts.slice(i, i + BATCH_SIZE);
+    const batchCount = Math.ceil(sanitizedTexts.length / BATCH_SIZE);
+    for (const batchIndex of Array.from(
+      { length: batchCount },
+      (_, idx) => idx,
+    )) {
+      const start = batchIndex * BATCH_SIZE;
+      const batch = sanitizedTexts.slice(start, start + BATCH_SIZE);
 
       const response = await this.client.models.embedContent({
         model: this.model,
@@ -57,13 +62,13 @@ export class GoogleCustomEmbeddings extends Embeddings {
       });
 
       if (!response.embeddings) {
-        throw new Error(`Failed to embed contents at batch ${i / BATCH_SIZE}`);
+        throw new Error(`Failed to embed contents at batch ${batchIndex}`);
       }
 
       const vectors = response.embeddings.map((e) => e.values);
       if (vectors.some((v) => v === undefined)) {
         throw new Error(
-          `Failed to embed contents at batch ${i / BATCH_SIZE}: some values are undefined`,
+          `Failed to embed contents at batch ${batchIndex}: some values are undefined`,
         );
       }
 

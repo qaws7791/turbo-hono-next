@@ -8,6 +8,7 @@ import {
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
 import { tryPromise } from "../../lib/result";
+import { ApiError } from "../../middleware/error-handler";
 
 import type { Database } from "@repo/database";
 import type { ResultAsync } from "neverthrow";
@@ -112,6 +113,13 @@ export function createPlanRepository(db: Database) {
             completedSessions: row.completedSessions,
           });
         });
+
+        for (const planId of planIds) {
+          if (!map.has(planId)) {
+            map.set(planId, { totalSessions: 0, completedSessions: 0 });
+          }
+        }
+
         return map;
       });
     },
@@ -203,7 +211,7 @@ export function createPlanRepository(db: Database) {
       Array<{
         id: string;
         title: string;
-        description: string | null;
+        description: string;
         orderIndex: number;
       }>,
       AppError
@@ -230,7 +238,7 @@ export function createPlanRepository(db: Database) {
         moduleId: string | null;
         sessionType: string;
         title: string;
-        objective: string | null;
+        objective: string;
         orderIndex: number;
         scheduledForDate: Date;
         estimatedMinutes: number;
@@ -319,6 +327,13 @@ export function createPlanRepository(db: Database) {
           existing.push(row.materialId);
           map.set(row.planId, existing);
         });
+
+        for (const planId of planIds) {
+          if (!map.has(planId)) {
+            map.set(planId, []);
+          }
+        }
+
         return map;
       });
     },
@@ -354,7 +369,11 @@ export function createPlanRepository(db: Database) {
 
         const created = rows[0];
         if (!created) {
-          throw new Error("Failed to insert plan");
+          throw new ApiError(
+            500,
+            "PLAN_CREATE_FAILED",
+            "Plan 생성에 실패했습니다.",
+          );
         }
 
         return created;
@@ -508,9 +527,7 @@ export function createPlanRepository(db: Database) {
       sessionRows: Array<typeof planSessions.$inferInsert>;
     }): ResultAsync<{ id: number; publicId: string }, AppError> {
       return tryPromise(async () => {
-        let result: { id: number; publicId: string } | null = null;
-
-        await db.transaction(async (tx) => {
+        const result = await db.transaction(async (tx) => {
           // Pause active plans for user
           await tx
             .update(plans)
@@ -563,12 +580,8 @@ export function createPlanRepository(db: Database) {
             );
           }
 
-          result = created;
+          return created;
         });
-
-        if (!result) {
-          throw new Error("Failed to create plan");
-        }
 
         return result;
       });

@@ -36,8 +36,6 @@ export type FileBytesSource = {
   readonly fileSize: number;
 };
 
-export type MaterialSourceType = "FILE" | "TEXT";
-
 type SupportedFileKind = "PDF" | "MARKDOWN" | "TEXT" | "DOCX";
 
 export class DocumentParser {
@@ -86,16 +84,6 @@ export class DocumentParser {
       originalFilename: file.name || null,
       fileSize: file.size,
     };
-  }
-
-  inferMaterialSourceTypeFromFile(params: {
-    readonly mimeType: string | null;
-    readonly originalFilename: string | null;
-  }): MaterialSourceType | null {
-    const kind = this.inferSupportedFileKind(params);
-    if (kind === "PDF" || kind === "DOCX") return "FILE";
-    if (kind === "MARKDOWN" || kind === "TEXT") return "TEXT";
-    return null;
   }
 
   isSupportedMaterialFile(params: {

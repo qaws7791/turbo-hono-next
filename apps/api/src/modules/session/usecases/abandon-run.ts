@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { AbandonSessionRunResponse } from "../session.dto";
 
@@ -18,46 +20,44 @@ export function abandonRun(deps: {
     runId: string,
     reason: SessionExitReason,
   ): ResultAsync<AbandonSessionRunResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      const run = await unwrap(
-        deps.sessionRepository.findRunForAbandon(userId, runId),
+      const run = yield* deps.sessionRepository.findRunForAbandon(
+        userId,
+        runId,
       );
-
       if (!run) {
-        throw new ApiError(
-          404,
-          "SESSION_NOT_FOUND",
-          "세션을 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
             runId,
-          },
+          }),
         );
       }
 
       if (run.status !== "RUNNING") {
-        throw new ApiError(
-          400,
-          "INVALID_REQUEST",
-          "진행 중인 세션이 아닙니다.",
-          {
+        return err(
+          new ApiError(400, "INVALID_REQUEST", "진행 중인 세션이 아닙니다.", {
             status: run.status,
-          },
+          }),
         );
       }
 
-      await unwrap(
-        deps.sessionRepository.abandonRunTransaction({
-          run: { id: run.id, sessionId: run.sessionId },
-          reason,
-          now,
-        }),
+      yield* deps.sessionRepository.abandonRunTransaction({
+        run: { id: run.id, sessionId: run.sessionId },
+        reason,
+        now,
+      });
+
+      const response = yield* parseOrInternalError(
+        AbandonSessionRunResponse,
+        {
+          data: { runId: run.publicId, status: "ABANDONED" },
+        },
+        "AbandonSessionRunResponse",
       );
 
-      return AbandonSessionRunResponse.parse({
-        data: { runId: run.publicId, status: "ABANDONED" },
-      });
+      return ok(response);
     });
   };
 }

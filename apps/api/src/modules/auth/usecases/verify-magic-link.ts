@@ -1,4 +1,5 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { ApiError } from "../../../middleware/error-handler";
 import {
   computeSessionExpiresAt,
@@ -7,50 +8,49 @@ import {
   validateRedirectPath,
 } from "../auth.utils";
 
-import type { ResultAsync } from "neverthrow";
 import type { Config } from "../../../lib/config";
 import type { AppError } from "../../../lib/result";
 import type { VerifyMagicLinkInput as VerifyMagicLinkInputType } from "../auth.dto";
 import type { AuthRepository } from "../auth.repository";
 import type { RequestContext } from "../types";
+import type { ResultAsync } from "neverthrow";
 
-async function upsertUserByEmail(
+function upsertUserByEmail(
   deps: {
     readonly authRepository: AuthRepository;
   },
   email: string,
   now: Date,
-): Promise<{
-  readonly id: string;
-  readonly email: string;
-  readonly displayName: string;
-}> {
-  const existing = await unwrap(deps.authRepository.findUserByEmail(email));
+): ResultAsync<
+  { readonly id: string; readonly email: string; readonly displayName: string },
+  AppError
+> {
+  return safeTry(async function* () {
+    const existing = yield* deps.authRepository.findUserByEmail(email);
 
-  if (existing) {
-    await unwrap(deps.authRepository.updateUserLastLogin(existing.id, now));
+    if (existing) {
+      yield* deps.authRepository.updateUserLastLogin(existing.id, now);
 
-    return {
-      id: existing.id,
-      email: existing.email,
-      displayName: existing.displayName,
-    };
-  }
+      return ok({
+        id: existing.id,
+        email: existing.email,
+        displayName: existing.displayName,
+      });
+    }
 
-  const displayName = email.split("@")[0] || "User";
-  const created = await unwrap(
-    deps.authRepository.createUser({
+    const displayName = email.split("@")[0] || "User";
+    const created = yield* deps.authRepository.createUser({
       email,
       displayName,
       now,
-    }),
-  );
+    });
 
-  return {
-    id: created.id,
-    email: created.email,
-    displayName: created.displayName,
-  };
+    return ok({
+      id: created.id,
+      email: created.email,
+      displayName: created.displayName,
+    });
+  });
 }
 
 export function verifyMagicLink(deps: {
@@ -68,42 +68,45 @@ export function verifyMagicLink(deps: {
     },
     AppError
   > {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const tokenHash = sha256Hex(input.token);
       const now = new Date();
 
       // 1. 토큰 조회
-      const record = await unwrap(
-        deps.authRepository.findMagicLinkTokenByHash(tokenHash),
-      );
+      const record =
+        yield* deps.authRepository.findMagicLinkTokenByHash(tokenHash);
 
       // 2. 토큰 유효성 검증
       if (!record) {
-        throw new ApiError(
-          400,
-          "MAGIC_LINK_INVALID",
-          "유효하지 않은 토큰입니다.",
+        return err(
+          new ApiError(400, "MAGIC_LINK_INVALID", "유효하지 않은 토큰입니다."),
         );
       }
       if (record.consumedAt) {
-        throw new ApiError(400, "MAGIC_LINK_USED", "이미 사용된 토큰입니다.");
+        return err(
+          new ApiError(400, "MAGIC_LINK_USED", "이미 사용된 토큰입니다."),
+        );
       }
       if (record.expiresAt.getTime() < now.getTime()) {
-        throw new ApiError(400, "MAGIC_LINK_EXPIRED", "토큰이 만료되었습니다.");
+        return err(
+          new ApiError(400, "MAGIC_LINK_EXPIRED", "토큰이 만료되었습니다."),
+        );
       }
       if (!validateRedirectPath(record.redirectPath)) {
-        throw new ApiError(
-          400,
-          "INVALID_REDIRECT",
-          "redirectPath가 허용되지 않습니다.",
+        return err(
+          new ApiError(
+            400,
+            "INVALID_REDIRECT",
+            "redirectPath가 허용되지 않습니다.",
+          ),
         );
       }
 
       // 3. 토큰 소비 처리
-      await unwrap(deps.authRepository.consumeMagicLinkToken(record.id, now));
+      yield* deps.authRepository.consumeMagicLinkToken(record.id, now);
 
       // 4. 사용자 조회/생성
-      const user = await upsertUserByEmail(deps, record.email, now);
+      const user = yield* upsertUserByEmail(deps, record.email, now);
 
       // 5. 세션 생성
       const sessionToken = generateToken();
@@ -113,22 +116,20 @@ export function verifyMagicLink(deps: {
         deps.config.SESSION_DURATION_DAYS,
       );
 
-      const session = await unwrap(
-        deps.authRepository.insertAuthSession({
-          userId: user.id,
-          sessionTokenHash,
-          expiresAt,
-          createdIp: ctx.ipAddress,
-          userAgent: ctx.userAgent,
-          createdAt: now,
-        }),
-      );
+      const session = yield* deps.authRepository.insertAuthSession({
+        userId: user.id,
+        sessionTokenHash,
+        expiresAt,
+        createdIp: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+        createdAt: now,
+      });
 
-      return {
+      return ok({
         redirectPath: record.redirectPath,
         sessionToken,
         sessionId: session.id,
-      };
+      });
     });
   };
 }

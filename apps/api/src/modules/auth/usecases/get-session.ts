@@ -1,4 +1,5 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { ok, safeTry } from "neverthrow";
+
 import { computeSessionExpiresAt, sha256Hex } from "../auth.utils";
 
 import type { ResultAsync } from "neverthrow";
@@ -15,26 +16,25 @@ export function getSessionByToken(deps: {
     token: string,
     ctx: RequestContext,
   ): ResultAsync<AuthContext | null, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const tokenHash = sha256Hex(token);
       const now = new Date();
 
       // 1. 활성 세션 조회
-      const session = await unwrap(
-        deps.authRepository.findActiveSessionByTokenHash(tokenHash, now),
+      const session = yield* deps.authRepository.findActiveSessionByTokenHash(
+        tokenHash,
+        now,
       );
 
       if (!session) {
-        return null;
+        return ok(null);
       }
 
       // 2. 사용자 조회
-      const user = await unwrap(
-        deps.authRepository.findUserById(session.userId),
-      );
+      const user = yield* deps.authRepository.findUserById(session.userId);
 
       if (!user) {
-        return null;
+        return ok(null);
       }
 
       // 3. 세션 만료 시간 갱신
@@ -43,16 +43,14 @@ export function getSessionByToken(deps: {
         deps.config.SESSION_DURATION_DAYS,
       );
 
-      await unwrap(
-        deps.authRepository.updateSessionExpiryAndMetadata({
-          sessionId: session.id,
-          expiresAt: newExpiresAt,
-          createdIp: ctx.ipAddress ?? session.createdIp,
-          userAgent: ctx.userAgent ?? session.userAgent,
-        }),
-      );
+      yield* deps.authRepository.updateSessionExpiryAndMetadata({
+        sessionId: session.id,
+        expiresAt: newExpiresAt,
+        createdIp: ctx.ipAddress ?? session.createdIp,
+        userAgent: ctx.userAgent ?? session.userAgent,
+      });
 
-      return {
+      return ok({
         user: {
           id: user.id,
           email: user.email,
@@ -66,7 +64,7 @@ export function getSessionByToken(deps: {
           id: session.id,
           expiresAt: newExpiresAt,
         },
-      };
+      });
     });
   };
 }

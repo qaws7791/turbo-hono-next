@@ -90,13 +90,6 @@ type ListSessionActivitiesOk =
 type CreateSessionActivityCreated =
   paths["/api/session-runs/{runId}/activities"]["post"]["responses"]["201"]["content"]["application/json"];
 
-type CreateChatThreadCreated =
-  paths["/api/chat/threads"]["post"]["responses"]["201"]["content"]["application/json"];
-type CreateChatMessageOk =
-  paths["/api/chat/threads/{threadId}/messages"]["post"]["responses"]["200"]["content"]["application/json"];
-type ListChatMessagesOk =
-  paths["/api/chat/threads/{threadId}/messages"]["get"]["responses"]["200"]["content"]["application/json"];
-
 type MagicLinkBody = NonNullable<
   paths["/api/auth/magic-link"]["post"]["requestBody"]
 >["content"]["application/json"];
@@ -141,14 +134,6 @@ type CreateActivityBody = NonNullable<
   paths["/api/session-runs/{runId}/activities"]["post"]["requestBody"]
 >["content"]["application/json"];
 
-type CreateChatThreadBody = NonNullable<
-  paths["/api/chat/threads"]["post"]["requestBody"]
->["content"]["application/json"];
-
-type CreateChatMessageBody = NonNullable<
-  paths["/api/chat/threads/{threadId}/messages"]["post"]["requestBody"]
->["content"]["application/json"];
-
 function errorResponse(
   code: string,
   message: string,
@@ -180,7 +165,6 @@ function mapMaterialStatusToProcessingStatus(
 function mapMaterialToMaterialListItem(
   material: ReturnType<typeof listMaterials>[number],
 ): MaterialsListOk["data"][number] {
-  const sourceType = material.kind === "file" ? "FILE" : "TEXT";
   const fileSize =
     material.source?.type === "file"
       ? (material.source.fileSizeBytes ?? null)
@@ -189,7 +173,7 @@ function mapMaterialToMaterialListItem(
   return {
     id: material.id,
     title: material.title,
-    sourceType,
+
     mimeType: null,
     fileSize,
     processingStatus: mapMaterialStatusToProcessingStatus(material.status),
@@ -252,36 +236,6 @@ function takeUpload(uploadId: string): UploadSession | null {
   const [item] = store.items.splice(idx, 1);
   writeUploadStore(store);
   return item ?? null;
-}
-
-const ChatStoreSchema = z.object({
-  threads: z.record(
-    z.string().uuid(),
-    z.object({
-      messages: z.array(
-        z.object({
-          id: z.string().uuid(),
-          role: z.enum(["USER", "ASSISTANT", "SYSTEM"]),
-          contentMd: z.string(),
-          createdAt: z.string().datetime(),
-        }),
-      ),
-    }),
-  ),
-});
-type ChatStore = z.infer<typeof ChatStoreSchema>;
-const CHAT_STORE_KEY = "tlm_mock_chat_v1";
-
-function readChatStore(): ChatStore {
-  return (
-    readJsonFromStorage(CHAT_STORE_KEY, ChatStoreSchema) ?? {
-      threads: {},
-    }
-  );
-}
-
-function writeChatStore(store: ChatStore): void {
-  writeJsonToStorage(CHAT_STORE_KEY, ChatStoreSchema, store);
 }
 
 function parsePagination(url: URL): { page: number; limit: number } {
@@ -413,7 +367,6 @@ export const handlers = [
       );
     }
 
-    const sourceType = doc.kind === "file" ? "FILE" : "TEXT";
     const originalFilename =
       doc.source?.type === "file" ? doc.source.fileName : null;
     const fileSize =
@@ -423,7 +376,7 @@ export const handlers = [
       data: {
         id: doc.id,
         title: doc.title,
-        sourceType,
+
         originalFilename,
         mimeType: null,
         fileSize,
@@ -695,6 +648,14 @@ export const handlers = [
         updatedAt: plan.updatedAt,
         progress: { completedSessions, totalSessions },
         sourceMaterialIds: plan.sourceMaterialIds,
+        materials: listMaterials()
+          .filter((m) => plan.sourceMaterialIds.includes(m.id))
+          .map((m) => ({
+            id: m.id,
+            title: m.title,
+            summary: m.summary ?? null,
+            mimeType: null,
+          })),
         modules: plan.modules.map((m, orderIndex) => ({
           id: m.id,
           title: m.title,
@@ -1506,110 +1467,4 @@ export const handlers = [
       return HttpResponse.json(response, { status: 201 });
     },
   ),
-
-  // Chat
-  http.post("/api/chat/threads", async ({ request }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const body = (await request
-      .json()
-      .catch(() => null)) as CreateChatThreadBody | null;
-    if (!body) {
-      return HttpResponse.json(
-        errorResponse("BAD_REQUEST", "Invalid JSON body"),
-        { status: 400 },
-      );
-    }
-
-    void body;
-    const threadId = randomUuidV4();
-    const store = readChatStore();
-    store.threads[threadId] = { messages: [] };
-    writeChatStore(store);
-
-    const response: CreateChatThreadCreated = { data: { threadId } };
-    return HttpResponse.json(response, { status: 201 });
-  }),
-
-  http.post(
-    "/api/chat/threads/:threadId/messages",
-    async ({ params, request }) => {
-      const unauthorized = requireAuthOr401();
-      if (unauthorized) return unauthorized;
-
-      const threadId = String(params.threadId ?? "");
-      const body = (await request
-        .json()
-        .catch(() => null)) as CreateChatMessageBody | null;
-      if (!body) {
-        return HttpResponse.json(
-          errorResponse("BAD_REQUEST", "Invalid JSON body"),
-          { status: 400 },
-        );
-      }
-
-      const store = readChatStore();
-      const thread = store.threads[threadId];
-      if (!thread) {
-        return HttpResponse.json(
-          errorResponse("NOT_FOUND", "Thread not found"),
-          {
-            status: 404,
-          },
-        );
-      }
-
-      thread.messages.push({
-        id: randomUuidV4(),
-        role: "USER",
-        contentMd: body.content,
-        createdAt: nowIso(),
-      });
-
-      const assistantId = randomUuidV4();
-      const assistantText = `Mock reply: ${body.content.slice(0, 200)}`;
-      thread.messages.push({
-        id: assistantId,
-        role: "ASSISTANT",
-        contentMd: assistantText,
-        createdAt: nowIso(),
-      });
-      writeChatStore(store);
-
-      const response: CreateChatMessageOk = {
-        data: {
-          id: assistantId,
-          role: "ASSISTANT",
-          contentMd: assistantText,
-          citations: [],
-        },
-      };
-      return HttpResponse.json(response);
-    },
-  ),
-
-  http.get("/api/chat/threads/:threadId/messages", ({ params }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const threadId = String(params.threadId ?? "");
-    const store = readChatStore();
-    const thread = store.threads[threadId];
-    if (!thread) {
-      return HttpResponse.json(errorResponse("NOT_FOUND", "Thread not found"), {
-        status: 404,
-      });
-    }
-
-    const response: ListChatMessagesOk = {
-      data: thread.messages.map((m) => ({
-        id: m.id,
-        role: m.role,
-        contentMd: m.contentMd,
-        citations: [],
-      })),
-    };
-    return HttpResponse.json(response);
-  }),
 ] as const;

@@ -24,21 +24,38 @@ export function computeStreakDays(
     }
   }
 
-  let streak = 0;
-  let expectedDate = today;
+  type StreakState = {
+    readonly streak: number;
+    readonly expectedDate: Date;
+    readonly done: boolean;
+  };
 
-  for (const dateStr of sortedDates) {
-    const expected = expectedDate.toISOString().slice(0, 10);
+  const initialState: StreakState = {
+    streak: 0,
+    expectedDate: today,
+    done: false,
+  };
+
+  const state = sortedDates.reduce<StreakState>((acc, dateStr) => {
+    if (acc.done) return acc;
+
+    const expected = acc.expectedDate.toISOString().slice(0, 10);
     if (dateStr === expected) {
-      streak++;
-      expectedDate = addDays(expectedDate, -1);
-    } else if (dateStr < expected) {
-      // 날짜가 건너뛰어졌으면 streak 종료
-      break;
+      return {
+        streak: acc.streak + 1,
+        expectedDate: addDays(acc.expectedDate, -1),
+        done: false,
+      };
     }
-  }
 
-  return streak;
+    if (dateStr < expected) {
+      return { ...acc, done: true };
+    }
+
+    return acc;
+  }, initialState);
+
+  return state.streak;
 }
 
 /**

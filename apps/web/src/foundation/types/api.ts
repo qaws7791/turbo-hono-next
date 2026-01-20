@@ -80,9 +80,11 @@ export interface paths {
      */
     get: {
       parameters: {
-        query: {
-          code: string;
-          state: string;
+        query?: {
+          code?: string;
+          state?: string;
+          error?: string;
+          error_description?: string;
         };
         header?: never;
         path?: never;
@@ -438,8 +440,6 @@ export interface paths {
                 /** Format: uuid */
                 id: string;
                 title: string;
-                /** @enum {string} */
-                sourceType: "FILE" | "TEXT";
                 mimeType: string | null;
                 fileSize: number | null;
                 /** @enum {string} */
@@ -524,8 +524,6 @@ export interface paths {
                 /** Format: uuid */
                 id: string;
                 title: string;
-                /** @enum {string} */
-                sourceType: "FILE" | "TEXT";
                 originalFilename: string | null;
                 mimeType: string | null;
                 fileSize: number | null;
@@ -1232,6 +1230,13 @@ export interface paths {
                   totalSessions: number;
                 };
                 sourceMaterialIds: Array<string>;
+                materials: Array<{
+                  /** Format: uuid */
+                  id: string;
+                  title: string;
+                  summary: string | null;
+                  mimeType: string | null;
+                }>;
                 modules: Array<{
                   /** Format: uuid */
                   id: string;
@@ -2004,7 +2009,8 @@ export interface paths {
                   blueprintId: string;
                   /** Format: date-time */
                   createdAt: string;
-                  steps: Array<| {
+                  steps: Array<
+                    | {
                         id: string;
                         estimatedSeconds?: number | null;
                         /** @enum {string|null} */
@@ -2177,7 +2183,8 @@ export interface paths {
                           title: string;
                           description?: string | null;
                         } | null;
-                      }>;
+                      }
+                  >;
                   /** @default 0 */
                   startStepIndex: number;
                 };

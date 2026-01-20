@@ -1,6 +1,8 @@
-import { ResultAsync } from "neverthrow";
+import { ResultAsync, err, ok } from "neverthrow";
 
 import { ApiError } from "../middleware/error-handler";
+
+import type { Result } from "neverthrow";
 
 export type UnknownError = {
   readonly _tag: "UnknownError";
@@ -18,9 +20,16 @@ export function toAppError(cause: unknown): AppError {
   return unknownError(cause);
 }
 
-export function toThrowable(error: AppError): unknown {
+function unknownCauseToError(cause: unknown): Error {
+  if (cause instanceof Error) return cause;
+  const message =
+    typeof cause === "string" ? cause : "알 수 없는 오류가 발생했습니다.";
+  return new Error(message, { cause });
+}
+
+export function toThrowable(error: AppError): Error {
   if (error instanceof ApiError) return error;
-  return error.cause;
+  return unknownCauseToError(error.cause);
 }
 
 export function throwAppError(error: AppError): never {
@@ -37,10 +46,29 @@ export function tryPromise<T>(fn: () => Promise<T>): ResultAsync<T, AppError> {
   );
 }
 
-export async function unwrap<T>(result: ResultAsync<T, AppError>): Promise<T> {
-  const awaited = await result;
-  if (awaited.isErr()) {
-    throwAppError(awaited.error);
-  }
-  return awaited.value;
+type ResultAsyncValue<T> =
+  T extends ResultAsync<infer TValue, AppError> ? TValue : never;
+
+export function combineResults<
+  const TResults extends ReadonlyArray<ResultAsync<unknown, AppError>>,
+>(
+  results: TResults,
+): ResultAsync<
+  { [K in keyof TResults]: ResultAsyncValue<TResults[K]> },
+  AppError
+> {
+  const combined = ResultAsync.combine(
+    results as ReadonlyArray<ResultAsync<unknown, AppError>>,
+  );
+  return combined as ResultAsync<
+    { [K in keyof TResults]: ResultAsyncValue<TResults[K]> },
+    AppError
+  >;
+}
+
+export function validateWith<T>(
+  predicate: (value: T) => boolean,
+  errorFn: (value: T) => AppError,
+): (value: T) => Result<T, AppError> {
+  return (value: T) => (predicate(value) ? ok(value) : err(errorFn(value)));
 }

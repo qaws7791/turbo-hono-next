@@ -12,9 +12,6 @@ export type MaterialProcessingStatus = z.infer<
   typeof MaterialProcessingStatusSchema
 >;
 
-export const MaterialSourceTypeSchema = z.enum(["FILE", "TEXT"]);
-export type MaterialSourceType = z.infer<typeof MaterialSourceTypeSchema>;
-
 export const ListMaterialsInput = PaginationInput.extend({
   status: MaterialProcessingStatusSchema.optional(),
   search: z.string().max(200).optional(),
@@ -25,7 +22,7 @@ export type ListMaterialsInput = z.infer<typeof ListMaterialsInput>;
 export const MaterialListItem = z.object({
   id: z.string().uuid(),
   title: z.string().min(1),
-  sourceType: MaterialSourceTypeSchema,
+
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
@@ -44,7 +41,7 @@ export type ListMaterialsResponse = z.infer<typeof ListMaterialsResponse>;
 export const MaterialDetail = z.object({
   id: z.string().uuid(),
   title: z.string().min(1),
-  sourceType: MaterialSourceTypeSchema,
+
   originalFilename: z.string().nullable(),
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),

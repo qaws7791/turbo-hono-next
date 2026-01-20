@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { DeletePlanResponse } from "../plan.dto";
 
@@ -12,25 +14,29 @@ export function deletePlan(deps: { readonly planRepository: PlanRepository }) {
     userId: string,
     planId: string,
   ): ResultAsync<DeletePlanResponseType, AppError> {
-    return tryPromise(async () => {
-      const plan = await unwrap(
-        deps.planRepository.findByPublicId(userId, planId),
-      );
-
+    return safeTry(async function* () {
+      const plan = yield* deps.planRepository.findByPublicId(userId, planId);
       if (!plan) {
-        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-          planId,
-        });
+        return err(
+          new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+            planId,
+          }),
+        );
       }
 
-      const materialIds = await unwrap(
-        deps.planRepository.listSourceMaterialIds(plan.id),
+      const materialIds = yield* deps.planRepository.listSourceMaterialIds(
+        plan.id,
       );
 
-      await unwrap(deps.planRepository.deletePlan(plan.id));
-      await unwrap(deps.planRepository.gcZombieMaterials(materialIds));
+      yield* deps.planRepository.deletePlan(plan.id);
+      yield* deps.planRepository.gcZombieMaterials(materialIds);
 
-      return DeletePlanResponse.parse({ message: "Plan이 삭제되었습니다." });
+      const response = yield* parseOrInternalError(
+        DeletePlanResponse,
+        { message: "Plan이 삭제되었습니다." },
+        "DeletePlanResponse",
+      );
+      return ok(response);
     });
   };
 }

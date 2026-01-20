@@ -7,7 +7,7 @@ import { CONFIG } from "./config";
 import type { Database } from "@repo/database";
 import type { Config } from "./config";
 
-let db: Database | null = null;
+const dbRef: { current: Database | null } = { current: null };
 
 export function createDatabase(config: Config): Database {
   if (!config.DATABASE_URL) {
@@ -17,7 +17,7 @@ export function createDatabase(config: Config): Database {
 }
 
 export function getDb(): Database {
-  if (db) return db;
-  db = createDatabase(CONFIG);
-  return db;
+  if (dbRef.current) return dbRef.current;
+  dbRef.current = createDatabase(CONFIG);
+  return dbRef.current;
 }

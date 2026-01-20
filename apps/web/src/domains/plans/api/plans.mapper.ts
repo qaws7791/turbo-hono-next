@@ -37,6 +37,16 @@ export function computeProgressPercent(progress: {
   );
 }
 
+function isTextMimeType(mimeType: string | null | undefined): boolean {
+  if (!mimeType) return false;
+  return (
+    mimeType.startsWith("text/") ||
+    mimeType.includes("markdown") ||
+    mimeType.includes("json") ||
+    mimeType.includes("xml")
+  );
+}
+
 export function toPlanFromListItem(item: ApiPlanListItem): PlanWithDerived {
   return {
     id: item.id,
@@ -107,23 +117,15 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
     progressPercent,
     totalSessions,
     sourceMaterialIds: detail.sourceMaterialIds,
-    materials: (
-      (
-        detail as unknown as {
-          materials: Array<{
-            id: string;
-            title: string;
-            summary: string | null;
-            sourceType: string;
-          }>;
-        }
-      ).materials ?? []
-    ).map((m) => ({
-      id: m.id,
-      title: m.title,
-      summary: m.summary ?? undefined,
-      kind: m.sourceType.toLowerCase() as "file" | "url" | "text",
-    })),
+    materials: (detail.materials ?? []).map((m) => {
+      const isText = isTextMimeType(m.mimeType);
+      return {
+        id: m.id,
+        title: m.title,
+        summary: m.summary ?? undefined,
+        kind: isText ? "text" : "file",
+      };
+    }),
     modules,
   };
 }

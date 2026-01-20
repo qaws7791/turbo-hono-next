@@ -1,9 +1,13 @@
-import { getAiModels } from "../../lib/ai";
+import { getAiModelsAsync } from "../../lib/ai";
 
-export async function embedTexts(texts: ReadonlyArray<string>): Promise<{
-  vectors: ReadonlyArray<Array<number>>;
-}> {
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
+
+export function embedTexts(
+  texts: ReadonlyArray<string>,
+): ResultAsync<{ vectors: ReadonlyArray<Array<number>> }, AppError> {
   const input = texts.map((t) => t.slice(0, 8000));
-  const vectors = await getAiModels().embedding.embedContent(input);
-  return { vectors };
+  return getAiModelsAsync()
+    .andThen((models) => models.embedding.embedContent(input))
+    .map((vectors) => ({ vectors }));
 }

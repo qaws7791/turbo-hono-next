@@ -96,7 +96,7 @@ export function createMaterialRepository(db: Database) {
       Array<{
         id: string;
         title: string;
-        sourceType: string;
+
         mimeType: string | null;
         fileSize: number | null;
         processingStatus: MaterialProcessingStatus;
@@ -125,7 +125,7 @@ export function createMaterialRepository(db: Database) {
           .select({
             id: materials.id,
             title: materials.title,
-            sourceType: materials.sourceType,
+
             mimeType: materials.mimeType,
             fileSize: materials.fileSize,
             processingStatus: materials.processingStatus,

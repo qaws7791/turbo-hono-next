@@ -1,4 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { fromPromise } from "../../../lib/result";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { DeleteMaterialResponse } from "../material.dto";
 
@@ -20,57 +23,67 @@ export function deleteMaterial(deps: {
     userId: string,
     materialId: string,
   ): ResultAsync<DeleteMaterialResponseType, AppError> {
-    return tryPromise(async () => {
-      const material = await unwrap(
-        deps.materialRepository.findForDelete(userId, materialId),
+    return safeTry(async function* () {
+      const material = yield* deps.materialRepository.findForDelete(
+        userId,
+        materialId,
       );
-
       if (!material || material.deletedAt) {
-        throw new ApiError(
-          404,
-          "MATERIAL_NOT_FOUND",
-          "자료를 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "MATERIAL_NOT_FOUND", "자료를 찾을 수 없습니다.", {
             materialId,
-          },
+          }),
         );
       }
 
-      const hasRefs = await unwrap(
-        deps.materialRepository.hasPlanReferences(materialId),
-      );
-
+      const hasRefs =
+        yield* deps.materialRepository.hasPlanReferences(materialId);
       if (hasRefs) {
         const now = new Date();
-        await unwrap(deps.materialRepository.softDelete(materialId, now));
+        yield* deps.materialRepository.softDelete(materialId, now);
 
-        return DeleteMaterialResponse.parse({
-          message:
-            "목록에서 삭제되었습니다. (진행 중인 학습을 위해 데이터는 유지됩니다.)",
-          data: { type: "soft" as const },
-        });
+        const response = yield* parseOrInternalError(
+          DeleteMaterialResponse,
+          {
+            message:
+              "목록에서 삭제되었습니다. (진행 중인 학습을 위해 데이터는 유지됩니다.)",
+            data: { type: "soft" as const },
+          },
+          "DeleteMaterialResponse",
+        );
+        return ok(response);
       }
 
       if (material.storageProvider === "R2" && material.storageKey) {
-        await deps.r2.deleteObject({ key: material.storageKey });
+        yield* deps.r2.deleteObject({ key: material.storageKey });
       }
 
-      const store = await deps.ragVectorStoreManager.getStoreForUser({
-        userId,
-      });
-      await store.delete({
-        filter: {
+      const store = yield* fromPromise(
+        deps.ragVectorStoreManager.getStoreForUser({
           userId,
-          materialId,
+        }),
+      );
+      yield* fromPromise(
+        store.delete({
+          filter: {
+            userId,
+            materialId,
+          },
+        }),
+      );
+
+      yield* deps.materialRepository.hardDelete(materialId);
+
+      const response = yield* parseOrInternalError(
+        DeleteMaterialResponse,
+        {
+          message: "삭제되었습니다.",
+          data: { type: "hard" as const },
         },
-      });
+        "DeleteMaterialResponse",
+      );
 
-      await unwrap(deps.materialRepository.hardDelete(materialId));
-
-      return DeleteMaterialResponse.parse({
-        message: "삭제되었습니다.",
-        data: { type: "hard" as const },
-      });
+      return ok(response);
     });
   };
 }

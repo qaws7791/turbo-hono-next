@@ -155,7 +155,7 @@ export const PlanDetailResponse = z.object({
         id: z.string().uuid(),
         title: z.string(),
         summary: z.string().nullable(),
-        sourceType: z.string(),
+        mimeType: z.string().nullable(),
       }),
     ),
     modules: z.array(PlanModuleItem),

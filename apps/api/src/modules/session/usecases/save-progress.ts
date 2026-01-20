@@ -1,5 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { isoDateTime } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { UpdateSessionRunProgressResponse } from "../session.dto";
 
@@ -19,49 +21,45 @@ export function saveProgress(deps: {
     runId: string,
     input: UpdateSessionRunProgressInputType,
   ): ResultAsync<UpdateSessionRunProgressResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      // 1. Run 조회
-      const run = await unwrap(
-        deps.sessionRepository.findRunByPublicId(userId, runId),
+      const run = yield* deps.sessionRepository.findRunByPublicId(
+        userId,
+        runId,
       );
-
       if (!run) {
-        throw new ApiError(
-          404,
-          "SESSION_NOT_FOUND",
-          "세션을 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
             runId,
-          },
+          }),
         );
       }
 
       if (run.status !== "RUNNING") {
-        throw new ApiError(
-          400,
-          "INVALID_REQUEST",
-          "진행 중인 세션이 아닙니다.",
-          {
+        return err(
+          new ApiError(400, "INVALID_REQUEST", "진행 중인 세션이 아닙니다.", {
             status: run.status,
-          },
+          }),
         );
       }
 
-      // 2. 진행 상황 스냅샷 저장
-      await unwrap(
-        deps.sessionRepository.insertProgressSnapshot({
-          sessionRunId: run.id,
-          stepIndex: input.stepIndex,
-          payloadJson: input.inputs,
-          createdAt: now,
-        }),
+      yield* deps.sessionRepository.insertProgressSnapshot({
+        sessionRunId: run.id,
+        stepIndex: input.stepIndex,
+        payloadJson: input.inputs,
+        createdAt: now,
+      });
+
+      const response = yield* parseOrInternalError(
+        UpdateSessionRunProgressResponse,
+        {
+          data: { runId: run.publicId, savedAt: isoDateTime(now) },
+        },
+        "UpdateSessionRunProgressResponse",
       );
 
-      return UpdateSessionRunProgressResponse.parse({
-        data: { runId: run.publicId, savedAt: isoDateTime(now) },
-      });
+      return ok(response);
     });
   };
 }

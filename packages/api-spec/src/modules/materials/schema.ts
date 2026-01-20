@@ -12,12 +12,10 @@ export const MaterialProcessingStatusSchema = z.enum([
   "FAILED",
 ]);
 
-export const MaterialSourceTypeSchema = z.enum(["FILE", "TEXT"]);
-
 export const MaterialListItemSchema = z.object({
   id: z.uuid(),
   title: z.string().min(1),
-  sourceType: MaterialSourceTypeSchema,
+
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
@@ -41,7 +39,7 @@ export const MaterialListResponseSchema = z.object({
 export const MaterialDetailSchema = z.object({
   id: z.uuid(),
   title: z.string().min(1),
-  sourceType: MaterialSourceTypeSchema,
+
   originalFilename: z.string().nullable(),
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),

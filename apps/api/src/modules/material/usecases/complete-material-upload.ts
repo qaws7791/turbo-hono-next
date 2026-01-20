@@ -1,12 +1,15 @@
 import { createHash } from "node:crypto";
 
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok } from "neverthrow";
+
+import { fromPromise, toAppError } from "../../../lib/result";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { CreateMaterialResult } from "../material.dto";
 
 import { analyzeMaterialForOutline } from "./build-material-outline";
 
-import type { ResultAsync } from "neverthrow";
+import type { Result, ResultAsync } from "neverthrow";
 import type { AppError } from "../../../lib/result";
 import type {
   CompleteMaterialUploadInput as CompleteMaterialUploadInputType,
@@ -21,6 +24,27 @@ import type {
 } from "../material.ports";
 import type { MaterialRepository } from "../material.repository";
 
+type UploadSession = {
+  readonly id: string;
+  readonly status: string;
+  readonly expiresAt: Date;
+  readonly completedAt: Date | null;
+  readonly objectKey: string;
+  readonly finalObjectKey: string | null;
+  readonly originalFilename: string | null;
+  readonly mimeType: string;
+  readonly fileSize: number;
+  readonly etag: string | null;
+  readonly materialId: string | null;
+};
+
+type UploadState = {
+  session: UploadSession | null;
+  uploadStatus: "EXPIRED" | "COMPLETED" | "FAILED" | null;
+  materialId: string | null;
+  finalObjectKey: string | null;
+};
+
 function normalizeEtag(value: string): string {
   return value.trim().replaceAll('"', "");
 }
@@ -32,6 +56,15 @@ function getHttpStatusCode(error: unknown): number | null {
   const httpStatusCode = (metadata as { httpStatusCode?: unknown })
     .httpStatusCode;
   return typeof httpStatusCode === "number" ? httpStatusCode : null;
+}
+
+function isUnknownError(
+  error: AppError,
+): error is Extract<
+  AppError,
+  { readonly _tag: "UnknownError"; readonly cause: unknown }
+> {
+  return (error as { _tag?: unknown })._tag === "UnknownError";
 }
 
 function getSafeExt(originalFilename: string | null): string | null {
@@ -61,6 +94,14 @@ function normalizeMimeType(value: string | null): string | null {
   return value.split(";")[0]?.trim().toLowerCase() ?? null;
 }
 
+function toUploadFailureMessage(error: AppError): string {
+  if (error instanceof ApiError) return error.message;
+  if (isUnknownError(error) && error.cause instanceof Error) {
+    return error.cause.message;
+  }
+  return "업로드 완료 처리에 실패했습니다.";
+}
+
 export function completeMaterialUpload(deps: {
   readonly materialRepository: MaterialRepository;
   readonly documentParser: DocumentParserPort;
@@ -73,223 +114,232 @@ export function completeMaterialUpload(deps: {
     userId: string,
     input: CompleteMaterialUploadInputType,
   ): ResultAsync<CreateMaterialResultType, AppError> {
-    return tryPromise(async () => {
-      const validated = input;
+    const state: UploadState = {
+      session: null,
+      uploadStatus: null,
+      materialId: null,
+      finalObjectKey: null,
+    };
 
-      const session = await unwrap(
-        deps.materialRepository.findUploadSessionByIdForUser(
-          validated.uploadId,
-          userId,
-        ),
-      );
-
-      if (!session) {
-        throw new ApiError(
-          404,
-          "UPLOAD_NOT_FOUND",
-          "업로드 세션을 찾을 수 없습니다.",
-          {
-            uploadId: validated.uploadId,
-          },
-        );
-      }
-
-      if (session.status === "COMPLETED") {
-        throw new ApiError(
-          409,
-          "UPLOAD_ALREADY_COMPLETED",
-          "이미 완료된 업로드입니다.",
-          { uploadId: session.id, materialId: session.materialId },
-        );
-      }
-
-      const now = new Date();
-      if (session.expiresAt.getTime() <= now.getTime()) {
-        await unwrap(
-          deps.materialRepository.updateUploadSession(session.id, {
-            status: "EXPIRED",
-            errorMessage: "업로드 세션이 만료되었습니다.",
-          }),
-        );
-        throw new ApiError(
-          410,
-          "UPLOAD_EXPIRED",
-          "업로드 세션이 만료되었습니다.",
-          {
-            uploadId: session.id,
-          },
-        );
-      }
-
-      const expectedMimeType = normalizeMimeType(session.mimeType);
-      if (!expectedMimeType) {
-        throw new ApiError(
-          500,
-          "UPLOAD_INVALID_STATE",
-          "업로드 정보가 올바르지 않습니다.",
-        );
-      }
-
-      let tempBytes: Uint8Array | null = null;
-      let finalObjectKey: string | null = null;
-      let materialId: string | null = null;
+    const run = async (): Promise<
+      Result<CreateMaterialResultType, AppError>
+    > => {
       try {
-        const head = await (async () => {
-          try {
-            return await deps.r2.headObject({ key: session.objectKey });
-          } catch (error) {
-            if (getHttpStatusCode(error) === 404) {
-              throw new ApiError(
+        const sessionResult =
+          await deps.materialRepository.findUploadSessionByIdForUser(
+            input.uploadId,
+            userId,
+          );
+        if (sessionResult.isErr()) return err(sessionResult.error);
+
+        const session = sessionResult.value;
+        state.session = session;
+
+        if (!session) {
+          return err(
+            new ApiError(
+              404,
+              "UPLOAD_NOT_FOUND",
+              "업로드 세션을 찾을 수 없습니다.",
+              {
+                uploadId: input.uploadId,
+              },
+            ),
+          );
+        }
+
+        if (session.status === "COMPLETED") {
+          return err(
+            new ApiError(
+              409,
+              "UPLOAD_ALREADY_COMPLETED",
+              "이미 완료된 업로드입니다.",
+              { uploadId: session.id, materialId: session.materialId },
+            ),
+          );
+        }
+
+        const now = new Date();
+        if (session.expiresAt.getTime() <= now.getTime()) {
+          const expiredUpdate =
+            await deps.materialRepository.updateUploadSession(session.id, {
+              status: "EXPIRED",
+              errorMessage: "업로드 세션이 만료되었습니다.",
+            });
+          if (expiredUpdate.isErr()) return err(expiredUpdate.error);
+          state.uploadStatus = "EXPIRED";
+          return err(
+            new ApiError(
+              410,
+              "UPLOAD_EXPIRED",
+              "업로드 세션이 만료되었습니다.",
+              {
+                uploadId: session.id,
+              },
+            ),
+          );
+        }
+
+        const expectedMimeType = normalizeMimeType(session.mimeType);
+        if (!expectedMimeType) {
+          return err(
+            new ApiError(
+              500,
+              "UPLOAD_INVALID_STATE",
+              "업로드 정보가 올바르지 않습니다.",
+            ),
+          );
+        }
+
+        const headResult = await deps.r2.headObject({ key: session.objectKey });
+        if (headResult.isErr()) {
+          const statusCode = isUnknownError(headResult.error)
+            ? getHttpStatusCode(headResult.error.cause)
+            : null;
+          if (statusCode === 404) {
+            return err(
+              new ApiError(
                 400,
                 "UPLOAD_OBJECT_NOT_FOUND",
                 "업로드된 파일을 찾을 수 없습니다.",
                 { uploadId: session.id },
-              );
-            }
-            throw error;
+              ),
+            );
           }
-        })();
+          return err(headResult.error);
+        }
+
+        const head = headResult.value;
         const actualSize = head.size;
         const actualMimeType = normalizeMimeType(head.contentType);
         const actualEtag = head.etag ? normalizeEtag(head.etag) : null;
 
         if (actualSize === null) {
-          throw new ApiError(
-            500,
-            "UPLOAD_INVALID_STATE",
-            "업로드된 파일 크기를 확인할 수 없습니다.",
+          return err(
+            new ApiError(
+              500,
+              "UPLOAD_INVALID_STATE",
+              "업로드된 파일 크기를 확인할 수 없습니다.",
+            ),
           );
         }
 
-        // 1% 오차 허용 (메타데이터 크기는 약간의 차이가 발생할 수 있음)
         const sizeTolerance = session.fileSize * 0.01;
         const sizeDiff = Math.abs(actualSize - session.fileSize);
         if (sizeDiff > sizeTolerance) {
-          await unwrap(
-            deps.materialRepository.updateUploadSession(session.id, {
-              status: "FAILED",
-              errorMessage: "업로드된 파일 크기가 올바르지 않습니다.",
-            }),
-          );
-          throw new ApiError(
-            400,
-            "UPLOAD_SIZE_MISMATCH",
-            "업로드된 파일 크기가 올바르지 않습니다.",
-            { expected: session.fileSize, actual: actualSize, tolerance: "1%" },
+          return err(
+            new ApiError(
+              400,
+              "UPLOAD_SIZE_MISMATCH",
+              "업로드된 파일 크기가 올바르지 않습니다.",
+              {
+                expected: session.fileSize,
+                actual: actualSize,
+                tolerance: "1%",
+              },
+            ),
           );
         }
 
         if (actualMimeType !== expectedMimeType) {
-          await unwrap(
-            deps.materialRepository.updateUploadSession(session.id, {
-              status: "FAILED",
-              errorMessage: "업로드된 파일 형식이 올바르지 않습니다.",
-            }),
-          );
-          throw new ApiError(
-            400,
-            "UPLOAD_CONTENT_TYPE_MISMATCH",
-            "업로드된 파일 형식이 올바르지 않습니다.",
-            { expected: expectedMimeType, actual: actualMimeType },
+          return err(
+            new ApiError(
+              400,
+              "UPLOAD_CONTENT_TYPE_MISMATCH",
+              "업로드된 파일 형식이 올바르지 않습니다.",
+              { expected: expectedMimeType, actual: actualMimeType },
+            ),
           );
         }
 
-        if (validated.etag && actualEtag) {
-          const expectedEtag = normalizeEtag(validated.etag);
+        if (input.etag && actualEtag) {
+          const expectedEtag = normalizeEtag(input.etag);
           if (expectedEtag !== actualEtag) {
-            await unwrap(
-              deps.materialRepository.updateUploadSession(session.id, {
-                status: "FAILED",
-                errorMessage: "업로드된 파일 무결성 검증에 실패했습니다.",
-              }),
-            );
-            throw new ApiError(
-              400,
-              "UPLOAD_ETAG_MISMATCH",
-              "업로드된 파일 무결성 검증에 실패했습니다.",
-              { expected: expectedEtag, actual: actualEtag },
+            return err(
+              new ApiError(
+                400,
+                "UPLOAD_ETAG_MISMATCH",
+                "업로드된 파일 무결성 검증에 실패했습니다.",
+                { expected: expectedEtag, actual: actualEtag },
+              ),
             );
           }
         }
 
-        tempBytes = await (async () => {
-          try {
-            return await deps.r2.getObjectBytes({ key: session.objectKey });
-          } catch (error) {
-            if (getHttpStatusCode(error) === 404) {
-              throw new ApiError(
+        const bytesResult = await deps.r2.getObjectBytes({
+          key: session.objectKey,
+        });
+        if (bytesResult.isErr()) {
+          const statusCode = isUnknownError(bytesResult.error)
+            ? getHttpStatusCode(bytesResult.error.cause)
+            : null;
+          if (statusCode === 404) {
+            return err(
+              new ApiError(
                 400,
                 "UPLOAD_OBJECT_NOT_FOUND",
                 "업로드된 파일을 찾을 수 없습니다.",
                 { uploadId: session.id },
-              );
-            }
-            throw error;
+              ),
+            );
           }
-        })();
+          return err(bytesResult.error);
+        }
+
+        const tempBytes = bytesResult.value;
         if (tempBytes.length !== session.fileSize) {
-          await unwrap(
-            deps.materialRepository.updateUploadSession(session.id, {
-              status: "FAILED",
-              errorMessage: "업로드된 파일 크기가 올바르지 않습니다.",
-            }),
-          );
-          throw new ApiError(
-            400,
-            "UPLOAD_SIZE_MISMATCH",
-            "업로드된 파일 크기가 올바르지 않습니다.",
-            { expected: session.fileSize, actual: tempBytes.length },
+          return err(
+            new ApiError(
+              400,
+              "UPLOAD_SIZE_MISMATCH",
+              "업로드된 파일 크기가 올바르지 않습니다.",
+              { expected: session.fileSize, actual: tempBytes.length },
+            ),
           );
         }
 
         const checksum = createHash("sha256").update(tempBytes).digest("hex");
-        const duplicate = await unwrap(
-          deps.materialRepository.findDuplicateByChecksum(userId, checksum),
-        );
+        const duplicateResult =
+          await deps.materialRepository.findDuplicateByChecksum(
+            userId,
+            checksum,
+          );
+        if (duplicateResult.isErr()) return err(duplicateResult.error);
 
+        const duplicate = duplicateResult.value;
         if (duplicate) {
-          await unwrap(
-            deps.materialRepository.updateUploadSession(session.id, {
-              status: "FAILED",
-              errorMessage: "동일한 파일이 이미 존재합니다.",
-            }),
-          );
-          await deps.r2.deleteObject({ key: session.objectKey });
-          throw new ApiError(
-            409,
-            "MATERIAL_DUPLICATE",
-            "동일한 파일이 이미 존재합니다.",
-            { materialId: duplicate.id },
+          return err(
+            new ApiError(
+              409,
+              "MATERIAL_DUPLICATE",
+              "동일한 파일이 이미 존재합니다.",
+              { materialId: duplicate.id },
+            ),
           );
         }
 
-        const sourceType = deps.documentParser.inferMaterialSourceTypeFromFile({
-          mimeType: session.mimeType,
-          originalFilename: session.originalFilename,
-        });
-        if (!sourceType) {
-          throw new ApiError(
-            500,
-            "UPLOAD_INVALID_STATE",
-            "업로드 정보가 올바르지 않습니다.",
-          );
-        }
+        const materialId = crypto.randomUUID();
+        state.materialId = materialId;
 
-        materialId = crypto.randomUUID();
         const finalKey = buildFinalObjectKey({
           userId,
           materialId,
           originalFilename: session.originalFilename,
           now,
         });
-        finalObjectKey = finalKey;
+        state.finalObjectKey = finalKey;
 
-        await deps.r2.copyObject({
+        const copyResult = await deps.r2.copyObject({
           sourceKey: session.objectKey,
           destinationKey: finalKey,
           contentType: session.mimeType,
         });
-        await deps.r2.deleteObject({ key: session.objectKey });
+        if (copyResult.isErr()) return err(copyResult.error);
+
+        const deleteTempResult = await deps.r2.deleteObject({
+          key: session.objectKey,
+        });
+        if (deleteTempResult.isErr()) return err(deleteTempResult.error);
 
         const parsed = await deps.documentParser.parseFileBytesSource({
           bytes: tempBytes,
@@ -298,7 +348,7 @@ export function completeMaterialUpload(deps: {
           fileSize: tempBytes.length,
         });
 
-        const analyzed = await analyzeMaterialForOutline(
+        const analyzedResult = await analyzeMaterialForOutline(
           { materialAnalyzer: deps.materialAnalyzer },
           {
             materialId,
@@ -306,10 +356,13 @@ export function completeMaterialUpload(deps: {
             mimeType: session.mimeType,
           },
         );
+        if (analyzedResult.isErr()) return err(analyzedResult.error);
+
+        const analyzed = analyzedResult.value;
         const summary = analyzed.summary;
         const finalTitle = analyzed.title;
 
-        await deps.ragIngestor.ingest({
+        const ingestResult = await deps.ragIngestor.ingest({
           userId,
           materialId,
           materialTitle: finalTitle,
@@ -317,112 +370,129 @@ export function completeMaterialUpload(deps: {
           mimeType: session.mimeType,
           bytes: tempBytes,
         });
+        if (ingestResult.isErr()) return err(ingestResult.error);
 
         const createdAt = new Date();
         const cleanTitle = finalTitle.replace(/\0/g, "");
         const cleanSummary = summary?.replace(/\0/g, "") ?? null;
 
-        await unwrap(
-          deps.materialRepository.insertMaterial({
-            id: materialId,
-            userId,
-            sourceType,
-            title: cleanTitle,
-            originalFilename: session.originalFilename,
-            storageProvider: "R2",
-            storageKey: finalKey,
-            mimeType: session.mimeType,
-            fileSize: session.fileSize,
-            checksum,
-            processingStatus: "READY",
-            processedAt: createdAt,
-            summary: cleanSummary,
-            createdAt,
-            updatedAt: createdAt,
-          }),
-        );
+        const insertResult = await deps.materialRepository.insertMaterial({
+          id: materialId,
+          userId,
 
-        await unwrap(
-          deps.materialRepository.replaceOutlineNodes(
-            materialId,
-            analyzed.outlineRows,
-          ),
-        );
+          title: cleanTitle,
+          originalFilename: session.originalFilename,
+          storageProvider: "R2",
+          storageKey: finalKey,
+          mimeType: session.mimeType,
+          fileSize: session.fileSize,
+          checksum,
+          processingStatus: "READY",
+          processedAt: createdAt,
+          summary: cleanSummary,
+          createdAt,
+          updatedAt: createdAt,
+        });
+        if (insertResult.isErr()) return err(insertResult.error);
 
-        await unwrap(
-          deps.materialRepository.updateUploadSession(session.id, {
+        const outlineResult = await deps.materialRepository.replaceOutlineNodes(
+          materialId,
+          analyzed.outlineRows,
+        );
+        if (outlineResult.isErr()) return err(outlineResult.error);
+
+        const uploadUpdateResult =
+          await deps.materialRepository.updateUploadSession(session.id, {
             status: "COMPLETED",
             completedAt: new Date(),
             etag: head.etag,
             finalObjectKey: finalKey,
             materialId,
-          }),
-        );
+          });
+        if (uploadUpdateResult.isErr()) return err(uploadUpdateResult.error);
+        state.uploadStatus = "COMPLETED";
 
-        return CreateMaterialResult.parse({
-          mode: "sync",
-          materialId,
-          title: finalTitle,
-          processingStatus: "READY",
-          summary,
-        });
-      } catch (error) {
-        await unwrap(
-          deps.materialRepository.updateUploadSession(session.id, {
+        const responseParsed = parseOrInternalError(
+          CreateMaterialResult,
+          {
+            mode: "sync",
+            materialId,
+            title: finalTitle,
+            processingStatus: "READY",
+            summary,
+          },
+          "CreateMaterialResult",
+        );
+        if (responseParsed.isErr()) return err(responseParsed.error);
+
+        return ok(responseParsed.value);
+      } catch (cause) {
+        return err(toAppError(cause));
+      }
+    };
+
+    const handleFailure = async (error: AppError): Promise<void> => {
+      const session = state.session;
+      if (!session) return;
+
+      if (state.uploadStatus === null) {
+        const errorMessage = toUploadFailureMessage(error);
+        const updateResult = await deps.materialRepository.updateUploadSession(
+          session.id,
+          {
             status: "FAILED",
             completedAt: new Date(),
-            errorMessage:
-              error instanceof Error
-                ? error.message
-                : "업로드 완료 처리에 실패했습니다.",
-          }),
+            errorMessage,
+          },
         );
-
-        // best-effort cleanup (temp object)
-        try {
-          await deps.r2.deleteObject({ key: session.objectKey });
-        } catch {
-          // ignore cleanup error
+        if (updateResult.isOk()) {
+          state.uploadStatus = "FAILED";
         }
-
-        // best-effort cleanup (final object)
-        try {
-          if (finalObjectKey) {
-            await deps.r2.deleteObject({ key: finalObjectKey });
-          }
-        } catch {
-          // ignore cleanup error
-        }
-
-        // best-effort cleanup (vector index)
-        try {
-          if (materialId) {
-            const store = await deps.ragVectorStoreManager.getStoreForUser({
-              userId,
-            });
-            await store.delete({
-              filter: { userId, materialId },
-            });
-          }
-        } catch {
-          // ignore cleanup error
-        }
-
-        // best-effort cleanup (material row)
-        try {
-          if (materialId) {
-            await unwrap(deps.materialRepository.hardDelete(materialId));
-          }
-        } catch {
-          // ignore cleanup error
-        }
-
-        throw error;
-      } finally {
-        tempBytes = null;
-        finalObjectKey = null;
-        materialId = null;
       }
-    });
+
+      const tempDelete = await deps.r2.deleteObject({ key: session.objectKey });
+      if (tempDelete.isErr()) {
+        // best-effort cleanup
+      }
+
+      if (state.finalObjectKey) {
+        const finalDelete = await deps.r2.deleteObject({
+          key: state.finalObjectKey,
+        });
+        if (finalDelete.isErr()) {
+          // best-effort cleanup
+        }
+      }
+
+      if (state.materialId) {
+        try {
+          const store = await deps.ragVectorStoreManager.getStoreForUser({
+            userId,
+          });
+          await store.delete({
+            filter: { userId, materialId: state.materialId },
+          });
+        } catch {
+          // best-effort cleanup
+        }
+
+        const hardDelete = await deps.materialRepository.hardDelete(
+          state.materialId,
+        );
+        if (hardDelete.isErr()) {
+          // best-effort cleanup
+        }
+      }
+    };
+
+    return fromPromise(
+      (async () => {
+        const result = await run();
+        if (result.isErr()) {
+          await handleFailure(result.error);
+        }
+        return result;
+      })(),
+    ).andThen((result) => result);
   };
 }

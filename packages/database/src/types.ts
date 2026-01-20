@@ -1,11 +1,6 @@
 import type {
   authAccounts,
   authSessions,
-  chatCitations,
-  chatMessages,
-  chatThreads,
-  coachMessages,
-  domainEvents,
   magicLinkTokens,
   materialChunks,
   materialEmbeddings,
@@ -90,18 +85,3 @@ export type NewSessionActivity = typeof sessionActivities.$inferInsert;
 
 export type SessionSummary = typeof sessionSummaries.$inferSelect;
 export type NewSessionSummary = typeof sessionSummaries.$inferInsert;
-
-export type ChatThread = typeof chatThreads.$inferSelect;
-export type NewChatThread = typeof chatThreads.$inferInsert;
-
-export type ChatMessage = typeof chatMessages.$inferSelect;
-export type NewChatMessage = typeof chatMessages.$inferInsert;
-
-export type ChatCitation = typeof chatCitations.$inferSelect;
-export type NewChatCitation = typeof chatCitations.$inferInsert;
-
-export type CoachMessage = typeof coachMessages.$inferSelect;
-export type NewCoachMessage = typeof coachMessages.$inferInsert;
-
-export type DomainEvent = typeof domainEvents.$inferSelect;
-export type NewDomainEvent = typeof domainEvents.$inferInsert;

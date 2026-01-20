@@ -8,6 +8,7 @@ import {
   vector,
 } from "drizzle-orm/pg-core";
 
+/* used in langchain - don't change the table */
 export const ragCollections = pgTable(
   "rag_collections",
   {

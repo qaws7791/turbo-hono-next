@@ -1,16 +1,12 @@
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
-import type { MaterialSourceType } from "./material.dto";
 
 export type DocumentParserPort = {
   isSupportedMaterialFile: (params: {
     readonly mimeType: string | null;
     readonly originalFilename: string | null;
   }) => boolean;
-  inferMaterialSourceTypeFromFile: (params: {
-    readonly mimeType: string | null;
-    readonly originalFilename: string | null;
-  }) => MaterialSourceType | null;
+
   parseFileBytesSource: (source: {
     readonly bytes: Uint8Array;
     readonly mimeType: string | null;
@@ -37,11 +33,20 @@ export type MaterialAnalyzerPort = {
   analyze: (params: {
     readonly fullText: string;
     readonly mimeType: string | null;
-  }) => Promise<{
-    readonly title: string;
-    readonly summary: string;
-    readonly outline: ReadonlyArray<MaterialOutlineNode>;
-  }>;
+  }) => ResultAsync<
+    {
+      readonly title: string;
+      readonly summary: string;
+      readonly outline: ReadonlyArray<MaterialOutlineNode>;
+    },
+    AppError
+  >;
+};
+
+export type RagIngestResult = {
+  readonly chunkCount: number;
+  readonly fullText: string;
+  readonly titleHint: string | null;
 };
 
 export type RagIngestorPort = {
@@ -52,7 +57,7 @@ export type RagIngestorPort = {
     readonly originalFilename: string | null;
     readonly mimeType: string | null;
     readonly bytes: Uint8Array;
-  }) => Promise<unknown>;
+  }) => ResultAsync<RagIngestResult, AppError>;
 };
 
 export type RagRetrieverForMaterialPort = {
@@ -75,17 +80,24 @@ export type R2StoragePort = {
     readonly key: string;
     readonly contentType: string;
     readonly expiresInSeconds: number;
-  }) => Promise<{ url: string }>;
-  headObject: (params: { readonly key: string }) => Promise<{
-    size: number | null;
-    contentType: string | null;
-    etag: string | null;
-  }>;
-  getObjectBytes: (params: { readonly key: string }) => Promise<Uint8Array>;
+  }) => ResultAsync<{ url: string }, AppError>;
+  headObject: (params: { readonly key: string }) => ResultAsync<
+    {
+      size: number | null;
+      contentType: string | null;
+      etag: string | null;
+    },
+    AppError
+  >;
+  getObjectBytes: (params: {
+    readonly key: string;
+  }) => ResultAsync<Uint8Array, AppError>;
   copyObject: (params: {
     readonly sourceKey: string;
     readonly destinationKey: string;
     readonly contentType: string | null;
-  }) => Promise<void>;
-  deleteObject: (params: { readonly key: string }) => Promise<void>;
+  }) => ResultAsync<void, AppError>;
+  deleteObject: (params: {
+    readonly key: string;
+  }) => ResultAsync<void, AppError>;
 };

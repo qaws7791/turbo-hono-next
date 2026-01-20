@@ -28,7 +28,7 @@ export const planModules = pgTable(
       .notNull()
       .references(() => plans.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
-    description: text("description"),
+    description: text("description").notNull(),
     orderIndex: integer("order_index").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .$defaultFn(() => new Date())
@@ -51,12 +51,14 @@ export const planSessions = pgTable(
     planId: bigint("plan_id", { mode: "number" })
       .notNull()
       .references(() => plans.id, { onDelete: "cascade" }),
-    moduleId: uuid("module_id").references(() => planModules.id, {
-      onDelete: "set null",
-    }),
+    moduleId: uuid("module_id")
+      .notNull()
+      .references(() => planModules.id, {
+        onDelete: "cascade",
+      }),
     sessionType: planSessionTypeEnum("session_type").notNull(),
     title: text("title").notNull(),
-    objective: text("objective"),
+    objective: text("objective").notNull(),
     orderIndex: integer("order_index").notNull(),
     scheduledForDate: date("scheduled_for_date", { mode: "date" }).notNull(),
     estimatedMinutes: integer("estimated_minutes").notNull(),

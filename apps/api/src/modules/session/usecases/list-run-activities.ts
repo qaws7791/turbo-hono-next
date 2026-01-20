@@ -1,5 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { isoDateTime } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { ListSessionActivitiesResponse } from "../session.dto";
 
@@ -15,34 +17,37 @@ export function listRunActivities(deps: {
     userId: string,
     runId: string,
   ): ResultAsync<ListSessionActivitiesResponseType, AppError> {
-    return tryPromise(async () => {
-      const run = await unwrap(
-        deps.sessionRepository.findRunByPublicId(userId, runId),
+    return safeTry(async function* () {
+      const run = yield* deps.sessionRepository.findRunByPublicId(
+        userId,
+        runId,
       );
-
       if (!run) {
-        throw new ApiError(
-          404,
-          "SESSION_NOT_FOUND",
-          "세션을 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
             runId,
-          },
+          }),
         );
       }
 
-      const rows = await unwrap(deps.sessionRepository.listActivities(run.id));
+      const rows = yield* deps.sessionRepository.listActivities(run.id);
 
-      return ListSessionActivitiesResponse.parse({
-        data: rows.map((row) => ({
-          id: row.id,
-          kind: row.kind,
-          prompt: row.prompt,
-          userAnswer: row.userAnswer ?? null,
-          aiEvalJson: row.aiEvalJson ?? null,
-          createdAt: isoDateTime(row.createdAt),
-        })),
-      });
+      const response = yield* parseOrInternalError(
+        ListSessionActivitiesResponse,
+        {
+          data: rows.map((row) => ({
+            id: row.id,
+            kind: row.kind,
+            prompt: row.prompt,
+            userAnswer: row.userAnswer ?? null,
+            aiEvalJson: row.aiEvalJson ?? null,
+            createdAt: isoDateTime(row.createdAt),
+          })),
+        },
+        "ListSessionActivitiesResponse",
+      );
+
+      return ok(response);
     });
   };
 }

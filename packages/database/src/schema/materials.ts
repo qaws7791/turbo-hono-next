@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -17,7 +18,6 @@ import {
   materialJobStatusEnum,
   materialJobTypeEnum,
   materialProcessingStatusEnum,
-  materialSourceTypeEnum,
   materialUploadStatusEnum,
   outlineNodeTypeEnum,
   storageProviderEnum,
@@ -36,7 +36,7 @@ export const materials = pgTable(
     userId: uuid("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    sourceType: materialSourceTypeEnum("source_type").notNull(),
+
     title: text("title").notNull(),
     originalFilename: text("original_filename"),
     sourceUrl: text("source_url"),
@@ -207,5 +207,11 @@ export const outlineNodes = pgTable(
   (table) => [
     index("outline_nodes_material_id_idx").on(table.materialId),
     index("outline_nodes_parent_id_idx").on(table.parentId),
+    foreignKey({
+      columns: [table.parentId],
+      foreignColumns: [table.id],
+    })
+      .onDelete("cascade")
+      .onUpdate("no action"),
   ],
 );

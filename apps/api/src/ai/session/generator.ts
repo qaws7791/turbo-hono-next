@@ -1,10 +1,14 @@
+import { Result } from "neverthrow";
 import z from "zod";
 
-import { getAiModels } from "../../lib/ai";
+import { getAiModelsAsync } from "../../lib/ai";
+import { ApiError } from "../../middleware/error-handler";
 import { SessionBlueprint } from "../../modules/session";
 
 import { AiSessionBlueprintSpecSchema } from "./schema";
 
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 import type {
   SessionBlueprint as SessionBlueprintType,
   SessionStep,
@@ -16,7 +20,7 @@ export interface GenerateSessionBlueprintParams {
   readonly planTitle: string;
   readonly moduleTitle: string;
   readonly sessionTitle: string;
-  readonly objective: string | null;
+  readonly objective: string;
   readonly estimatedMinutes: number;
   readonly createdAt: Date;
   readonly chunkContents: ReadonlyArray<string>;
@@ -26,9 +30,9 @@ export class SessionBlueprintGenerator {
   /**
    * AI를 사용하여 세션 블루프린트 생성
    */
-  async generate(
+  generate(
     input: GenerateSessionBlueprintParams,
-  ): Promise<SessionBlueprintType> {
+  ): ResultAsync<SessionBlueprintType, AppError> {
     const systemPrompt = this.buildSystemPrompt();
     const userPrompt = this.buildUserPrompt({
       sessionType: input.sessionType,
@@ -40,27 +44,51 @@ export class SessionBlueprintGenerator {
       chunkContents: input.chunkContents,
     });
 
-    const json = await getAiModels().chat.generateJson({
-      config: {
-        systemInstruction: systemPrompt,
-      },
-      contents: [userPrompt],
-    });
-
-    const spec = AiSessionBlueprintSpecSchema.parse(json);
-
-    if (!spec) {
-      throw new Error("Failed to parse AI session blueprint spec");
-    }
-
-    return this.buildBlueprintFromSpec({
-      spec,
-      planTitle: input.planTitle,
-      moduleTitle: input.moduleTitle,
-      sessionTitle: input.sessionTitle,
-      estimatedMinutes: input.estimatedMinutes,
-      createdAt: input.createdAt,
-    });
+    return getAiModelsAsync()
+      .andThen((models) =>
+        models.chat.generateJson({
+          config: {
+            systemInstruction: systemPrompt,
+          },
+          contents: [userPrompt],
+        }),
+      )
+      .andThen((json) =>
+        Result.fromThrowable(
+          () => AiSessionBlueprintSpecSchema.parse(json),
+          (error) =>
+            new ApiError(
+              500,
+              "AI_GENERATION_FAILED",
+              "세션 구성을 생성하는 데 실패했습니다. (스키마 불일치)",
+              {
+                error: error instanceof Error ? error.message : String(error),
+              },
+            ),
+        )(),
+      )
+      .andThen((spec) =>
+        Result.fromThrowable(
+          () =>
+            this.buildBlueprintFromSpec({
+              spec,
+              planTitle: input.planTitle,
+              moduleTitle: input.moduleTitle,
+              sessionTitle: input.sessionTitle,
+              estimatedMinutes: input.estimatedMinutes,
+              createdAt: input.createdAt,
+            }),
+          (error) =>
+            new ApiError(
+              500,
+              "AI_GENERATION_FAILED",
+              "세션 구성을 생성하는 중 오류가 발생했습니다.",
+              {
+                error: error instanceof Error ? error.message : String(error),
+              },
+            ),
+        )(),
+      );
   }
 
   private buildBlueprintFromSpec(input: {
@@ -522,7 +550,7 @@ ${JSON.stringify(z.toJSONSchema(AiSessionBlueprintSpecSchema), null, 2)}
     readonly planTitle: string;
     readonly moduleTitle: string;
     readonly sessionTitle: string;
-    readonly objective: string | null;
+    readonly objective: string;
     readonly estimatedMinutes: number;
     readonly chunkContents: ReadonlyArray<string>;
   }): string {

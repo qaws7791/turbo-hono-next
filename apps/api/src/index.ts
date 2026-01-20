@@ -17,9 +17,9 @@ import {
 } from "./modules/session";
 import { documentParser } from "./ai/ingestion/parse";
 import { materialAnalyzer } from "./ai/material";
+import { createLearningPlanGenerator } from "./ai/plan";
 import { ragIngestor, ragRetriever, ragVectorStoreManager } from "./ai/rag";
 import { sessionBlueprintGenerator } from "./ai/session";
-import { learningPlanGenerator } from "./ai/plan/generator";
 import {
   copyObject,
   createPresignedPutUrl,
@@ -54,11 +54,18 @@ const materialService = createMaterialService({
     deleteObject,
   },
 });
+
+const learningPlanGenerator = createLearningPlanGenerator({
+  logger,
+  materialRepository,
+  ragRetriever,
+});
+
 const planService = createPlanService({
   planRepository,
   materialRepository,
   planGeneration: {
-    generatePlan: async (input) => learningPlanGenerator.generate(input),
+    generatePlan: (input) => learningPlanGenerator.generate(input),
   },
 });
 const sessionService = createSessionService({

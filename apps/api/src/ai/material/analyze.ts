@@ -1,6 +1,9 @@
 import { z } from "zod";
 
-import { getAiModels } from "../../lib/ai";
+import { getAiModelsAsync } from "../../lib/ai";
+
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 
 export type MaterialOutlineNode = {
   readonly nodeType: "SECTION" | "TOPIC";
@@ -94,33 +97,32 @@ const AnalyzeMaterialResponseSchema = z.object({
 });
 
 export class MaterialAnalyzer {
-  async analyze(params: AnalyzeMaterialParams): Promise<AnalyzeMaterialResult> {
+  analyze(
+    params: AnalyzeMaterialParams,
+  ): ResultAsync<AnalyzeMaterialResult, AppError> {
     const systemPrompt = this.buildSystemPrompt();
     const userPrompt = this.buildUserPrompt({
       content: params.fullText,
       mimeType: params.mimeType,
     });
 
-    try {
-      const parsed = await getAiModels().chat.generateStructuredOutput(
-        {
-          config: {
-            systemInstruction: systemPrompt,
+    return getAiModelsAsync()
+      .andThen((models) =>
+        models.chat.generateStructuredOutput(
+          {
+            config: {
+              systemInstruction: systemPrompt,
+            },
+            contents: [userPrompt],
           },
-          contents: [userPrompt],
-        },
-        AnalyzeMaterialResponseSchema,
-      );
-
-      return {
+          AnalyzeMaterialResponseSchema,
+        ),
+      )
+      .map((parsed) => ({
         title: parsed.materialTitle.trim(),
         summary: parsed.materialSummary.trim(),
         outline: parsed.outline.map((node) => this.normalizeOutlineNode(node)),
-      };
-    } catch (error) {
-      console.error("Error analyzing material:", error);
-      throw error;
-    }
+      }));
   }
 
   private buildSystemPrompt(): string {

@@ -1,6 +1,8 @@
+import { ok, safeTry } from "neverthrow";
+
 import { createPaginationMeta } from "../../../lib/pagination";
-import { tryPromise, unwrap } from "../../../lib/result";
 import { isoDateRequired } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { ListMaterialsResponse } from "../material.dto";
 
 import type { ResultAsync } from "neverthrow";
@@ -18,38 +20,40 @@ export function listMaterials(deps: {
     userId: string,
     input: ListMaterialsInputType,
   ): ResultAsync<ListMaterialsResponseType, AppError> {
-    return tryPromise(async () => {
-      const total = await unwrap(
-        deps.materialRepository.countByUserId(userId, {
-          status: input.status,
-          search: input.search,
-        }),
-      );
-
-      const rows = await unwrap(
-        deps.materialRepository.listByUserId(userId, {
-          page: input.page,
-          limit: input.limit,
-          status: input.status,
-          search: input.search,
-          sort: input.sort,
-        }),
-      );
-
-      return ListMaterialsResponse.parse({
-        data: rows.map((row) => ({
-          id: row.id,
-          title: row.title,
-          sourceType: row.sourceType,
-          mimeType: row.mimeType ?? null,
-          fileSize: row.fileSize ?? null,
-          processingStatus: row.processingStatus,
-          summary: row.summary ?? null,
-          createdAt: isoDateRequired(row.createdAt),
-          updatedAt: isoDateRequired(row.updatedAt),
-        })),
-        meta: createPaginationMeta(total, input.page, input.limit),
+    return safeTry(async function* () {
+      const total = yield* deps.materialRepository.countByUserId(userId, {
+        status: input.status,
+        search: input.search,
       });
+
+      const rows = yield* deps.materialRepository.listByUserId(userId, {
+        page: input.page,
+        limit: input.limit,
+        status: input.status,
+        search: input.search,
+        sort: input.sort,
+      });
+
+      const response = yield* parseOrInternalError(
+        ListMaterialsResponse,
+        {
+          data: rows.map((row) => ({
+            id: row.id,
+            title: row.title,
+
+            mimeType: row.mimeType ?? null,
+            fileSize: row.fileSize ?? null,
+            processingStatus: row.processingStatus,
+            summary: row.summary ?? null,
+            createdAt: isoDateRequired(row.createdAt),
+            updatedAt: isoDateRequired(row.updatedAt),
+          })),
+          meta: createPaginationMeta(total, input.page, input.limit),
+        },
+        "ListMaterialsResponse",
+      );
+
+      return ok(response);
     });
   };
 }

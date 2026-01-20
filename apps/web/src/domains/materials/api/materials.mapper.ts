@@ -10,22 +10,36 @@ function mapProcessingStatus(
   return "pending";
 }
 
+function isTextMimeType(mimeType: string | null | undefined): boolean {
+  if (!mimeType) return false;
+  // Simple heuristic: text/* or contains 'markdown', 'json', 'xml'
+  // But strict to backend logic if possible.
+  // Backend previously used TEXT for markdown/text.
+  return (
+    mimeType.startsWith("text/") ||
+    mimeType.includes("markdown") ||
+    mimeType.includes("json") ||
+    mimeType.includes("xml")
+  );
+}
+
 export function toMaterialFromApi(item: ApiMaterialListItem): Material {
+  const isText = isTextMimeType(item.mimeType);
+
   return {
     id: item.id,
     title: item.title,
-    kind: item.sourceType === "TEXT" ? "text" : "file",
+    kind: isText ? "text" : "file",
     status: mapProcessingStatus(item.processingStatus),
     summary: item.summary ?? undefined,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
-    source:
-      item.sourceType === "FILE"
-        ? {
-            type: "file",
-            fileName: item.title,
-            fileSizeBytes: item.fileSize ?? undefined,
-          }
-        : undefined,
+    source: !isText
+      ? {
+          type: "file",
+          fileName: item.title,
+          fileSizeBytes: item.fileSize ?? undefined,
+        }
+      : undefined,
   };
 }

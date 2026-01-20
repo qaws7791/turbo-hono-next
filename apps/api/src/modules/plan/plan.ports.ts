@@ -1,4 +1,5 @@
-// No imports needed from plan.dto for these types
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "../../lib/result";
 
 export type PlanGenerationRequest = {
   readonly userId: string;
@@ -35,5 +36,7 @@ export type PlanGenerationResult = {
 };
 
 export type PlanGenerationPort = {
-  generatePlan: (input: PlanGenerationRequest) => Promise<PlanGenerationResult>;
+  generatePlan: (
+    input: PlanGenerationRequest,
+  ) => ResultAsync<PlanGenerationResult, AppError>;
 };

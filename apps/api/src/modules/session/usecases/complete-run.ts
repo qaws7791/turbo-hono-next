@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { CompleteSessionRunResponse } from "../session.dto";
 
@@ -14,37 +16,31 @@ export function completeRun(deps: {
     userId: string,
     runId: string,
   ): ResultAsync<CompleteSessionRunResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      const run = await unwrap(
-        deps.sessionRepository.findRunForCompletion(userId, runId),
+      const run = yield* deps.sessionRepository.findRunForCompletion(
+        userId,
+        runId,
       );
-
       if (!run) {
-        throw new ApiError(
-          404,
-          "SESSION_NOT_FOUND",
-          "세션을 찾을 수 없습니다.",
-          {
+        return err(
+          new ApiError(404, "SESSION_NOT_FOUND", "세션을 찾을 수 없습니다.", {
             runId,
-          },
+          }),
         );
       }
 
       if (run.status !== "RUNNING") {
-        throw new ApiError(
-          400,
-          "INVALID_REQUEST",
-          "진행 중인 세션이 아닙니다.",
-          {
+        return err(
+          new ApiError(400, "INVALID_REQUEST", "진행 중인 세션이 아닙니다.", {
             status: run.status,
-          },
+          }),
         );
       }
 
-      const { summaryId } = await unwrap(
-        deps.sessionRepository.completeRunTransaction({
+      const { summaryId } =
+        yield* deps.sessionRepository.completeRunTransaction({
           run: {
             id: run.id,
             publicId: run.publicId,
@@ -54,24 +50,29 @@ export function completeRun(deps: {
           },
           userId,
           now,
-        }),
-      );
+        });
 
-      const remaining = await unwrap(
-        deps.sessionRepository.countRemainingSessions(run.planId),
+      const remaining = yield* deps.sessionRepository.countRemainingSessions(
+        run.planId,
       );
 
       if (remaining === 0) {
-        await unwrap(deps.sessionRepository.markPlanCompleted(run.planId, now));
+        yield* deps.sessionRepository.markPlanCompleted(run.planId, now);
       }
 
-      return CompleteSessionRunResponse.parse({
-        data: {
-          runId: run.publicId,
-          status: "COMPLETED",
-          summary: { id: summaryId },
+      const response = yield* parseOrInternalError(
+        CompleteSessionRunResponse,
+        {
+          data: {
+            runId: run.publicId,
+            status: "COMPLETED",
+            summary: { id: summaryId },
+          },
         },
-      });
+        "CompleteSessionRunResponse",
+      );
+
+      return ok(response);
     });
   };
 }

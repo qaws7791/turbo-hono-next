@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { InitiateMaterialUploadResponse } from "../material.dto";
 import { MAX_FILE_BYTES } from "../material.utils";
@@ -42,18 +44,20 @@ export function initiateMaterialUpload(deps: {
     userId: string,
     input: InitiateMaterialUploadInputType,
   ): ResultAsync<InitiateMaterialUploadResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const originalFilename = input.originalFilename.trim();
       const mimeType = input.mimeType.trim();
 
       if (input.fileSize > MAX_FILE_BYTES) {
-        throw new ApiError(
-          400,
-          "MATERIAL_FILE_TOO_LARGE",
-          "파일 크기가 너무 큽니다.",
-          {
-            maxBytes: MAX_FILE_BYTES,
-          },
+        return err(
+          new ApiError(
+            400,
+            "MATERIAL_FILE_TOO_LARGE",
+            "파일 크기가 너무 큽니다.",
+            {
+              maxBytes: MAX_FILE_BYTES,
+            },
+          ),
         );
       }
 
@@ -63,11 +67,13 @@ export function initiateMaterialUpload(deps: {
           originalFilename,
         })
       ) {
-        throw new ApiError(
-          400,
-          "MATERIAL_UNSUPPORTED_TYPE",
-          "지원하지 않는 파일 형식입니다.",
-          { mimeType, originalFilename },
+        return err(
+          new ApiError(
+            400,
+            "MATERIAL_UNSUPPORTED_TYPE",
+            "지원하지 않는 파일 형식입니다.",
+            { mimeType, originalFilename },
+          ),
         );
       }
 
@@ -82,39 +88,43 @@ export function initiateMaterialUpload(deps: {
         now,
       });
 
-      await unwrap(
-        deps.materialRepository.insertUploadSession({
-          id: uploadId,
-          userId,
-          status: "INITIATED",
-          expiresAt,
-          objectKey,
-          mimeType,
-          fileSize: input.fileSize,
-          originalFilename,
-          createdAt: now,
-          updatedAt: now,
-        }),
-      );
+      yield* deps.materialRepository.insertUploadSession({
+        id: uploadId,
+        userId,
+        status: "INITIATED",
+        expiresAt,
+        objectKey,
+        mimeType,
+        fileSize: input.fileSize,
+        originalFilename,
+        createdAt: now,
+        updatedAt: now,
+      });
 
-      const { url } = await deps.r2.createPresignedPutUrl({
+      const { url } = yield* deps.r2.createPresignedPutUrl({
         key: objectKey,
         contentType: mimeType,
         expiresInSeconds,
       });
 
-      return InitiateMaterialUploadResponse.parse({
-        data: {
-          uploadId,
-          objectKey,
-          uploadUrl: url,
-          method: "PUT",
-          headers: {
-            "Content-Type": mimeType,
+      const response = yield* parseOrInternalError(
+        InitiateMaterialUploadResponse,
+        {
+          data: {
+            uploadId,
+            objectKey,
+            uploadUrl: url,
+            method: "PUT",
+            headers: {
+              "Content-Type": mimeType,
+            },
+            expiresAt: expiresAt.toISOString(),
           },
-          expiresAt: expiresAt.toISOString(),
         },
-      });
+        "InitiateMaterialUploadResponse",
+      );
+
+      return ok(response);
     });
   };
 }

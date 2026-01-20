@@ -1,4 +1,5 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
 import { ApiError } from "../../../middleware/error-handler";
 import {
   computeSessionExpiresAt,
@@ -6,12 +7,12 @@ import {
   sha256Hex,
 } from "../auth.utils";
 
-import type { ResultAsync } from "neverthrow";
 import type { Config } from "../../../lib/config";
 import type { AppError } from "../../../lib/result";
 import type { VerifyGoogleOAuthInput as VerifyGoogleOAuthInputType } from "../auth.dto";
 import type { AuthRepository } from "../auth.repository";
 import type { RequestContext } from "../types";
+import type { Result, ResultAsync } from "neverthrow";
 
 // ============================================================================
 // Helper Functions
@@ -33,194 +34,208 @@ function shouldUpdateDisplayName(
   return undefined;
 }
 
+function buildGoogleRedirectUri(baseUrl: string): Result<string, ApiError> {
+  try {
+    return ok(new URL("/api/auth/google/callback", baseUrl).toString());
+  } catch {
+    return err(
+      new ApiError(
+        500,
+        "INVALID_BASE_URL",
+        "BASE_URL 설정이 올바르지 않습니다.",
+        {
+          baseUrl,
+        },
+      ),
+    );
+  }
+}
+
 // ============================================================================
 // Sub-handlers
 // ============================================================================
 
-/**
- * 기존 OAuth 계정이 있을 때 사용자 정보를 업데이트하고 userId를 반환
- */
-async function handleExistingAccount(
-  deps: { readonly authRepository: AuthRepository },
-  existingAccountUserId: string,
-  authAccountId: string,
-  scopes: string | null,
-  googleDisplayName: string | undefined,
-  googleAvatarUrl: string | null,
-  googleLocale: string | undefined,
-  now: Date,
-): Promise<string> {
-  const user = await unwrap(
-    deps.authRepository.findUserById(existingAccountUserId),
-  );
-  if (!user) {
-    throw new ApiError(
-      400,
-      "AUTH_ACCOUNT_USER_NOT_FOUND",
-      "연결된 사용자를 찾을 수 없습니다.",
+function handleExistingAccount(params: {
+  readonly authRepository: AuthRepository;
+  readonly existingAccountUserId: string;
+  readonly authAccountId: string;
+  readonly scopes: string | null;
+  readonly googleDisplayName: string | undefined;
+  readonly googleAvatarUrl: string | null;
+  readonly googleLocale: string | undefined;
+  readonly now: Date;
+}): ResultAsync<string, AppError> {
+  return safeTry(async function* () {
+    const user = yield* params.authRepository.findUserById(
+      params.existingAccountUserId,
     );
-  }
+    if (!user) {
+      return err(
+        new ApiError(
+          400,
+          "AUTH_ACCOUNT_USER_NOT_FOUND",
+          "연결된 사용자를 찾을 수 없습니다.",
+        ),
+      );
+    }
 
-  const nextDisplayName = shouldUpdateDisplayName(
-    user.displayName,
-    user.email,
-    googleDisplayName,
-  );
-  const nextAvatarUrl =
-    user.avatarUrl == null && googleAvatarUrl != null
-      ? googleAvatarUrl
-      : undefined;
-  const nextLocale =
-    user.locale === "ko-KR" && googleLocale ? googleLocale : undefined;
+    const nextDisplayName = shouldUpdateDisplayName(
+      user.displayName,
+      user.email,
+      params.googleDisplayName,
+    );
+    const nextAvatarUrl =
+      user.avatarUrl == null && params.googleAvatarUrl != null
+        ? params.googleAvatarUrl
+        : undefined;
+    const nextLocale =
+      user.locale === "ko-KR" && params.googleLocale
+        ? params.googleLocale
+        : undefined;
 
-  await unwrap(
-    deps.authRepository.updateAuthAccountScopes({ authAccountId, scopes }),
-  );
+    yield* params.authRepository.updateAuthAccountScopes({
+      authAccountId: params.authAccountId,
+      scopes: params.scopes,
+    });
 
-  await unwrap(deps.authRepository.updateUserLastLogin(user.id, now));
+    yield* params.authRepository.updateUserLastLogin(user.id, params.now);
 
-  if (nextDisplayName || nextAvatarUrl || nextLocale) {
-    await unwrap(
-      deps.authRepository.updateUserProfile({
+    if (nextDisplayName || nextAvatarUrl || nextLocale) {
+      yield* params.authRepository.updateUserProfile({
         userId: user.id,
         displayName: nextDisplayName,
         avatarUrl: nextAvatarUrl,
         locale: nextLocale,
-        now,
-      }),
-    );
-  }
+        now: params.now,
+      });
+    }
 
-  return user.id;
+    return ok(user.id);
+  });
 }
 
-/**
- * 이메일로 기존 사용자를 찾아 Google 계정을 연결하거나, 새 사용자를 생성
- */
-async function handleNewAccountLink(
-  deps: { readonly authRepository: AuthRepository },
-  email: string,
-  providerAccountId: string,
-  scopes: string | null,
-  googleDisplayName: string | undefined,
-  googleAvatarUrl: string | null,
-  googleLocale: string | undefined,
-  now: Date,
-): Promise<string> {
-  const existingUser = await unwrap(deps.authRepository.findUserByEmail(email));
-
-  if (existingUser) {
-    // 기존 사용자에 Google 계정 연결
-    const nextDisplayName = shouldUpdateDisplayName(
-      existingUser.displayName,
-      existingUser.email,
-      googleDisplayName,
+function handleNewAccountLink(params: {
+  readonly authRepository: AuthRepository;
+  readonly email: string;
+  readonly providerAccountId: string;
+  readonly scopes: string | null;
+  readonly googleDisplayName: string | undefined;
+  readonly googleAvatarUrl: string | null;
+  readonly googleLocale: string | undefined;
+  readonly now: Date;
+}): ResultAsync<string, AppError> {
+  return safeTry(async function* () {
+    const existingUser = yield* params.authRepository.findUserByEmail(
+      params.email,
     );
-    const nextAvatarUrl =
-      existingUser.avatarUrl == null && googleAvatarUrl != null
-        ? googleAvatarUrl
-        : undefined;
-    const nextLocale =
-      existingUser.locale === "ko-KR" && googleLocale
-        ? googleLocale
-        : undefined;
 
-    await unwrap(deps.authRepository.updateUserLastLogin(existingUser.id, now));
+    if (existingUser) {
+      const nextDisplayName = shouldUpdateDisplayName(
+        existingUser.displayName,
+        existingUser.email,
+        params.googleDisplayName,
+      );
+      const nextAvatarUrl =
+        existingUser.avatarUrl == null && params.googleAvatarUrl != null
+          ? params.googleAvatarUrl
+          : undefined;
+      const nextLocale =
+        existingUser.locale === "ko-KR" && params.googleLocale
+          ? params.googleLocale
+          : undefined;
 
-    if (nextDisplayName || nextAvatarUrl || nextLocale) {
-      await unwrap(
-        deps.authRepository.updateUserProfile({
+      yield* params.authRepository.updateUserLastLogin(
+        existingUser.id,
+        params.now,
+      );
+
+      if (nextDisplayName || nextAvatarUrl || nextLocale) {
+        yield* params.authRepository.updateUserProfile({
           userId: existingUser.id,
           displayName: nextDisplayName,
           avatarUrl: nextAvatarUrl,
           locale: nextLocale,
-          now,
-        }),
-      );
-    }
+          now: params.now,
+        });
+      }
 
-    await unwrap(
-      deps.authRepository.insertAuthAccount({
+      yield* params.authRepository.insertAuthAccount({
         userId: existingUser.id,
         provider: "GOOGLE",
-        providerAccountId,
-        scopes,
-        createdAt: now,
-      }),
-    );
+        providerAccountId: params.providerAccountId,
+        scopes: params.scopes,
+        createdAt: params.now,
+      });
 
-    return existingUser.id;
-  }
+      return ok(existingUser.id);
+    }
 
-  // 새 사용자 생성
-  const displayName = googleDisplayName ?? computeDefaultDisplayName(email);
+    const displayName =
+      params.googleDisplayName ?? computeDefaultDisplayName(params.email);
 
-  const created = await unwrap(
-    deps.authRepository.createUser({
-      email,
+    const created = yield* params.authRepository.createUser({
+      email: params.email,
       displayName,
-      avatarUrl: googleAvatarUrl,
-      locale: googleLocale,
-      now,
-    }),
-  );
+      avatarUrl: params.googleAvatarUrl,
+      locale: params.googleLocale,
+      now: params.now,
+    });
 
-  await unwrap(
-    deps.authRepository.insertAuthAccount({
+    yield* params.authRepository.insertAuthAccount({
       userId: created.id,
       provider: "GOOGLE",
-      providerAccountId,
-      scopes,
-      createdAt: now,
-    }),
-  );
+      providerAccountId: params.providerAccountId,
+      scopes: params.scopes,
+      createdAt: params.now,
+    });
 
-  return created.id;
+    return ok(created.id);
+  });
 }
 
-/**
- * 사용자 ID 결정 (기존 OAuth 계정 / 이메일로 기존 사용자 연결 / 신규 생성)
- */
-async function resolveUserId(
-  deps: { readonly authRepository: AuthRepository },
-  providerAccountId: string,
-  email: string,
-  scopes: string | null,
-  googleDisplayName: string | undefined,
-  googleAvatarUrl: string | null,
-  googleLocale: string | undefined,
-  now: Date,
-): Promise<string> {
-  const existingAccount = await unwrap(
-    deps.authRepository.findAuthAccountByProviderAccountId({
-      provider: "GOOGLE",
-      providerAccountId,
-    }),
-  );
+function resolveUserId(params: {
+  readonly authRepository: AuthRepository;
+  readonly providerAccountId: string;
+  readonly email: string;
+  readonly scopes: string | null;
+  readonly googleDisplayName: string | undefined;
+  readonly googleAvatarUrl: string | null;
+  readonly googleLocale: string | undefined;
+  readonly now: Date;
+}): ResultAsync<string, AppError> {
+  return safeTry(async function* () {
+    const existingAccount =
+      yield* params.authRepository.findAuthAccountByProviderAccountId({
+        provider: "GOOGLE",
+        providerAccountId: params.providerAccountId,
+      });
 
-  if (existingAccount) {
-    return await handleExistingAccount(
-      deps,
-      existingAccount.userId,
-      existingAccount.id,
-      scopes,
-      googleDisplayName,
-      googleAvatarUrl,
-      googleLocale,
-      now,
-    );
-  }
+    if (existingAccount) {
+      const userId = yield* handleExistingAccount({
+        authRepository: params.authRepository,
+        existingAccountUserId: existingAccount.userId,
+        authAccountId: existingAccount.id,
+        scopes: params.scopes,
+        googleDisplayName: params.googleDisplayName,
+        googleAvatarUrl: params.googleAvatarUrl,
+        googleLocale: params.googleLocale,
+        now: params.now,
+      });
+      return ok(userId);
+    }
 
-  return await handleNewAccountLink(
-    deps,
-    email,
-    providerAccountId,
-    scopes,
-    googleDisplayName,
-    googleAvatarUrl,
-    googleLocale,
-    now,
-  );
+    const userId = yield* handleNewAccountLink({
+      authRepository: params.authRepository,
+      email: params.email,
+      providerAccountId: params.providerAccountId,
+      scopes: params.scopes,
+      googleDisplayName: params.googleDisplayName,
+      googleAvatarUrl: params.googleAvatarUrl,
+      googleLocale: params.googleLocale,
+      now: params.now,
+    });
+    return ok(userId);
+  });
 }
 
 // ============================================================================
@@ -235,57 +250,52 @@ export function verifyGoogleOAuth(deps: {
     input: VerifyGoogleOAuthInputType,
     ctx: RequestContext,
   ): ResultAsync<{ sessionToken: string; sessionId: string }, AppError> {
-    return tryPromise(async () => {
-      // 1. Google OAuth 설정 확인
+    return safeTry(async function* () {
       const clientId = deps.config.GOOGLE_CLIENT_ID;
       const clientSecret = deps.config.GOOGLE_CLIENT_SECRET;
       if (!clientId || !clientSecret) {
-        throw new ApiError(
-          500,
-          "GOOGLE_OAUTH_NOT_CONFIGURED",
-          "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET가 필요합니다.",
+        return err(
+          new ApiError(
+            500,
+            "GOOGLE_OAUTH_NOT_CONFIGURED",
+            "GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET가 필요합니다.",
+          ),
         );
       }
 
       const now = new Date();
-      const redirectUri = new URL(
-        "/api/auth/google/callback",
-        deps.config.BASE_URL,
-      ).toString();
+      const redirectUri = yield* buildGoogleRedirectUri(deps.config.BASE_URL);
 
-      // 2. Google OAuth 코드 교환 (PKCE)
-      const token = await unwrap(
-        deps.authRepository.exchangeGoogleOAuthCode({
-          code: input.code,
-          codeVerifier: input.codeVerifier,
-          clientId,
-          clientSecret,
-          redirectUri,
-        }),
-      );
+      const token = yield* deps.authRepository.exchangeGoogleOAuthCode({
+        code: input.code,
+        codeVerifier: input.codeVerifier,
+        clientId,
+        clientSecret,
+        redirectUri,
+      });
 
-      // 3. ID 토큰 검증 (필수)
       if (!token.id_token) {
-        throw new ApiError(
-          502,
-          "GOOGLE_ID_TOKEN_MISSING",
-          "ID 토큰이 응답에 포함되지 않았습니다.",
+        return err(
+          new ApiError(
+            502,
+            "GOOGLE_ID_TOKEN_MISSING",
+            "ID 토큰이 응답에 포함되지 않았습니다.",
+          ),
         );
       }
 
-      const userInfo = await unwrap(
-        deps.authRepository.verifyGoogleIdToken({
-          idToken: token.id_token,
-          clientId,
-        }),
-      );
+      const userInfo = yield* deps.authRepository.verifyGoogleIdToken({
+        idToken: token.id_token,
+        clientId,
+      });
 
-      // 4. 이메일 인증 확인
       if (userInfo.email_verified === false) {
-        throw new ApiError(
-          400,
-          "GOOGLE_EMAIL_NOT_VERIFIED",
-          "이메일 인증이 완료되지 않은 계정입니다.",
+        return err(
+          new ApiError(
+            400,
+            "GOOGLE_EMAIL_NOT_VERIFIED",
+            "이메일 인증이 완료되지 않은 계정입니다.",
+          ),
         );
       }
 
@@ -296,9 +306,8 @@ export function verifyGoogleOAuth(deps: {
       const googleLocale = userInfo.locale;
       const scopes = token.scope ?? null;
 
-      // 5. 사용자 ID 결정
-      const userId = await resolveUserId(
-        deps,
+      const userId = yield* resolveUserId({
+        authRepository: deps.authRepository,
         providerAccountId,
         email,
         scopes,
@@ -306,9 +315,8 @@ export function verifyGoogleOAuth(deps: {
         googleAvatarUrl,
         googleLocale,
         now,
-      );
+      });
 
-      // 6. 세션 생성
       const sessionToken = generateToken();
       const sessionTokenHash = sha256Hex(sessionToken);
       const expiresAt = computeSessionExpiresAt(
@@ -316,18 +324,16 @@ export function verifyGoogleOAuth(deps: {
         deps.config.SESSION_DURATION_DAYS,
       );
 
-      const session = await unwrap(
-        deps.authRepository.insertAuthSession({
-          userId,
-          sessionTokenHash,
-          expiresAt,
-          createdIp: ctx.ipAddress,
-          userAgent: ctx.userAgent,
-          createdAt: now,
-        }),
-      );
+      const session = yield* deps.authRepository.insertAuthSession({
+        userId,
+        sessionTokenHash,
+        expiresAt,
+        createdIp: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+        createdAt: now,
+      });
 
-      return { sessionToken, sessionId: session.id };
+      return ok({ sessionToken, sessionId: session.id });
     });
   };
 }

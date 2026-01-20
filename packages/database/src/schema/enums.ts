@@ -7,10 +7,6 @@ export const subscriptionPlanEnum = pgEnum("subscription_plan", [
 ]);
 export const authProviderEnum = pgEnum("auth_provider", ["GOOGLE"]);
 
-export const materialSourceTypeEnum = pgEnum("material_source_type", [
-  "FILE",
-  "TEXT",
-]);
 export const storageProviderEnum = pgEnum("storage_provider", ["R2"]);
 export const materialProcessingStatusEnum = pgEnum(
   "material_processing_status",
@@ -84,11 +80,4 @@ export const sessionActivityKindEnum = pgEnum("session_activity_kind", [
   "MCQ",
   "FREEFORM",
   "CODE",
-]);
-
-export const chatScopeTypeEnum = pgEnum("chat_scope_type", ["PLAN", "SESSION"]);
-export const chatMessageRoleEnum = pgEnum("chat_message_role", [
-  "USER",
-  "ASSISTANT",
-  "SYSTEM",
 ]);

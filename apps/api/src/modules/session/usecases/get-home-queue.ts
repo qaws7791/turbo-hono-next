@@ -1,5 +1,7 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { ok, safeTry } from "neverthrow";
+
 import { parseDateOnly } from "../../../lib/utils/date";
+import { parseOrInternalError } from "../../../lib/zod";
 import { HomeQueueResponse } from "../session.dto";
 import { computeStreakDays, generateCoachingMessage } from "../session.utils";
 
@@ -14,76 +16,66 @@ export function getHomeQueue(deps: {
   return function getHomeQueue(
     userId: string,
   ): ResultAsync<HomeQueueResponseType, AppError> {
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const today = parseDateOnly(new Date().toISOString().slice(0, 10));
 
-      const rows = await unwrap(
-        deps.sessionRepository.getHomeQueueRows(userId, today),
+      const rows = yield* deps.sessionRepository.getHomeQueueRows(
+        userId,
+        today,
       );
-
-      const studyDates = await unwrap(
-        deps.sessionRepository.listDistinctStudyDates(userId, 365),
+      const studyDates = yield* deps.sessionRepository.listDistinctStudyDates(
+        userId,
+        365,
       );
 
       const total = rows.length;
-      const completed = rows.filter(
-        (row) =>
-          row.status === "COMPLETED" ||
-          row.status === "SKIPPED" ||
-          row.status === "CANCELED",
-      ).length;
+      const isDone = (status: string) =>
+        status === "COMPLETED" || status === "SKIPPED" || status === "CANCELED";
+
+      const completed = rows.filter((row) => isDone(row.status)).length;
 
       const remainingCount = Math.max(0, total - completed);
 
-      let estimatedMinutes = 0;
-      for (const row of rows) {
-        if (
-          row.status !== "COMPLETED" &&
-          row.status !== "SKIPPED" &&
-          row.status !== "CANCELED"
-        ) {
-          estimatedMinutes += row.estimatedMinutes;
-        }
-      }
+      const remainingRows = rows.filter((row) => !isDone(row.status));
+      const estimatedMinutes = remainingRows.reduce(
+        (sum, row) => sum + row.estimatedMinutes,
+        0,
+      );
 
       const streakDays = computeStreakDays(studyDates, today);
       const coachingMessage = generateCoachingMessage(remainingCount);
 
-      const data: Array<HomeQueueResponseType["data"][number]> = [];
-
-      for (const row of rows) {
-        if (
-          row.status === "COMPLETED" ||
-          row.status === "SKIPPED" ||
-          row.status === "CANCELED"
-        ) {
-          continue;
-        }
-        data.push({
+      const data: Array<HomeQueueResponseType["data"][number]> =
+        remainingRows.map((row) => ({
           kind: "SESSION",
           sessionId: row.sessionId,
           planId: row.planId,
           planTitle: row.planTitle,
-          planIcon: row.planIcon ?? "book",
-          planColor: row.planColor ?? "blue",
-          moduleTitle: row.moduleTitle ?? "Module",
+          planIcon: row.planIcon,
+          planColor: row.planColor,
+          moduleTitle: row.moduleTitle,
           sessionTitle: row.sessionTitle,
           sessionType: row.sessionType,
           estimatedMinutes: row.estimatedMinutes,
           status: row.status,
-        });
-      }
+        }));
 
-      return HomeQueueResponse.parse({
-        data,
-        summary: {
-          total,
-          completed,
-          estimatedMinutes,
-          coachingMessage,
-          streakDays,
+      const response = yield* parseOrInternalError(
+        HomeQueueResponse,
+        {
+          data,
+          summary: {
+            total,
+            completed,
+            estimatedMinutes,
+            coachingMessage,
+            streakDays,
+          },
         },
-      });
+        "HomeQueueResponse",
+      );
+
+      return ok(response);
     });
   };
 }

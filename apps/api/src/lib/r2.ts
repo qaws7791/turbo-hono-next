@@ -11,6 +11,10 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ApiError } from "../middleware/error-handler";
 
 import { CONFIG } from "./config";
+import { tryPromise } from "./result";
+
+import type { ResultAsync } from "neverthrow";
+import type { AppError } from "./result";
 
 export type R2Context = {
   readonly client: S3Client;
@@ -91,91 +95,106 @@ async function readBodyToBytes(body: unknown): Promise<Uint8Array> {
   throw new Error("Unsupported body type");
 }
 
-export async function createPresignedPutUrl(params: {
+export function createPresignedPutUrl(params: {
   readonly key: string;
   readonly contentType: string;
   readonly expiresInSeconds: number;
-}): Promise<{ url: string }> {
-  const { client, bucket } = requireR2();
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: params.key,
-    ContentType: params.contentType,
+}): ResultAsync<{ url: string }, AppError> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: params.key,
+      ContentType: params.contentType,
+    });
+    const url = await getSignedUrl(client, command, {
+      expiresIn: params.expiresInSeconds,
+    });
+    return { url };
   });
-  const url = await getSignedUrl(client, command, {
-    expiresIn: params.expiresInSeconds,
-  });
-  return { url };
 }
 
-export async function createPresignedGetUrl(params: {
+export function createPresignedGetUrl(params: {
   readonly key: string;
   readonly expiresInSeconds: number;
-}): Promise<{ url: string }> {
-  const { client, bucket } = requireR2();
-  const command = new GetObjectCommand({
-    Bucket: bucket,
-    Key: params.key,
+}): ResultAsync<{ url: string }, AppError> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: params.key,
+    });
+    const url = await getSignedUrl(client, command, {
+      expiresIn: params.expiresInSeconds,
+    });
+    return { url };
   });
-  const url = await getSignedUrl(client, command, {
-    expiresIn: params.expiresInSeconds,
-  });
-  return { url };
 }
 
-export async function headObject(params: { readonly key: string }): Promise<{
-  size: number | null;
-  contentType: string | null;
-  etag: string | null;
-}> {
-  const { client, bucket } = requireR2();
-  const res = await client.send(
-    new HeadObjectCommand({ Bucket: bucket, Key: params.key }),
-  );
-  return {
-    size: typeof res.ContentLength === "number" ? res.ContentLength : null,
-    contentType: res.ContentType ?? null,
-    etag: res.ETag ?? null,
-  };
+export function headObject(params: { readonly key: string }): ResultAsync<
+  {
+    size: number | null;
+    contentType: string | null;
+    etag: string | null;
+  },
+  AppError
+> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
+    const res = await client.send(
+      new HeadObjectCommand({ Bucket: bucket, Key: params.key }),
+    );
+    return {
+      size: typeof res.ContentLength === "number" ? res.ContentLength : null,
+      contentType: res.ContentType ?? null,
+      etag: res.ETag ?? null,
+    };
+  });
 }
 
-export async function getObjectBytes(params: {
+export function getObjectBytes(params: {
   readonly key: string;
-}): Promise<Uint8Array> {
-  const { client, bucket } = requireR2();
-  const res = await client.send(
-    new GetObjectCommand({ Bucket: bucket, Key: params.key }),
-  );
-  return readBodyToBytes(res.Body);
+}): ResultAsync<Uint8Array, AppError> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
+    const res = await client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: params.key }),
+    );
+    return readBodyToBytes(res.Body);
+  });
 }
 
-export async function copyObject(params: {
+export function copyObject(params: {
   readonly sourceKey: string;
   readonly destinationKey: string;
   readonly contentType: string | null;
-}): Promise<void> {
-  const { client, bucket } = requireR2();
+}): ResultAsync<void, AppError> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
 
-  await client.send(
-    new CopyObjectCommand({
-      Bucket: bucket,
-      Key: params.destinationKey,
-      CopySource: encodeCopySource(bucket, params.sourceKey),
-      ...(params.contentType
-        ? {
-            ContentType: params.contentType,
-            MetadataDirective: "REPLACE",
-          }
-        : null),
-    }),
-  );
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: bucket,
+        Key: params.destinationKey,
+        CopySource: encodeCopySource(bucket, params.sourceKey),
+        ...(params.contentType
+          ? {
+              ContentType: params.contentType,
+              MetadataDirective: "REPLACE",
+            }
+          : null),
+      }),
+    );
+  });
 }
 
-export async function deleteObject(params: {
+export function deleteObject(params: {
   readonly key: string;
-}): Promise<void> {
-  const { client, bucket } = requireR2();
-  await client.send(
-    new DeleteObjectCommand({ Bucket: bucket, Key: params.key }),
-  );
+}): ResultAsync<void, AppError> {
+  return tryPromise(async () => {
+    const { client, bucket } = requireR2();
+    await client.send(
+      new DeleteObjectCommand({ Bucket: bucket, Key: params.key }),
+    );
+  });
 }

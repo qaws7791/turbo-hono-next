@@ -96,6 +96,14 @@ export const PlanDetailResponseSchema = z.object({
     updatedAt: z.iso.datetime(),
     progress: PlanProgressSchema,
     sourceMaterialIds: z.array(z.uuid()),
+    materials: z.array(
+      z.object({
+        id: z.uuid(),
+        title: z.string(),
+        summary: z.string().nullable(),
+        mimeType: z.string().nullable(),
+      }),
+    ),
     modules: z.array(PlanModuleItemSchema),
     sessions: z.array(PlanSessionItemSchema),
   }),

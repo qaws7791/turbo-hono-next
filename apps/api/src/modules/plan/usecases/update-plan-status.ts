@@ -1,4 +1,6 @@
-import { tryPromise, unwrap } from "../../../lib/result";
+import { err, ok, safeTry } from "neverthrow";
+
+import { parseOrInternalError } from "../../../lib/zod";
 import { ApiError } from "../../../middleware/error-handler";
 import { UpdatePlanStatusResponse } from "../plan.dto";
 import { validateStatusTransition } from "../plan.utils";
@@ -27,49 +29,55 @@ export function updatePlanStatus(deps: {
       return deps.activatePlan(userId, planId);
     }
 
-    return tryPromise(async () => {
+    return safeTry(async function* () {
       const now = new Date();
 
-      const plan = await unwrap(
-        deps.planRepository.findByPublicId(userId, planId),
-      );
+      const plan = yield* deps.planRepository.findByPublicId(userId, planId);
       if (!plan) {
-        throw new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
-          planId,
-        });
-      }
-
-      if (!validateStatusTransition(plan.status, nextStatus)) {
-        throw new ApiError(
-          400,
-          "INVALID_REQUEST",
-          "허용되지 않는 상태 전이입니다.",
-          {
-            from: plan.status,
-            to: nextStatus,
-          },
+        return err(
+          new ApiError(404, "PLAN_NOT_FOUND", "Plan을 찾을 수 없습니다.", {
+            planId,
+          }),
         );
       }
 
-      const materialIds = await unwrap(
-        deps.planRepository.listSourceMaterialIds(plan.id),
-      );
-
-      await unwrap(
-        deps.planRepository.updatePlanStatusTransaction({
-          planId: plan.id,
-          status: nextStatus,
-          now,
-        }),
-      );
-
-      if (nextStatus === "ARCHIVED") {
-        await unwrap(deps.planRepository.gcZombieMaterials(materialIds));
+      if (!validateStatusTransition(plan.status, nextStatus)) {
+        return err(
+          new ApiError(
+            400,
+            "INVALID_REQUEST",
+            "허용되지 않는 상태 전이입니다.",
+            {
+              from: plan.status,
+              to: nextStatus,
+            },
+          ),
+        );
       }
 
-      return UpdatePlanStatusResponse.parse({
-        data: { id: plan.publicId, status: nextStatus },
+      const materialIds = yield* deps.planRepository.listSourceMaterialIds(
+        plan.id,
+      );
+
+      yield* deps.planRepository.updatePlanStatusTransaction({
+        planId: plan.id,
+        status: nextStatus,
+        now,
       });
+
+      if (nextStatus === "ARCHIVED") {
+        yield* deps.planRepository.gcZombieMaterials(materialIds);
+      }
+
+      const response = yield* parseOrInternalError(
+        UpdatePlanStatusResponse,
+        {
+          data: { id: plan.publicId, status: nextStatus },
+        },
+        "UpdatePlanStatusResponse",
+      );
+
+      return ok(response);
     });
   };
 }

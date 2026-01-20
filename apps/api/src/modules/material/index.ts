@@ -30,6 +30,5 @@ export type {
   MaterialDetail,
   MaterialListItem,
   MaterialProcessingStatus,
-  MaterialSourceType,
   UpdateMaterialTitleResponse,
 } from "./material.dto";

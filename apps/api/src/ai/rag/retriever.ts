@@ -17,105 +17,109 @@ export class RagRetriever {
   /**
    * 유사도 기반 검색
    */
-  public async search(params: {
+  public search(params: {
     readonly userId: string;
     readonly materialIds: ReadonlyArray<string>;
     readonly query: string;
     readonly topK: number;
-  }): Promise<ReadonlyArray<RagSearchResult>> {
-    const store = await ragVectorStoreManager.getStoreForUser({
-      userId: params.userId,
+  }): ResultAsync<ReadonlyArray<RagSearchResult>, AppError> {
+    return tryPromise(async () => {
+      const store = await ragVectorStoreManager.getStoreForUser({
+        userId: params.userId,
+      });
+
+      const filterBase = {
+        userId: params.userId,
+      } as const;
+
+      const filter =
+        params.materialIds.length > 0
+          ? { ...filterBase, materialId: { in: [...params.materialIds] } }
+          : filterBase;
+
+      const results = await store.similaritySearchWithScore(
+        params.query,
+        params.topK,
+        filter,
+      );
+
+      return results
+        .map(([doc, distance]) => {
+          const documentId = doc.id;
+          if (!documentId) {
+            throw new ApiError(
+              500,
+              "RAG_RETRIEVE_FAILED",
+              "검색 결과의 문서 ID가 없습니다.",
+            );
+          }
+          return {
+            documentId,
+            content: doc.pageContent,
+            metadata: this.parseRagMetadata(doc.metadata),
+            distance: this.parseDistance(distance),
+          };
+        })
+        .filter((row) => row.content.trim().length > 0);
     });
-
-    const filterBase = {
-      userId: params.userId,
-    } as const;
-
-    const filter =
-      params.materialIds.length > 0
-        ? { ...filterBase, materialId: { in: [...params.materialIds] } }
-        : filterBase;
-
-    const results = await store.similaritySearchWithScore(
-      params.query,
-      params.topK,
-      filter,
-    );
-
-    return results
-      .map(([doc, distance]) => {
-        const documentId = doc.id;
-        if (!documentId) {
-          throw new ApiError(
-            500,
-            "RAG_RETRIEVE_FAILED",
-            "검색 결과의 문서 ID가 없습니다.",
-          );
-        }
-        return {
-          documentId,
-          content: doc.pageContent,
-          metadata: this.parseRagMetadata(doc.metadata),
-          distance: this.parseDistance(distance),
-        };
-      })
-      .filter((row) => row.content.trim().length > 0);
   }
 
   /**
    * 특정 청크 범위의 내용을 검색 (chunkIndex 기준)
    */
-  public async retrieveRange(params: {
+  public retrieveRange(params: {
     readonly userId: string;
     readonly materialId: string;
     readonly startIndex: number;
     readonly endIndex: number;
-  }): Promise<ReadonlyArray<RagSearchResult>> {
-    const store = await ragVectorStoreManager.getStoreForUser({
-      userId: params.userId,
+  }): ResultAsync<ReadonlyArray<RagSearchResult>, AppError> {
+    return tryPromise(async () => {
+      const store = await ragVectorStoreManager.getStoreForUser({
+        userId: params.userId,
+      });
+      const collectionId = await store.getOrCreateCollection();
+
+      const query = `
+        SELECT 
+          id,
+          content,
+          ${store.metadataColumnName} as metadata
+        FROM ${store.computedTableName}
+        WHERE collection_id = $1
+          AND ${store.metadataColumnName}->>'userId' = $2
+          AND ${store.metadataColumnName}->>'materialId' = $3
+          AND (${store.metadataColumnName}->>'chunkIndex')::int >= $4
+          AND (${store.metadataColumnName}->>'chunkIndex')::int <= $5
+        ORDER BY (${store.metadataColumnName}->>'chunkIndex')::int ASC
+      `;
+
+      const result = await store.pool.query(query, [
+        collectionId,
+        params.userId,
+        params.materialId,
+        params.startIndex,
+        params.endIndex,
+      ]);
+
+      return result.rows
+        .map((row) => {
+          const documentId = row.id;
+          if (!documentId) {
+            throw new ApiError(
+              500,
+              "RAG_RETRIEVE_FAILED",
+              "검색 결과의 문서 ID가 없습니다.",
+            );
+          }
+          return {
+            documentId: String(documentId),
+            content: String(row.content ?? ""),
+            metadata: this.parseRagMetadata(row.metadata),
+            distance: 0,
+          };
+        })
+        .filter((row) => row.content.trim().length > 0);
     });
-    const collectionId = await store.getOrCreateCollection();
-
-    const query = `
-      SELECT 
-        id,
-        content,
-        ${store.metadataColumnName} as metadata
-      FROM ${store.computedTableName}
-      WHERE collection_id = $1
-        AND ${store.metadataColumnName}->>'userId' = $2
-        AND ${store.metadataColumnName}->>'materialId' = $3
-        AND (${store.metadataColumnName}->>'chunkIndex')::int >= $4
-        AND (${store.metadataColumnName}->>'chunkIndex')::int <= $5
-      ORDER BY (${store.metadataColumnName}->>'chunkIndex')::int ASC
-    `;
-
-    const result = await store.pool.query(query, [
-      collectionId,
-      params.userId,
-      params.materialId,
-      params.startIndex,
-      params.endIndex,
-    ]);
-
-    return result.rows
-      .map((row) => {
-        const documentId = row.id;
-        if (!documentId) {
-          throw new ApiError(
-            500,
-            "RAG_RETRIEVE_FAILED",
-            "검색 결과의 문서 ID가 없습니다.",
-          );
-        }
-        return {
-          documentId: String(documentId),
-          content: String(row.content ?? ""),
-          metadata: this.parseRagMetadata(row.metadata),
-          distance: 0,
-        };
-      })
-      .filter((row) => row.content.trim().length > 0);
   }
 
   /**
