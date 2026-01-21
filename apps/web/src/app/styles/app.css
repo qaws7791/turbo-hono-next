@@ -1,0 +1,70 @@
+@import "@repo/ui/styles.css";
+
+@source "../**/*.{ts,tsx}";
+
+.settings-dialog-height {
+  height: 500px;
+}
+
+@media (max-width: 640px) {
+  .settings-dialog-height {
+    height: auto;
+    max-height: 85svh;
+  }
+}
+
+/* 스크롤바 숨기기 */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* 프로그레스 바 shimmer 애니메이션 */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+/* 스크롤 위치에 따른 헤더 보더 애니메이션 */
+@keyframes scroll-border {
+  0% {
+    border-bottom-color: transparent;
+  }
+  100% {
+    border-bottom-color: var(--color-border);
+  }
+}
+
+.scroll-border {
+  border-bottom: 1px solid transparent;
+  animation: scroll-border linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 10px;
+}

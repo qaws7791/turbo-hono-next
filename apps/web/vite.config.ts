@@ -1,22 +1,11 @@
-// `node:path` import should occur before import of `@tailwindcss/vite`
-import { resolve } from "node:path";
-//
+import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
-import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
-
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    tanstackRouter({ target: "react", autoCodeSplitting: true }),
-    viteReact(),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "./src"),
-    },
+  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+  optimizeDeps: {
+    exclude: ["@repo/ui"], // 핫리로딩 시 context 에러 문제로 해결을 위해 적용
   },
 });

@@ -1,0 +1,61 @@
+// 공통 타입 정의
+
+/**
+ * AI 기반 학습 계획 생성에 필요한 입력 정보
+ */
+export type GeneratePlanInput = {
+  readonly userId: string;
+  readonly materialIds: ReadonlyArray<string>;
+  readonly targetDueDate: Date | null;
+  readonly specialRequirements: string | null;
+  readonly requestedSessionCount: number | null; // 사용자 지정 세션 수 (null = 학습량에 맞춤)
+};
+
+/**
+ * 자료에서 검색된 관련 청크 정보
+ */
+export type MaterialContext = {
+  readonly materialId: string;
+  readonly materialTitle: string;
+  readonly content: string;
+  readonly chunkIndex: number;
+};
+
+/**
+ * AI가 생성한 개별 세션 정보
+ */
+export type GeneratedSession = {
+  readonly sessionType: "LEARN";
+  readonly title: string;
+  readonly objective: string;
+  readonly estimatedMinutes: number;
+  readonly dayOffset: number; // 시작일로부터의 일 수
+  readonly moduleIndex: number; // 모듈 인덱스 (0-based)
+  readonly sourceReferences: ReadonlyArray<{
+    readonly materialId: string;
+    readonly chunkRange: {
+      readonly start: number;
+      readonly end: number;
+    };
+  }>;
+};
+
+/**
+ * AI가 생성한 개별 모듈 정보
+ */
+export type GeneratedModule = {
+  readonly title: string;
+  readonly description: string;
+  readonly orderIndex: number;
+  readonly materialId: string;
+};
+
+/**
+ * AI가 생성한 전체 계획 결과
+ */
+export type GeneratePlanResult = {
+  readonly title: string;
+  readonly modules: ReadonlyArray<GeneratedModule>;
+  readonly sessions: ReadonlyArray<GeneratedSession>;
+  readonly summary: string;
+};

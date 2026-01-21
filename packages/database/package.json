@@ -7,7 +7,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts",
+    "./schema": "./src/schema/index.ts",
     "./types": "./src/types.ts",
     "./client": "./src/client.ts"
   },
@@ -20,8 +20,6 @@
     "db:push": "drizzle-kit push",
     "db:pull": "drizzle-kit pull",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "drizzle-kit seed",
-    "db:studio": "drizzle-kit studio",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
@@ -35,6 +33,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "@types/ws": "catalog:",
     "drizzle-kit": "^0.31.4",
     "eslint": "catalog:",
     "prettier": "catalog:",

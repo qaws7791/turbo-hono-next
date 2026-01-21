@@ -1,0 +1,24 @@
+import type { Route } from "./+types/plan-detail";
+
+import { PlanDetailView, plansQueries } from "~/domains/plans";
+import { PublicIdSchema } from "~/foundation/lib";
+import { queryClient } from "~/foundation/query-client";
+
+const PlanIdSchema = PublicIdSchema;
+
+export function meta() {
+  return [{ title: "학습 계획 상세" }];
+}
+
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  const planId = PlanIdSchema.safeParse(params.planId);
+  if (!planId.success) {
+    throw new Response("Not Found", { status: 404 });
+  }
+
+  await queryClient.ensureQueryData(plansQueries.detail(planId.data));
+}
+
+export default function PlanDetailRoute({ params }: Route.ComponentProps) {
+  return <PlanDetailView planId={params.planId} />;
+}

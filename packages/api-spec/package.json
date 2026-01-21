@@ -13,14 +13,6 @@
     "./openapi": {
       "types": "./src/openapi.ts",
       "default": "./src/openapi.ts"
-    },
-    "./modules/*": {
-      "types": "./src/modules/*.ts",
-      "default": "./src/modules/*.ts"
-    },
-    "./common/*": {
-      "types": "./src/common/*.ts",
-      "default": "./src/common/*.ts"
     }
   },
   "files": [
@@ -37,9 +29,6 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@hono/zod-openapi": "^1.1.0",
-    "@repo/ai-types": "workspace:*",
-    "@repo/database": "workspace:*",
-    "drizzle-zod": "^0.8.3",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -48,18 +37,5 @@
     "prettier": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
-  },
-  "typesVersions": {
-    "*": {
-      "openapi": [
-        "src/openapi.ts"
-      ],
-      "modules/*": [
-        "src/modules/*.ts"
-      ],
-      "common/*": [
-        "src/common/*.ts"
-      ]
-    }
   }
 }

@@ -1,17 +1,23 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
+import { requestMagicLink } from "./usecases/request-magic-link";
+import { revokeSession } from "./usecases/revoke-session";
+import { verifyGoogleOAuth } from "./usecases/verify-google-oauth";
+import { verifyMagicLink } from "./usecases/verify-magic-link";
+import { getSessionByToken } from "./usecases/get-session";
 
-import changePassword from "./routes/change-password";
-import loginWithEmail from "./routes/login-with-email";
-import logout from "./routes/logout";
-import me from "./routes/me";
-import signup from "./routes/signup";
+export { createAuthRepository } from "./auth.repository";
+export type { AuthRepository } from "./auth.repository";
 
-const authApp = new OpenAPIHono();
+export { createAuthService } from "./auth.service";
+export type { AuthService } from "./auth.service";
 
-authApp.route("/", changePassword);
-authApp.route("/", loginWithEmail);
-authApp.route("/", logout);
-authApp.route("/", signup);
-authApp.route("/", me);
+export type { AuthContext, RequestContext } from "./types";
 
-export default authApp;
+export { validateRedirectPath } from "./auth.utils";
+
+export {
+  getSessionByToken,
+  requestMagicLink,
+  revokeSession,
+  verifyGoogleOAuth,
+  verifyMagicLink,
+};

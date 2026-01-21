@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import type { StorybookConfig } from "@storybook/react-vite";
 
 const excludedProps = new Set([
@@ -43,6 +46,18 @@ const config: StorybookConfig = {
       propFilter: (prop) =>
         !prop.name.startsWith("aria-") && !excludedProps.has(prop.name),
     },
+  },
+  async viteFinal(config) {
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const uiSrc = path.resolve(currentDir, "../../../packages/ui/src");
+    const resolve = config.resolve ?? {};
+    if (Array.isArray(resolve.alias)) {
+      resolve.alias = [...resolve.alias, { find: "@", replacement: uiSrc }];
+    } else {
+      resolve.alias = { ...(resolve.alias ?? {}), "@": uiSrc };
+    }
+    config.resolve = resolve;
+    return config;
   },
 };
 export default config;

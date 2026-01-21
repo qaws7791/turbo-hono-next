@@ -1,23 +1,25 @@
 import { z } from "@hono/zod-openapi";
 
-/**
- * Common error response schema used across all API endpoints.
- * Provides a standardized error structure with code and message.
- */
-export const ErrorResponseSchema = z.object({
-  error: z.object({
-    code: z.string().openapi({
-      description: "에러 코드",
-      examples: ["VALIDATION_ERROR"],
-    }),
-    message: z.string().openapi({
-      description: "에러 메시지",
-      examples: ["요청 데이터가 유효하지 않습니다."],
-    }),
-  }),
+export const PUBLIC_ID_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+export const PUBLIC_ID_LENGTH = 12;
+export const PublicIdSchema = z
+  .string()
+  .regex(
+    new RegExp(`^[${PUBLIC_ID_ALPHABET}]{${PUBLIC_ID_LENGTH}}$`),
+    "Invalid public id",
+  );
+
+export const ValidationErrorSchema = z.object({
+  field: z.string().min(1),
+  code: z.string().min(1),
+  message: z.string().min(1),
 });
 
-/**
- * Type-safe error response type
- */
-export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+export const ErrorResponseSchema = z.object({
+  error: z.object({
+    code: z.string().min(1),
+    message: z.string().min(1),
+    details: z.record(z.string(), z.unknown()).optional(),
+    validation: z.array(ValidationErrorSchema).optional(),
+  }),
+});

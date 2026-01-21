@@ -1,51 +1,37 @@
-/**
- * Logger middleware for Hono
- * Automatically logs all HTTP requests and responses
- */
+import { createMiddleware } from "hono/factory";
 
-import { log, logRequestComplete, logRequestStart } from "../lib/logger";
+import type { RequestIdVariables } from "./request-id";
+import type { Logger } from "pino";
 
-import type { Context, Next } from "hono";
+type AuthLogContext = {
+  readonly user: {
+    readonly id: string;
+  };
+};
 
-/**
- * Logger middleware for Hono
- * Logs request details, response status, and duration
- */
-export async function loggerMiddleware(c: Context, next: Next) {
-  const start = Date.now();
-  const { method } = c.req;
-  const path = c.req.path;
+type LoggerVariables = RequestIdVariables & {
+  readonly auth?: AuthLogContext;
+};
 
-  // Log request start
-  logRequestStart(method, path, {
-    userAgent: c.req.header("user-agent"),
+export function createLoggerMiddleware(logger: Logger) {
+  return createMiddleware<{ Variables: LoggerVariables }>(async (c, next) => {
+    const start = Date.now();
+    const method = c.req.method;
+    const path = c.req.path;
+    const requestId = c.get("requestId");
+
+    logger.info({ requestId, method, path }, "request.start");
+
+    try {
+      await next();
+    } finally {
+      const durationMs = Date.now() - start;
+      const status = c.res.status;
+      const userId = c.get("auth")?.user.id;
+      logger.info(
+        { requestId, method, path, status, durationMs, userId },
+        "request.end",
+      );
+    }
   });
-
-  try {
-    // Process request
-    await next();
-
-    // Calculate duration
-    const durationMs = Date.now() - start;
-    const statusCode = c.res.status;
-
-    // Log request completion
-    logRequestComplete(method, path, statusCode, durationMs, {
-      userAgent: c.req.header("user-agent"),
-    });
-  } catch (error) {
-    // Calculate duration even on error
-    const durationMs = Date.now() - start;
-
-    // Log error
-    log.error(`Request failed: ${method} ${path}`, error, {
-      method,
-      path,
-      durationMs,
-      userAgent: c.req.header("user-agent"),
-    });
-
-    // Re-throw to let error handler deal with it
-    throw error;
-  }
 }

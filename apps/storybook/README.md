@@ -22,7 +22,6 @@
 
 - **Tailwind CSS v4**: 유틸리티 기반 CSS 프레임워크
 - **@tailwindcss/vite**: Vite를 위한 Tailwind CSS 플러그인
-- **tailwind-variants**: 타입 안전한 컴포넌트 변형 관리
 
 ### Storybook 애드온
 
@@ -99,7 +98,7 @@ pnpm --filter storybook lint
 ### 기본 구조
 
 ```typescript
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "@repo/ui/button";
 
 const meta = {

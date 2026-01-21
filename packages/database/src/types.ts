@@ -1,74 +1,87 @@
 import type {
-  account,
-  aiConversation,
-  aiMessage,
-  aiNote,
-  aiQuiz,
-  aiQuizResult,
-  learningModule,
-  learningPlan,
-  learningPlanDocument,
-  learningTask,
-  session,
-  user,
-  verification,
+  authAccounts,
+  authSessions,
+  magicLinkTokens,
+  materialChunks,
+  materialEmbeddings,
+  materialJobs,
+  materials,
+  outlineNodes,
+  planGenerationRequestMaterials,
+  planGenerationRequests,
+  planModules,
+  planSessions,
+  planSourceMaterials,
+  plans,
+  sessionActivities,
+  sessionCheckins,
+  sessionProgressSnapshots,
+  sessionRuns,
+  sessionSummaries,
+  users,
 } from "./schema";
 
-/**
- * (Model), (Model)Insert, (Model)Update 총 3개의 타입을 정의합니다.
- */
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 
-export type User = typeof user.$inferSelect;
-export type UserInsert = typeof user.$inferInsert;
-export type UserUpdate = Partial<typeof user.$inferInsert>;
+export type AuthAccount = typeof authAccounts.$inferSelect;
+export type NewAuthAccount = typeof authAccounts.$inferInsert;
 
-export type Session = typeof session.$inferSelect;
-export type SessionInsert = typeof session.$inferInsert;
-export type SessionUpdate = Partial<typeof session.$inferInsert>;
+export type MagicLinkToken = typeof magicLinkTokens.$inferSelect;
+export type NewMagicLinkToken = typeof magicLinkTokens.$inferInsert;
 
-export type Account = typeof account.$inferSelect;
-export type AccountInsert = typeof account.$inferInsert;
-export type AccountUpdate = Partial<typeof account.$inferInsert>;
+export type AuthSession = typeof authSessions.$inferSelect;
+export type NewAuthSession = typeof authSessions.$inferInsert;
 
-export type Verification = typeof verification.$inferSelect;
-export type VerificationInsert = typeof verification.$inferInsert;
-export type VerificationUpdate = Partial<typeof verification.$inferInsert>;
+export type Material = typeof materials.$inferSelect;
+export type NewMaterial = typeof materials.$inferInsert;
 
-export type LearningPlan = typeof learningPlan.$inferSelect;
-export type LearningPlanInsert = typeof learningPlan.$inferInsert;
-export type LearningPlanUpdate = Partial<typeof learningPlan.$inferInsert>;
+export type MaterialJob = typeof materialJobs.$inferSelect;
+export type NewMaterialJob = typeof materialJobs.$inferInsert;
 
-export type LearningModule = typeof learningModule.$inferSelect;
-export type LearningModuleInsert = typeof learningModule.$inferInsert;
-export type LearningModuleUpdate = Partial<typeof learningModule.$inferInsert>;
+export type MaterialChunk = typeof materialChunks.$inferSelect;
+export type NewMaterialChunk = typeof materialChunks.$inferInsert;
 
-export type LearningTask = typeof learningTask.$inferSelect;
-export type LearningTaskInsert = typeof learningTask.$inferInsert;
-export type LearningTaskUpdate = Partial<typeof learningTask.$inferInsert>;
+export type MaterialEmbedding = typeof materialEmbeddings.$inferSelect;
+export type NewMaterialEmbedding = typeof materialEmbeddings.$inferInsert;
 
-export type AiNote = typeof aiNote.$inferSelect;
-export type AiNoteInsert = typeof aiNote.$inferInsert;
-export type AiNoteUpdate = Partial<typeof aiNote.$inferInsert>;
+export type OutlineNode = typeof outlineNodes.$inferSelect;
+export type NewOutlineNode = typeof outlineNodes.$inferInsert;
 
-export type AiQuiz = typeof aiQuiz.$inferSelect;
-export type AiQuizInsert = typeof aiQuiz.$inferInsert;
-export type AiQuizUpdate = Partial<typeof aiQuiz.$inferInsert>;
+export type PlanGenerationRequest = typeof planGenerationRequests.$inferSelect;
+export type NewPlanGenerationRequest =
+  typeof planGenerationRequests.$inferInsert;
 
-export type AiQuizResult = typeof aiQuizResult.$inferSelect;
-export type AiQuizResultInsert = typeof aiQuizResult.$inferInsert;
-export type AiQuizResultUpdate = Partial<typeof aiQuizResult.$inferInsert>;
+export type PlanGenerationRequestMaterial =
+  typeof planGenerationRequestMaterials.$inferSelect;
+export type NewPlanGenerationRequestMaterial =
+  typeof planGenerationRequestMaterials.$inferInsert;
 
-export type LearningPlanDocument = typeof learningPlanDocument.$inferSelect;
-export type LearningPlanDocumentInsert =
-  typeof learningPlanDocument.$inferInsert;
-export type LearningPlanDocumentUpdate = Partial<
-  typeof learningPlanDocument.$inferInsert
->;
+export type Plan = typeof plans.$inferSelect;
+export type NewPlan = typeof plans.$inferInsert;
 
-export type AIConversation = typeof aiConversation.$inferSelect;
-export type NewAIConversation = typeof aiConversation.$inferInsert;
-export type UpdateAIConversation = Partial<typeof aiConversation.$inferInsert>;
+export type PlanSourceMaterial = typeof planSourceMaterials.$inferSelect;
+export type NewPlanSourceMaterial = typeof planSourceMaterials.$inferInsert;
 
-export type AIMessage = typeof aiMessage.$inferSelect;
-export type NewAIMessage = typeof aiMessage.$inferInsert;
-export type UpdateAIMessage = Partial<typeof aiMessage.$inferInsert>;
+export type PlanModule = typeof planModules.$inferSelect;
+export type NewPlanModule = typeof planModules.$inferInsert;
+
+export type PlanSession = typeof planSessions.$inferSelect;
+export type NewPlanSession = typeof planSessions.$inferInsert;
+
+export type SessionRun = typeof sessionRuns.$inferSelect;
+export type NewSessionRun = typeof sessionRuns.$inferInsert;
+
+export type SessionProgressSnapshot =
+  typeof sessionProgressSnapshots.$inferSelect;
+export type NewSessionProgressSnapshot =
+  typeof sessionProgressSnapshots.$inferInsert;
+
+export type SessionCheckin = typeof sessionCheckins.$inferSelect;
+export type NewSessionCheckin = typeof sessionCheckins.$inferInsert;
+
+export type SessionActivity = typeof sessionActivities.$inferSelect;
+export type NewSessionActivity = typeof sessionActivities.$inferInsert;
+
+export type SessionSummary = typeof sessionSummaries.$inferSelect;
+export type NewSessionSummary = typeof sessionSummaries.$inferInsert;

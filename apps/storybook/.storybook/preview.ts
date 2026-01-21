@@ -1,4 +1,3 @@
-import "@repo/ui/components.css";
 import type { Preview } from "@storybook/react-vite";
 import "../src/styles/globals.css";
 
@@ -8,6 +7,11 @@ const preview: Preview = {
     actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       matchers: {},
+    },
+    options: {
+      storySort: {
+        order: ["Overview", ["Components Overview"], "*"],
+      },
     },
   },
 };

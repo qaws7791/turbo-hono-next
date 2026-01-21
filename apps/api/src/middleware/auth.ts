@@ -1,68 +1,70 @@
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
-import { authConfig } from "../config/auth";
-import { AuthErrors } from "../modules/auth/errors";
-import { sessionService } from "../modules/auth/services/session.service";
+import { throwAppError } from "../lib/result";
 
-import type { AuthVariables, OptionalAuthVariables } from "../types/variables";
-import type { SessionData } from "../modules/auth/services/session.service";
+import { ApiError } from "./error-handler";
 
-export interface AuthContext {
-  user: SessionData["user"];
-  session: {
-    id: string;
-    expiresAt: Date;
-  };
-}
+import type { Config } from "../lib/config";
+import type { AuthContext, AuthService } from "../modules/auth";
+import type { RequestIdVariables } from "./request-id";
 
-export const authMiddleware = createMiddleware<{ Variables: AuthVariables }>(
-  async (c, next) => {
-    // Get session token from cookie
-    const sessionToken = getCookie(c, authConfig.session.cookieName);
+export type AuthVariables = {
+  auth: AuthContext;
+} & RequestIdVariables;
 
-    if (!sessionToken) {
-      throw AuthErrors.unauthorized();
-    }
+export type OptionalAuthVariables = {
+  auth?: AuthContext;
+} & RequestIdVariables;
 
-    // Verify session
-    const sessionData = await sessionService.getSessionByToken(sessionToken);
-    if (!sessionData) {
-      throw AuthErrors.sessionExpired();
-    }
+export function createRequireAuthMiddleware(deps: {
+  readonly config: Config;
+  readonly authService: AuthService;
+}) {
+  return createMiddleware<{ Variables: AuthVariables }>(async (c, next) => {
+    const token = getCookie(c, deps.config.SESSION_COOKIE_NAME_FULL);
+    if (!token) throw new ApiError(401, "UNAUTHORIZED", "로그인이 필요합니다.");
 
-    // Set auth context with type safety
-    c.set("auth", {
-      user: sessionData.user,
-      session: {
-        id: sessionData.id,
-        expiresAt: sessionData.expiresAt,
-      },
+    const sessionResult = await deps.authService.getSessionByToken(token, {
+      ipAddress:
+        c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for"),
+      userAgent: c.req.header("user-agent"),
     });
 
-    await next();
-  },
-);
-
-export const optionalAuthMiddleware = createMiddleware<{
-  Variables: OptionalAuthVariables;
-}>(async (c, next) => {
-  // Get session token from cookie
-  const sessionToken = getCookie(c, authConfig.session.cookieName);
-
-  // If token exists, try to verify session
-  if (sessionToken) {
-    const sessionData = await sessionService.getSessionByToken(sessionToken);
-    if (sessionData) {
-      c.set("auth", {
-        user: sessionData.user,
-        session: {
-          id: sessionData.id,
-          expiresAt: sessionData.expiresAt,
-        },
-      });
+    if (sessionResult.isErr()) {
+      throwAppError(sessionResult.error);
     }
-  }
 
-  await next();
-});
+    const session = sessionResult.value;
+
+    if (!session) {
+      throw new ApiError(401, "SESSION_EXPIRED", "세션이 만료되었습니다.");
+    }
+
+    c.set("auth", session);
+    await next();
+  });
+}
+
+export function createOptionalAuthMiddleware(deps: {
+  readonly config: Config;
+  readonly authService: AuthService;
+}) {
+  return createMiddleware<{ Variables: OptionalAuthVariables }>(
+    async (c, next) => {
+      const token = getCookie(c, deps.config.SESSION_COOKIE_NAME_FULL);
+      if (token) {
+        const sessionResult = await deps.authService.getSessionByToken(token, {
+          ipAddress:
+            c.req.header("cf-connecting-ip") || c.req.header("x-forwarded-for"),
+          userAgent: c.req.header("user-agent"),
+        });
+
+        if (sessionResult.isOk() && sessionResult.value) {
+          c.set("auth", sessionResult.value);
+        }
+      }
+      await next();
+    },
+  );
+}

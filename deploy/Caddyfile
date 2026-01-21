@@ -1,0 +1,55 @@
+# =============================================================================
+# Caddyfile for lolog.site
+# =============================================================================
+# 
+# This configuration handles:
+# - api.lolog.site -> Hono API (port 3000)
+# - Automatic HTTPS via Let's Encrypt
+# - Security headers
+# - CORS handling
+# =============================================================================
+
+# API subdomain
+api.lolog.site {
+    # Reverse proxy to Hono API
+    reverse_proxy localhost:3000 {
+        # Health checks
+        health_uri /health
+        health_interval 30s
+        health_timeout 5s
+        
+        # Headers
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    
+    # Security headers
+    header {
+        # HSTS (6 months)
+        Strict-Transport-Security "max-age=15768000; includeSubDomains"
+        # Prevent clickjacking
+        X-Frame-Options "DENY"
+        # XSS protection
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        # Referrer policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Remove server header
+        -Server
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/api.lolog.site.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
+
+# Optional: Redirect www to non-www (if needed)
+# www.lolog.site {
+#     redir https://lolog.site{uri} permanent
+# }

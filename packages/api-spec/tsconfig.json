@@ -1,6 +1,10 @@
 {
   "extends": "@repo/config/tsconfig/base",
-  "include": [
-    "src"
-  ]
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src"]
 }

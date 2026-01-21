@@ -8,12 +8,11 @@ export type CreateDbOptions = {
 };
 
 export const createDb = (options: CreateDbOptions) => {
-  const db = drizzle({
+  return drizzle({
     connection: options.databaseUrl,
-    ws: ws,
+    ws,
     schema,
   });
-  return db;
 };
 
 export type Database = ReturnType<typeof createDb>;

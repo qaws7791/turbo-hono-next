@@ -2,6 +2,9 @@
   "extends": "@repo/config/tsconfig/react-app",
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@/*": ["../../packages/ui/src/*"]
+    },
     "skipLibCheck": true
   },
   "include": ["src", ".storybook"]
