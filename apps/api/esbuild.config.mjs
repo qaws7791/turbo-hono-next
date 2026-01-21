@@ -36,7 +36,7 @@ await build({
   target: "node20",
   format: "esm",
   outfile: "dist/index.mjs",
-  sourcemap: true,
+  sourcemap: isDev,
   minify: !isDev,
   treeShaking: true,
 

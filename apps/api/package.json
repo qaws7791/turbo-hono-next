@@ -6,8 +6,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "node esbuild.config.mjs",
+    "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
+    "build": "cross-env NODE_ENV=production node esbuild.config.mjs",
     "start": "node dist/index.mjs",
     "check-types": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
@@ -48,6 +48,7 @@
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
+    "cross-env": "^10.1.0",
     "esbuild": "^0.27.2",
     "eslint": "catalog:",
     "prettier": "catalog:",

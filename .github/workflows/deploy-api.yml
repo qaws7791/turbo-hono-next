@@ -1,0 +1,296 @@
+# =============================================================================
+# GitHub Actions CI/CD for API Deployment to Oracle Cloud
+# =============================================================================
+#
+# Required GitHub Secrets:
+# -------------------------
+# Oracle Cloud:
+#   - ORACLE_SSH_PRIVATE_KEY: Oracle instance SSH private key
+#   - ORACLE_HOST: Oracle instance IP or hostname
+#   - ORACLE_USER: SSH username (default: ubuntu)
+#   - GHCR_PAT: GitHub Personal Access Token with read:packages scope (for instance to pull images)
+#   - GHCR_USERNAME: (optional) GHCR username for the PAT owner (defaults to github.actor)
+#
+# Application:
+#   - DATABASE_URL: NeonDB connection string
+#   - SERVICE_NAME, BASE_URL, FRONTEND_URL
+#   - SESSION_COOKIE_NAME, SESSION_DURATION_DAYS, COOKIE_SECURE
+#   - GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_API_KEY
+#   - EMAIL_DELIVERY_MODE, RESEND_API_KEY, RESEND_EMAIL
+#   - R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ENDPOINT, R2_PUBLIC_URL
+#   - GEMINI_API_KEY, GEMINI_CHAT_MODEL, GEMINI_EMBEDDING_MODEL
+#   - OPENAI_API_KEY, OPENAI_SESSION_MODEL
+#
+# Optional (Turbo Remote Cache):
+#   - TURBO_TOKEN: Vercel Remote Cache token
+#   - TURBO_TEAM: Vercel team name
+# =============================================================================
+
+name: Deploy API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/api/**"
+      - "packages/database/**"
+      - "packages/api-spec/**"
+      - "packages/config/**"
+      - "apps/api/Dockerfile"
+      - ".dockerignore"
+      - "turbo.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/api
+
+jobs:
+  # ===========================================================================
+  # Verify (lint + typecheck)
+  # ===========================================================================
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.2.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (api)
+        run: pnpm --filter api lint
+
+      - name: Typecheck (api)
+        run: pnpm --filter api check-types
+
+  # ===========================================================================
+  # Build and Push Docker Image
+  # ===========================================================================
+  build:
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
+      image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for ARM64 cross-compilation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          platforms: linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Optional: Turbo Remote Cache (uncomment to enable)
+          # build-args: |
+          #   TURBO_TOKEN=${{ secrets.TURBO_TOKEN }}
+          #   TURBO_TEAM=${{ secrets.TURBO_TEAM }}
+
+  # ===========================================================================
+  # Deploy to Oracle Cloud Instance
+  # ===========================================================================
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+
+    steps:
+      - name: Deploy to Oracle Cloud
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          # Pass secrets as environment variables to the SSH action
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.actor }}
+          IMAGE_REF: ${{ needs.build.outputs.image_ref }}
+          # Application environment variables
+          SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SESSION_COOKIE_NAME: ${{ secrets.SESSION_COOKIE_NAME }}
+          SESSION_DURATION_DAYS: ${{ secrets.SESSION_DURATION_DAYS }}
+          COOKIE_SECURE: ${{ secrets.COOKIE_SECURE }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          EMAIL_DELIVERY_MODE: ${{ secrets.EMAIL_DELIVERY_MODE }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_EMAIL: ${{ secrets.RESEND_EMAIL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_CHAT_MODEL: ${{ secrets.GEMINI_CHAT_MODEL }}
+          GEMINI_EMBEDDING_MODEL: ${{ secrets.GEMINI_EMBEDDING_MODEL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_SESSION_MODEL: ${{ secrets.OPENAI_SESSION_MODEL }}
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER }}
+          key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
+          envs: GHCR_PAT,GHCR_USERNAME,IMAGE_REF,SERVICE_NAME,BASE_URL,FRONTEND_URL,DATABASE_URL,SESSION_COOKIE_NAME,SESSION_DURATION_DAYS,COOKIE_SECURE,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_API_KEY,EMAIL_DELIVERY_MODE,RESEND_API_KEY,RESEND_EMAIL,R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_ENDPOINT,R2_PUBLIC_URL,GEMINI_API_KEY,GEMINI_CHAT_MODEL,GEMINI_EMBEDDING_MODEL,OPENAI_API_KEY,OPENAI_SESSION_MODEL
+          script: |
+            set -euo pipefail
+
+            container_name="lolog-api"
+            previous_image=""
+
+            echo "🔐 Logging in to GitHub Container Registry..."
+            echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+
+            echo "📥 Pulling image (pinned by digest)..."
+            docker pull "$IMAGE_REF"
+
+            if docker ps -a --format '{{.Names}}' | grep -qx "$container_name"; then
+              echo "📦 Capturing previous image for rollback..."
+              previous_image="$(docker inspect --format='{{.Config.Image}}' "$container_name" || true)"
+
+              echo "🛑 Stopping existing container..."
+              docker stop "$container_name" 2>/dev/null || true
+              docker rm "$container_name" 2>/dev/null || true
+            fi
+
+            echo "🚀 Starting new container..."
+            docker run -d \
+              --name "$container_name" \
+              --restart unless-stopped \
+              -p 127.0.0.1:3000:3000 \
+              -e NODE_ENV=production \
+              -e PORT=3000 \
+              -e SERVICE_NAME="$SERVICE_NAME" \
+              -e BASE_URL="$BASE_URL" \
+              -e FRONTEND_URL="$FRONTEND_URL" \
+              -e DATABASE_URL="$DATABASE_URL" \
+              -e SESSION_COOKIE_NAME="$SESSION_COOKIE_NAME" \
+              -e SESSION_DURATION_DAYS="$SESSION_DURATION_DAYS" \
+              -e COOKIE_SECURE="$COOKIE_SECURE" \
+              -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+              -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+              -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
+              -e EMAIL_DELIVERY_MODE="$EMAIL_DELIVERY_MODE" \
+              -e RESEND_API_KEY="$RESEND_API_KEY" \
+              -e RESEND_EMAIL="$RESEND_EMAIL" \
+              -e R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+              -e R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+              -e R2_BUCKET_NAME="$R2_BUCKET_NAME" \
+              -e R2_ENDPOINT="$R2_ENDPOINT" \
+              -e R2_PUBLIC_URL="$R2_PUBLIC_URL" \
+              -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+              -e GEMINI_CHAT_MODEL="$GEMINI_CHAT_MODEL" \
+              -e GEMINI_EMBEDDING_MODEL="$GEMINI_EMBEDDING_MODEL" \
+              -e OPENAI_API_KEY="$OPENAI_API_KEY" \
+              -e OPENAI_SESSION_MODEL="$OPENAI_SESSION_MODEL" \
+              "$IMAGE_REF"
+
+            echo "⏳ Waiting for container to start..."
+            sleep 10
+
+            echo "🏥 Running health check..."
+            for i in 1 2 3 4 5; do
+              if curl -sf http://localhost:3000/health > /dev/null; then
+                echo "✅ Health check passed!"
+                break
+              fi
+              if [ $i -eq 5 ]; then
+                echo "❌ Health check failed after 5 attempts"
+                docker logs "$container_name" --tail 200 || true
+
+                echo "🧯 Rolling back..."
+                docker stop "$container_name" 2>/dev/null || true
+                docker rm "$container_name" 2>/dev/null || true
+
+                if [ -n "$previous_image" ]; then
+                  echo "↩️  Starting previous image: $previous_image"
+                  docker run -d \
+                    --name "$container_name" \
+                    --restart unless-stopped \
+                    -p 127.0.0.1:3000:3000 \
+                    -e NODE_ENV=production \
+                    -e PORT=3000 \
+                    -e SERVICE_NAME="$SERVICE_NAME" \
+                    -e BASE_URL="$BASE_URL" \
+                    -e FRONTEND_URL="$FRONTEND_URL" \
+                    -e DATABASE_URL="$DATABASE_URL" \
+                    -e SESSION_COOKIE_NAME="$SESSION_COOKIE_NAME" \
+                    -e SESSION_DURATION_DAYS="$SESSION_DURATION_DAYS" \
+                    -e COOKIE_SECURE="$COOKIE_SECURE" \
+                    -e GOOGLE_CLIENT_ID="$GOOGLE_CLIENT_ID" \
+                    -e GOOGLE_CLIENT_SECRET="$GOOGLE_CLIENT_SECRET" \
+                    -e GOOGLE_API_KEY="$GOOGLE_API_KEY" \
+                    -e EMAIL_DELIVERY_MODE="$EMAIL_DELIVERY_MODE" \
+                    -e RESEND_API_KEY="$RESEND_API_KEY" \
+                    -e RESEND_EMAIL="$RESEND_EMAIL" \
+                    -e R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+                    -e R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+                    -e R2_BUCKET_NAME="$R2_BUCKET_NAME" \
+                    -e R2_ENDPOINT="$R2_ENDPOINT" \
+                    -e R2_PUBLIC_URL="$R2_PUBLIC_URL" \
+                    -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+                    -e GEMINI_CHAT_MODEL="$GEMINI_CHAT_MODEL" \
+                    -e GEMINI_EMBEDDING_MODEL="$GEMINI_EMBEDDING_MODEL" \
+                    -e OPENAI_API_KEY="$OPENAI_API_KEY" \
+                    -e OPENAI_SESSION_MODEL="$OPENAI_SESSION_MODEL" \
+                    "$previous_image"
+                fi
+                exit 1
+              fi
+              echo "Attempt $i failed, retrying in 5 seconds..."
+              sleep 5
+            done
+
+            echo "🧹 Cleaning up old images (keep recent for rollback)..."
+            docker image prune -f --filter "until=168h"
+
+            echo "✅ Deployment successful!"

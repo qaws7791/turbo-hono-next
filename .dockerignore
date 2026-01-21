@@ -1,0 +1,69 @@
+# =============================================================================
+# .dockerignore for Turborepo with turbo prune
+# =============================================================================
+# Since we use `turbo prune --docker`, we need to copy the entire monorepo
+# in the prepare stage. This file excludes unnecessary files to speed up
+# the Docker build context transfer.
+# =============================================================================
+
+# Dependencies (will be installed in Docker)
+**/node_modules
+.pnpm-store
+
+# Build outputs (will be rebuilt in Docker)
+**/dist
+**/build
+**/.next
+**/storybook-static
+**/.turbo
+
+# Development and IDE files
+**/*.log
+.env
+.env.*
+!.env.example
+.vscode
+.idea
+**/*.swp
+**/*.swo
+
+# Testing
+**/coverage
+**/.nyc_output
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git (not needed for build)
+.git
+.gitignore
+.gitattributes
+
+# Documentation (not needed for build)
+docs
+**/*.md
+!README.md
+
+# Husky hooks
+.husky
+
+# Editor configs
+.editorconfig
+.prettierrc*
+prettier.config.*
+eslint.config.*
+**/eslint.config.*
+commitlint.config.*
+lint-staged.config.*
+
+# TypeScript build info
+**/*.tsbuildinfo
+
+# Test files
+**/*.test.ts
+**/*.spec.ts
+**/__tests__
+
+# Storybook (not needed for API)
+apps/storybook

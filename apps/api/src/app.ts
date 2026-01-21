@@ -82,6 +82,15 @@ export function createApp(deps: AppDeps): OpenAPIHono {
   });
   app.get("/docs", Scalar({ url: "/openapi.json" }));
 
+  // Health check endpoint for Docker and load balancer
+  app.get("/health", (c) => {
+    return c.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      service: deps.config.SERVICE_NAME,
+    });
+  });
+
   registerRoutes(app, deps);
 
   app.onError(createErrorHandlerMiddleware(deps.logger));
