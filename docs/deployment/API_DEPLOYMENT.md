@@ -182,31 +182,31 @@ GitHub 저장소 > **Settings** > **Secrets and variables** > **Actions**에서 
 
 ### 애플리케이션 환경 변수
 
-| Secret Name              | Description                             |
-| ------------------------ | --------------------------------------- |
-| `DATABASE_URL`           | NeonDB 연결 문자열                      |
-| `SERVICE_NAME`           | 서비스 이름 (예: `lolog-api`)           |
-| `BASE_URL`               | API 기본 URL (`https://api.lolog.site`) |
-| `FRONTEND_URL`           | 프론트엔드 URL (`https://lolog.site`)   |
-| `SESSION_COOKIE_NAME`    | 세션 쿠키 이름                          |
-| `SESSION_DURATION_DAYS`  | 세션 유지 기간 (일)                     |
-| `COOKIE_SECURE`          | 쿠키 Secure 플래그 (`true`)             |
-| `GOOGLE_CLIENT_ID`       | Google OAuth 클라이언트 ID              |
-| `GOOGLE_CLIENT_SECRET`   | Google OAuth 클라이언트 시크릿          |
-| `GOOGLE_API_KEY`         | Google API 키                           |
-| `EMAIL_DELIVERY_MODE`    | 이메일 전송 모드 (`resend` \| `log`)    |
-| `RESEND_API_KEY`         | Resend API 키                           |
-| `RESEND_EMAIL`           | 발신 이메일 주소                        |
-| `R2_ACCESS_KEY_ID`       | Cloudflare R2 액세스 키                 |
-| `R2_SECRET_ACCESS_KEY`   | Cloudflare R2 시크릿 키                 |
-| `R2_BUCKET_NAME`         | R2 버킷 이름                            |
-| `R2_ENDPOINT`            | R2 엔드포인트                           |
-| `R2_PUBLIC_URL`          | R2 공개 URL                             |
-| `GEMINI_API_KEY`         | Google Gemini API 키                    |
-| `GEMINI_CHAT_MODEL`      | Gemini 채팅 모델                        |
-| `GEMINI_EMBEDDING_MODEL` | Gemini 임베딩 모델                      |
-| `OPENAI_API_KEY`         | OpenAI API 키                           |
-| `OPENAI_SESSION_MODEL`   | OpenAI 세션 모델                        |
+| Secret Name             | Description                             |
+| ----------------------- | --------------------------------------- |
+| `DATABASE_URL`          | NeonDB 연결 문자열                      |
+| `SERVICE_NAME`          | 서비스 이름 (예: `lolog-api`)           |
+| `BASE_URL`              | API 기본 URL (`https://api.lolog.site`) |
+| `FRONTEND_URL`          | 프론트엔드 URL (`https://lolog.site`)   |
+| `SESSION_COOKIE_NAME`   | 세션 쿠키 이름                          |
+| `SESSION_DURATION_DAYS` | 세션 유지 기간 (일)                     |
+| `COOKIE_SECURE`         | 쿠키 Secure 플래그 (`true`)             |
+| `GOOGLE_CLIENT_ID`      | Google OAuth 클라이언트 ID              |
+| `GOOGLE_CLIENT_SECRET`  | Google OAuth 클라이언트 시크릿          |
+
+| `EMAIL_DELIVERY_MODE` | 이메일 전송 모드 (`resend` \| `log`) |
+| `RESEND_API_KEY` | Resend API 키 |
+| `RESEND_EMAIL` | 발신 이메일 주소 |
+| `R2_ACCESS_KEY_ID` | Cloudflare R2 액세스 키 |
+| `R2_SECRET_ACCESS_KEY` | Cloudflare R2 시크릿 키 |
+| `R2_BUCKET_NAME` | R2 버킷 이름 |
+| `R2_ENDPOINT` | R2 엔드포인트 |
+| `R2_PUBLIC_URL` | R2 공개 URL |
+| `GEMINI_API_KEY` | Google Gemini API 키 |
+| `GEMINI_CHAT_MODEL` | Gemini 채팅 모델 |
+| `GEMINI_EMBEDDING_MODEL` | Gemini 임베딩 모델 |
+| `OPENAI_API_KEY` | OpenAI API 키 |
+| `OPENAI_SESSION_MODEL` | OpenAI 세션 모델 |
 
 ### (선택) Turbo Remote Cache
 

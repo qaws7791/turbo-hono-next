@@ -34,7 +34,6 @@ const envSchema = z.object({
   R2_PUBLIC_URL: z.string().min(1).optional(),
 
   AI_API_KEY: z.string().min(1).optional(),
-  GOOGLE_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   GEMINI_CHAT_MODEL: z.string().min(1).default("gemini-2.5-flash-lite"),
   GEMINI_EMBEDDING_MODEL: z.string().min(1).default("gemini-embedding-001"),
@@ -75,7 +74,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
   readonly R2_PUBLIC_URL?: string;
   readonly AI_API_KEY?: string;
   readonly AI_EMBEDDING_API_KEY?: string;
-  readonly GOOGLE_API_KEY?: string;
   readonly GEMINI_API_KEY?: string;
   readonly GEMINI_CHAT_MODEL: string;
   readonly GEMINI_EMBEDDING_MODEL: string;
@@ -86,8 +84,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
 } {
   const parsed = envSchema.parse(env);
 
-  const aiApiKey =
-    parsed.AI_API_KEY ?? parsed.GEMINI_API_KEY ?? parsed.GOOGLE_API_KEY;
+  const aiApiKey = parsed.AI_API_KEY ?? parsed.GEMINI_API_KEY;
 
   const aiEmbeddingApiKey =
     parsed.AI_EMBEDDING_API_KEY ?? parsed.GEMINI_EMBEDDING_API_KEY ?? aiApiKey;

@@ -72,7 +72,6 @@ SSoT(실제 사용/검증 기준):
 | `GEMINI_API_KEY`         | Gemini API 키     |                         |
 | `GEMINI_CHAT_MODEL`      | Chat 모델         | `gemini-2.5-flash-lite` |
 | `GEMINI_EMBEDDING_MODEL` | Embedding 모델    | `gemini-embedding-001`  |
-| `GOOGLE_API_KEY` (선택)  | 호환 API 키 변수  |                         |
 
 ---
 
