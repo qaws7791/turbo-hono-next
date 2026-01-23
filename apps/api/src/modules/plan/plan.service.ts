@@ -1,15 +1,20 @@
 import { activatePlan } from "./usecases/activate-plan";
 import { createPlan } from "./usecases/create-plan";
 import { deletePlan } from "./usecases/delete-plan";
+import { enqueuePlanGeneration } from "./usecases/enqueue-plan-generation";
 import { getPlanDetail } from "./usecases/get-plan-detail";
 import { listPlans } from "./usecases/list-plans";
 import { updatePlan } from "./usecases/update-plan";
 import { updatePlanStatus } from "./usecases/update-plan-status";
 
-import type { PlanGenerationPort } from "./plan.ports";
-import type { PlanRepository } from "./plan.repository";
+import type { Queue } from "bullmq";
 import type { ResultAsync } from "neverthrow";
+import type {
+  PlanGenerationJobData,
+  PlanGenerationJobResult,
+} from "../../infrastructure/queue";
 import type { AppError } from "../../lib/result";
+import type { MaterialRepository } from "../material/material.repository";
 import type {
   ActivatePlanResponse,
   CreatePlanInput,
@@ -23,12 +28,17 @@ import type {
   UpdatePlanResponse,
   UpdatePlanStatusResponse,
 } from "./plan.dto";
-import type { MaterialRepository } from "../material/material.repository";
+import type { PlanGenerationPort } from "./plan.ports";
+import type { PlanRepository } from "./plan.repository";
 
 export type PlanServiceDeps = {
   readonly planRepository: PlanRepository;
   readonly materialRepository: MaterialRepository;
   readonly planGeneration: PlanGenerationPort;
+  readonly planGenerationQueue: Queue<
+    PlanGenerationJobData,
+    PlanGenerationJobResult
+  >;
 };
 
 export type PlanService = {
@@ -37,6 +47,10 @@ export type PlanService = {
     planId: string,
   ) => ResultAsync<ActivatePlanResponse, AppError>;
   readonly createPlan: (
+    userId: string,
+    input: CreatePlanInput,
+  ) => ResultAsync<CreatePlanResponse, AppError>;
+  readonly enqueuePlanGeneration: (
     userId: string,
     input: CreatePlanInput,
   ) => ResultAsync<CreatePlanResponse, AppError>;
@@ -76,6 +90,10 @@ export function createPlanService(deps: PlanServiceDeps): PlanService {
     createPlan: createPlan({
       planRepository: deps.planRepository,
       planGeneration: deps.planGeneration,
+    }),
+    enqueuePlanGeneration: enqueuePlanGeneration({
+      planRepository: deps.planRepository,
+      planGenerationQueue: deps.planGenerationQueue,
     }),
     deletePlan: deletePlan(usecaseDeps),
     getPlanDetail: getPlanDetail(usecaseDeps),

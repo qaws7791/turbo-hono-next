@@ -43,6 +43,13 @@ export const planGenerationRequestStatusEnum = pgEnum(
   ["DRAFT", "SUBMITTED", "GENERATING", "SUCCEEDED", "FAILED", "CANCELED"],
 );
 
+export const planGenerationStatusEnum = pgEnum("plan_generation_status", [
+  "PENDING",
+  "GENERATING",
+  "READY",
+  "FAILED",
+]);
+
 export const planStatusEnum = pgEnum("plan_status", [
   "ACTIVE",
   "PAUSED",

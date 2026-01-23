@@ -72,15 +72,15 @@ export const createPlanRoute = createRoute({
   path: "/api/plans",
   summary: "Plan 생성",
   description:
-    "AI가 자료를 분석하여 학습 계획을 생성합니다. 세션이 자동 생성됩니다.",
+    "AI가 자료를 분석하여 학습 계획을 생성합니다. 생성 요청이 접수되면 `jobId`를 반환합니다.",
   request: {
     body: {
       content: { "application/json": { schema: CreatePlanRequestSchema } },
     },
   },
   responses: {
-    201: {
-      description: "Plan이 생성되었습니다.",
+    202: {
+      description: "Plan 생성 요청이 접수되었습니다.",
       content: { "application/json": { schema: CreatePlanResponseSchema } },
     },
     default: {

@@ -3,8 +3,8 @@ import { toPlanFromDetail, toPlanFromListItem } from "./plans.mapper";
 import type { PlanWithDerived } from "../model/types";
 import type {
   ApiPlanDetail,
+  PlanCreateAccepted,
   PlanCreateBody,
-  PlanCreateCreated,
   PlanStatusUpdateBody,
   PlansListOk,
   PlansListQuery,
@@ -68,7 +68,7 @@ export async function updatePlanStatus(
 
 export async function createPlan(
   body: PlanCreateBody,
-): Promise<PlanCreateCreated> {
+): Promise<PlanCreateAccepted> {
   const { data, error, response } = await apiClient.POST("/api/plans", {
     body,
   });

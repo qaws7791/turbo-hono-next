@@ -444,6 +444,9 @@ export interface paths {
                 fileSize: number | null;
                 /** @enum {string} */
                 processingStatus: "PENDING" | "PROCESSING" | "READY" | "FAILED";
+                processingProgress: number | null;
+                processingStep: string | null;
+                processingError: string | null;
                 summary: string | null;
                 /** Format: date-time */
                 createdAt: string;
@@ -529,6 +532,9 @@ export interface paths {
                 fileSize: number | null;
                 /** @enum {string} */
                 processingStatus: "PENDING" | "PROCESSING" | "READY" | "FAILED";
+                processingProgress: number | null;
+                processingStep: string | null;
+                processingError: string | null;
                 /** Format: date-time */
                 processedAt: string | null;
                 summary: string | null;
@@ -940,89 +946,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/jobs/{jobId}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * 비동기 작업 상태 조회
-     * @description 자료 분석 등 비동기 작업의 진행 상태를 확인합니다.
-     *
-     *     **상태**: `pending`, `processing`, `completed`, `failed`
-     */
-    get: {
-      parameters: {
-        query?: never;
-        header?: never;
-        path: {
-          jobId: string;
-        };
-        cookie?: never;
-      };
-      requestBody?: never;
-      responses: {
-        /** @description 작업 상태를 반환합니다. */
-        200: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              data: {
-                /** Format: uuid */
-                jobId: string;
-                /** @enum {string} */
-                status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
-                progress: number | null;
-                currentStep: string | null;
-                result: {
-                  /** Format: uuid */
-                  materialId: string;
-                  summary: string | null;
-                } | null;
-                error: {
-                  code: string;
-                  message: string;
-                } | null;
-              };
-            };
-          };
-        };
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown;
-          };
-          content: {
-            "application/json": {
-              error: {
-                code: string;
-                message: string;
-                details?: {
-                  [key: string]: unknown;
-                };
-                validation?: Array<{
-                  field: string;
-                  code: string;
-                  message: string;
-                }>;
-              };
-            };
-          };
-        };
-      };
-    };
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/api/plans": {
     parameters: {
       query?: never;
@@ -1063,6 +986,11 @@ export interface paths {
                 color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+                /** @enum {string} */
+                generationStatus: "PENDING" | "GENERATING" | "READY" | "FAILED";
+                generationProgress: number | null;
+                generationStep: string | null;
+                generationError: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -1108,7 +1036,7 @@ export interface paths {
     put?: never;
     /**
      * Plan 생성
-     * @description AI가 자료를 분석하여 학습 계획을 생성합니다. 세션이 자동 생성됩니다.
+     * @description AI가 자료를 분석하여 학습 계획을 생성합니다. 생성 요청이 접수되면 `jobId`를 반환합니다.
      */
     post: {
       parameters: {
@@ -1130,8 +1058,8 @@ export interface paths {
         };
       };
       responses: {
-        /** @description Plan이 생성되었습니다. */
-        201: {
+        /** @description Plan 생성 요청이 접수되었습니다. */
+        202: {
           headers: {
             [name: string]: unknown;
           };
@@ -1144,6 +1072,11 @@ export interface paths {
                 color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+                /** @enum {string} */
+                generationStatus: "PENDING" | "GENERATING" | "READY" | "FAILED";
+                generationProgress: number | null;
+                generationStep: string | null;
+                generationError: string | null;
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
@@ -1218,6 +1151,11 @@ export interface paths {
                 color: string;
                 /** @enum {string} */
                 status: "ACTIVE" | "PAUSED" | "ARCHIVED" | "COMPLETED";
+                /** @enum {string} */
+                generationStatus: "PENDING" | "GENERATING" | "READY" | "FAILED";
+                generationProgress: number | null;
+                generationStep: string | null;
+                generationError: string | null;
                 /** Format: date */
                 targetDueDate: string | null;
                 specialRequirements: string | null;

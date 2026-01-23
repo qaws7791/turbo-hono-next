@@ -15,7 +15,11 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import { planGenerationRequestStatusEnum, planStatusEnum } from "./enums";
+import {
+  planGenerationRequestStatusEnum,
+  planGenerationStatusEnum,
+  planStatusEnum,
+} from "./enums";
 import { users } from "./identity";
 import { materials } from "./materials";
 import { timestamps } from "./shared";
@@ -90,6 +94,12 @@ export const plans = pgTable(
     }),
     archivedAt: timestamp("archived_at", { withTimezone: true, mode: "date" }),
     deletedAt: timestamp("deleted_at", { withTimezone: true, mode: "date" }),
+    generationStatus: planGenerationStatusEnum("generation_status")
+      .notNull()
+      .default("READY"),
+    generationProgress: integer("generation_progress"),
+    generationStep: text("generation_step"),
+    generationError: text("generation_error"),
     ...timestamps,
   },
   (table) => [

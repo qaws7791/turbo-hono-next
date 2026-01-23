@@ -30,6 +30,12 @@ AI 에이전트가 이 저장소의 코드를 작업할 때 참고하는 가이�
 # 의존성 설치
 pnpm install
 
+# 로컬 인프라 시작 (Redis + RedisInsight)
+docker-compose up -d      # 시작
+docker-compose ps         # 상태 확인
+docker-compose down       # 중지
+docker-compose down -v    # 중지 + 데이터 삭제
+
 # 모든 개발 서버 시작 (API, web, storybook)
 pnpm dev
 
@@ -49,6 +55,17 @@ pnpm build         # 전체 빌드
 pnpm deploy        # 배포 (AWS credentials 필요)
 pnpm deploy:api    # API만 배포
 ```
+
+## Local Infrastructure (Docker Compose)
+
+루트 `docker-compose.yml`로 로컬 개발 인프라를 관리합니다.
+
+| 서비스           | 포트   | 용도                                |
+| ---------------- | ------ | ----------------------------------- |
+| **redis**        | `6379` | BullMQ 작업 큐                      |
+| **redisinsight** | `5540` | Redis 웹 UI (http://localhost:5540) |
+
+**RedisInsight 연결 설정**: Host `redis`, Port `6379`
 
 ## Development Guidelines
 

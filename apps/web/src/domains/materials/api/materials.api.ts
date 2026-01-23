@@ -2,7 +2,6 @@ import { toMaterialFromApi } from "./materials.mapper";
 
 import type { Material } from "../model/materials.types";
 import type {
-  JobStatusOk,
   MaterialUploadCompleteAccepted,
   MaterialUploadCompleteBody,
   MaterialUploadCompleteCreated,
@@ -48,10 +47,11 @@ export async function deleteMaterial(materialId: string): Promise<void> {
 
 export async function initMaterialUpload(
   input: MaterialUploadInitBody,
+  options?: { readonly signal?: AbortSignal },
 ): Promise<MaterialUploadInitOk["data"]> {
   const { data, error, response } = await apiClient.POST(
     "/api/materials/uploads/init",
-    { body: input },
+    { body: input, signal: options?.signal },
   );
   if (!response.ok || !data) {
     throw new ApiError("Failed to init upload", response.status, error);
@@ -61,27 +61,16 @@ export async function initMaterialUpload(
 
 export async function completeMaterialUpload(
   input: MaterialUploadCompleteBody,
+  options?: { readonly signal?: AbortSignal },
 ): Promise<
   MaterialUploadCompleteCreated["data"] | MaterialUploadCompleteAccepted["data"]
 > {
   const { data, error, response } = await apiClient.POST(
     "/api/materials/uploads/complete",
-    { body: input },
+    { body: input, signal: options?.signal },
   );
   if (!response.ok || !data) {
     throw new ApiError("Failed to complete upload", response.status, error);
-  }
-  return data.data;
-}
-
-export async function getJobStatus(
-  jobId: string,
-): Promise<JobStatusOk["data"]> {
-  const { data, error, response } = await apiClient.GET("/api/jobs/{jobId}", {
-    params: { path: { jobId } },
-  });
-  if (!response.ok || !data) {
-    throw new ApiError("Failed to fetch job status", response.status, error);
   }
   return data.data;
 }

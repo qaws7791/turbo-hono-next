@@ -1,13 +1,19 @@
 import { completeMaterialUpload } from "./usecases/complete-material-upload";
 import { completeMaterialUploadWithProgress } from "./usecases/complete-material-upload-stream";
 import { deleteMaterial } from "./usecases/delete-material";
+import { enqueueMaterialProcessing } from "./usecases/enqueue-material-processing";
 import { getJobStatus } from "./usecases/get-job-status";
 import { getMaterialDetail } from "./usecases/get-material-detail";
 import { initiateMaterialUpload } from "./usecases/initiate-material-upload";
 import { listMaterials } from "./usecases/list-materials";
 import { updateMaterialTitle } from "./usecases/update-material-title";
 
+import type { Queue } from "bullmq";
 import type { ResultAsync } from "neverthrow";
+import type {
+  MaterialProcessingJobData,
+  MaterialProcessingJobResult,
+} from "../../infrastructure/queue";
 import type { AppError } from "../../lib/result";
 import type {
   CompleteMaterialUploadInput,
@@ -39,6 +45,10 @@ export type MaterialServiceDeps = {
   readonly ragRetriever: RagRetrieverForMaterialPort;
   readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
   readonly r2: R2StoragePort;
+  readonly materialProcessingQueue: Queue<
+    MaterialProcessingJobData,
+    MaterialProcessingJobResult
+  >;
 };
 
 export type MaterialService = {
@@ -53,6 +63,10 @@ export type MaterialService = {
       ReturnType<typeof completeMaterialUploadWithProgress>
     >[2],
   ) => ReturnType<ReturnType<typeof completeMaterialUploadWithProgress>>;
+  readonly enqueueMaterialProcessing: (
+    userId: string,
+    input: CompleteMaterialUploadInput,
+  ) => ResultAsync<CreateMaterialResult, AppError>;
   readonly deleteMaterial: (
     userId: string,
     materialId: string,
@@ -101,6 +115,11 @@ export function createMaterialService(
       ragIngestor: deps.ragIngestor,
       ragVectorStoreManager: deps.ragVectorStoreManager,
       materialAnalyzer: deps.materialAnalyzer,
+    }),
+    enqueueMaterialProcessing: enqueueMaterialProcessing({
+      materialRepository: deps.materialRepository,
+      r2: deps.r2,
+      materialProcessingQueue: deps.materialProcessingQueue,
     }),
     deleteMaterial: deleteMaterial({
       materialRepository: deps.materialRepository,

@@ -1,6 +1,12 @@
-export type PlanStatus = "active" | "paused" | "archived";
+export type PlanStatus = "active" | "paused" | "archived" | "completed";
 export type PlanSessionType = "session";
 export type PlanSessionStatus = "todo" | "in_progress" | "completed";
+
+export type PlanGenerationStatus =
+  | "pending"
+  | "generating"
+  | "ready"
+  | "failed";
 
 export type PlanSession = {
   id: string;
@@ -26,6 +32,10 @@ export type Plan = {
   icon: string;
   color: string;
   status: PlanStatus;
+  generationStatus: PlanGenerationStatus;
+  generationProgress: number | null;
+  generationStep: string | null;
+  generationError: string | null;
   createdAt: string;
   updatedAt: string;
   sourceMaterialIds: Array<string>;

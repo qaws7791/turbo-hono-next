@@ -13,6 +13,13 @@ export const PlanStatusSchema = z.enum([
   "COMPLETED",
 ]);
 
+export const PlanGenerationStatusSchema = z.enum([
+  "PENDING",
+  "GENERATING",
+  "READY",
+  "FAILED",
+]);
+
 export const PlanProgressSchema = z.object({
   completedSessions: z.number().int().nonnegative(),
   totalSessions: z.number().int().nonnegative(),
@@ -24,6 +31,10 @@ export const PlanListItemSchema = z.object({
   icon: z.string(),
   color: z.string(),
   status: PlanStatusSchema,
+  generationStatus: PlanGenerationStatusSchema,
+  generationProgress: z.number().int().min(0).max(100).nullable(),
+  generationStep: z.string().nullable(),
+  generationError: z.string().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   progress: PlanProgressSchema,
@@ -56,6 +67,10 @@ export const CreatePlanResponseSchema = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
+    generationStatus: PlanGenerationStatusSchema,
+    generationProgress: z.number().int().min(0).max(100).nullable(),
+    generationStep: z.string().nullable(),
+    generationError: z.string().nullable(),
     createdAt: z.iso.datetime(),
     updatedAt: z.iso.datetime(),
   }),
@@ -90,6 +105,10 @@ export const PlanDetailResponseSchema = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
+    generationStatus: PlanGenerationStatusSchema,
+    generationProgress: z.number().int().min(0).max(100).nullable(),
+    generationStep: z.string().nullable(),
+    generationError: z.string().nullable(),
     targetDueDate: z.iso.date().nullable(),
     specialRequirements: z.string().nullable(),
     createdAt: z.iso.datetime(),

@@ -2,12 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 
 import {
-  completeMaterialUploadSSE,
+  completeMaterialUpload,
   initMaterialUpload,
 } from "../api/materials.api";
 import { materialsQueries } from "../materials.queries";
-
-import type { UploadProgressEvent } from "../api/materials.api";
 
 function normalizeEtag(value: string | null): string | undefined {
   if (!value) return undefined;
@@ -26,7 +24,7 @@ export type UploadProgress = {
 /**
  * Material 업로드 Mutation Hook
  *
- * SSE 스트리밍을 통해 실시간 진행 상황을 제공합니다.
+ * 파일 업로드 후, 자료 분석은 비동기 작업 큐로 처리합니다.
  *
  * @example
  * ```tsx
@@ -42,22 +40,36 @@ export type UploadProgress = {
 export function useUploadMaterialMutation() {
   const queryClient = useQueryClient();
   const [progress, setProgress] = useState<UploadProgress | null>(null);
-  const cancelRef = useRef<(() => void) | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const mutation = useMutation({
     mutationFn: async ({ file, title }: { file: File; title: string }) => {
+      const abortController = new AbortController();
+      abortRef.current = abortController;
+
       // 진행 상황 초기화
       setProgress({
-        step: "UPLOADING",
-        progress: 0,
-        message: "📤 파일 업로드 중...",
+        step: "PREPARING",
+        progress: 5,
+        message: "업로드를 준비하고 있습니다...",
       });
 
       // 1. 업로드 세션 생성
-      const init = await initMaterialUpload({
-        originalFilename: file.name,
-        mimeType: file.type || "application/octet-stream",
-        fileSize: file.size,
+      const init = await initMaterialUpload(
+        {
+          originalFilename: file.name,
+          mimeType: file.type || "application/octet-stream",
+          fileSize: file.size,
+        },
+        {
+          signal: abortController.signal,
+        },
+      );
+
+      setProgress({
+        step: "UPLOADING",
+        progress: 30,
+        message: "파일을 업로드하고 있습니다...",
       });
 
       // 2. R2에 파일 업로드
@@ -65,6 +77,7 @@ export function useUploadMaterialMutation() {
         method: init.method,
         headers: init.headers,
         body: file,
+        signal: abortController.signal,
       });
       if (!uploadResponse.ok) {
         throw new Error("파일 업로드에 실패했습니다.");
@@ -72,31 +85,27 @@ export function useUploadMaterialMutation() {
 
       const etag = normalizeEtag(uploadResponse.headers.get("etag"));
 
-      // 3. SSE를 통한 완료 처리
-      return new Promise<void>((resolve, reject) => {
-        cancelRef.current = completeMaterialUploadSSE(
-          { uploadId: init.uploadId, title, etag },
-          {
-            onProgress: (event: UploadProgressEvent) => {
-              setProgress({
-                step: event.step,
-                progress: event.progress,
-                message: event.message,
-              });
-            },
-            onComplete: () => {
-              setProgress(null);
-              cancelRef.current = null;
-              resolve();
-            },
-            onError: (event) => {
-              setProgress(null);
-              cancelRef.current = null;
-              reject(new Error(event.message));
-            },
-          },
-        );
+      setProgress({
+        step: "FINALIZING",
+        progress: 80,
+        message: "업로드 완료 처리를 진행하고 있습니다...",
       });
+
+      // 3. 업로드 완료 처리(비동기 작업 큐 등록 포함)
+      await completeMaterialUpload(
+        { uploadId: init.uploadId, title, etag },
+        { signal: abortController.signal },
+      );
+
+      setProgress({
+        step: "QUEUED",
+        progress: 100,
+        message: "분석을 시작했습니다. 목록에서 진행 상황을 확인하세요.",
+      });
+
+      // UX: 다이얼로그는 onSuccess에서 닫히므로 여기서는 즉시 해제
+      setProgress(null);
+      abortRef.current = null;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -108,16 +117,15 @@ export function useUploadMaterialMutation() {
     },
     onError: () => {
       setProgress(null);
+      abortRef.current = null;
     },
   });
 
   // 취소 함수
   const cancel = () => {
-    if (cancelRef.current) {
-      cancelRef.current();
-      cancelRef.current = null;
-      setProgress(null);
-    }
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setProgress(null);
   };
 
   return {

@@ -22,6 +22,9 @@ export type Material = {
   title: string;
   kind: MaterialKind;
   status: MaterialStatus;
+  processingProgress: number | null;
+  processingStep: string | null;
+  processingError: string | null;
   summary?: string;
   createdAt: string;
   updatedAt: string;

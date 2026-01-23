@@ -1,7 +1,8 @@
-import * as React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 
 import { createPlan as createPlanApi } from "../api";
+import { plansQueries } from "../plans.queries";
 
 export type CreatePlanInput = {
   sourceMaterialIds: Array<string>;
@@ -35,27 +36,26 @@ export function useCreatePlanMutation(): {
   createPlan: (input: CreatePlanInput) => void;
 } {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const queryClient = useQueryClient();
 
-  const createPlan = React.useCallback(
-    async (input: CreatePlanInput) => {
-      setIsSubmitting(true);
-      try {
-        const targetDueDate = computeTargetDueDate(input);
+  const mutation = useMutation({
+    mutationFn: async (input: CreatePlanInput) => {
+      const targetDueDate = computeTargetDueDate(input);
 
-        const plan = await createPlanApi({
-          materialIds: input.sourceMaterialIds,
-          targetDueDate,
-          specialRequirements: input.notes,
-        });
-
-        navigate(`/plans/${plan.id}`);
-      } finally {
-        setIsSubmitting(false);
-      }
+      return createPlanApi({
+        materialIds: input.sourceMaterialIds,
+        targetDueDate,
+        specialRequirements: input.notes,
+      });
     },
-    [navigate],
-  );
+    onSuccess: (plan) => {
+      queryClient.invalidateQueries({ queryKey: plansQueries.lists() });
+      navigate(`/plans/${plan.id}`);
+    },
+  });
 
-  return { isSubmitting, createPlan };
+  return {
+    isSubmitting: mutation.isPending,
+    createPlan: (input: CreatePlanInput) => mutation.mutate(input),
+  };
 }

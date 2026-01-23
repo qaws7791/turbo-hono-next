@@ -48,6 +48,8 @@ export const materials = pgTable(
     processingStatus: materialProcessingStatusEnum("processing_status")
       .notNull()
       .default("PENDING"),
+    processingProgress: integer("processing_progress"),
+    processingStep: text("processing_step"),
     processedAt: timestamp("processed_at", {
       withTimezone: true,
       mode: "date",

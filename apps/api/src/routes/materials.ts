@@ -2,7 +2,6 @@ import {
   completeMaterialUploadRoute,
   completeMaterialUploadStreamRoute,
   deleteMaterialRoute,
-  getJobStatusRoute,
   getMaterialDetailRoute,
   initiateMaterialUploadRoute,
   listMaterialsRoute,
@@ -10,13 +9,13 @@ import {
 } from "@repo/api-spec";
 import { streamSSE } from "hono/streaming";
 
-import { handleResult, jsonResult } from "../lib/result-handler";
 import { throwAppError } from "../lib/result";
+import { handleResult, jsonResult } from "../lib/result-handler";
 import { createRequireAuthMiddleware } from "../middleware/auth";
 import { toApiErrorResponse } from "../middleware/error-handler";
 
-import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { AppDeps } from "../app-deps";
 
 export function registerMaterialRoutes(app: OpenAPIHono, deps: AppDeps): void {
   const requireAuth = createRequireAuthMiddleware({
@@ -82,7 +81,7 @@ export function registerMaterialRoutes(app: OpenAPIHono, deps: AppDeps): void {
       const auth = c.get("auth");
       const body = c.req.valid("json");
       return handleResult(
-        deps.services.material.completeMaterialUpload(auth.user.id, body),
+        deps.services.material.enqueueMaterialProcessing(auth.user.id, body),
         (created) => {
           if (created.mode === "sync") {
             return c.json(
@@ -193,20 +192,6 @@ export function registerMaterialRoutes(app: OpenAPIHono, deps: AppDeps): void {
           materialId,
           body.title,
         ),
-        200,
-      );
-    },
-  );
-
-  /* ========== 작업 상태 조회 ========== */
-  app.openapi(
-    { ...getJobStatusRoute, middleware: [requireAuth] as const },
-    async (c) => {
-      const auth = c.get("auth");
-      const { jobId } = c.req.valid("param");
-      return jsonResult(
-        c,
-        deps.services.material.getJobStatus(auth.user.id, jobId),
         200,
       );
     },

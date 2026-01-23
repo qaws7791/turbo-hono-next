@@ -4,6 +4,7 @@ import {
   CurriculumSection,
   PlanActionsSection,
   PlanDetailBreadcrumb,
+  PlanGenerationView,
   PlanHeaderSection,
   PlanProgressSection,
 } from "./detail";
@@ -27,19 +28,25 @@ export function PlanDetailView({ planId }: PlanDetailViewProps) {
     <>
       <PlanDetailBreadcrumb planTitle={detail.plan.title} />
       <PageBody className="space-y-10 mt-24 max-w-4xl">
-        <div className="flex flex-col gap-4 sm:justify-between">
-          <PlanHeaderSection plan={detail.plan} />
-          <PlanProgressSection plan={detail.plan} />
-          <PlanActionsSection
-            planId={detail.plan.id}
-            planStatus={detail.plan.status}
-            nextSession={detail.nextSession}
-            canStartSession={detail.canStartSession}
-            sourceMaterials={detail.sourceMaterials}
-            actions={detail.actions}
-          />
-        </div>
-        <CurriculumSection plan={detail.plan} />
+        {detail.plan.generationStatus !== "ready" ? (
+          <PlanGenerationView plan={detail.plan} />
+        ) : (
+          <>
+            <div className="flex flex-col gap-4 sm:justify-between">
+              <PlanHeaderSection plan={detail.plan} />
+              <PlanProgressSection plan={detail.plan} />
+              <PlanActionsSection
+                planId={detail.plan.id}
+                planStatus={detail.plan.status}
+                nextSession={detail.nextSession}
+                canStartSession={detail.canStartSession}
+                sourceMaterials={detail.sourceMaterials}
+                actions={detail.actions}
+              />
+            </div>
+            <CurriculumSection plan={detail.plan} />
+          </>
+        )}
       </PageBody>
     </>
   );

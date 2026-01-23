@@ -43,10 +43,8 @@ type MaterialDetailOk =
   paths["/api/materials/{materialId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type MaterialUploadInitOk =
   paths["/api/materials/uploads/init"]["post"]["responses"]["200"]["content"]["application/json"];
-type MaterialUploadCompleteCreated =
-  paths["/api/materials/uploads/complete"]["post"]["responses"]["201"]["content"]["application/json"];
-type JobStatusOk =
-  paths["/api/jobs/{jobId}"]["get"]["responses"]["200"]["content"]["application/json"];
+type MaterialUploadCompleteAccepted =
+  paths["/api/materials/uploads/complete"]["post"]["responses"]["202"]["content"]["application/json"];
 type MaterialDeleteOk =
   paths["/api/materials/{materialId}"]["delete"]["responses"]["200"]["content"]["application/json"];
 type MaterialUpdateOk =
@@ -54,8 +52,8 @@ type MaterialUpdateOk =
 
 type PlanListOk =
   paths["/api/plans"]["get"]["responses"]["200"]["content"]["application/json"];
-type PlanCreateCreated =
-  paths["/api/plans"]["post"]["responses"]["201"]["content"]["application/json"];
+type PlanCreateAccepted =
+  paths["/api/plans"]["post"]["responses"]["202"]["content"]["application/json"];
 type PlanDetailOk =
   paths["/api/plans/{planId}"]["get"]["responses"]["200"]["content"]["application/json"];
 type PlanStatusUpdateOk =
@@ -177,6 +175,9 @@ function mapMaterialToMaterialListItem(
     mimeType: null,
     fileSize,
     processingStatus: mapMaterialStatusToProcessingStatus(material.status),
+    processingProgress: null,
+    processingStep: null,
+    processingError: null,
     summary: material.summary ?? null,
     createdAt: material.createdAt,
     updatedAt: material.updatedAt,
@@ -381,6 +382,9 @@ export const handlers = [
         mimeType: null,
         fileSize,
         processingStatus: mapMaterialStatusToProcessingStatus(doc.status),
+        processingProgress: null,
+        processingStep: null,
+        processingError: null,
         processedAt: doc.status === "completed" ? doc.updatedAt : null,
         summary: doc.summary ?? null,
         chunkCount: null,
@@ -473,33 +477,14 @@ export const handlers = [
       },
     });
 
-    const response: MaterialUploadCompleteCreated = {
+    const response: MaterialUploadCompleteAccepted = {
       data: {
         id: created.id,
-        title: created.title,
+        jobId: created.id,
         processingStatus: mapMaterialStatusToProcessingStatus(created.status),
-        summary: created.summary ?? null,
       },
     };
-    return HttpResponse.json(response, { status: 201 });
-  }),
-
-  http.get("/api/jobs/:jobId", ({ params }) => {
-    const unauthorized = requireAuthOr401();
-    if (unauthorized) return unauthorized;
-
-    const jobId = String(params.jobId ?? "");
-    const response: JobStatusOk = {
-      data: {
-        jobId,
-        status: "SUCCEEDED",
-        progress: 1,
-        currentStep: "done",
-        result: null,
-        error: null,
-      },
-    };
-    return HttpResponse.json(response);
+    return HttpResponse.json(response, { status: 202 });
   }),
 
   http.delete("/api/materials/:materialId", ({ params }) => {
@@ -595,6 +580,10 @@ export const handlers = [
         icon: p.icon,
         color: p.color,
         status: mapPlanStatus(p.status),
+        generationStatus: "READY",
+        generationProgress: null,
+        generationStep: null,
+        generationError: null,
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         progress: { completedSessions, totalSessions },
@@ -640,6 +629,10 @@ export const handlers = [
         icon: plan.icon,
         color: plan.color,
         status: mapPlanStatus(plan.status),
+        generationStatus: "READY",
+        generationProgress: null,
+        generationStep: null,
+        generationError: null,
         targetDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
           .slice(0, 10),
@@ -704,18 +697,22 @@ export const handlers = [
         notes: body.specialRequirements ?? undefined,
       });
 
-      const response: PlanCreateCreated = {
+      const response: PlanCreateAccepted = {
         data: {
           id: plan.id,
           title: plan.title,
           icon: plan.icon,
           color: plan.color,
           status: mapPlanStatus(plan.status),
+          generationStatus: "READY",
+          generationProgress: null,
+          generationStep: null,
+          generationError: null,
           createdAt: plan.createdAt,
           updatedAt: plan.updatedAt,
         },
       };
-      return HttpResponse.json(response, { status: 201 });
+      return HttpResponse.json(response, { status: 202 });
     } catch (err) {
       return HttpResponse.json(
         errorResponse("BAD_REQUEST", "Failed to create plan", {

@@ -6,6 +6,7 @@ import { Link } from "react-router";
 
 import { plansQueries } from "../plans.queries";
 
+import { PlanGeneratingCard } from "./plan-generating-card";
 import { PlanStatusBadge } from "./plan-status-badge";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
@@ -32,6 +33,15 @@ export function PlansListView() {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan) => {
+              if (plan.generationStatus !== "ready") {
+                return (
+                  <PlanGeneratingCard
+                    key={plan.id}
+                    plan={plan}
+                  />
+                );
+              }
+
               const PlanIcon = getIconByName(plan.icon);
               const colorData = getColorByName(plan.color);
 

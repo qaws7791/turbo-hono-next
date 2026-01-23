@@ -50,6 +50,10 @@ export function listPlans(deps: { readonly planRepository: PlanRepository }) {
               icon: row.icon,
               color: row.color,
               status: row.status,
+              generationStatus: row.generationStatus,
+              generationProgress: row.generationProgress ?? null,
+              generationStep: row.generationStep ?? null,
+              generationError: row.generationError ?? null,
               createdAt: row.createdAt.toISOString(),
               updatedAt: row.updatedAt.toISOString(),
               progress: {

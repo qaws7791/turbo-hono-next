@@ -3,8 +3,8 @@ import { registerMaterialRoutes } from "./materials";
 import { registerPlanRoutes } from "./plans";
 import { registerSessionRoutes } from "./sessions";
 
-import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { AppDeps } from "../app-deps";
 
 export function registerRoutes(app: OpenAPIHono, deps: AppDeps): void {
   app.get("/health", (c) => c.json({ ok: true }));

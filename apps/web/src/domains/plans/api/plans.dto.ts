@@ -32,5 +32,5 @@ type PlanCreateRequestBody = NonNullable<
 export type PlanCreateBody =
   PlanCreateRequestBody["content"]["application/json"];
 
-export type PlanCreateCreated =
-  paths["/api/plans"]["post"]["responses"]["201"]["content"]["application/json"]["data"];
+export type PlanCreateAccepted =
+  paths["/api/plans"]["post"]["responses"]["202"]["content"]["application/json"]["data"];

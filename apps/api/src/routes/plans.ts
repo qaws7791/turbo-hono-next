@@ -11,8 +11,8 @@ import {
 import { jsonResult } from "../lib/result-handler";
 import { createRequireAuthMiddleware } from "../middleware/auth";
 
-import type { AppDeps } from "../app-deps";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { AppDeps } from "../app-deps";
 
 export function registerPlanRoutes(app: OpenAPIHono, deps: AppDeps): void {
   const requireAuth = createRequireAuthMiddleware({
@@ -58,8 +58,8 @@ export function registerPlanRoutes(app: OpenAPIHono, deps: AppDeps): void {
       const body = c.req.valid("json");
       return jsonResult(
         c,
-        deps.services.plan.createPlan(auth.user.id, body),
-        201,
+        deps.services.plan.enqueuePlanGeneration(auth.user.id, body),
+        202,
       );
     },
   );

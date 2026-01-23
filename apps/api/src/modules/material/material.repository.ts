@@ -100,6 +100,9 @@ export function createMaterialRepository(db: Database) {
         mimeType: string | null;
         fileSize: number | null;
         processingStatus: MaterialProcessingStatus;
+        processingProgress: number | null;
+        processingStep: string | null;
+        errorMessage: string | null;
         summary: string | null;
         createdAt: Date;
         updatedAt: Date;
@@ -129,6 +132,9 @@ export function createMaterialRepository(db: Database) {
             mimeType: materials.mimeType,
             fileSize: materials.fileSize,
             processingStatus: materials.processingStatus,
+            processingProgress: materials.processingProgress,
+            processingStep: materials.processingStep,
+            errorMessage: materials.errorMessage,
             summary: materials.summary,
             createdAt: materials.createdAt,
             updatedAt: materials.updatedAt,
@@ -384,18 +390,22 @@ export function createMaterialRepository(db: Database) {
     findDuplicateByChecksum(
       userId: string,
       checksum: string,
+      exceptMaterialId?: string,
     ): ResultAsync<{ id: string } | null, AppError> {
       return tryPromise(async () => {
+        const where = [
+          eq(materials.userId, userId),
+          eq(materials.checksum, checksum),
+          isNull(materials.deletedAt),
+        ];
+        if (exceptMaterialId) {
+          where.push(sql`${materials.id} <> ${exceptMaterialId}`);
+        }
+
         const rows = await db
           .select({ id: materials.id })
           .from(materials)
-          .where(
-            and(
-              eq(materials.userId, userId),
-              eq(materials.checksum, checksum),
-              isNull(materials.deletedAt),
-            ),
-          )
+          .where(and(...where))
           .limit(1);
         return rows[0] ?? null;
       });
@@ -472,6 +482,32 @@ export function createMaterialRepository(db: Database) {
             errorMessage,
             updatedAt: new Date(),
           })
+          .where(eq(materials.id, materialId));
+      });
+    },
+
+    updateChecksum(
+      materialId: string,
+      checksum: string,
+      updatedAt: Date,
+    ): ResultAsync<void, AppError> {
+      return tryPromise(async () => {
+        await db
+          .update(materials)
+          .set({ checksum, updatedAt })
+          .where(eq(materials.id, materialId));
+      });
+    },
+
+    updateStorageKey(
+      materialId: string,
+      storageKey: string,
+      updatedAt: Date,
+    ): ResultAsync<void, AppError> {
+      return tryPromise(async () => {
+        await db
+          .update(materials)
+          .set({ storageKey, updatedAt })
           .where(eq(materials.id, materialId));
       });
     },

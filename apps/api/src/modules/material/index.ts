@@ -5,10 +5,14 @@ export {
   type UploadProgressStep,
 } from "./usecases/complete-material-upload-stream";
 export { deleteMaterial } from "./usecases/delete-material";
+export { enqueueMaterialProcessing } from "./usecases/enqueue-material-processing";
+export type { EnqueueMaterialProcessingDeps } from "./usecases/enqueue-material-processing";
 export { getJobStatus } from "./usecases/get-job-status";
 export { getMaterialDetail } from "./usecases/get-material-detail";
 export { initiateMaterialUpload } from "./usecases/initiate-material-upload";
 export { listMaterials } from "./usecases/list-materials";
+export { createMaterialProcessor } from "./usecases/process-material";
+export type { ProcessMaterialDeps } from "./usecases/process-material";
 export { updateMaterialTitle } from "./usecases/update-material-title";
 
 export { createMaterialService } from "./material.service";

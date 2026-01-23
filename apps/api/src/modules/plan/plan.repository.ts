@@ -13,7 +13,7 @@ import { ApiError } from "../../middleware/error-handler";
 import type { Database } from "@repo/database";
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../lib/result";
-import type { PlanStatus } from "./plan.dto";
+import type { PlanGenerationStatus, PlanStatus } from "./plan.dto";
 
 export type PlanEntity = typeof plans.$inferSelect;
 export type InsertPlanEntity = typeof plans.$inferInsert;
@@ -47,6 +47,10 @@ export function createPlanRepository(db: Database) {
         icon: string;
         color: string;
         status: PlanStatus;
+        generationStatus: PlanGenerationStatus;
+        generationProgress: number | null;
+        generationStep: string | null;
+        generationError: string | null;
         createdAt: Date;
         updatedAt: Date;
       }>,
@@ -65,6 +69,10 @@ export function createPlanRepository(db: Database) {
             icon: plans.icon,
             color: plans.color,
             status: plans.status,
+            generationStatus: plans.generationStatus,
+            generationProgress: plans.generationProgress,
+            generationStep: plans.generationStep,
+            generationError: plans.generationError,
             createdAt: plans.createdAt,
             updatedAt: plans.updatedAt,
           })
@@ -135,6 +143,10 @@ export function createPlanRepository(db: Database) {
         icon: string;
         color: string;
         status: PlanStatus;
+        generationStatus: PlanGenerationStatus;
+        generationProgress: number | null;
+        generationStep: string | null;
+        generationError: string | null;
         targetDueDate: Date;
         specialRequirements: string | null;
         createdAt: Date;
@@ -151,6 +163,10 @@ export function createPlanRepository(db: Database) {
             icon: plans.icon,
             color: plans.color,
             status: plans.status,
+            generationStatus: plans.generationStatus,
+            generationProgress: plans.generationProgress,
+            generationStep: plans.generationStep,
+            generationError: plans.generationError,
             targetDueDate: plans.targetDueDate,
             specialRequirements: plans.specialRequirements,
             createdAt: plans.createdAt,
@@ -637,6 +653,109 @@ export function createPlanRepository(db: Database) {
             .set({ status: "ACTIVE", updatedAt: params.now })
             .where(eq(plans.id, params.plan.id));
         });
+      });
+    },
+
+    createPendingPlan(params: {
+      userId: string;
+      planData: InsertPlanEntity;
+      sourceRows: Array<{
+        materialId: string;
+        materialTitleSnapshot: string | null;
+        orderIndex: number;
+        createdAt: Date;
+      }>;
+    }): ResultAsync<{ id: number; publicId: string }, AppError> {
+      return tryPromise(async () => {
+        return db.transaction(async (tx) => {
+          // Insert plan (Pending)
+          const createdRows = await tx
+            .insert(plans)
+            .values(params.planData)
+            .returning({ id: plans.id, publicId: plans.publicId });
+
+          const created = createdRows[0];
+          if (!created) {
+            throw new Error("Failed to insert pending plan");
+          }
+
+          // Insert source materials
+          if (params.sourceRows.length > 0) {
+            await tx.insert(planSourceMaterials).values(
+              params.sourceRows.map((row) => ({
+                ...row,
+                planId: created.id,
+              })),
+            );
+          }
+
+          return created;
+        });
+      });
+    },
+
+    fillPlanContent(params: {
+      planId: number;
+      updateData: Partial<InsertPlanEntity>;
+      moduleRows: Array<typeof planModules.$inferInsert>;
+      sessionRows: Array<typeof planSessions.$inferInsert>;
+    }): ResultAsync<void, AppError> {
+      return tryPromise(async () => {
+        await db.transaction(async (tx) => {
+          // Update plan
+          await tx
+            .update(plans)
+            .set(params.updateData)
+            .where(eq(plans.id, params.planId));
+
+          // 재시도(idempotency)를 위해 기존 생성 결과를 정리
+          await tx
+            .delete(planSessions)
+            .where(eq(planSessions.planId, params.planId));
+          await tx
+            .delete(planModules)
+            .where(eq(planModules.planId, params.planId));
+
+          // Insert modules
+          if (params.moduleRows.length > 0) {
+            await tx.insert(planModules).values(
+              params.moduleRows.map((row) => ({
+                ...row,
+                planId: params.planId,
+              })),
+            );
+          }
+
+          // Insert sessions
+          if (params.sessionRows.length > 0) {
+            await tx.insert(planSessions).values(
+              params.sessionRows.map((row) => ({
+                ...row,
+                planId: params.planId,
+              })),
+            );
+          }
+        });
+      });
+    },
+
+    updateGenerationStatus(
+      planId: number,
+      params: {
+        readonly generationStatus: PlanGenerationStatus;
+        readonly generationError: string | null;
+        readonly updatedAt: Date;
+      },
+    ): ResultAsync<void, AppError> {
+      return tryPromise(async () => {
+        await db
+          .update(plans)
+          .set({
+            generationStatus: params.generationStatus,
+            generationError: params.generationError,
+            updatedAt: params.updatedAt,
+          })
+          .where(eq(plans.id, planId));
       });
     },
   };

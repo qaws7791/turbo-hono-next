@@ -13,6 +13,14 @@ export const PlanStatusSchema = z.enum([
 ]);
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
 
+export const PlanGenerationStatusSchema = z.enum([
+  "PENDING",
+  "GENERATING",
+  "READY",
+  "FAILED",
+]);
+export type PlanGenerationStatus = z.infer<typeof PlanGenerationStatusSchema>;
+
 export const CreatePlanInput = z.object({
   materialIds: z.array(z.string().uuid()).min(1).max(5),
   targetDueDate: z.string().date().nullable(),
@@ -56,6 +64,8 @@ export const PlanListItem = z.object({
   icon: z.string(),
   color: z.string(),
   status: PlanStatusSchema,
+  generationStatus: PlanGenerationStatusSchema,
+  jobId: z.string().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   progress: PlanProgress,
@@ -83,6 +93,8 @@ export const CreatePlanResponse = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
+    generationStatus: PlanGenerationStatusSchema,
+    jobId: z.string().optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   }),
@@ -144,6 +156,9 @@ export const PlanDetailResponse = z.object({
     icon: z.string(),
     color: z.string(),
     status: PlanStatusSchema,
+    generationStatus: PlanGenerationStatusSchema,
+    jobId: z.string().optional(),
+    generationError: z.string().nullable().optional(),
     targetDueDate: z.string().date().nullable(),
     specialRequirements: z.string().nullable(),
     createdAt: z.string().datetime(),

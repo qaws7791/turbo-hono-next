@@ -19,6 +19,9 @@ export const MaterialListItemSchema = z.object({
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
+  processingProgress: z.number().int().min(0).max(100).nullable(),
+  processingStep: z.string().nullable(),
+  processingError: z.string().nullable(),
   summary: z.string().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -44,6 +47,9 @@ export const MaterialDetailSchema = z.object({
   mimeType: z.string().min(1).nullable(),
   fileSize: z.number().int().nonnegative().nullable(),
   processingStatus: MaterialProcessingStatusSchema,
+  processingProgress: z.number().int().min(0).max(100).nullable(),
+  processingStep: z.string().nullable(),
+  processingError: z.string().nullable(),
   processedAt: z.iso.datetime().nullable(),
   summary: z.string().nullable(),
   chunkCount: z.number().int().nonnegative().nullable(),
@@ -115,34 +121,6 @@ export const DeleteMaterialResponseSchema = z.object({
   message: z.string().min(1),
   data: z.object({
     type: z.enum(["soft", "hard"]),
-  }),
-});
-
-export const JobStatusSchema = z.enum([
-  "QUEUED",
-  "RUNNING",
-  "SUCCEEDED",
-  "FAILED",
-]);
-
-export const JobStatusResponseSchema = z.object({
-  data: z.object({
-    jobId: z.uuid(),
-    status: JobStatusSchema,
-    progress: z.number().min(0).max(1).nullable(),
-    currentStep: z.string().nullable(),
-    result: z
-      .object({
-        materialId: z.uuid(),
-        summary: z.string().nullable(),
-      })
-      .nullable(),
-    error: z
-      .object({
-        code: z.string().min(1),
-        message: z.string().min(1),
-      })
-      .nullable(),
   }),
 });
 

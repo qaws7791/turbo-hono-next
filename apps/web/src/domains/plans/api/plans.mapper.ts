@@ -1,4 +1,5 @@
 import type {
+  PlanGenerationStatus,
   PlanSessionStatus,
   PlanSessionType,
   PlanStatus,
@@ -12,7 +13,17 @@ export function mapPlanStatus(status: ApiPlanListItem["status"]): PlanStatus {
   if (status === "ACTIVE") return "active";
   if (status === "PAUSED") return "paused";
   if (status === "ARCHIVED") return "archived";
+  if (status === "COMPLETED") return "completed";
   return "archived";
+}
+
+export function mapPlanGenerationStatus(
+  status: ApiPlanListItem["generationStatus"],
+): PlanGenerationStatus {
+  if (status === "READY") return "ready";
+  if (status === "FAILED") return "failed";
+  if (status === "GENERATING") return "generating";
+  return "pending";
 }
 
 export function mapSessionType(): PlanSessionType {
@@ -54,6 +65,10 @@ export function toPlanFromListItem(item: ApiPlanListItem): PlanWithDerived {
     icon: item.icon,
     color: item.color,
     status: mapPlanStatus(item.status),
+    generationStatus: mapPlanGenerationStatus(item.generationStatus),
+    generationProgress: item.generationProgress ?? null,
+    generationStep: item.generationStep ?? null,
+    generationError: item.generationError ?? null,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     sourceMaterialIds: item.sourceMaterialIds,
@@ -112,6 +127,10 @@ export function toPlanFromDetail(detail: ApiPlanDetail): PlanWithDerived {
     icon: detail.icon,
     color: detail.color,
     status: mapPlanStatus(detail.status),
+    generationStatus: mapPlanGenerationStatus(detail.generationStatus),
+    generationProgress: detail.generationProgress ?? null,
+    generationStep: detail.generationStep ?? null,
+    generationError: detail.generationError ?? null,
     createdAt: detail.createdAt,
     updatedAt: detail.updatedAt,
     progressPercent,

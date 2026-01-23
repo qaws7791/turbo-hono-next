@@ -9,7 +9,6 @@ import {
   DeleteMaterialResponseSchema,
   InitiateMaterialUploadRequestSchema,
   InitiateMaterialUploadResponseSchema,
-  JobStatusResponseSchema,
   MaterialDetailResponseSchema,
   MaterialListResponseSchema,
   MaterialProcessingStatusSchema,
@@ -169,29 +168,6 @@ export const completeMaterialUploadStreamRoute = createRoute({
   security: [{ cookieAuth: [] }],
 });
 
-export const getJobStatusRoute = createRoute({
-  tags: ["jobs"],
-  method: "get",
-  path: "/api/jobs/{jobId}",
-  summary: "비동기 작업 상태 조회",
-  description:
-    "자료 분석 등 비동기 작업의 진행 상태를 확인합니다.\n\n**상태**: `pending`, `processing`, `completed`, `failed`",
-  request: {
-    params: z.object({ jobId: z.uuid() }),
-  },
-  responses: {
-    200: {
-      description: "작업 상태를 반환합니다.",
-      content: { "application/json": { schema: JobStatusResponseSchema } },
-    },
-    default: {
-      description: "에러 응답",
-      content: { "application/json": { schema: ErrorResponseSchema } },
-    },
-  },
-  security: [{ cookieAuth: [] }],
-});
-
 export const deleteMaterialRoute = createRoute({
   tags: ["materials"],
   method: "delete",
@@ -253,5 +229,4 @@ export const materialRoutes = [
   completeMaterialUploadStreamRoute,
   deleteMaterialRoute,
   updateMaterialTitleRoute,
-  getJobStatusRoute,
 ] as const;

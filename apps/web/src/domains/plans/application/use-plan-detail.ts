@@ -34,7 +34,10 @@ export function usePlanDetail(planId: string): PlanDetailModel {
 
   const nextQueue = selectNextQueue(plan);
   const nextSession = nextQueue[0];
-  const canStartSession = plan.status === "active" && Boolean(nextSession);
+  const canStartSession =
+    plan.generationStatus === "ready" &&
+    plan.status === "active" &&
+    Boolean(nextSession);
 
   return {
     plan,

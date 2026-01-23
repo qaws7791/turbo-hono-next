@@ -15,6 +15,7 @@ import {
 import { materialsQueries } from "../materials.queries";
 
 import { MaterialCard } from "./material-card";
+import { MaterialProcessingCard } from "./material-processing-card";
 import { MaterialUploadDialog } from "./material-upload-dialog";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
@@ -62,12 +63,26 @@ export function MaterialsListView() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {materials.map((material) => (
-              <MaterialCard
-                key={material.id}
-                material={material}
-              />
-            ))}
+            {materials.map((material) => {
+              if (
+                material.status === "pending" ||
+                material.status === "analyzing"
+              ) {
+                return (
+                  <MaterialProcessingCard
+                    key={material.id}
+                    material={material}
+                  />
+                );
+              }
+
+              return (
+                <MaterialCard
+                  key={material.id}
+                  material={material}
+                />
+              );
+            })}
           </div>
         )}
 

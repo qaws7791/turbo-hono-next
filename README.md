@@ -32,7 +32,31 @@ corepack prepare pnpm@10.2.1 --activate
 pnpm install
 ```
 
-### 4) PostgreSQL 프로비저닝
+### 4) 로컬 개발 인프라 시작 (Docker Compose)
+
+BullMQ 작업 큐를 위한 Redis와 데이터 모니터링 도구를 시작합니다.
+
+```bash
+# 인프라 시작 (Redis + RedisInsight)
+docker-compose up -d
+
+# 상태 확인
+docker-compose ps
+
+# 중지
+docker-compose down
+
+# 데이터까지 삭제
+docker-compose down -v
+```
+
+시작 후 접속:
+
+- **Redis**: `localhost:6379`
+- **RedisInsight** (웹 UI): `http://localhost:5540`
+  - 연결 시 Host: `redis`, Port: `6379`
+
+### 5) PostgreSQL 프로비저닝
 
 로컬에 PostgreSQL이 없다면 Docker로 빠르게 띄울 수 있습니다.
 
@@ -58,7 +82,7 @@ postgresql://postgres:postgres@localhost:5432/lolog
 docker exec -it lolog-postgres psql -U postgres -d lolog -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
-### 5) API 환경 변수 설정
+### 6) API 환경 변수 설정
 
 `apps/api`는 `dotenv`를 사용하므로 `apps/api/.env`를 생성합니다.
 `.env`는 Git에 커밋하지 마세요(시크릿 포함).
@@ -109,6 +133,11 @@ OPENAI_SESSION_MODEL=gpt-5-nano
 GEMINI_API_KEY=
 GEMINI_CHAT_MODEL=gemini-2.5-flash-lite
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+
+# (선택) BullMQ Redis
+# 로컬: redis://127.0.0.1:6379
+# 프로덕션: rediss://default:xxx@xxx.upstash.io:6379
+REDIS_URL=redis://127.0.0.1:6379
 ```
 
 추가 환경 변수 참고:
@@ -117,7 +146,7 @@ GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 - `turbo.json` (Turborepo global env)
 - `docs/ENVIRONMENT.md` (변수 목록)
 
-### 6) DB 마이그레이션 (권장)
+### 7) DB 마이그레이션 (권장)
 
 DB를 준비했다면 마이그레이션을 적용합니다.
 
@@ -133,7 +162,7 @@ $env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/lolog"
 pnpm --filter @repo/database db:migrate
 ```
 
-### 7) 개발 서버 실행
+### 8) 개발 서버 실행
 
 ```bash
 pnpm dev

@@ -51,6 +51,10 @@ function getStepEmoji(step: string): string {
   const emojiMap: Record<string, string> = {
     UPLOADING: "📤",
     PREPARING: "📋",
+    QUEUED: "🧾",
+    VALIDATING: "🔍",
+    PARSING: "📄",
+    INDEXING: "🧠",
     VERIFYING: "🔍",
     LOADING: "📥",
     CHECKING: "🔎",
@@ -58,6 +62,7 @@ function getStepEmoji(step: string): string {
     ANALYZING: "🤖",
     FINALIZING: "✨",
     COMPLETED: "✅",
+    FAILED: "❌",
   };
   return emojiMap[step] || "⏳";
 }

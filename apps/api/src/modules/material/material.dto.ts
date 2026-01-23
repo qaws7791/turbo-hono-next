@@ -73,7 +73,7 @@ export const CreateMaterialResult = z.union([
     mode: z.literal("async"),
     materialId: z.string().uuid(),
     jobId: z.string().uuid(),
-    processingStatus: z.literal("PROCESSING"),
+    processingStatus: z.literal("PENDING"),
   }),
 ]);
 export type CreateMaterialResult = z.infer<typeof CreateMaterialResult>;
