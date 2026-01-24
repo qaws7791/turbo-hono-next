@@ -34,7 +34,7 @@
     "dotenv": "^17.2.2",
     "drizzle-orm": "catalog:",
     "google-auth-library": "^10.5.0",
-    "hono": "^4.9.7",
+    "hono": "^4.11.4",
     "ioredis": "^5.9.2",
     "langchain": "^1.2.7",
     "mammoth": "^1.11.0",
