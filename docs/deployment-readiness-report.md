@@ -27,7 +27,7 @@
 - **Risk:** 테스트되지 않은 코드가 배포되거나, 배포 과정에서 빌드 아티팩트가 누락될 수 있음. 운영 환경의 일관성 보장 어려움.
 - **Where to look:** `.github/workflows`
 - **Recommendation:** 최소한 `build`, `lint`, `type-check`를 수행하는 CI 워크플로우와, Main 브랜치 병합 시 자동 배포하는 CD 파이프라인 구축.
-- **Quick win:** `turbo run build lint check-types`를 수행하는 간단한 GitHub Action 추가.
+- **Quick win:** `turbo run build lint typecheck`를 수행하는 간단한 GitHub Action 추가.
 - **Verification:** PR 생성 시 CI 통과 여부 확인.
 
 ### 2. API Rate Limiting 확장성 문제

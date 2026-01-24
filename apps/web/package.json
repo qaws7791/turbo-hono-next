@@ -7,7 +7,7 @@
     "dev": "cross-env VITE_MSW=true react-router dev",
     "dev:api": "react-router dev",
     "start": "npx serve -s build/client -l 5173",
-    "check-types": "react-router typegen && tsc",
+    "typecheck": "react-router typegen && tsc",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",

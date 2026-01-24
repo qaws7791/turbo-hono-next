@@ -47,7 +47,7 @@ pnpm --filter storybook dev
 # 코드 품질
 pnpm lint          # 린트 검사
 pnpm lint:fix      # 린트 자동 수정
-pnpm check-types   # 타입 체크
+pnpm typecheck   # 타입 체크
 pnpm format        # 포맷팅
 
 # 빌드 및 배포

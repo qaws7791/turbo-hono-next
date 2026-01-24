@@ -75,7 +75,7 @@ jobs:
         run: pnpm --filter api lint
 
       - name: Typecheck (api)
-        run: pnpm --filter api check-types
+        run: pnpm --filter api typecheck
 
   # ===========================================================================
   # Build and Push Docker Image

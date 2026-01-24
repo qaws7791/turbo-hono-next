@@ -28,7 +28,7 @@ turbo-local-market/
 ### 워크스페이스/빌드
 
 - **pnpm workspaces**: `pnpm-workspace.yaml`에 `apps/*`, `packages/*` 등록 + `catalog:`로 공통 버전 관리.
-- **Turborepo tasks**: `turbo.json`의 `build/dev/deploy/lint/check-types/format`를 각 워크스페이스에서 실행.
+- **Turborepo tasks**: `turbo.json`의 `build/dev/deploy/lint/typecheck/format`를 각 워크스페이스에서 실행.
 - **공유 설정**: `@repo/config`가 ESLint v9(flat), Prettier, tsconfig preset 제공.
 
 ## Apps

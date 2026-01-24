@@ -297,7 +297,7 @@ pnpm build
 
 pnpm lint
 pnpm lint:fix
-pnpm check-types
+pnpm typecheck
 pnpm format
 ```
 

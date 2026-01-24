@@ -82,7 +82,7 @@ pnpm --filter storybook build
 ### 타입 체크
 
 ```bash
-pnpm --filter storybook check-types
+pnpm --filter storybook typecheck
 ```
 
 ### 린트

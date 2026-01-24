@@ -397,7 +397,7 @@ pnpm --filter @repo/ui dev
 ### Type Checking
 
 ```bash
-pnpm check-types
+pnpm typecheck
 ```
 
 ### Linting
