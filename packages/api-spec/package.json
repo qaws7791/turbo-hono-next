@@ -13,7 +13,8 @@
     "./openapi": {
       "types": "./src/openapi.ts",
       "default": "./src/openapi.ts"
-    }
+    },
+    "./openapi.json": "./src/generated/openapi.json"
   },
   "files": [
     "src"
@@ -24,7 +25,8 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
-    "docs:generate": "tsx src/scripts/generate-doc.ts"
+    "docs:generate": "tsx src/scripts/generate-doc.ts",
+    "generate:openapi": "tsx src/scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^8.1.0",

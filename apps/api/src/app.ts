@@ -1,5 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { generateOpenApiDocument } from "@repo/api-spec/openapi";
+import openApiDocument from "@repo/api-spec/openapi.json";
 import { Scalar } from "@scalar/hono-api-reference";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
@@ -72,24 +72,7 @@ export function createApp(deps: AppDeps): OpenAPIHono {
   );
 
   app.get("/openapi.json", (c) => {
-    try {
-      return c.json(generateOpenApiDocument());
-    } catch (error) {
-      deps.logger.error(
-        {
-          error:
-            error instanceof Error ? error.message : "Non-Error object caught",
-          errorDetail: JSON.stringify(
-            error,
-            Object.getOwnPropertyNames(error),
-            2,
-          ),
-          stack: error instanceof Error ? error.stack : undefined,
-        },
-        "Failed to generate OpenAPI document",
-      );
-      throw error;
-    }
+    return c.json(openApiDocument);
   });
   app.get("/docs", Scalar({ url: "/openapi.json" }));
 
