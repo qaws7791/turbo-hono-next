@@ -91,7 +91,7 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
 
   return {
     ...parsed,
-    SESSION_COOKIE_NAME_FULL: `__Secure-${parsed.SESSION_COOKIE_NAME}`,
+    SESSION_COOKIE_NAME_FULL: `${(parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production") ? "__Secure-" : ""}${parsed.SESSION_COOKIE_NAME}`,
     AI_API_KEY: aiApiKey,
     AI_EMBEDDING_API_KEY: aiEmbeddingApiKey,
     COOKIE_SECURE: parsed.COOKIE_SECURE ?? parsed.NODE_ENV === "production",
