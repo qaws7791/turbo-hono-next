@@ -1,6 +1,4 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import openApiDocument from "@repo/api-spec/openapi.json";
-import { Scalar } from "@scalar/hono-api-reference";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { csrf } from "hono/csrf";
@@ -70,20 +68,6 @@ export function createApp(deps: AppDeps): OpenAPIHono {
       allowHeaders: ["Content-Type", "Idempotency-Key", "X-Request-ID"],
     }),
   );
-
-  app.get("/openapi.json", (c) => {
-    return c.json(openApiDocument);
-  });
-  app.get("/docs", Scalar({ url: "/openapi.json" }));
-
-  // Health check endpoint for Docker and load balancer
-  app.get("/health", (c) => {
-    return c.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      service: deps.config.SERVICE_NAME,
-    });
-  });
 
   registerRoutes(app, deps);
 
