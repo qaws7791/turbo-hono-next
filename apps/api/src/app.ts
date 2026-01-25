@@ -12,7 +12,7 @@ import {
   getClientIp,
 } from "./middleware/rate-limit";
 import { requestIdMiddleware } from "./middleware/request-id";
-import { secureHeadersMiddleware } from "./middleware/secure-headers";
+import { createSecureHeadersMiddleware } from "./middleware/secure-headers";
 import { registerRoutes } from "./routes";
 
 import type { AppDeps } from "./app-deps";
@@ -20,9 +20,20 @@ import type { AppDeps } from "./app-deps";
 export function createApp(deps: AppDeps): OpenAPIHono {
   const app = new OpenAPIHono();
 
+  const { apiMiddleware, docsMiddleware } = createSecureHeadersMiddleware(
+    deps.config,
+  );
+
   app.use("*", requestIdMiddleware);
   app.use("*", createLoggerMiddleware(deps.logger));
-  app.use("*", secureHeadersMiddleware);
+
+  // 보안 헤더 적용: /docs 경로는 완화된 CSP, 그 외는 엄격한 CSP
+  app.use("*", async (c, next) => {
+    if (c.req.path.startsWith("/docs")) {
+      return docsMiddleware(c, next);
+    }
+    return apiMiddleware(c, next);
+  });
 
   // Request Size Limits: 256KB
   app.use(
