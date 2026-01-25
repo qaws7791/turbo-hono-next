@@ -5,57 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1768061582203,
-      "tag": "0000_soft_marvel_boy",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1768061598145,
-      "tag": "0001_robust_lady_ursula",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1768698214891,
-      "tag": "0002_robust_rogue",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1768698531007,
-      "tag": "0003_glorious_vivisector",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1768909276776,
-      "tag": "0004_strong_supreme_intelligence",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1768910800775,
-      "tag": "0005_tidy_drax",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1769104567507,
-      "tag": "0006_previous_morg",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1769184840215,
-      "tag": "0007_new_vulture",
+      "when": 1769340703514,
+      "tag": "0000_tense_prism",
       "breakpoints": true
     }
   ]
