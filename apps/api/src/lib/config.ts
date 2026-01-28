@@ -40,9 +40,6 @@ const envSchema = z.object({
   AI_EMBEDDING_API_KEY: z.string().min(1).optional(),
   GEMINI_EMBEDDING_API_KEY: z.string().min(1).optional(),
 
-  OPENAI_API_KEY: z.string().min(1).optional(),
-  OPENAI_SESSION_MODEL: z.string().min(1).default("gpt-5-nano"),
-
   RATE_LIMIT_ENABLED: z
     .enum(["true", "false"])
     .transform((value) => value === "true")
@@ -78,8 +75,6 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
   readonly GEMINI_CHAT_MODEL: string;
   readonly GEMINI_EMBEDDING_MODEL: string;
   readonly GEMINI_EMBEDDING_API_KEY?: string;
-  readonly OPENAI_API_KEY?: string;
-  readonly OPENAI_SESSION_MODEL: string;
   readonly RATE_LIMIT_ENABLED: boolean;
 } {
   const parsed = envSchema.parse(env);

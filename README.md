@@ -128,8 +128,6 @@ R2_ENDPOINT=
 R2_PUBLIC_URL=
 
 # (선택) AI
-OPENAI_API_KEY=
-OPENAI_SESSION_MODEL=gpt-5-nano
 GEMINI_API_KEY=
 GEMINI_CHAT_MODEL=gemini-2.5-flash-lite
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
@@ -250,7 +248,7 @@ flowchart LR
   DB -.->|"Drizzle 마이그레이션"| PG
   API -->|"데이터 CRUD"| PG
   API -->|"파일 업로드/다운로드"| R2
-  API -->|"임베딩 생성 & LLM 호출"| OAI
+  API -->|"임베딩 생성 & LLM 호출"| GEM
   API -->|"소셜 로그인"| GOOG
   API -->|"이메일 발송"| RS
 
@@ -268,7 +266,7 @@ flowchart LR
   class DB tool;
   class CFG tool;
   class PG db;
-  class R2,OAI,GOOG,RS ext;
+  class R2,GEM,GOOG,RS ext;
 
   %% Hide invisible alignment links (index 0, 1)
   linkStyle 0 stroke:none,stroke-width:0;

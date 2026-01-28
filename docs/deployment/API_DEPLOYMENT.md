@@ -205,8 +205,6 @@ GitHub 저장소 > **Settings** > **Secrets and variables** > **Actions**에서 
 | `GEMINI_API_KEY` | Google Gemini API 키 |
 | `GEMINI_CHAT_MODEL` | Gemini 채팅 모델 |
 | `GEMINI_EMBEDDING_MODEL` | Gemini 임베딩 모델 |
-| `OPENAI_API_KEY` | OpenAI API 키 |
-| `OPENAI_SESSION_MODEL` | OpenAI 세션 모델 |
 
 ### (선택) Turbo Remote Cache
 
