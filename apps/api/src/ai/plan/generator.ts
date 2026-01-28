@@ -21,7 +21,7 @@ import type {
 } from "./types";
 import type { AppError } from "../../lib/result";
 import type { Logger } from "pino";
-import type { MaterialRepository } from "../../modules/material";
+import type { MaterialRepository } from "@repo/core/modules/material";
 import type { RagRetriever } from "../rag";
 
 const { err, ok } = neverthrow;

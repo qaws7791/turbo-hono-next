@@ -27,6 +27,7 @@
     "@langchain/langgraph": "^1.1.0",
     "@langchain/textsplitters": "^1.0.1",
     "@repo/api-spec": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/database": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.18",
     "arctic": "^3.7.0",

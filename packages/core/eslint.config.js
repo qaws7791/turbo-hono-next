@@ -11,17 +11,30 @@ export default [
         {
           patterns: [
             {
-              group: ["**/modules/*/*"],
-              message: "Import other modules via `src/modules/<module>` only.",
-            },
-            {
               group: ["@repo/core/src/**"],
               message: "Import `@repo/core` via its public exports only.",
             },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/modules/**/internal/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
             {
-              group: ["@repo/core/**/internal/**"],
+              group: [
+                "../*/internal/**",
+                "../../*/internal/**",
+                "../../../*/internal/**",
+                "../../../../*/internal/**",
+              ],
               message:
-                "Do not import Core module internals. Use `@repo/core/modules/<module>` (api) exports.",
+                "Do not import other module internals. Use `../api` contracts (facade/DTO/events) instead.",
             },
           ],
         },

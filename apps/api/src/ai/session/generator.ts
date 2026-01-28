@@ -1,9 +1,9 @@
 import { Result } from "neverthrow";
 import z from "zod";
+import { SessionBlueprint } from "@repo/core/modules/session";
 
 import { getAiModelsAsync } from "../../lib/ai";
 import { ApiError } from "../../middleware/error-handler";
-import { SessionBlueprint } from "../../modules/session";
 
 import { AiSessionBlueprintSpecSchema } from "./schema";
 
@@ -12,7 +12,7 @@ import type { AppError } from "../../lib/result";
 import type {
   SessionBlueprint as SessionBlueprintType,
   SessionStep,
-} from "../../modules/session";
+} from "@repo/core/modules/session";
 import type { AiSessionBlueprintSpec, AiSessionStepSpec } from "./schema";
 
 export interface GenerateSessionBlueprintParams {
@@ -20,7 +20,7 @@ export interface GenerateSessionBlueprintParams {
   readonly planTitle: string;
   readonly moduleTitle: string;
   readonly sessionTitle: string;
-  readonly objective: string;
+  readonly objective: string | null;
   readonly estimatedMinutes: number;
   readonly createdAt: Date;
   readonly chunkContents: ReadonlyArray<string>;
@@ -550,7 +550,7 @@ ${JSON.stringify(z.toJSONSchema(AiSessionBlueprintSpecSchema), null, 2)}
     readonly planTitle: string;
     readonly moduleTitle: string;
     readonly sessionTitle: string;
-    readonly objective: string;
+    readonly objective: string | null;
     readonly estimatedMinutes: number;
     readonly chunkContents: ReadonlyArray<string>;
   }): string {

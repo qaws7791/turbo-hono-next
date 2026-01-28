@@ -1,9 +1,9 @@
 import type { Logger } from "pino";
 import type { Config } from "./lib/config";
-import type { AuthService } from "./modules/auth";
-import type { MaterialService } from "./modules/material";
-import type { PlanService } from "./modules/plan";
-import type { SessionService } from "./modules/session";
+import type { AuthService } from "@repo/core/modules/auth";
+import type { MaterialService } from "@repo/core/modules/material";
+import type { PlanService } from "@repo/core/modules/plan";
+import type { SessionService } from "@repo/core/modules/session";
 
 export type AppServices = {
   readonly auth: AuthService;

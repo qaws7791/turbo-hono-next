@@ -6,7 +6,7 @@ import { throwAppError } from "../lib/result";
 import { ApiError } from "./error-handler";
 
 import type { Config } from "../lib/config";
-import type { AuthContext, AuthService } from "../modules/auth";
+import type { AuthContext, AuthService } from "@repo/core/modules/auth";
 import type { RequestIdVariables } from "./request-id";
 
 export type AuthVariables = {
