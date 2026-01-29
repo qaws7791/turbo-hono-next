@@ -1,22 +1,27 @@
 import { serve } from "@hono/node-server";
+import { createAiModels } from "@repo/ai";
 import { coreError } from "@repo/core/common/core-error";
 import { createAuthService as createCoreAuthService } from "@repo/core/modules/auth";
+import { createKnowledgeService } from "@repo/core/modules/knowledge";
 import {
+  createAiMaterialAnalyzer,
+  createDocumentParser,
   createMaterialProcessor,
   createMaterialRepository,
   createMaterialService,
 } from "@repo/core/modules/material";
-import { createPlanService as createCorePlanService } from "@repo/core/modules/plan";
-import { createSessionService as createCoreSessionService } from "@repo/core/modules/session";
-import { ResultAsync } from "neverthrow";
+import {
+  createAiPlanGeneration,
+  createPlanService as createCorePlanService,
+} from "@repo/core/modules/plan";
+import {
+  createAiSessionBlueprintGenerator,
+  createSessionService as createCoreSessionService,
+} from "@repo/core/modules/session";
+import { ResultAsync, errAsync } from "neverthrow";
 
 import "dotenv/config";
 
-import { documentParser } from "./ai/ingestion/parse";
-import { materialAnalyzer } from "./ai/material";
-import { createLearningPlanGenerator } from "./ai/plan";
-import { ragIngestor, ragRetriever, ragVectorStoreManager } from "./ai/rag";
-import { sessionBlueprintGenerator } from "./ai/session";
 import { createApp } from "./app";
 import {
   createMaterialProcessingWorker,
@@ -37,26 +42,38 @@ import { ApiError } from "./middleware/error-handler";
 
 import type { AppError as CoreAppError } from "@repo/core/common/result";
 import type {
-  MaterialAnalyzerPort,
   MaterialProcessingQueuePort,
   R2StoragePort,
-  RagIngestorPort,
-  RagRetrieverForMaterialPort,
 } from "@repo/core/modules/material";
 import type {
   MaterialReaderPort,
   PlanGenerationPort,
   PlanGenerationQueuePort,
+  PlanLoggerPort,
 } from "@repo/core/modules/plan";
-import type {
-  RagRetrieverForSessionPort,
-  SessionBlueprintGeneratorPort,
-} from "@repo/core/modules/session";
 import type { AppDeps } from "./app-deps";
 import type { AppError as ApiAppError } from "./lib/result";
+import type {
+  AiError,
+  AiModels,
+  ChatModelPort,
+  EmbeddingModelPort,
+} from "@repo/ai";
 
 const logger = createLogger(CONFIG);
 const db = createDatabase(CONFIG);
+
+const aiModels = createAiModelsOrUnavailable(CONFIG);
+const knowledge = createKnowledgeService({
+  databaseUrl: CONFIG.DATABASE_URL,
+  embeddingModel: aiModels.embedding,
+});
+
+const documentParser = createDocumentParser();
+const materialAnalyzer = createAiMaterialAnalyzer({ chatModel: aiModels.chat });
+const sessionBlueprintGenerator = createAiSessionBlueprintGenerator({
+  chatModel: aiModels.chat,
+});
 
 // 1. Queue 초기화
 const queueRegistry = initializeQueueRegistry();
@@ -76,10 +93,8 @@ const r2 = {
 const materialService = createMaterialService({
   materialRepository,
   documentParser,
-  materialAnalyzer: createMaterialAnalyzerAdapter(materialAnalyzer),
-  ragIngestor: createRagIngestorAdapter(ragIngestor),
-  ragRetriever: createRagRetrieverForMaterialAdapter(ragRetriever),
-  ragVectorStoreManager,
+  materialAnalyzer,
+  knowledge,
   r2: createR2StorageAdapter(r2),
   materialProcessingQueue: createMaterialProcessingQueueAdapter(
     queueRegistry.queues.materialProcessing,
@@ -90,9 +105,8 @@ const materialService = createMaterialService({
 const materialProcessor = createMaterialProcessor({
   materialRepository,
   documentParser,
-  materialAnalyzer: createMaterialAnalyzerAdapter(materialAnalyzer),
-  ragIngestor: createRagIngestorAdapter(ragIngestor),
-  ragVectorStoreManager,
+  materialAnalyzer,
+  knowledge,
   r2: createR2StorageAdapter(r2),
 });
 
@@ -114,16 +128,12 @@ materialWorker.on("failed", (job, err) => {
   );
 });
 
-const learningPlanGenerator = createLearningPlanGenerator({
-  logger,
-  materialRepository,
-  ragRetriever,
-});
-
-const planGeneration = {
-  generatePlan: (input) =>
-    learningPlanGenerator.generate(input).mapErr(toCoreAppError),
-} satisfies PlanGenerationPort;
+const planGeneration = createAiPlanGeneration({
+  logger: createPlanLoggerAdapter(logger),
+  materialReader: createMaterialReaderAdapter(materialRepository),
+  knowledge,
+  chatModel: aiModels.chat,
+}) satisfies PlanGenerationPort;
 
 const planCore = createCorePlanService({
   db,
@@ -155,10 +165,8 @@ planWorker.on("failed", (job, err) => {
 const planService = planCore;
 const sessionService = createCoreSessionService({
   db,
-  ragRetriever: createSessionRagRetrieverAdapter(ragRetriever),
-  sessionBlueprintGenerator: createSessionBlueprintGeneratorAdapter(
-    sessionBlueprintGenerator,
-  ),
+  knowledge,
+  sessionBlueprintGenerator,
 });
 
 const deps = {
@@ -225,6 +233,10 @@ function createMaterialReaderAdapter(
   return {
     findByIds: (userId, materialIds) =>
       repo.findByIds(userId, materialIds).mapErr(toCoreAppError),
+    findMaterialsMetaForPlan: (materialIds) =>
+      repo.findMaterialsMetaForPlan(materialIds).mapErr(toCoreAppError),
+    findOutlineNodesForPlan: (materialIds) =>
+      repo.findOutlineNodesForPlan(materialIds).mapErr(toCoreAppError),
   };
 }
 
@@ -245,45 +257,10 @@ function createPlanGenerationQueueAdapter(
   };
 }
 
-function createSessionRagRetrieverAdapter(
-  retriever: typeof ragRetriever,
-): RagRetrieverForSessionPort {
+function createPlanLoggerAdapter(loggerPort: typeof logger): PlanLoggerPort {
   return {
-    retrieveRange: (params) =>
-      retriever.retrieveRange(params).mapErr(toCoreAppError),
-  };
-}
-
-function createSessionBlueprintGeneratorAdapter(
-  generator: typeof sessionBlueprintGenerator,
-): SessionBlueprintGeneratorPort {
-  return {
-    generate: (input) => generator.generate(input).mapErr(toCoreAppError),
-  };
-}
-
-function createMaterialAnalyzerAdapter(
-  analyzer: typeof materialAnalyzer,
-): MaterialAnalyzerPort {
-  return {
-    analyze: (params) => analyzer.analyze(params).mapErr(toCoreAppError),
-  };
-}
-
-function createRagIngestorAdapter(
-  ingestor: typeof ragIngestor,
-): RagIngestorPort {
-  return {
-    ingest: (params) => ingestor.ingest(params).mapErr(toCoreAppError),
-  };
-}
-
-function createRagRetrieverForMaterialAdapter(
-  retriever: typeof ragRetriever,
-): RagRetrieverForMaterialPort {
-  return {
-    countMaterialChunks: (params) =>
-      retriever.countMaterialChunks(params).mapErr(toCoreAppError),
+    info: (obj, msg) => loggerPort.info(obj, msg),
+    error: (obj, msg) => loggerPort.error(obj, msg),
   };
 }
 
@@ -317,4 +294,32 @@ function createMaterialProcessingQueueAdapter(
           }),
       ),
   };
+}
+
+function createAiModelsOrUnavailable(config: typeof CONFIG): AiModels {
+  const created = createAiModels({
+    apiKey: config.AI_API_KEY ?? null,
+    embeddingApiKey: config.AI_EMBEDDING_API_KEY ?? null,
+    chatModel: config.GEMINI_CHAT_MODEL,
+    embeddingModel: config.GEMINI_EMBEDDING_MODEL,
+  });
+
+  if (created.isOk()) return created.value;
+
+  const error: AiError = created.error;
+
+  const chat: ChatModelPort = {
+    generateStructuredOutput: () => errAsync(error),
+    generateJson: () => errAsync(error),
+  };
+
+  const embedding: EmbeddingModelPort = {
+    embedDocuments: () => errAsync(error),
+    embedQuery: () => errAsync(error),
+    embedContent: () => errAsync(error),
+  };
+
+  logger.warn({ error }, "AI is unavailable; using fallback models");
+
+  return { chat, embedding };
 }

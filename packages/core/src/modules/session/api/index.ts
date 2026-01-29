@@ -11,10 +11,11 @@ import { listSessionRuns } from "../internal/application/list-session-runs";
 import { saveProgress } from "../internal/application/save-progress";
 import { updatePlanSession } from "../internal/application/update-plan-session";
 import { createSessionRepository } from "../internal/infrastructure/session.repository";
+import { createAiSessionBlueprintGenerator } from "../internal/infrastructure/adapters/session-blueprint-generator.adapter";
 
 import type { Database } from "@repo/database";
 import type {
-  RagRetrieverForSessionPort,
+  KnowledgeFacadeForSessionPort,
   SessionBlueprintGeneratorPort,
 } from "./ports";
 
@@ -23,9 +24,11 @@ export * from "./ports";
 
 export type CreateSessionServiceDeps = {
   readonly db: Database;
-  readonly ragRetriever: RagRetrieverForSessionPort;
+  readonly knowledge: KnowledgeFacadeForSessionPort;
   readonly sessionBlueprintGenerator: SessionBlueprintGeneratorPort;
 };
+
+export { createAiSessionBlueprintGenerator };
 
 export type SessionService = {
   readonly abandonRun: ReturnType<typeof abandonRun>;
@@ -57,7 +60,7 @@ export function createSessionService(
     getHomeQueue: getHomeQueue(usecaseDeps),
     getRunDetail: getRunDetail({
       sessionRepository,
-      ragRetriever: deps.ragRetriever,
+      knowledge: deps.knowledge,
       sessionBlueprintGenerator: deps.sessionBlueprintGenerator,
     }),
     listRunActivities: listRunActivities(usecaseDeps),

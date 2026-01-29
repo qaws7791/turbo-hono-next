@@ -1,20 +1,19 @@
 import { err, ok, safeTry } from "neverthrow";
 
 import { coreError } from "../../../../common/core-error";
-import { fromPromise } from "../../../../common/result";
 
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../../common/result";
 import type { DeleteMaterialResponse as DeleteMaterialResponseType } from "../../api/schema";
 import type {
+  KnowledgeFacadeForMaterialPort,
   R2StoragePort,
-  RagVectorStoreManagerForMaterialPort,
 } from "../../api/ports";
 import type { MaterialRepository } from "../infrastructure/material.repository";
 
 export function deleteMaterial(deps: {
   readonly materialRepository: MaterialRepository;
-  readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
   readonly r2: R2StoragePort;
 }) {
   return function deleteMaterial(
@@ -53,19 +52,11 @@ export function deleteMaterial(deps: {
         yield* deps.r2.deleteObject({ key: material.storageKey });
       }
 
-      const store = yield* fromPromise(
-        deps.ragVectorStoreManager.getStoreForUser({
-          userId,
-        }),
-      );
-      yield* fromPromise(
-        store.delete({
-          filter: {
-            userId,
-            materialId,
-          },
-        }),
-      );
+      yield* deps.knowledge.deleteByRef({
+        userId,
+        type: "material",
+        refId: materialId,
+      });
 
       yield* deps.materialRepository.hardDelete(materialId);
 

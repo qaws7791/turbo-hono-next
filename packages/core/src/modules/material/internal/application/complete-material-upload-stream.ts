@@ -15,10 +15,9 @@ import type {
 } from "../../api/schema";
 import type {
   DocumentParserPort,
+  KnowledgeFacadeForMaterialPort,
   MaterialAnalyzerPort,
   R2StoragePort,
-  RagIngestorPort,
-  RagVectorStoreManagerForMaterialPort,
 } from "../../api/ports";
 import type { MaterialRepository } from "../infrastructure/material.repository";
 
@@ -133,8 +132,7 @@ export function completeMaterialUploadWithProgress(deps: {
   readonly materialRepository: MaterialRepository;
   readonly documentParser: DocumentParserPort;
   readonly r2: R2StoragePort;
-  readonly ragIngestor: RagIngestorPort;
-  readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
   readonly materialAnalyzer: MaterialAnalyzerPort;
 }) {
   return function completeMaterialUploadWithProgress(
@@ -398,10 +396,11 @@ export function completeMaterialUploadWithProgress(deps: {
         const analyzed = analyzedResult.value;
         const summary = analyzed.summary;
 
-        const ingestResult = await deps.ragIngestor.ingest({
+        const ingestResult = await deps.knowledge.ingest({
           userId,
-          materialId,
-          materialTitle: title,
+          type: "material",
+          refId: materialId,
+          title,
           originalFilename: session.originalFilename ?? null,
           mimeType: session.mimeType,
           bytes: tempBytes,
@@ -502,12 +501,14 @@ export function completeMaterialUploadWithProgress(deps: {
 
       if (state.materialId) {
         try {
-          const store = await deps.ragVectorStoreManager.getStoreForUser({
+          const deleted = await deps.knowledge.deleteByRef({
             userId,
+            type: "material",
+            refId: state.materialId,
           });
-          await store.delete({
-            filter: { userId, materialId: state.materialId },
-          });
+          if (deleted.isErr()) {
+            // best-effort cleanup
+          }
         } catch {
           // best-effort cleanup
         }

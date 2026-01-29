@@ -1,28 +1,31 @@
 import * as neverthrow from "neverthrow";
 
-import { getAiModelsAsync } from "../../lib/ai";
-import { combineResults, fromPromise } from "../../lib/result";
-import { ApiError } from "../../middleware/error-handler";
-
+import { coreError } from "../../../../../common/core-error";
+import { combineResults, fromPromise } from "../../../../../common/result";
 import {
   buildModulePopulationSystemPrompt,
   buildModulePopulationUserPrompt,
   buildStructurePlanningSystemPrompt,
   buildStructurePlanningUserPrompt,
-} from "./prompts";
-import { ModuleSessionsSchema, PlanStructureSchema } from "./schema";
+} from "../../application/ai/prompts";
+import {
+  ModuleSessionsSchema,
+  PlanStructureSchema,
+} from "../../application/ai/schema";
 
-import type { PlanStructure } from "./schema";
+import type { PlanStructure } from "../../application/ai/schema";
 import type {
   GeneratePlanInput,
   GeneratePlanResult,
   GeneratedModule,
   GeneratedSession,
-} from "./types";
-import type { AppError } from "../../lib/result";
-import type { Logger } from "pino";
-import type { MaterialRepository } from "@repo/core/modules/material";
-import type { RagRetriever } from "../rag";
+} from "../../application/ai/types";
+import type { AiError, ChatModelPort } from "@repo/ai";
+import type { KnowledgeFacade } from "../../../../knowledge/api";
+import type { AppError } from "../../../../../common/result";
+import type { PlanGenerationPort } from "../../../api/plan-generation.port";
+import type { MaterialReaderPort } from "../../../api/ports/material-reader.port";
+import type { PlanLoggerPort } from "../../../api/ports/plan-logger.port";
 
 const { err, ok } = neverthrow;
 
@@ -73,29 +76,29 @@ interface RawPopulatedSession {
  * 2단계: 모듈별 세션 상세 생성 (각 모듈의 청크로 세션 제목/목표 일괄 생성)
  */
 export type LearningPlanGeneratorDeps = {
-  readonly logger: Logger;
-  readonly materialRepository: Pick<
-    MaterialRepository,
+  readonly logger: PlanLoggerPort;
+  readonly materialReader: Pick<
+    MaterialReaderPort,
     "findMaterialsMetaForPlan" | "findOutlineNodesForPlan"
   >;
-  readonly ragRetriever: Pick<
-    RagRetriever,
-    "getMaterialsChunkStats" | "retrieveRange"
-  >;
+  readonly knowledge: Pick<KnowledgeFacade, "getChunkStats" | "retrieveRange">;
+  readonly chatModel: ChatModelPort;
 };
 
 export class LearningPlanGenerator {
-  private readonly logger: Logger;
-  private readonly materialRepository: LearningPlanGeneratorDeps["materialRepository"];
-  private readonly ragRetriever: LearningPlanGeneratorDeps["ragRetriever"];
+  private readonly logger: PlanLoggerPort;
+  private readonly materialReader: LearningPlanGeneratorDeps["materialReader"];
+  private readonly knowledge: LearningPlanGeneratorDeps["knowledge"];
+  private readonly chatModel: ChatModelPort;
 
   private readonly MAX_SESSIONS_PER_DAY = 3;
   private readonly CONCURRENCY_LIMIT = 3;
 
   constructor(deps: LearningPlanGeneratorDeps) {
     this.logger = deps.logger;
-    this.materialRepository = deps.materialRepository;
-    this.ragRetriever = deps.ragRetriever;
+    this.materialReader = deps.materialReader;
+    this.knowledge = deps.knowledge;
+    this.chatModel = deps.chatModel;
   }
 
   /**
@@ -139,9 +142,13 @@ export class LearningPlanGenerator {
     materialIds: ReadonlyArray<string>,
   ): neverthrow.ResultAsync<Array<MaterialMetadata>, AppError> {
     return combineResults([
-      this.materialRepository.findMaterialsMetaForPlan(materialIds),
-      this.materialRepository.findOutlineNodesForPlan(materialIds),
-      this.ragRetriever.getMaterialsChunkStats({ userId, materialIds }),
+      this.materialReader.findMaterialsMetaForPlan(materialIds),
+      this.materialReader.findOutlineNodesForPlan(materialIds),
+      this.knowledge.getChunkStats({
+        userId,
+        type: "material",
+        refIds: materialIds,
+      }),
     ]).map(([metaRows, outlineRows, statsMap]) => {
       const outlineByMaterialId = new Map<
         string,
@@ -194,28 +201,25 @@ export class LearningPlanGenerator {
       totalChunkCount,
     });
 
-    return getAiModelsAsync()
-      .andThen((models) =>
-        models.chat.generateStructuredOutput(
-          {
-            config: {
-              systemInstruction: systemPrompt,
-            },
-            contents: [userPrompt],
+    return this.chatModel
+      .generateStructuredOutput(
+        {
+          config: {
+            systemInstruction: systemPrompt,
           },
-          PlanStructureSchema,
-        ),
+          contents: [userPrompt],
+        },
+        PlanStructureSchema,
       )
       .mapErr((error) => {
         this.logger.error(
           { error },
           "[LearningPlanGenerator] AI 구조 설계 실패",
         );
-        return new ApiError(
-          500,
-          "AI_PLAN_STRUCTURE_FAILED",
-          "학습 구조를 설계하는 중에 오류가 발생했습니다.",
-        );
+        return this.toCoreAiError(error, {
+          code: "AI_PLAN_STRUCTURE_FAILED",
+          message: "학습 구조를 설계하는 중에 오류가 발생했습니다.",
+        });
       });
   }
 
@@ -268,10 +272,11 @@ export class LearningPlanGenerator {
           module.chunkRange.end,
         );
 
-        return this.ragRetriever
+        return this.knowledge
           .retrieveRange({
             userId: context.userId,
-            materialId: material.id,
+            type: "material",
+            refId: material.id,
             startIndex,
             endIndex,
           })
@@ -289,11 +294,10 @@ export class LearningPlanGenerator {
                 "[LearningPlanGenerator] 청크 조회 결과 없음",
               );
               return err(
-                new ApiError(
-                  500,
-                  "EMPTY_MATERIAL_CHUNKS",
-                  `모듈 "${module.title}"의 학습 내용을 불러올 수 없습니다. (범위: ${startIndex}-${endIndex}, 전체: ${material.chunkCount})`,
-                ),
+                coreError({
+                  code: "EMPTY_MATERIAL_CHUNKS",
+                  message: `모듈 "${module.title}"의 학습 내용을 불러올 수 없습니다. (범위: ${startIndex}-${endIndex}, 전체: ${material.chunkCount})`,
+                }),
               );
             }
 
@@ -307,28 +311,25 @@ export class LearningPlanGenerator {
               chunkContents,
             });
 
-            return getAiModelsAsync()
-              .andThen((models) =>
-                models.chat.generateStructuredOutput(
-                  {
-                    config: {
-                      systemInstruction: systemPrompt,
-                    },
-                    contents: [userPrompt],
+            return this.chatModel
+              .generateStructuredOutput(
+                {
+                  config: {
+                    systemInstruction: systemPrompt,
                   },
-                  ModuleSessionsSchema,
-                ),
+                  contents: [userPrompt],
+                },
+                ModuleSessionsSchema,
               )
               .mapErr((error) => {
                 this.logger.error(
                   { error, moduleTitle: module.title },
                   "[LearningPlanGenerator] AI 모듈 세션 생성 실패",
                 );
-                return new ApiError(
-                  500,
-                  "AI_MODULE_POPULATION_FAILED",
-                  `모듈 "${module.title}"의 상세 세션을 생성하는 중에 오류가 발생했습니다.`,
-                );
+                return this.toCoreAiError(error, {
+                  code: "AI_MODULE_POPULATION_FAILED",
+                  message: `모듈 "${module.title}"의 상세 세션을 생성하는 중에 오류가 발생했습니다.`,
+                });
               })
               .map((parsed) =>
                 parsed.map((sess) => ({
@@ -359,11 +360,10 @@ export class LearningPlanGenerator {
     const material = materials[module.materialIndex];
     if (!material) {
       return err(
-        new ApiError(
-          500,
-          "MATERIAL_NOT_FOUND",
-          `모듈 "${module.title}"에 해당하는 자료를 찾을 수 없습니다.`,
-        ),
+        coreError({
+          code: "MATERIAL_NOT_FOUND",
+          message: `모듈 "${module.title}"에 해당하는 자료를 찾을 수 없습니다.`,
+        }),
       );
     }
     return ok(material);
@@ -475,10 +475,46 @@ export class LearningPlanGenerator {
       };
     });
   }
+
+  private toCoreAiError(
+    error: AiError,
+    params: { readonly code: string; readonly message: string },
+  ): AppError {
+    return coreError({
+      code: params.code,
+      message: params.message,
+      details: {
+        ai: {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+        },
+      },
+      cause: error.cause,
+    });
+  }
 }
 
 export function createLearningPlanGenerator(
   deps: LearningPlanGeneratorDeps,
 ): LearningPlanGenerator {
   return new LearningPlanGenerator(deps);
+}
+
+export function createPlanGenerationAdapter(deps: {
+  readonly logger: PlanLoggerPort;
+  readonly materialReader: MaterialReaderPort;
+  readonly knowledge: KnowledgeFacade;
+  readonly chatModel: ChatModelPort;
+}): PlanGenerationPort {
+  const generator = createLearningPlanGenerator({
+    logger: deps.logger,
+    materialReader: deps.materialReader,
+    knowledge: deps.knowledge,
+    chatModel: deps.chatModel,
+  });
+
+  return {
+    generatePlan: (input) => generator.generate(input),
+  };
 }

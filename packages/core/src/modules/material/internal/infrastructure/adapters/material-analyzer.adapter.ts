@@ -1,28 +1,21 @@
 import { z } from "zod";
 
-import { getAiModelsAsync } from "../../lib/ai";
+import { coreError } from "../../../../../common/core-error";
 
+import type { AiError, ChatModelPort } from "@repo/ai";
 import type { ResultAsync } from "neverthrow";
-import type { AppError } from "../../lib/result";
+import type { AppError } from "../../../../../common/result";
+import type {
+  MaterialAnalyzerPort,
+  MaterialOutlineNode,
+} from "../../../api/ports";
 
-export type MaterialOutlineNode = {
-  readonly nodeType: "SECTION" | "TOPIC";
-  readonly title: string;
-  readonly summary: string;
-  readonly keywords: ReadonlyArray<string>;
-  readonly pageStart: number | null;
-  readonly pageEnd: number | null;
-  readonly lineStart: number | null;
-  readonly lineEnd: number | null;
-  readonly children: ReadonlyArray<MaterialOutlineNode>;
-};
-
-export type AnalyzeMaterialParams = {
+type AnalyzeMaterialParams = {
   readonly fullText: string;
   readonly mimeType: string | null;
 };
 
-export type AnalyzeMaterialResult = {
+type AnalyzeMaterialResult = {
   readonly title: string;
   readonly summary: string;
   readonly outline: ReadonlyArray<MaterialOutlineNode>;
@@ -96,7 +89,13 @@ const AnalyzeMaterialResponseSchema = z.object({
     .describe("자료의 문서 지도 트리 (상위 섹션 4~12개 권장, 최대 80개)"),
 });
 
-export class MaterialAnalyzer {
+class AiMaterialAnalyzer implements MaterialAnalyzerPort {
+  private readonly chatModel: ChatModelPort;
+
+  constructor(deps: { readonly chatModel: ChatModelPort }) {
+    this.chatModel = deps.chatModel;
+  }
+
   analyze(
     params: AnalyzeMaterialParams,
   ): ResultAsync<AnalyzeMaterialResult, AppError> {
@@ -106,23 +105,31 @@ export class MaterialAnalyzer {
       mimeType: params.mimeType,
     });
 
-    return getAiModelsAsync()
-      .andThen((models) =>
-        models.chat.generateStructuredOutput(
-          {
-            config: {
-              systemInstruction: systemPrompt,
-            },
-            contents: [userPrompt],
+    return this.chatModel
+      .generateStructuredOutput(
+        {
+          config: {
+            systemInstruction: systemPrompt,
           },
-          AnalyzeMaterialResponseSchema,
-        ),
+          contents: [userPrompt],
+        },
+        AnalyzeMaterialResponseSchema,
       )
+      .mapErr((error) => this.toCoreAiError(error))
       .map((parsed) => ({
         title: parsed.materialTitle.trim(),
         summary: parsed.materialSummary.trim(),
         outline: parsed.outline.map((node) => this.normalizeOutlineNode(node)),
       }));
+  }
+
+  private toCoreAiError(error: AiError): AppError {
+    return coreError({
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      cause: error.cause,
+    });
   }
 
   private buildSystemPrompt(): string {
@@ -144,20 +151,19 @@ export class MaterialAnalyzer {
 - **포함해야 할 내용**:
   - 문서의 **핵심 주제**와 **집필/생성 목적**
   - 다루고 있는 주요 **개념, 이론, 또는 기술적 세부사항**
-  - 학습자가 이 자료를 통해 얻을 수 있는 **구체적인 통찰(Insight)** 및 **실무적/학습적 효용**
-- **문체**: 논리적이고 전문적인 어조 (해요체보다는 **하십시오/한다** 체 권장, 객관적 서술)
+  - 학습자가 특히 주의해야 할 **흔한 오개념/실수**
+  - 실무/프로젝트 관점에서의 **적용 포인트**
 
-### 2. 문서 지도 (Deep Outline) 및 섹션별 상세 요약 (Section Insight)
+### 2. 문서 지도(Outline Tree) 생성
 
-문서의 구조를 트리 형태로 시각화할 수 있도록 분해하고, 각 섹션마다 **상세한 학습 요약**을 제공하십시오.
+학습자가 전체 문서를 빠르게 탐색하고, 적절한 학습 순서를 설계할 수 있도록, 문서의 구조를 **트리 형태로** 생성하십시오.
 
-- **구조화**: 문서의 논리적 흐름(목차 우선, 서론-본론-결론, 혹은 단계별 구성)을 정확히 파악하여 계층 구조(부모-자식 노드)로 표현합니다.
-- 섹션의 깊이: 최대 2단계(대단원 -> 소단원)
-- **섹션 요약 품질**: 단순한 나열이 아닌, 해당 섹션이 전달하려는 **지식의 정수**를 담아야 합니다.
-  - **분량**: 섹션당 300자 ~ 1000자 내외 (핵심 내용을 빠짐없이 포함)
-  - 제목: 원문 헤딩/섹션 제목이 있으면 우선 사용하고, 없으면 내용을 대표하는 제목을 생성합니다.
-  - **내용**: 독자가 원문을 읽지 않고도 해당 섹션의 내용을 파악할 수 있도록 구체적으로 서술합니다.(Self-contained)
-  - **키워드**: 단순 단어가 아닌, 해당 섹션을 검색하거나 복습할 때 결정적인 **핵심 개념어(Concept Keywords)**를 추출하십시오. (중복 금지)
+#### 노드 생성 규칙
+
+- nodeType은 SECTION 또는 TOPIC 입니다.
+- children을 통해 계층 구조를 표현합니다.
+- 각 노드는 반드시 title/summary/keywords를 포함해야 합니다.
+- keywords는 해당 섹션을 검색하거나 복습할 때 결정적인 **핵심 개념어(Concept Keywords)**를 추출하십시오. (중복 금지)
 - 위치 정보 규칙
   - 정확한 학습 위치 안내를 위해 원문의 위치 정보를 반드시 포함해야 합니다.
   - pageStart/pageEnd/lineStart/lineEnd 필드는 항상 포함합니다.
@@ -286,4 +292,10 @@ ${params.content}
     if (start <= end) return { start, end };
     return { start: end, end: start };
   }
+}
+
+export function createAiMaterialAnalyzer(deps: {
+  readonly chatModel: ChatModelPort;
+}): MaterialAnalyzerPort {
+  return new AiMaterialAnalyzer(deps);
 }

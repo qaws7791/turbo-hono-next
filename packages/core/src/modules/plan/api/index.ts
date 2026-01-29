@@ -8,8 +8,10 @@ import { createPlanProcessor } from "../internal/application/process-plan-genera
 import { updatePlan } from "../internal/application/update-plan";
 import { updatePlanStatus } from "../internal/application/update-plan-status";
 import { createPlanRepository } from "../internal/infrastructure/plan.repository";
+import { createPlanGenerationAdapter } from "../internal/infrastructure/adapters/plan-generation.adapter";
 
 import type { Database } from "@repo/database";
+import type { ChatModelPort } from "@repo/ai";
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../common/result";
 import type {
@@ -20,7 +22,9 @@ import type {
 import type { PlanGenerationPort } from "./plan-generation.port";
 import type { PlanGenerationQueuePort } from "./plan-generation-queue.port";
 import type { MaterialReaderPort } from "./ports/material-reader.port";
+import type { PlanLoggerPort } from "./ports/plan-logger.port";
 import type { PlanStatus } from "../internal/domain/plan.types";
+import type { KnowledgeFacade } from "../../knowledge/api";
 
 export type {
   PlanGenerationJobData,
@@ -31,6 +35,7 @@ export type {
 export type { PlanGenerationPort } from "./plan-generation.port";
 export type { PlanGenerationQueuePort } from "./plan-generation-queue.port";
 export type { MaterialReaderPort } from "./ports/material-reader.port";
+export type { PlanLoggerPort } from "./ports/plan-logger.port";
 export type {
   PlanStatus,
   PlanGenerationStatus,
@@ -178,6 +183,15 @@ export type CreatePlanServiceDeps = {
   readonly planGenerationQueue: PlanGenerationQueuePort;
   readonly materialReader: MaterialReaderPort;
 };
+
+export function createAiPlanGeneration(params: {
+  readonly logger: PlanLoggerPort;
+  readonly materialReader: MaterialReaderPort;
+  readonly knowledge: KnowledgeFacade;
+  readonly chatModel: ChatModelPort;
+}): PlanGenerationPort {
+  return createPlanGenerationAdapter(params);
+}
 
 export function createPlanService(deps: CreatePlanServiceDeps): PlanService {
   const planRepository = createPlanRepository(deps.db);

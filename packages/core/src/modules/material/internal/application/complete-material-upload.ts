@@ -8,10 +8,9 @@ import type {
 } from "../../api/schema";
 import type {
   DocumentParserPort,
+  KnowledgeFacadeForMaterialPort,
   MaterialAnalyzerPort,
   R2StoragePort,
-  RagIngestorPort,
-  RagVectorStoreManagerForMaterialPort,
 } from "../../api/ports";
 import type { MaterialRepository } from "../infrastructure/material.repository";
 
@@ -19,8 +18,7 @@ export function completeMaterialUpload(deps: {
   readonly materialRepository: MaterialRepository;
   readonly documentParser: DocumentParserPort;
   readonly r2: R2StoragePort;
-  readonly ragIngestor: RagIngestorPort;
-  readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
   readonly materialAnalyzer: MaterialAnalyzerPort;
 }) {
   const withProgress = completeMaterialUploadWithProgress(deps);

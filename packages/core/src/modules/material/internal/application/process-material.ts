@@ -21,10 +21,9 @@ import type {
 import type { AppError } from "../../../../common/result";
 import type {
   DocumentParserPort,
+  KnowledgeFacadeForMaterialPort,
   MaterialAnalyzerPort,
   R2StoragePort,
-  RagIngestorPort,
-  RagVectorStoreManagerForMaterialPort,
 } from "../../api/ports";
 import type { MaterialRepository } from "../infrastructure/material.repository";
 
@@ -32,8 +31,7 @@ export type ProcessMaterialDeps = {
   readonly materialRepository: MaterialRepository;
   readonly documentParser: DocumentParserPort;
   readonly r2: R2StoragePort;
-  readonly ragIngestor: RagIngestorPort;
-  readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
   readonly materialAnalyzer: MaterialAnalyzerPort;
 };
 
@@ -207,10 +205,11 @@ export function createMaterialProcessor(deps: ProcessMaterialDeps) {
           // 8. RAG 인덱싱
           await updateProgress("INDEXING", 75, "검색 인덱스 생성 중...");
 
-          const ingestResult = await deps.ragIngestor.ingest({
+          const ingestResult = await deps.knowledge.ingest({
             userId,
-            materialId,
-            materialTitle: finalTitle,
+            type: "material",
+            refId: materialId,
+            title: finalTitle,
             originalFilename: session.originalFilename ?? null,
             mimeType: session.mimeType,
             bytes: tempBytes,

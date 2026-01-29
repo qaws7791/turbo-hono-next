@@ -11,14 +11,14 @@ import type {
   SessionRunDetailResponse,
 } from "../../api/schema";
 import type {
-  RagRetrieverForSessionPort,
+  KnowledgeFacadeForSessionPort,
   SessionBlueprintGeneratorPort,
 } from "../../api/ports";
 import type { SessionRepository } from "../infrastructure/session.repository";
 
 export function getRunDetail(deps: {
   readonly sessionRepository: SessionRepository;
-  readonly ragRetriever: RagRetrieverForSessionPort;
+  readonly knowledge: KnowledgeFacadeForSessionPort;
   readonly sessionBlueprintGenerator: SessionBlueprintGeneratorPort;
 }) {
   return function getRunDetail(
@@ -38,10 +38,11 @@ export function getRunDetail(deps: {
 
       return ResultAsync.combine(
         refs.map((ref) =>
-          deps.ragRetriever
+          deps.knowledge
             .retrieveRange({
               userId,
-              materialId: ref.materialId,
+              type: "material",
+              refId: ref.materialId,
               startIndex: ref.chunkRange.start,
               endIndex: ref.chunkRange.end,
             })

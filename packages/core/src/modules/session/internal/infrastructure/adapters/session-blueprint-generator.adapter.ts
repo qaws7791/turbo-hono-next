@@ -1,19 +1,22 @@
 import { Result } from "neverthrow";
 import z from "zod";
-import { SessionBlueprint } from "@repo/core/modules/session";
 
-import { getAiModelsAsync } from "../../lib/ai";
-import { ApiError } from "../../middleware/error-handler";
+import { coreError } from "../../../../../common/core-error";
+import { AiSessionBlueprintSpecSchema } from "../../application/ai/schema";
+import { SessionBlueprint } from "../../../api/schema";
 
-import { AiSessionBlueprintSpecSchema } from "./schema";
-
+import type { AiError, ChatModelPort } from "@repo/ai";
 import type { ResultAsync } from "neverthrow";
-import type { AppError } from "../../lib/result";
+import type { AppError } from "../../../../../common/result";
 import type {
   SessionBlueprint as SessionBlueprintType,
   SessionStep,
-} from "@repo/core/modules/session";
-import type { AiSessionBlueprintSpec, AiSessionStepSpec } from "./schema";
+} from "../../../api/schema";
+import type {
+  AiSessionBlueprintSpec,
+  AiSessionStepSpec,
+} from "../../application/ai/schema";
+import type { SessionBlueprintGeneratorPort } from "../../../api/ports";
 
 export interface GenerateSessionBlueprintParams {
   readonly sessionType: "LEARN";
@@ -27,6 +30,12 @@ export interface GenerateSessionBlueprintParams {
 }
 
 export class SessionBlueprintGenerator {
+  private readonly chatModel: ChatModelPort;
+
+  constructor(deps: { readonly chatModel: ChatModelPort }) {
+    this.chatModel = deps.chatModel;
+  }
+
   /**
    * AI를 사용하여 세션 블루프린트 생성
    */
@@ -44,27 +53,25 @@ export class SessionBlueprintGenerator {
       chunkContents: input.chunkContents,
     });
 
-    return getAiModelsAsync()
-      .andThen((models) =>
-        models.chat.generateJson({
-          config: {
-            systemInstruction: systemPrompt,
-          },
-          contents: [userPrompt],
-        }),
-      )
+    return this.chatModel
+      .generateJson({
+        config: {
+          systemInstruction: systemPrompt,
+        },
+        contents: [userPrompt],
+      })
+      .mapErr((error) => this.toCoreAiError(error))
       .andThen((json) =>
         Result.fromThrowable(
           () => AiSessionBlueprintSpecSchema.parse(json),
           (error) =>
-            new ApiError(
-              500,
-              "AI_GENERATION_FAILED",
-              "세션 구성을 생성하는 데 실패했습니다. (스키마 불일치)",
-              {
+            coreError({
+              code: "AI_GENERATION_FAILED",
+              message: "세션 구성을 생성하는 데 실패했습니다. (스키마 불일치)",
+              details: {
                 error: error instanceof Error ? error.message : String(error),
               },
-            ),
+            }),
         )(),
       )
       .andThen((spec) =>
@@ -79,16 +86,24 @@ export class SessionBlueprintGenerator {
               createdAt: input.createdAt,
             }),
           (error) =>
-            new ApiError(
-              500,
-              "AI_GENERATION_FAILED",
-              "세션 구성을 생성하는 중 오류가 발생했습니다.",
-              {
+            coreError({
+              code: "AI_GENERATION_FAILED",
+              message: "세션 구성을 생성하는 중 오류가 발생했습니다.",
+              details: {
                 error: error instanceof Error ? error.message : String(error),
               },
-            ),
+            }),
         )(),
       );
+  }
+
+  private toCoreAiError(error: AiError): AppError {
+    return coreError({
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      cause: error.cause,
+    });
   }
 
   private buildBlueprintFromSpec(input: {
@@ -599,4 +614,10 @@ ${chunksText}
     const trimmed = value?.trim() ?? "";
     return trimmed.length ? trimmed : "(없음)";
   }
+}
+
+export function createAiSessionBlueprintGenerator(deps: {
+  readonly chatModel: ChatModelPort;
+}): SessionBlueprintGeneratorPort {
+  return new SessionBlueprintGenerator(deps);
 }

@@ -9,6 +9,8 @@ import { listMaterials } from "../internal/application/list-materials";
 import { createMaterialProcessor } from "../internal/application/process-material";
 import { updateMaterialTitle } from "../internal/application/update-material-title";
 import { createMaterialRepository } from "../internal/infrastructure/material.repository";
+import { createAiMaterialAnalyzer } from "../internal/infrastructure/adapters/material-analyzer.adapter";
+import { createDocumentParser } from "../internal/infrastructure/adapters/document-parser.adapter";
 
 import type {
   ProgressCallback,
@@ -35,11 +37,9 @@ import type {
 } from "./queue.types";
 import type {
   DocumentParserPort,
+  KnowledgeFacadeForMaterialPort,
   MaterialAnalyzerPort,
   R2StoragePort,
-  RagIngestorPort,
-  RagRetrieverForMaterialPort,
-  RagVectorStoreManagerForMaterialPort,
 } from "./ports";
 import type { MaterialRepository } from "../internal/infrastructure/material.repository";
 
@@ -50,13 +50,13 @@ export * from "./queue.types";
 export { createMaterialRepository };
 export type { MaterialRepository };
 
+export { createAiMaterialAnalyzer, createDocumentParser };
+
 export type MaterialServiceDeps = {
   readonly materialRepository: MaterialRepository;
   readonly documentParser: DocumentParserPort;
   readonly materialAnalyzer: MaterialAnalyzerPort;
-  readonly ragIngestor: RagIngestorPort;
-  readonly ragRetriever: RagRetrieverForMaterialPort;
-  readonly ragVectorStoreManager: RagVectorStoreManagerForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
   readonly r2: R2StoragePort;
   readonly materialProcessingQueue: MaterialProcessingQueuePort;
 };
@@ -112,16 +112,14 @@ export function createMaterialService(
       materialRepository: deps.materialRepository,
       documentParser: deps.documentParser,
       r2: deps.r2,
-      ragIngestor: deps.ragIngestor,
-      ragVectorStoreManager: deps.ragVectorStoreManager,
+      knowledge: deps.knowledge,
       materialAnalyzer: deps.materialAnalyzer,
     }),
     completeMaterialUploadWithProgress: completeMaterialUploadWithProgress({
       materialRepository: deps.materialRepository,
       documentParser: deps.documentParser,
       r2: deps.r2,
-      ragIngestor: deps.ragIngestor,
-      ragVectorStoreManager: deps.ragVectorStoreManager,
+      knowledge: deps.knowledge,
       materialAnalyzer: deps.materialAnalyzer,
     }),
     enqueueMaterialProcessing: enqueueMaterialProcessing({
@@ -131,13 +129,13 @@ export function createMaterialService(
     }),
     deleteMaterial: deleteMaterial({
       materialRepository: deps.materialRepository,
-      ragVectorStoreManager: deps.ragVectorStoreManager,
+      knowledge: deps.knowledge,
       r2: deps.r2,
     }),
     getJobStatus: getJobStatus(baseDeps),
     getMaterialDetail: getMaterialDetail({
       materialRepository: deps.materialRepository,
-      ragRetriever: deps.ragRetriever,
+      knowledge: deps.knowledge,
     }),
     initiateMaterialUpload: initiateMaterialUpload({
       materialRepository: deps.materialRepository,

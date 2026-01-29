@@ -135,6 +135,9 @@ importers:
       '@langchain/textsplitters':
         specifier: ^1.0.1
         version: 1.0.1(@langchain/core@1.1.15(@opentelemetry/api@1.9.0)(openai@6.16.0(ws@8.18.3)(zod@4.1.11)))
+      '@repo/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@repo/api-spec':
         specifier: workspace:*
         version: link:../../packages/api-spec
@@ -385,6 +388,31 @@ importers:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.8.3)(vite@6.3.6(@types/node@22.18.6)(jiti@2.6.0)(lightningcss@1.30.1)(tsx@4.20.5)(yaml@2.8.1))
 
+  packages/ai:
+    dependencies:
+      '@google/genai':
+        specifier: ^1.37.0
+        version: 1.37.0
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.11
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+
   packages/api-spec:
     dependencies:
       '@asteasolutions/zod-to-openapi':
@@ -448,6 +476,18 @@ importers:
 
   packages/core:
     dependencies:
+      '@langchain/community':
+        specifier: ^1.1.1
+        version: 1.1.1(@aws-crypto/sha256-js@5.2.0)(@aws-sdk/client-s3@3.899.0)(@aws-sdk/credential-provider-node@3.899.0)(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.57.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.16.0(ws@8.18.3)(zod@4.1.11))(zod@4.1.11))(@ibm-cloud/watsonx-ai@1.7.5)(@langchain/core@1.1.15(@opentelemetry/api@1.9.0)(openai@6.16.0(ws@8.18.3)(zod@4.1.11)))(@neondatabase/serverless@1.0.1)(@opentelemetry/api@1.9.0)(@smithy/util-utf8@2.3.0)(fast-xml-parser@5.2.5)(google-auth-library@10.5.0)(ibm-cloud-sdk-core@5.4.5)(ignore@5.3.2)(ioredis@5.9.2)(jsonwebtoken@9.0.3)(lodash@4.17.21)(mammoth@1.11.0)(openai@6.16.0(ws@8.18.3)(zod@4.1.11))(pdf-parse@1.1.4)(pg@8.16.3)(playwright@1.57.0)(ws@8.18.3)
+      '@langchain/core':
+        specifier: ^1.1.15
+        version: 1.1.15(@opentelemetry/api@1.9.0)(openai@6.16.0(ws@8.18.3)(zod@4.1.11))
+      '@langchain/textsplitters':
+        specifier: ^1.0.1
+        version: 1.0.1(@langchain/core@1.1.15(@opentelemetry/api@1.9.0)(openai@6.16.0(ws@8.18.3)(zod@4.1.11)))
+      '@repo/ai':
+        specifier: workspace:*
+        version: link:../ai
       '@repo/database':
         specifier: workspace:*
         version: link:../database
@@ -460,9 +500,18 @@ importers:
       google-auth-library:
         specifier: ^10.5.0
         version: 10.5.0
+      mammoth:
+        specifier: ^1.11.0
+        version: 1.11.0
       neverthrow:
         specifier: ^8.2.0
         version: 8.2.0
+      pdfjs-dist:
+        specifier: ^5.4.54
+        version: 5.4.530
+      pg:
+        specifier: ^8.16.3
+        version: 8.16.3
       resend:
         specifier: ^6.6.0
         version: 6.6.0

@@ -3,40 +3,38 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { Document } from "@langchain/core/documents";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-import { tryPromise } from "../../lib/result";
-import { ApiError } from "../../middleware/error-handler";
+import { coreError } from "../../../../common/core-error";
+import { tryPromise } from "../../../../common/result";
 
-import { ragVectorStoreManager } from "./vector-store";
-
+import type { KnowledgeIngestResult } from "../../api";
+import type { KnowledgeVectorStoreManager } from "../infrastructure/knowledge-vector-store.manager";
 import type { ResultAsync } from "neverthrow";
-import type { AppError } from "../../lib/result";
-
-export type IngestMaterialParams = {
-  readonly userId: string;
-  readonly materialId: string;
-  readonly materialTitle: string;
-  readonly originalFilename: string | null;
-  readonly mimeType: string | null;
-  readonly bytes: Uint8Array;
-};
-
-export type IngestMaterialResult = {
-  readonly chunkCount: number;
-  readonly fullText: string;
-  readonly titleHint: string | null;
-};
+import type { AppError } from "../../../../common/result";
 
 type SupportedFileKind = "PDF" | "DOCX" | "TEXT" | "MARKDOWN";
 
-export class RagIngestor {
-  private splitter = new RecursiveCharacterTextSplitter({
+export class KnowledgeIngestor {
+  private readonly splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
   });
+  private readonly vectorStoreManager: KnowledgeVectorStoreManager;
 
-  public ingest(
-    params: IngestMaterialParams,
-  ): ResultAsync<IngestMaterialResult, AppError> {
+  constructor(deps: {
+    readonly vectorStoreManager: KnowledgeVectorStoreManager;
+  }) {
+    this.vectorStoreManager = deps.vectorStoreManager;
+  }
+
+  ingest(params: {
+    readonly userId: string;
+    readonly type: string;
+    readonly refId: string;
+    readonly title: string;
+    readonly originalFilename: string | null;
+    readonly mimeType: string | null;
+    readonly bytes: Uint8Array;
+  }): ResultAsync<KnowledgeIngestResult, AppError> {
     return tryPromise(async () => {
       const baseDocs = await this.loadDocuments({
         bytes: params.bytes,
@@ -49,25 +47,23 @@ export class RagIngestor {
       );
 
       if (!fullText) {
-        throw new ApiError(
-          400,
-          "MATERIAL_PARSE_FAILED",
-          "문서에서 텍스트를 추출할 수 없습니다.",
-        );
+        throw coreError({
+          code: "MATERIAL_PARSE_FAILED",
+          message: "문서에서 텍스트를 추출할 수 없습니다.",
+        });
       }
 
       const splitDocs = await this.splitter.splitDocuments(
         Array.from(baseDocs),
       );
       if (splitDocs.length === 0) {
-        throw new ApiError(
-          400,
-          "MATERIAL_PARSE_FAILED",
-          "문서를 청크로 분할할 수 없습니다.",
-        );
+        throw coreError({
+          code: "MATERIAL_PARSE_FAILED",
+          message: "문서를 청크로 분할할 수 없습니다.",
+        });
       }
 
-      const ragDocs: Array<Document<Record<string, unknown>>> = [];
+      const knowledgeDocs: Array<Document<Record<string, unknown>>> = [];
       splitDocs.forEach((doc, chunkIndex) => {
         const content = this.normalizeText(doc.pageContent);
         if (!content) return;
@@ -75,16 +71,16 @@ export class RagIngestor {
         const pageNumber = this.extractPageNumber(doc.metadata);
         const metadata: Record<string, unknown> = {
           userId: params.userId,
-          materialId: params.materialId,
-          materialTitle: params.materialTitle,
+          type: params.type,
+          refId: params.refId,
+          title: params.title,
           originalFilename: params.originalFilename,
           mimeType: params.mimeType,
-          source: "material",
           chunkIndex,
           ...(pageNumber ? { pageNumber } : {}),
         };
 
-        ragDocs.push(
+        knowledgeDocs.push(
           new Document<Record<string, unknown>>({
             pageContent: content,
             metadata,
@@ -92,30 +88,30 @@ export class RagIngestor {
         );
       });
 
-      if (ragDocs.length === 0) {
-        throw new ApiError(
-          400,
-          "MATERIAL_PARSE_FAILED",
-          "문서를 청크로 변환할 수 없습니다.",
-        );
+      if (knowledgeDocs.length === 0) {
+        throw coreError({
+          code: "MATERIAL_PARSE_FAILED",
+          message: "문서를 청크로 변환할 수 없습니다.",
+        });
       }
 
-      const store = await ragVectorStoreManager.getStoreForUser({
+      const store = await this.vectorStoreManager.getStoreForUser({
         userId: params.userId,
       });
 
-      // Re-indexing: delete existing docs for this material.
+      // Re-indexing: delete existing docs for this ref.
       await store.delete({
         filter: {
           userId: params.userId,
-          materialId: params.materialId,
+          type: params.type,
+          refId: params.refId,
         },
       });
 
-      await store.addDocuments(ragDocs);
+      await store.addDocuments(knowledgeDocs);
 
       return {
-        chunkCount: ragDocs.length,
+        chunkCount: knowledgeDocs.length,
         fullText,
         titleHint: null,
       };
@@ -149,9 +145,7 @@ export class RagIngestor {
       const text = this.normalizeText(
         Buffer.from(params.bytes).toString("utf8"),
       );
-      if (!text) {
-        return [];
-      }
+      if (!text) return [];
       return [
         new Document({
           pageContent: text,
@@ -161,12 +155,11 @@ export class RagIngestor {
     }
 
     const ext = this.getFileExt(params.originalFilename);
-    throw new ApiError(
-      400,
-      "MATERIAL_UNSUPPORTED_TYPE",
-      "지원하지 않는 파일 형식입니다.",
-      { mimeType: params.mimeType, ext },
-    );
+    throw coreError({
+      code: "MATERIAL_UNSUPPORTED_TYPE",
+      message: "지원하지 않는 파일 형식입니다.",
+      details: { mimeType: params.mimeType, ext },
+    });
   }
 
   private inferSupportedFileKind(params: {
@@ -214,5 +207,3 @@ export class RagIngestor {
     return typeof pageNumber === "number" ? pageNumber : null;
   }
 }
-
-export const ragIngestor = new RagIngestor();

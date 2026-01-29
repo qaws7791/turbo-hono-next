@@ -6,12 +6,12 @@ import { coreError } from "../../../../common/core-error";
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../../common/result";
 import type { GetMaterialDetailResponse as GetMaterialDetailResponseType } from "../../api/schema";
-import type { RagRetrieverForMaterialPort } from "../../api/ports";
+import type { KnowledgeFacadeForMaterialPort } from "../../api/ports";
 import type { MaterialRepository } from "../infrastructure/material.repository";
 
 export function getMaterialDetail(deps: {
   readonly materialRepository: MaterialRepository;
-  readonly ragRetriever: RagRetrieverForMaterialPort;
+  readonly knowledge: KnowledgeFacadeForMaterialPort;
 }) {
   return function getMaterialDetail(
     userId: string,
@@ -32,9 +32,10 @@ export function getMaterialDetail(deps: {
         );
       }
 
-      const chunkCount = yield* deps.ragRetriever.countMaterialChunks({
+      const chunkCount = yield* deps.knowledge.countChunks({
         userId,
-        materialId,
+        type: "material",
+        refId: materialId,
       });
 
       return ok({

@@ -89,6 +89,7 @@ function coreErrorCodeToStatus(code: string): ContentfulStatusCode {
   if (code === "UNAUTHORIZED") return 401;
   if (code === "QUEUE_UNAVAILABLE") return 503;
   if (code === "QUEUE_ADD_FAILED") return 503;
+  if (code === "AI_UNAVAILABLE") return 503;
 
   if (code === "INVALID_REQUEST" || code === "VALIDATION_ERROR") return 400;
 
@@ -115,8 +116,13 @@ function coreErrorCodeToStatus(code: string): ContentfulStatusCode {
   // Materials
   if (code === "MATERIAL_FILE_TOO_LARGE") return 400;
   if (code === "MATERIAL_UNSUPPORTED_TYPE") return 400;
+  if (code === "MATERIAL_PARSE_FAILED") return 400;
   if (code === "UPLOAD_INVALID_STATE") return 500;
   if (code.startsWith("UPLOAD_")) return 400;
+
+  // AI (Gemini / LLM gateway errors)
+  if (code.startsWith("AI_RESPONSE_")) return 502;
+  if (code.startsWith("AI_EMBEDDING_")) return 502;
 
   return 500;
 }

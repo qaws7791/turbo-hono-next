@@ -1,5 +1,6 @@
 import type { ResultAsync } from "neverthrow";
 import type { AppError } from "../../../common/result";
+import type { KnowledgeFacade } from "../../knowledge/api";
 
 export type DocumentParserPort = {
   isSupportedMaterialFile: (params: {
@@ -49,31 +50,10 @@ export type RagIngestResult = {
   readonly titleHint: string | null;
 };
 
-export type RagIngestorPort = {
-  ingest: (params: {
-    readonly userId: string;
-    readonly materialId: string;
-    readonly materialTitle: string;
-    readonly originalFilename: string | null;
-    readonly mimeType: string | null;
-    readonly bytes: Uint8Array;
-  }) => ResultAsync<RagIngestResult, AppError>;
-};
-
-export type RagRetrieverForMaterialPort = {
-  countMaterialChunks: (params: {
-    readonly userId: string;
-    readonly materialId: string;
-  }) => ResultAsync<number, AppError>;
-};
-
-export type RagVectorStoreManagerForMaterialPort = {
-  getStoreForUser: (params: { readonly userId: string }) => Promise<{
-    delete: (params: {
-      filter: { readonly userId: string; readonly materialId: string };
-    }) => Promise<void>;
-  }>;
-};
+export type KnowledgeFacadeForMaterialPort = Pick<
+  KnowledgeFacade,
+  "ingest" | "countChunks" | "deleteByRef"
+>;
 
 export type R2StoragePort = {
   createPresignedPutUrl: (params: {
