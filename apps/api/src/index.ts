@@ -5,21 +5,19 @@ import { createKnowledgeService } from "@repo/core/modules/knowledge";
 import {
   createAiMaterialAnalyzer,
   createDocumentParser,
+  createMaterialReaderPort,
   createMaterialRepository,
   createMaterialService,
 } from "@repo/core/modules/material";
 import {
   createAiPlanGeneration,
   createPlanService as createCorePlanService,
+  createPlanLoggerPort,
 } from "@repo/core/modules/plan";
 import {
   createAiSessionBlueprintGenerator,
   createSessionService as createCoreSessionService,
 } from "@repo/core/modules/session";
-import {
-  createMaterialReaderPort,
-  createPlanLoggerPort,
-} from "@repo/core-adapters";
 import {
   createMaterialProcessingQueue,
   createMaterialProcessingQueuePort,

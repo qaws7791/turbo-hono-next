@@ -9,7 +9,6 @@ const devDependencies = Object.keys(pkg.devDependencies || {});
 const workspacePackages = [
   "@repo/ai",
   "@repo/core",
-  "@repo/core-adapters",
   "@repo/database",
   "@repo/queue-bullmq",
   "@repo/storage-r2",

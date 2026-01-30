@@ -1,5 +1,5 @@
-import type { MaterialRepository } from "@repo/core/modules/material";
-import type { MaterialReaderPort } from "@repo/core/modules/plan";
+import type { MaterialRepository } from "../material.repository";
+import type { MaterialReaderPort } from "../../../../plan/api/ports/material-reader.port";
 
 export function createMaterialReaderPort(
   repo: Pick<

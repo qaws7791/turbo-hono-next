@@ -27,7 +27,6 @@
     "@langchain/textsplitters": "^1.0.1",
     "@repo/ai": "workspace:*",
     "@repo/api-spec": "workspace:*",
-    "@repo/core-adapters": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/queue-bullmq": "workspace:*",

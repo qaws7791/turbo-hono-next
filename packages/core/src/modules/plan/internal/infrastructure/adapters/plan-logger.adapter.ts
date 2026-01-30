@@ -1,4 +1,4 @@
-import type { PlanLoggerPort } from "@repo/core/modules/plan";
+import type { PlanLoggerPort } from "../../../api/ports/plan-logger.port";
 
 export function createPlanLoggerPort(logger: {
   readonly info: (obj: unknown, msg?: string) => void;

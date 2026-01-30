@@ -138,9 +138,6 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repo/core-adapters':
-        specifier: workspace:*
-        version: link:../../packages/core-adapters
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -393,9 +390,6 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@repo/core-adapters':
-        specifier: workspace:*
-        version: link:../../packages/core-adapters
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -570,25 +564,6 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.1.11
-    devDependencies:
-      '@repo/config':
-        specifier: workspace:*
-        version: link:../config
-      eslint:
-        specifier: 'catalog:'
-        version: 9.36.0(jiti@2.6.0)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-
-  packages/core-adapters:
-    dependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
     devDependencies:
       '@repo/config':
         specifier: workspace:*

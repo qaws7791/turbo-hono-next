@@ -4,16 +4,14 @@ import {
   createAiMaterialAnalyzer,
   createDocumentParser,
   createMaterialProcessor,
+  createMaterialReaderPort,
   createMaterialRepository,
 } from "@repo/core/modules/material";
 import {
   createAiPlanGeneration,
+  createPlanLoggerPort,
   createPlanService,
 } from "@repo/core/modules/plan";
-import {
-  createMaterialReaderPort,
-  createPlanLoggerPort,
-} from "@repo/core-adapters";
 import {
   createMaterialProcessingQueue,
   createMaterialProcessingWorker,

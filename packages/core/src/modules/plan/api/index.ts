@@ -41,6 +41,8 @@ export type {
   PlanGenerationStatus,
 } from "../internal/domain/plan.types";
 
+export * from "../internal/infrastructure/adapters/plan-logger.adapter";
+
 export type CreatePlanInput = {
   materialIds: Array<string>;
   targetDueDate: string | null;

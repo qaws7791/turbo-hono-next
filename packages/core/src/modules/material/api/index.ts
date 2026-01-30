@@ -46,6 +46,7 @@ import type { MaterialRepository } from "../internal/infrastructure/material.rep
 export * from "./schema";
 export * from "./ports";
 export * from "./queue.types";
+export * from "../internal/infrastructure/adapters/material-reader.adapter";
 
 export { createMaterialRepository };
 export type { MaterialRepository };
