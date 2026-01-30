@@ -1,4 +1,4 @@
-import { ApiError } from "../middleware/error-handler";
+import { coreError } from "./core-error";
 
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -14,8 +14,15 @@ export function createErrorThrower<T extends Record<string, ErrorDefinition>>(
   return function throwError(key: keyof T): never {
     const error = errors[key];
     if (!error) {
-      throw new ApiError(500, "INTERNAL_ERROR", "알 수 없는 오류입니다.");
+      throw coreError({
+        code: "INTERNAL_ERROR",
+        message: "알 수 없는 오류입니다.",
+      });
     }
-    throw new ApiError(error.status, error.code, error.message);
+    throw coreError({
+      code: error.code,
+      message: error.message,
+      details: { status: error.status },
+    });
   };
 }

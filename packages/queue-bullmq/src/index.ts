@@ -26,3 +26,9 @@ export type { MaterialProcessingWorkerDeps } from "./workers/material-processing
 
 export { createPlanGenerationWorker } from "./workers/plan-generation.worker";
 export type { PlanGenerationWorkerDeps } from "./workers/plan-generation.worker";
+
+export {
+  createRedisRateLimitMiddleware,
+  createOptionalRedisRateLimitMiddleware,
+} from "./rate-limit";
+export type { RateLimitOptions, RedisRateLimitDeps } from "./rate-limit";

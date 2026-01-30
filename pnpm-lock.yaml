@@ -587,6 +587,12 @@ importers:
       bullmq:
         specifier: ^5.66.6
         version: 5.66.6
+      hono:
+        specifier: ^4.9.7
+        version: 4.9.8
+      ioredis:
+        specifier: ^5.6.1
+        version: 5.9.2
       neverthrow:
         specifier: ^8.2.0
         version: 8.2.0
@@ -728,6 +734,28 @@ importers:
       tailwindcss:
         specifier: 'catalog:'
         version: 4.1.13
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+
+  packages/utils:
+    dependencies:
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.11
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -14675,7 +14703,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.3
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.13.2(debug@4.4.3))
+      retry-axios: 2.6.0(axios@1.13.2)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -14759,7 +14787,6 @@ snapshots:
       standard-as-callback: 2.1.0
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   ipaddr.js@1.9.1: {}
 
@@ -16752,7 +16779,7 @@ snapshots:
       onetime: 7.0.0
       signal-exit: 4.1.0
 
-  retry-axios@2.6.0(axios@1.13.2(debug@4.4.3)):
+  retry-axios@2.6.0(axios@1.13.2):
     dependencies:
       axios: 1.13.2(debug@4.4.3)
 

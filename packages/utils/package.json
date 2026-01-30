@@ -1,5 +1,5 @@
 {
-  "name": "@repo/queue-bullmq",
+  "name": "@repo/utils",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -19,11 +19,8 @@
     "format:check": "prettier --check \"src/**/*.ts\""
   },
   "dependencies": {
-    "@repo/core": "workspace:*",
-    "bullmq": "^5.66.6",
-    "hono": "^4.9.7",
-    "ioredis": "^5.6.1",
-    "neverthrow": "^8.2.0"
+    "neverthrow": "^8.2.0",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/config": "workspace:*",
