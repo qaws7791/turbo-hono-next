@@ -1,0 +1,237 @@
+# =============================================================================
+# GitHub Actions CI/CD for Worker Deployment to Oracle Cloud
+# =============================================================================
+#
+# Required GitHub Secrets:
+# -------------------------
+# Oracle Cloud:
+#   - ORACLE_SSH_PRIVATE_KEY: Oracle instance SSH private key
+#   - ORACLE_HOST: Oracle instance IP or hostname
+#   - ORACLE_USER: SSH username (default: ubuntu)
+#   - GHCR_PAT: GitHub Personal Access Token with read:packages scope (for instance to pull images)
+#   - GHCR_USERNAME: (optional) GHCR username for the PAT owner (defaults to github.actor)
+#
+# Application:
+#   - DATABASE_URL, REDIS_URL, QUEUE_CONCURRENCY
+#   - R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_ENDPOINT, R2_PUBLIC_URL
+#   - GEMINI_API_KEY, GEMINI_CHAT_MODEL, GEMINI_EMBEDDING_MODEL
+#
+# Optional:
+#   - WORKERS: "material,plan" (default: both)
+# =============================================================================
+
+name: Deploy Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/worker/**"
+      - "apps/worker/Dockerfile"
+      - "packages/queue-bullmq/**"
+      - "packages/core/**"
+      - "packages/core-adapters/**"
+      - "packages/database/**"
+      - "packages/storage-r2/**"
+      - "packages/ai/**"
+      - "packages/config/**"
+      - ".dockerignore"
+      - "turbo.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/worker
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.2.1
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (worker)
+        run: pnpm --filter worker lint
+
+      - name: Typecheck (worker)
+        run: pnpm --filter worker typecheck
+
+  build:
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_digest: ${{ steps.build.outputs.digest }}
+      image_ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for ARM64 cross-compilation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/worker/Dockerfile
+          push: true
+          platforms: linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+
+    steps:
+      - name: Deploy to Oracle Cloud
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.actor }}
+          IMAGE_REF: ${{ needs.build.outputs.image_ref }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          QUEUE_CONCURRENCY: ${{ secrets.QUEUE_CONCURRENCY }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_CHAT_MODEL: ${{ secrets.GEMINI_CHAT_MODEL }}
+          GEMINI_EMBEDDING_MODEL: ${{ secrets.GEMINI_EMBEDDING_MODEL }}
+          WORKERS: ${{ secrets.WORKERS }}
+        with:
+          host: ${{ secrets.ORACLE_HOST }}
+          username: ${{ secrets.ORACLE_USER || 'ubuntu' }}
+          key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
+          envs: >
+            GHCR_PAT,GHCR_USERNAME,IMAGE_REF,
+            DATABASE_URL,REDIS_URL,QUEUE_CONCURRENCY,
+            R2_ACCESS_KEY_ID,R2_SECRET_ACCESS_KEY,R2_BUCKET_NAME,R2_ENDPOINT,R2_PUBLIC_URL,
+            GEMINI_API_KEY,GEMINI_CHAT_MODEL,GEMINI_EMBEDDING_MODEL,
+            WORKERS
+          script: |
+            set -euo pipefail
+
+            container_name="lolog-worker"
+            previous_image=""
+
+            echo "🔐 Logging in to GitHub Container Registry..."
+            echo "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+
+            echo "📥 Pulling image (pinned by digest)..."
+            docker pull "$IMAGE_REF"
+
+            if docker ps -a --format '{{.Names}}' | grep -qx "$container_name"; then
+              echo "📦 Capturing previous image for rollback..."
+              previous_image="$(docker inspect --format='{{.Config.Image}}' "$container_name" || true)"
+
+              echo "🛑 Stopping existing container..."
+              docker stop "$container_name" 2>/dev/null || true
+              docker rm "$container_name" 2>/dev/null || true
+            fi
+
+            echo "🚀 Starting new worker container..."
+            docker run -d \
+              --name "$container_name" \
+              --restart unless-stopped \
+              -e NODE_ENV=production \
+              -e DATABASE_URL="$DATABASE_URL" \
+              -e REDIS_URL="$REDIS_URL" \
+              -e QUEUE_CONCURRENCY="${QUEUE_CONCURRENCY:-2}" \
+              -e R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+              -e R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+              -e R2_BUCKET_NAME="$R2_BUCKET_NAME" \
+              -e R2_ENDPOINT="$R2_ENDPOINT" \
+              -e R2_PUBLIC_URL="$R2_PUBLIC_URL" \
+              -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+              -e GEMINI_CHAT_MODEL="$GEMINI_CHAT_MODEL" \
+              -e GEMINI_EMBEDDING_MODEL="$GEMINI_EMBEDDING_MODEL" \
+              ${WORKERS:+-e WORKERS="$WORKERS"} \
+              "$IMAGE_REF"
+
+            echo "⏳ Waiting for worker to start..."
+            sleep 5
+
+            if ! docker ps --format '{{.Names}}' | grep -qx "$container_name"; then
+              echo "❌ Worker container is not running"
+              docker logs "$container_name" --tail 200 || true
+
+              echo "🧯 Rolling back..."
+              docker rm "$container_name" 2>/dev/null || true
+
+              if [ -n "$previous_image" ]; then
+                echo "↩️  Starting previous image: $previous_image"
+                docker run -d \
+                  --name "$container_name" \
+                  --restart unless-stopped \
+                  -e NODE_ENV=production \
+                  -e DATABASE_URL="$DATABASE_URL" \
+                  -e REDIS_URL="$REDIS_URL" \
+                  -e QUEUE_CONCURRENCY="${QUEUE_CONCURRENCY:-2}" \
+                  -e R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+                  -e R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" \
+                  -e R2_BUCKET_NAME="$R2_BUCKET_NAME" \
+                  -e R2_ENDPOINT="$R2_ENDPOINT" \
+                  -e R2_PUBLIC_URL="$R2_PUBLIC_URL" \
+                  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
+                  -e GEMINI_CHAT_MODEL="$GEMINI_CHAT_MODEL" \
+                  -e GEMINI_EMBEDDING_MODEL="$GEMINI_EMBEDDING_MODEL" \
+                  ${WORKERS:+-e WORKERS="$WORKERS"} \
+                  "$previous_image"
+              fi
+              exit 1
+            fi
+
+            echo "🧹 Cleaning up old images (keep recent for rollback)..."
+            docker image prune -f --filter "until=168h"
+
+            echo "✅ Worker deployment successful!"

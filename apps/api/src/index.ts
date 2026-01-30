@@ -5,7 +5,6 @@ import { createKnowledgeService } from "@repo/core/modules/knowledge";
 import {
   createAiMaterialAnalyzer,
   createDocumentParser,
-  createMaterialProcessor,
   createMaterialRepository,
   createMaterialService,
 } from "@repo/core/modules/material";
@@ -22,11 +21,11 @@ import {
   createPlanLoggerPort,
 } from "@repo/core-adapters";
 import {
+  createMaterialProcessingQueue,
   createMaterialProcessingQueuePort,
-  createMaterialProcessingWorker,
+  createPlanGenerationQueue,
   createPlanGenerationQueuePort,
-  createPlanGenerationWorker,
-  createQueueRegistry,
+  createQueueRuntime,
   defaultJobOptions,
   getConnectionOptions,
 } from "@repo/queue-bullmq";
@@ -68,10 +67,18 @@ const sessionBlueprintGenerator = createAiSessionBlueprintGenerator({
 });
 
 const connection = getConnectionOptions({ redisUrl: CONFIG.REDIS_URL });
-const queueRegistry = createQueueRegistry({
+const queueRuntime = createQueueRuntime();
+const materialProcessingQueue = createMaterialProcessingQueue({
   connection,
   defaultJobOptions,
 });
+queueRuntime.register(materialProcessingQueue);
+
+const planGenerationQueue = createPlanGenerationQueue({
+  connection,
+  defaultJobOptions,
+});
+queueRuntime.register(planGenerationQueue);
 
 const materialRepository = createMaterialRepository(db);
 
@@ -92,36 +99,8 @@ const materialService = createMaterialService({
   knowledge,
   r2,
   materialProcessingQueue: createMaterialProcessingQueuePort(
-    queueRegistry.queues.materialProcessing,
+    materialProcessingQueue,
   ),
-});
-
-// 2. Worker 초기화 및 실행
-const materialProcessor = createMaterialProcessor({
-  materialRepository,
-  documentParser,
-  materialAnalyzer,
-  knowledge,
-  r2,
-});
-
-const materialWorker = createMaterialProcessingWorker(
-  { processMaterialUpload: materialProcessor },
-  { connection, concurrency: CONFIG.QUEUE_CONCURRENCY },
-);
-
-queueRegistry.registerWorker(materialWorker);
-
-// Worker 에러 로깅
-materialWorker.on("error", (err) => {
-  logger.error({ err }, "Material Worker Error");
-});
-
-materialWorker.on("failed", (job, err) => {
-  logger.error(
-    { jobId: job?.id, uploadId: job?.data.uploadId, err },
-    "Material Job Failed",
-  );
 });
 
 const planGeneration = createAiPlanGeneration({
@@ -134,29 +113,8 @@ const planGeneration = createAiPlanGeneration({
 const planCore = createCorePlanService({
   db,
   planGeneration,
-  planGenerationQueue: createPlanGenerationQueuePort(
-    queueRegistry.queues.planGeneration,
-  ),
+  planGenerationQueue: createPlanGenerationQueuePort(planGenerationQueue),
   materialReader: createMaterialReaderPort(materialRepository),
-});
-
-const planWorker = createPlanGenerationWorker(
-  { processPlanGeneration: planCore.createPlanProcessor },
-  { connection, concurrency: CONFIG.QUEUE_CONCURRENCY },
-);
-
-queueRegistry.registerWorker(planWorker);
-
-// Plan Worker 에러 로깅
-planWorker.on("error", (err) => {
-  logger.error({ err }, "Plan Worker Error");
-});
-
-planWorker.on("failed", (job, err) => {
-  logger.error(
-    { jobId: job?.id, planId: job?.data.planId, err },
-    "Plan Job Failed",
-  );
 });
 
 const planService = planCore;
@@ -199,14 +157,14 @@ const server = serve(
 // Graceful Shutdown
 process.on("SIGTERM", async () => {
   logger.info("SIGTERM received. Shutting down...");
-  await queueRegistry.shutdown();
+  await queueRuntime.shutdown();
   server.close();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   logger.info("SIGINT received. Shutting down...");
-  await queueRegistry.shutdown();
+  await queueRuntime.shutdown();
   server.close();
   process.exit(0);
 });

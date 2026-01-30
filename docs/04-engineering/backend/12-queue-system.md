@@ -126,11 +126,13 @@ interface PlanGenerationJobData {
 
 ## 설정
 
-### Redis Connection ([queue.config.ts](../../../apps/api/src/infrastructure/queue/queue.config.ts))
+### Redis Connection ([connection.ts](../../../packages/queue-bullmq/src/connection.ts))
 
 ```typescript
-export function getConnectionOptions(): ConnectionOptions {
-  const url = new URL(process.env.REDIS_URL);
+export function getConnectionOptions(params: {
+  readonly redisUrl: string;
+}): ConnectionOptions {
+  const url = new URL(params.redisUrl);
 
   return {
     host: url.hostname,
@@ -202,6 +204,13 @@ export async function closeAll(): Promise<void> {
 }
 ```
 
+## 런타임 분리 (권장)
+
+Worker는 API 프로세스와 분리된 별도 앱에서 실행합니다:
+
+- API (HTTP): `apps/api`
+- Worker (Jobs): `apps/worker` (entry: [`apps/worker/src/index.ts`](../../../apps/worker/src/index.ts))
+
 ## Job Status Tracking
 
 ### Polling Pattern
@@ -251,5 +260,5 @@ waiting → active → completed
 ## 참고 문서
 
 - [BullMQ Documentation](https://docs.bullmq.io/)
-- [queue.config.ts](../../../apps/api/src/infrastructure/queue/queue.config.ts)
-- [queue.registry.ts](../../../apps/api/src/infrastructure/queue/queue.registry.ts)
+- [connection.ts](../../../packages/queue-bullmq/src/connection.ts)
+- [runtime.ts](../../../packages/queue-bullmq/src/runtime.ts)

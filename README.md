@@ -2,7 +2,7 @@
 
 개발자를 위한 **학습 로드맵 서비스**입니다. Turborepo 모노레포(pnpm workspaces)로
 구성되어 있으며 `apps/api`(Hono) + `apps/web`(React Router + Vite) +
-`apps/storybook`(UI 컴포넌트)로 개발합니다.
+`apps/storybook`(UI 컴포넌트) + `apps/worker`(BullMQ Worker)로 개발합니다.
 
 ## 시작하기 (로컬 개발)
 
@@ -179,6 +179,7 @@ pnpm dev
 ```bash
 pnpm --filter web dev
 pnpm --filter api dev
+pnpm --filter worker dev
 pnpm --filter storybook dev
 ```
 

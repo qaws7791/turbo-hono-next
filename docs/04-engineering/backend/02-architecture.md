@@ -172,7 +172,10 @@ return jsonResult(c, result, 200);
 
 ### Queue System (BullMQ)
 
-**위치**: [`infrastructure/queue/`](../../../apps/api/src/infrastructure/queue/)
+**위치**:
+
+- BullMQ 어댑터(Queue/Worker 래퍼): [`packages/queue-bullmq/`](../../../packages/queue-bullmq/)
+- Worker 런타임(프로세스/부팅/Graceful shutdown): [`apps/worker/`](../../../apps/worker/)
 
 비동기 작업 처리:
 

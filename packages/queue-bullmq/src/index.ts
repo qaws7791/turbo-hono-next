@@ -13,8 +13,8 @@ export {
 } from "./queues/plan-generation.queue";
 export type { PlanGenerationQueue } from "./queues/plan-generation.queue";
 
-export { createQueueRegistry } from "./registry";
-export type { QueueRegistry } from "./registry";
+export { createQueueRuntime } from "./runtime";
+export type { ClosableResource, QueueRuntime } from "./runtime";
 
 export {
   createMaterialProcessingQueuePort,
@@ -26,9 +26,3 @@ export type { MaterialProcessingWorkerDeps } from "./workers/material-processing
 
 export { createPlanGenerationWorker } from "./workers/plan-generation.worker";
 export type { PlanGenerationWorkerDeps } from "./workers/plan-generation.worker";
-
-export {
-  createRedisRateLimitMiddleware,
-  createOptionalRedisRateLimitMiddleware,
-} from "./rate-limit";
-export type { RateLimitOptions, RedisRateLimitDeps } from "./rate-limit";
