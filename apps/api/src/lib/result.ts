@@ -90,6 +90,7 @@ function coreErrorCodeToStatus(code: string): ContentfulStatusCode {
   if (code === "QUEUE_UNAVAILABLE") return 503;
   if (code === "QUEUE_ADD_FAILED") return 503;
   if (code === "AI_UNAVAILABLE") return 503;
+  if (code === "STORAGE_UNAVAILABLE") return 503;
 
   if (code === "INVALID_REQUEST" || code === "VALIDATION_ERROR") return 400;
 

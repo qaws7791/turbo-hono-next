@@ -33,6 +33,9 @@ const envSchema = z.object({
   R2_ENDPOINT: z.string().min(1).optional(),
   R2_PUBLIC_URL: z.string().min(1).optional(),
 
+  REDIS_URL: z.string().min(1),
+  QUEUE_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(2),
+
   AI_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
   GEMINI_CHAT_MODEL: z.string().min(1).default("gemini-2.5-flash-lite"),
@@ -69,6 +72,8 @@ export function loadConfig(env: NodeJS.ProcessEnv): {
   readonly R2_BUCKET_NAME?: string;
   readonly R2_ENDPOINT?: string;
   readonly R2_PUBLIC_URL?: string;
+  readonly REDIS_URL: string;
+  readonly QUEUE_CONCURRENCY: number;
   readonly AI_API_KEY?: string;
   readonly AI_EMBEDDING_API_KEY?: string;
   readonly GEMINI_API_KEY?: string;
