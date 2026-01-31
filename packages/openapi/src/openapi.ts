@@ -2,13 +2,17 @@ import {
   OpenAPIRegistry,
   OpenApiGeneratorV31,
 } from "@asteasolutions/zod-to-openapi";
+import { extendZodWithOpenApi } from "@hono/zod-openapi";
+import { z } from "zod";
+import { ErrorResponseSchema } from "@repo/contracts/common";
 
-import { ErrorResponseSchema } from "./common/schema";
 import { authRoutes } from "./modules/auth/routes";
 import { chatRoutes } from "./modules/chat/routes";
 import { materialRoutes } from "./modules/materials/routes";
 import { planRoutes } from "./modules/plans/routes";
 import { sessionRoutes } from "./modules/sessions/routes";
+
+extendZodWithOpenApi(z);
 
 const registry = new OpenAPIRegistry();
 
@@ -35,18 +39,7 @@ const ensureInitialized = () => {
   ] as const;
 
   routes.forEach((route) => {
-    try {
-      console.log(
-        `[DEBUG_OPENAPI] Registering: ${route.method.toUpperCase()} ${route.path}`,
-      );
-      registry.registerPath(route);
-    } catch (e) {
-      console.error(
-        `[OPENAPI_ERROR] Failed to register: ${route.method.toUpperCase()} ${route.path}`,
-      );
-      console.error(`[OPENAPI_ERROR_DETAIL]`, e);
-      throw e;
-    }
+    registry.registerPath(route);
   });
 
   initialized = true;
@@ -59,16 +52,6 @@ export const getRegistry = () => {
 
 export const generateOpenApiDocument = () => {
   ensureInitialized();
-  console.log(
-    `[DEBUG_OPENAPI] Total definitions: ${registry.definitions.length}`,
-  );
-  registry.definitions.forEach((def, i) => {
-    if (def.type === "route") {
-      console.log(
-        `[DEBUG_OPENAPI] Def ${i}: ${def.route.method.toUpperCase()} ${def.route.path}`,
-      );
-    }
-  });
   const generator = new OpenApiGeneratorV31(registry.definitions);
   return generator.generateDocument({
     openapi: "3.1.0",

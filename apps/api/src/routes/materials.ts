@@ -6,7 +6,7 @@ import {
   initiateMaterialUploadRoute,
   listMaterialsRoute,
   updateMaterialTitleRoute,
-} from "@repo/api-spec";
+} from "@repo/openapi";
 import { streamSSE } from "hono/streaming";
 
 import { throwAppError } from "../lib/result";

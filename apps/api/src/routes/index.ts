@@ -1,4 +1,4 @@
-import openApiDocument from "@repo/api-spec/openapi.json";
+import { generateOpenApiDocument } from "@repo/openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 
 import { registerAuthRoutes } from "./auth";
@@ -10,6 +10,8 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { AppDeps } from "../app-deps";
 
 export function registerRoutes(app: OpenAPIHono, deps: AppDeps): void {
+  const openApiDocument = generateOpenApiDocument();
+
   app.get("/health", (c) => {
     return c.json({
       status: "ok",

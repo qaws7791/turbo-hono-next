@@ -99,10 +99,10 @@ GET    /api/plans/{id}/sessions    # 하위 리소스
 
 ### Using @hono/zod-openapi
 
-**Route는 `@repo/api-spec`에서 정의**:
+**Route는 `@repo/openapi`에서 정의**(스키마는 `@repo/contracts`를 사용):
 
 ```typescript
-// packages/api-spec/src/routes/materials.ts
+// packages/openapi/src/modules/materials/routes.ts
 export const listMaterialsRoute = createRoute({
   method: "get",
   path: "/api/materials",
@@ -338,6 +338,7 @@ app.openapi(createPlanRoute, async (c) => {
 
 ## 참고 문서
 
-- [packages/api-spec](../../../packages/api-spec/) - API 명세 정의
+- [packages/contracts](../../../packages/contracts/) - Zod schema + types (SSoT)
+- [packages/openapi](../../../packages/openapi/) - HTTP route + OpenAPI
 - [routes/auth.ts](../../../apps/api/src/routes/auth.ts) - 라우트 예시
 - [@hono/zod-openapi](https://github.com/honojs/middleware/tree/main/packages/zod-openapi)

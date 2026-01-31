@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const PaginationQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1).optional(),
@@ -124,23 +124,22 @@ export const DeleteMaterialResponseSchema = z.object({
   }),
 });
 
-// SSE 진행 상황 이벤트 스키마
 export const UploadProgressStepSchema = z.enum([
-  "PREPARING", // 업로드 준비 중
-  "VERIFYING", // 파일 확인 중
-  "LOADING", // 파일 불러오는 중
-  "CHECKING", // 기존 자료와 비교 중
-  "STORING", // 파일 저장 중
-  "ANALYZING", // 학습 자료 분석 중
-  "FINALIZING", // 마무리 중
-  "COMPLETED", // 완료
-  "FAILED", // 실패
+  "PREPARING",
+  "VERIFYING",
+  "LOADING",
+  "CHECKING",
+  "STORING",
+  "ANALYZING",
+  "FINALIZING",
+  "COMPLETED",
+  "FAILED",
 ]);
 
 export const UploadProgressEventSchema = z.object({
   step: UploadProgressStepSchema,
   progress: z.number().min(0).max(100),
-  message: z.string(), // 사용자에게 표시될 메시지
+  message: z.string(),
 });
 
 export const UploadCompleteEventSchema = z.object({

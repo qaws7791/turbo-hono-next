@@ -12,7 +12,7 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "generate:api": "pnpm --filter @repo/api-spec generate:openapi && openapi-typescript ../../packages/api-spec/src/generated/openapi.json -o ./src/foundation/types/api.ts"
+    "generate:api": "pnpm --filter @repo/openapi generate:openapi && openapi-typescript ../../packages/openapi/src/generated/openapi.json -o ./src/foundation/types/api.ts"
   },
   "dependencies": {
     "@react-router/node": "7.10.1",

@@ -219,7 +219,8 @@ flowchart LR
     CFG["⚙️ @repo/config<br/>(ESLint/Prettier/TS)"]
     DB["🗄️ @repo/database<br/>(Drizzle ORM)"]
     UI["🧱 @repo/ui<br/>(Shared Components)"]
-    SPEC["📜 @repo/api-spec<br/>(Zod + OpenAPI)"]
+    CONTRACTS["🧾 @repo/contracts<br/>(Zod SSoT)"]
+    OPENAPI["📜 @repo/openapi<br/>(Routes + OpenAPI)"]
   end
 
   subgraph A["🚀 apps/"]
@@ -241,8 +242,9 @@ flowchart LR
   %% Internal dependencies
   UI --> WEB
   UI --> SB
-  SPEC --> WEB
-  SPEC --> API
+  CONTRACTS --> OPENAPI
+  OPENAPI --> WEB
+  OPENAPI --> API
   DB --> API
 
   %% External connections
@@ -263,7 +265,7 @@ flowchart LR
 
   class C,M,X,A,P group;
   class WEB,API,SB app;
-  class SPEC,UI pkg;
+  class CONTRACTS,OPENAPI,UI pkg;
   class DB tool;
   class CFG tool;
   class PG db;
@@ -283,7 +285,8 @@ flowchart LR
 - `apps/api`: Hono 기반 백엔드(API, OpenAPI 문서, DB/AI/스토리지 연동)
 - `apps/web`: React Router v7 + Vite 프론트엔드(현재 `ssr: false` SPA 모드)
 - `apps/storybook`: `@repo/ui` 컴포넌트 개발/문서화
-- `packages/api-spec`: Zod 기반 API 계약(SSoT) + OpenAPI 생성
+- `packages/contracts`: Zod 기반 API/도메인 계약(SSoT)
+- `packages/openapi`: HTTP Route 정의 + OpenAPI 생성(contracts 기반)
 - `packages/database`: Drizzle 스키마/마이그레이션 + DB 클라이언트
 - `packages/ui`: 공유 UI 컴포넌트 라이브러리
 - `packages/config`: ESLint/Prettier/TSConfig 공유 설정
@@ -311,14 +314,12 @@ pnpm --filter @repo/database db:pull
 
 ## API First (권장 워크플로우)
 
-- API 스펙은 `@repo/api-spec`(`packages/api-spec/src/modules`)을 단일 진실의 원천으로
-  관리합니다.
-- API 구현(`apps/api`)에서는 스펙에서 export한 route/schema를 가져와 핸들러만
-  주입하는 방식으로 동기화합니다.
+- API/도메인 계약은 `@repo/contracts`(`packages/contracts/src/**`)를 단일 진실의 원천으로 관리합니다.
+- API 구현(`apps/api`)에서는 `@repo/openapi`에서 export한 route를 가져와 핸들러만 주입합니다.
 - OpenAPI 산출물이 필요하면 아래를 실행합니다.
 
 ```bash
-pnpm --filter @repo/api-spec docs:generate
+pnpm --filter @repo/openapi generate:openapi
 ```
 
 ## 커밋 컨벤션

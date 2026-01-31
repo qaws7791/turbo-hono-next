@@ -12,7 +12,7 @@
 
 - 모든 입출력은 Zod로 검증
 - zod-openapi로 스펙과 코드 동기화
-- 프론트-백 타입 공유 (`packages/api-spec`)
+- 프론트-백 타입 공유 (`packages/contracts`, `packages/openapi`)
 
 ### 2. 일관된 인터페이스
 

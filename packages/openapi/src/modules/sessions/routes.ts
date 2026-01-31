@@ -1,7 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-
-import { ErrorResponseSchema, PublicIdSchema } from "../../common/schema";
-
+import { ErrorResponseSchema, PublicIdSchema } from "@repo/contracts/common";
 import {
   AbandonSessionRunRequestSchema,
   AbandonSessionRunResponseSchema,
@@ -21,7 +19,7 @@ import {
   UpdatePlanSessionResponseSchema,
   UpdateSessionRunProgressRequestSchema,
   UpdateSessionRunProgressResponseSchema,
-} from "./schema";
+} from "@repo/contracts/sessions";
 
 export const homeQueueRoute = createRoute({
   tags: ["sessions"],

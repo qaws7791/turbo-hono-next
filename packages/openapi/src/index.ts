@@ -1,4 +1,3 @@
-export * from "./common/schema";
 export * from "./modules/auth/routes";
 export * from "./modules/chat/routes";
 export * from "./modules/materials/routes";

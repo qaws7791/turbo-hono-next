@@ -6,7 +6,7 @@ import {
   listPlansRoute,
   updatePlanRoute,
   updatePlanStatusRoute,
-} from "@repo/api-spec";
+} from "@repo/openapi";
 
 import { jsonResult } from "../lib/result-handler";
 import { createRequireAuthMiddleware } from "../middleware/auth";

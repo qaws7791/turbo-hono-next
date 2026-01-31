@@ -1,14 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
-
-import { ErrorResponseSchema } from "../../common/schema";
-
+import { ErrorResponseSchema } from "@repo/contracts/common";
 import {
   CreateChatMessageRequestSchema,
   CreateChatMessageResponseSchema,
   CreateChatThreadRequestSchema,
   CreateChatThreadResponseSchema,
   ListChatMessagesResponseSchema,
-} from "./schema";
+} from "@repo/contracts/chat";
 
 export const createChatThreadRoute = createRoute({
   tags: ["chat"],

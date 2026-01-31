@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const PUBLIC_ID_ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
 export const PUBLIC_ID_LENGTH = 12;

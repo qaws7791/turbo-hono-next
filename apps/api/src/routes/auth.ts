@@ -5,7 +5,7 @@ import {
   authMeRoute,
   authRequestMagicLinkRoute,
   authVerifyMagicLinkRoute,
-} from "@repo/api-spec";
+} from "@repo/openapi";
 import * as arctic from "arctic";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 

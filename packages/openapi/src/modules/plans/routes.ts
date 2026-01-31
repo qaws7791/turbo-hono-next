@@ -1,7 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-
-import { ErrorResponseSchema, PublicIdSchema } from "../../common/schema";
-
+import { ErrorResponseSchema, PublicIdSchema } from "@repo/contracts/common";
 import {
   ActivatePlanResponseSchema,
   CreatePlanRequestSchema,
@@ -14,7 +12,7 @@ import {
   UpdatePlanResponseSchema,
   UpdatePlanStatusRequestSchema,
   UpdatePlanStatusResponseSchema,
-} from "./schema";
+} from "@repo/contracts/plans";
 
 export const listPlansRoute = createRoute({
   tags: ["plans"],

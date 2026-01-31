@@ -1,7 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-
-import { ErrorResponseSchema } from "../../common/schema";
-
+import { ErrorResponseSchema } from "@repo/contracts/common";
 import {
   CompleteMaterialUploadRequestSchema,
   CreateMaterialResponse201Schema,
@@ -15,7 +13,7 @@ import {
   PaginationQuerySchema,
   UpdateMaterialTitleRequestSchema,
   UpdateMaterialTitleResponseSchema,
-} from "./schema";
+} from "@repo/contracts/materials";
 
 export const listMaterialsRoute = createRoute({
   tags: ["materials"],

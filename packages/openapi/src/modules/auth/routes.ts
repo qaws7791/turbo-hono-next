@@ -1,13 +1,11 @@
 import { createRoute, z } from "@hono/zod-openapi";
-
-import { ErrorResponseSchema } from "../../common/schema";
-
+import { ErrorResponseSchema } from "@repo/contracts/common";
 import {
   AuthLogoutResponseSchema,
   AuthMeResponseSchema,
   MagicLinkRequestResponseSchema,
   MagicLinkRequestSchema,
-} from "./schema";
+} from "@repo/contracts/auth";
 
 export const authGoogleRoute = createRoute({
   tags: ["auth"],

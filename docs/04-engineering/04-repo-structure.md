@@ -12,7 +12,8 @@ turbo-local-market/
 │  └─ storybook/      # @repo/ui 컴포넌트 개발 환경
 ├─ packages/
 │  ├─ ai-types/       # AI SDK v5 공유 타입/스키마
-│  ├─ api-spec/       # Zod + createRoute 기반 API 계약 (OpenAPI 생성)
+│  ├─ contracts/      # Zod schema + types (SSoT)
+│  ├─ openapi/        # HTTP route + OpenAPI 생성(contracts 기반)
 │  ├─ config/         # ESLint/Prettier/TSConfig 공유 설정
 │  ├─ database/       # Drizzle 스키마 + DB 클라이언트(Neon)
 │  ├─ ui/             # 공유 UI 컴포넌트 라이브러리
@@ -63,7 +64,7 @@ apps/api/src/
 - 모듈 위치: `apps/api/src/modules/[module]/`
 - 기본 레이어: **Routes → Services → Repositories**
 - **CQRS**: 읽기(Query)/쓰기(Command) 서비스 분리 (예: `*-query.service.ts`, `*-command.service.ts`)
-- Route는 얇게: `@repo/api-spec`의 `createRoute`를 가져와 `openapi(route, handler)`로 핸들러만 주입.
+- Route는 얇게: `@repo/openapi`에서 export한 route를 가져와 `openapi(route, handler)`로 핸들러만 주입.
 - DB 접근은 repository로만: 서비스에서 직접 Drizzle 쿼리 금지(패턴상).
 - 트랜잭션: `runInTransaction` 헬퍼로 경계 관리.
 - 인증 컨텍스트: `authMiddleware`가 `c.set("auth", ...)` 주입, `extractAuthContext`로 userId/sessionId를 추출.
@@ -94,24 +95,13 @@ apps/api/src/
 
 ## Packages
 
-### `packages/api-spec` (API 계약 / OpenAPI)
+### `packages/contracts` (계약 / SSoT)
 
-**역할**: Zod 스키마 + `createRoute` 정의로 **단일 진실의 원천(SSoT)** 역할. OpenAPI 문서 생성 스크립트 포함.
+**역할**: Zod 스키마 + 타입의 단일 진실의 원천. HTTP/OpenAPI 프레임워크에 의존하지 않습니다.
 
-**구조**
+### `packages/openapi` (HTTP route / OpenAPI)
 
-```
-packages/api-spec/src/
-├─ common/          # 공통 schema (에러 응답 등)
-├─ modules/         # 도메인별 schema/routes
-├─ openapi.ts       # Registry 구성 + OpenAPI 문서 생성
-└─ scripts/         # openapi.json 생성 스크립트
-```
-
-**중요 컨벤션**
-
-- Protected route는 `security: [{ cookieAuth: [] }]`를 추가.
-- 모든 route는 `default` 에러 응답을 포함.
+**역할**: `@repo/contracts` 기반으로 `createRoute` 정의 + OpenAPI 문서 생성(`openapi.json`).
 
 ### `packages/database` (DB 스키마/클라이언트)
 

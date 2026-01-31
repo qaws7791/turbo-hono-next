@@ -26,7 +26,8 @@ turbo-local-market/
 │   └── storybook/        # UI/컴포넌트 개발 환경
 ├── packages/
 │   ├── ui/               # 공유 UI 컴포넌트
-│   ├── api-spec/         # API 명세/스키마
+│   ├── contracts/        # API/도메인 계약(Zod SSoT)
+│   ├── openapi/          # HTTP route + OpenAPI 생성
 │   ├── database/         # DB 스키마/클라이언트
 │   ├── ai-types/         # AI 관련 공유 타입
 │   ├── config/           # 공용 설정
@@ -62,13 +63,13 @@ docs/
 
 ### 대응 규칙(예시)
 
-| 문서 위치                              | 코드 위치(대표)                       | 비고             |
-| -------------------------------------- | ------------------------------------- | ---------------- |
-| `docs/03-product/pages/home.md`        | `apps/web/app/routes/home.tsx`        | Home 라우트      |
-| `docs/03-product/pages/plan-detail.md` | `apps/web/app/routes/plan-detail.tsx` | Plan 상세 라우트 |
-| `docs/04-engineering/frontend/*.md`    | `apps/web/app/**`                     | 프론트 구현      |
-| `docs/04-engineering/api/*.md`         | `apps/api/**`, `packages/api-spec/**` | API 구현/명세    |
-| `docs/04-engineering/data-models.md`   | `packages/database/**`                | DB 스키마        |
+| 문서 위치                              | 코드 위치(대표)                                               | 비고             |
+| -------------------------------------- | ------------------------------------------------------------- | ---------------- |
+| `docs/03-product/pages/home.md`        | `apps/web/app/routes/home.tsx`                                | Home 라우트      |
+| `docs/03-product/pages/plan-detail.md` | `apps/web/app/routes/plan-detail.tsx`                         | Plan 상세 라우트 |
+| `docs/04-engineering/frontend/*.md`    | `apps/web/app/**`                                             | 프론트 구현      |
+| `docs/04-engineering/api/*.md`         | `apps/api/**`, `packages/openapi/**`, `packages/contracts/**` | API 구현/명세    |
+| `docs/04-engineering/data-models.md`   | `packages/database/**`                                        | DB 스키마        |
 
 ---
 

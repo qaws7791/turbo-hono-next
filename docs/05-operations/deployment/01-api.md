@@ -233,7 +233,8 @@ git push origin main
 
 - `apps/api/**`
 - `packages/database/**`
-- `packages/api-spec/**`
+- `packages/contracts/**`
+- `packages/openapi/**`
 - `packages/config/**`
 - `pnpm-lock.yaml`
 - `pnpm-workspace.yaml`

@@ -33,7 +33,8 @@ on:
     paths:
       - "apps/api/**"
       - "packages/database/**"
-      - "packages/api-spec/**"
+      - "packages/contracts/**"
+      - "packages/openapi/**"
       - "packages/queue-bullmq/**"
       - "packages/core/**"
       - "packages/core-adapters/**"

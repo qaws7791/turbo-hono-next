@@ -11,7 +11,7 @@ import {
   listSessionRunsRoute,
   updatePlanSessionRoute,
   updateSessionRunProgressRoute,
-} from "@repo/api-spec";
+} from "@repo/openapi";
 
 import { handleResult, jsonResult } from "../lib/result-handler";
 import { createRequireAuthMiddleware } from "../middleware/auth";

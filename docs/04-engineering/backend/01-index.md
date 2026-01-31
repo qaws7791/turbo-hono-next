@@ -96,6 +96,7 @@ modules/{domain}/
 ## 연관 문서
 
 - [Root CLAUDE.md](../../../CLAUDE.md) - 프로젝트 전체 개요
-- [packages/api-spec](../../../packages/api-spec/CLAUDE.md) - API 명세
+- [packages/contracts](../../../packages/contracts/CLAUDE.md) - 계약(SSoT)
+- [packages/openapi](../../../packages/openapi/CLAUDE.md) - OpenAPI/Route
 - [packages/database](../../../packages/database/CLAUDE.md) - DB 스키마
 - [packages/core](../../../packages/core/CLAUDE.md) - Core 모듈

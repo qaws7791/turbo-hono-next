@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 import { PublicIdSchema } from "../../common/schema";
 import {
@@ -76,7 +76,6 @@ export const CreatePlanResponseSchema = z.object({
   }),
 });
 
-// Plan Module 아이템 스키마
 export const PlanModuleItemSchema = z.object({
   id: z.uuid(),
   title: z.string().min(1),
@@ -84,7 +83,6 @@ export const PlanModuleItemSchema = z.object({
   orderIndex: z.number().int().nonnegative(),
 });
 
-// Plan Session 아이템 스키마
 export const PlanSessionItemSchema = z.object({
   id: PublicIdSchema,
   moduleId: z.uuid().nullable(),

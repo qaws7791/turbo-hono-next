@@ -132,15 +132,15 @@ importers:
       '@repo/ai':
         specifier: workspace:*
         version: link:../../packages/ai
-      '@repo/api-spec':
-        specifier: workspace:*
-        version: link:../../packages/api-spec
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@repo/openapi':
+        specifier: workspace:*
+        version: link:../../packages/openapi
       '@repo/queue-bullmq':
         specifier: workspace:*
         version: link:../../packages/queue-bullmq
@@ -459,34 +459,6 @@ importers:
         specifier: 'catalog:'
         version: 5.8.3
 
-  packages/api-spec:
-    dependencies:
-      '@asteasolutions/zod-to-openapi':
-        specifier: ^8.1.0
-        version: 8.1.0(zod@4.1.11)
-      '@hono/zod-openapi':
-        specifier: ^1.1.0
-        version: 1.1.3(hono@4.9.8)(zod@4.1.11)
-      zod:
-        specifier: 'catalog:'
-        version: 4.1.11
-    devDependencies:
-      '@repo/config':
-        specifier: workspace:*
-        version: link:../config
-      eslint:
-        specifier: 'catalog:'
-        version: 9.36.0(jiti@2.6.0)
-      prettier:
-        specifier: 'catalog:'
-        version: 3.6.2
-      tsx:
-        specifier: 'catalog:'
-        version: 4.20.5
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-
   packages/config:
     devDependencies:
       '@eslint/js':
@@ -519,6 +491,25 @@ importers:
       typescript-eslint:
         specifier: ^8.31.0
         version: 8.44.1(eslint@9.36.0(jiti@2.6.0))(typescript@5.8.3)
+
+  packages/contracts:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.11
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
 
   packages/core:
     dependencies:
@@ -605,6 +596,37 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.6.2
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+
+  packages/openapi:
+    dependencies:
+      '@asteasolutions/zod-to-openapi':
+        specifier: ^8.1.0
+        version: 8.1.0(zod@4.1.11)
+      '@hono/zod-openapi':
+        specifier: ^1.1.0
+        version: 1.1.3(hono@4.9.8)(zod@4.1.11)
+      '@repo/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      zod:
+        specifier: 'catalog:'
+        version: 4.1.11
+    devDependencies:
+      '@repo/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.36.0(jiti@2.6.0)
+      prettier:
+        specifier: 'catalog:'
+        version: 3.6.2
+      tsx:
+        specifier: 'catalog:'
+        version: 4.20.5
       typescript:
         specifier: 'catalog:'
         version: 5.8.3

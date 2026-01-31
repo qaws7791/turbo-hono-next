@@ -19,7 +19,8 @@ AI 에이전트가 이 저장소의 코드를 작업할 때 참고하는 가이�
 ### Packages
 
 - **`packages/ai-types`**: AI SDK 공유 타입 ([상세 문서](./packages/ai-types/CLAUDE.md))
-- **`packages/api-spec`**: API 명세 정의 ([상세 문서](./packages/api-spec/CLAUDE.md))
+- **`packages/contracts`**: API/도메인 계약(Zod SSoT) ([상세 문서](./packages/contracts/CLAUDE.md))
+- **`packages/openapi`**: HTTP route + OpenAPI (contracts 기반) ([상세 문서](./packages/openapi/CLAUDE.md))
 - **`packages/database`**: 데이터베이스 스키마 및 클라이언트 ([상세 문서](./packages/database/CLAUDE.md))
 - **`packages/ui`**: 공유 React 컴포넌트 ([상세 문서](./packages/ui/CLAUDE.md))
 - **`packages/config`**: 공유 설정 ([상세 문서](./packages/config/CLAUDE.md))
@@ -105,7 +106,7 @@ chore: 의존성 업데이트
 
 상세 워크플로우는 패키지별 CLAUDE.md 참조:
 
-- **API 엔드포인트 추가**: [packages/api-spec/CLAUDE.md](./packages/api-spec/CLAUDE.md)
+- **API 엔드포인트 추가**: [packages/openapi/CLAUDE.md](./packages/openapi/CLAUDE.md)
 - **DB 스키마 수정**: [packages/database/CLAUDE.md](./packages/database/CLAUDE.md)
 - **새 기능 추가**: [apps/api/CLAUDE.md](./apps/api/CLAUDE.md), [apps/web/CLAUDE.md](./apps/web/CLAUDE.md)
 - **UI 컴포넌트 수정**: [packages/ui/CLAUDE.md](./packages/ui/CLAUDE.md)
