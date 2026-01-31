@@ -8,11 +8,22 @@ const dependencies = Object.keys(pkg.dependencies || {});
 const devDependencies = Object.keys(pkg.devDependencies || {});
 
 // workspace 패키지는 번들에 포함 (external에서 제외)
-const workspacePackages = ["@repo/database", "@repo/api-spec", "@repo/config"];
+// (workspace:* 버전으로 선언된 의존성은 런타임에 패키지로 존재하지 않을 수 있어 번들링이 안전하다)
+const workspacePackages = new Set(
+  Object.entries({
+    ...(pkg.dependencies || {}),
+    ...(pkg.devDependencies || {}),
+  })
+    .filter(
+      ([, version]) =>
+        typeof version === "string" && version.startsWith("workspace:"),
+    )
+    .map(([name]) => name),
+);
 
 // node_modules 외부 의존성은 external로 처리
 const external = [...dependencies, ...devDependencies].filter(
-  (dep) => !workspacePackages.includes(dep),
+  (dep) => !workspacePackages.has(dep),
 );
 
 // workspace 패키지의 transitive deps는 package.json에 없어서 번들에 포함될 수 있음.
