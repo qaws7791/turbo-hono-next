@@ -5,28 +5,23 @@ import { reactConfig } from "@repo/config/eslint/react";
 export default [
   ...reactConfig,
   {
-    ignores: ["app/types/api.ts", "src/foundation/types/api.ts"],
+    ignores: ["src/foundation/types/api.ts"],
   },
   {
-    files: ["app/modules/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": [
         "error",
         {
-          paths: [
+          patterns: [
             {
-              name: "~/types/api",
-              message: "Import `~/types/api` only from `app/modules/api/**`.",
+              group: ["~/domains/*/**"],
+              message:
+                "Import domains via `~/domains/<domain>` only (use the domain public API).",
             },
           ],
         },
       ],
-    },
-  },
-  {
-    files: ["app/modules/api/**/*.{ts,tsx}"],
-    rules: {
-      "no-restricted-imports": "off",
     },
   },
 ];

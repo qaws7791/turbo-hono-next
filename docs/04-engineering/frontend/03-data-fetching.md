@@ -45,7 +45,7 @@ export const materialsQueries = {
 
 ```typescript
 import { useQuery } from "@tanstack/react-query";
-import { materialsQueries } from "~/domains/materials/materials.queries";
+import { materialsQueries } from "~/domains/materials";
 
 function MaterialList() {
   const { data } = useQuery(materialsQueries.list({ page: 1 }));

@@ -6,7 +6,7 @@ import { Link } from "react-router";
 import type { HomeQueue, HomeQueueItem } from "../model/types";
 
 import { PageBody, PageHeader } from "~/domains/app-shell";
-import { homeQueries } from "~/domains/home/home.queries";
+import { homeQueries } from "~/domains/home";
 import { getColorByName, getIconByName } from "~/foundation/lib/icon-color";
 import { formatShortDate } from "~/foundation/lib/time";
 

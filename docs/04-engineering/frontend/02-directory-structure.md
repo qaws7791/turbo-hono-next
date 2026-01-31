@@ -36,6 +36,8 @@ materials/
 ```
 
 - **원칙**: 도메인 간의 의존성은 최소화하며, 필요한 경우 `index.ts`를 통해서만 참조합니다.
+  - (권장) 도메인 외부에서의 import는 `~/domains/<domain>`만 허용하고, 도메인 내부 구현(`~/domains/<domain>/*`)은 금지합니다.
+  - 도메인 내부에서는 `../model`, `../application` 같은 상대 경로로 레이어를 참조합니다.
 
 ## 3. `foundation/` (Infrastructure)
 

@@ -5,10 +5,7 @@ import { materialStatusBadgeVariant } from "../../model";
 
 import type { PlanWizardMaterial } from "../../model";
 
-import {
-  materialKindLabel,
-  materialStatusLabel,
-} from "~/domains/materials/model";
+import { materialKindLabel, materialStatusLabel } from "~/domains/materials";
 
 type MaterialSelectItemProps = {
   material: PlanWizardMaterial;
