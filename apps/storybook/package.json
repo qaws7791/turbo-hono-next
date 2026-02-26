@@ -34,7 +34,7 @@
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-storybook": "^10.0.5",
-    "storybook": "^10.0.5",
+    "storybook": "^10.2.10",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
