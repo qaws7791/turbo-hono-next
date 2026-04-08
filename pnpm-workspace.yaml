@@ -23,7 +23,7 @@ catalog:
   "@tailwindcss/vite": ^4.0.6
 
   # 데이터베이스
-  drizzle-orm: ^0.44.5
+  drizzle-orm: ^0.45.2
   "@neondatabase/serverless": ^1.0.1
 
   # WebSocket
